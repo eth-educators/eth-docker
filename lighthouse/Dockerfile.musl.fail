@@ -1,0 +1,58 @@
+# Build Lighthouse in a stock Rust build container
+FROM clux/muslrust as builder
+
+ARG BUILD_TARGET
+ARG USER
+ARG UID
+
+#RUN rustup target add x86_64-unknown-linux-musl
+#RUN apk update && apk add --no-cache git gcc g++ make cmake pkgconfig openssl-dev musl-dev linux-headers ca-certificates
+# Ubuntu 16.04 base, cmake will need some love
+RUN echo 'deb http://ppa.launchpad.net/savoury1/build-tools/ubuntu xenial main\n\
+deb-src http://ppa.launchpad.net/savoury1/build-tools/ubuntu xenial main\n\
+deb http://ppa.launchpad.net/savoury1/backports/ubuntu xenial main\n\
+deb-src http://ppa.launchpad.net/savoury1/backports/ubuntu xenial main' >> /etc/apt/sources.list \
+&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E996735927E427A733BB653E374C7797FB006459 \
+&& apt update && apt install -y cmake
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Workaround for targets looking for musl-
+RUN ln -s /usr/bin/ar /usr/bin/musl-ar && ln -s /usr/bin/ranlib /usr/bin/musl-ranlib && ln -s /usr/bin/g++ /usr/bin/musl-g++
+WORKDIR /volume
+RUN git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git checkout "${BUILD_TARGET}" && cargo install --path lighthouse 
+RUN ldd /usr/src/.cargo/bin/lighthouse 2>&1 | grep -q "Not a valid dynamic program"
+RUN mkdir -p /var/lib/lighthouse && chown ${USER}:${USER} /var/lib/lighthouse
+
+# Pull all binaries into a second stage deploy scratch container
+FROM scratch
+
+ARG USER
+ARG ETH1_NODE
+
+# Import the user and group files from the builder.
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+# Be polite - also make sure this exists and won't be created by an attacker
+COPY --from=builder /sbin/nologin /sbin/nologin
+# Copy static executable
+COPY --from=builder /usr/src/.cargo/bin/lighthouse /usr/local/bin/
+# Copy trusted root CAs
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+# Copy data mount point with permissions
+COPY --from=builder --chown=${USER} /var/lib/lighthouse /var/lib/lighthouse
+
+# Use an unprivileged user.
+USER ${USER}:${USER}
+
+EXPOSE 5052 9000 9000/udp
+ENTRYPOINT ["lighthouse", "bn", "--datadir", "/var/lib/lighthouse/", "--http", "--http.address", "0.0.0.0"]
+CMD ["--testnet", "medalla", "--eth1-endpoint", "http://geth:8545"]
