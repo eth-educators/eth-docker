@@ -53,6 +53,39 @@ services:
       - ./.eth2/lighthousevalidator-data:/var/lib/lighthouse
     entrypoint: ["lighthouse", "--datadir", "/var/lib/lighthouse"]
     command: ["validator", "--server", "http://lh-beacon:5052"]
+  prysm-beacon:
+    restart: "on-failure"
+    user: ${PRYSM_UID}:${PRYSM_UID}
+    build:
+      context: ./prysm
+      args:
+        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - USER=${PRYSM_USER}
+        - UID=${PRYSM_UID}
+    image: prysm
+    volumes:
+      - prysmbeacon-data:/var/lib/prysm
+    ports:
+      - ${PRYSM_PORT}:13000/tcp
+      - ${PRYSM_UDP_PORT}:12000/udp
+    entrypoint: ${PRYSM_ENTRYPOINT}
+    command:
+      - --http-web3provider
+      - ${PRYSM_ETH1_NODE}
+  prysm-validator:
+    restart: "on-failure"
+    user: ${PRYSM_UID}:${PRYSM_UID}
+    build:
+      context: ./prysm
+      args:
+        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - USER=${PRYSM_USER}
+        - UID=${PRYSM_UID}
+    image: prysm
+    volumes:
+      - ./.eth2/prysmvalidator-data:/var/lib/prysm
+    entrypoint: ["validator", "--datadir", "/var/lib/prysm", "--wallet-dir", "/var/lib/prysm/prysm-wallet"]
+    command: ["--beacon-rpc-provider", "http://prysm-beacon:4000"]
   lighthouse:
     image: tianon/true
     restart: "no"
@@ -60,6 +93,14 @@ services:
       - geth
       - lh-beacon
       - lh-validator
+  prysm:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - geth
+      - prysm-beacon
+      - prysm-validator
 volumes:
   geth-data:
   lhbeacon-data:
+  prysmbeacon-data:

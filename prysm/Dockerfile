@@ -1,0 +1,39 @@
+# Build Prysm in a stock Go build container
+FROM golang:buster as builder
+
+ARG BUILD_TARGET
+
+RUN apt-get update && apt-get install -y cmake
+
+WORKDIR /go/src
+RUN git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && go install -v --tags=blst_enabled ./beacon-chain ./validator
+
+# Pull all binaries into a second stage deploy debian container
+FROM debian:buster
+
+ARG USER
+ARG UID
+
+RUN apt-get update && apt-get install -y ca-certificates
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Copy executable
+COPY --from=builder /go/bin/beacon-chain /usr/local/bin/
+COPY --from=builder /go/bin/validator /usr/local/bin/
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm
+
+# Use an unprivileged user.
+USER ${USER}:${USER}
+
+EXPOSE 4000 13000 12000/udp
+ENTRYPOINT ["beacon-chain", "--datadir", "/var/lib/prysm", "--http-web3provider", "http://geth:8545", "--rpc-host", "0.0.0.0"]
