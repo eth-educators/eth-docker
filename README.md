@@ -1,10 +1,10 @@
-# eth2-docker v0.01
+# eth2-docker v0.02
 Unofficial and experimental docker build instructions for eth2 clients
 
 Caveat: 
 - The directory .eth2/lighthousevalidator-data needs to be chown'd to the UID of the lighthouse
   user. This is not currently automated, please run `sudo chown -R 10001:10001 .eth2` assuming
-  default UID for the ligthhouse user. This is a large TODO around secrets management.
+  default UID for the lighthouse and prysm user. This is a large TODO around secrets management.
 - There is no provision made at all for wallet management presently, or even
   wallet creation. This is the major TODO before this effort becomes generally
   useful. Validators are expected to fail startup because of this. 
@@ -16,8 +16,9 @@ Caveat:
   sudo docker-compose run lh-validator account validator create --wallet-name <WALLET_NAME> --wallet-password <WALLET_PASSWORD_PATH> --at-most <VALIDATOR_COUNT>
   ```
   
-Currently supported clients:
+Currently included clients:
 - Lighthouse, with local geth
+- Prysm, with local geth
 
 A file 'default.env' is provided and needs to be copied to '.env'.
 If this is not done, running docker-compose will fail.
@@ -37,6 +38,12 @@ To start the lighthouse client, both beacon and validator, with local geth:
 
 ```
 sudo docker-compose up -d lighthouse
+```
+
+To start the prysm client, both beacon and validator, with local geth:
+
+```
+sudo docker-compose up -d prysm
 ```
 
 To see a list of running containers:
