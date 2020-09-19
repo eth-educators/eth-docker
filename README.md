@@ -1,4 +1,4 @@
-# eth2-docker v0.02
+# eth2-docker v0.03
 Unofficial and experimental docker build instructions for eth2 clients
 
 Caveat: 
