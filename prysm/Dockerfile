@@ -3,10 +3,11 @@ FROM golang:buster as builder
 
 ARG BUILD_TARGET
 
-RUN apt-get update && apt-get install -y cmake
+RUN apt-get update && apt-get install -y cmake libtinfo5 libgmp-dev npm && npm install -g @bazel/bazelisk && bazel version
 
 WORKDIR /go/src
-RUN git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && go install -v --tags=blst_enabled ./beacon-chain ./validator
+RUN git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //beacon-chain:beacon-chain && bazel build --config=release //validator:validator
+#&& go install -v --tags=blst_enabled ./beacon-chain ./validator
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:buster
@@ -27,8 +28,8 @@ RUN adduser \
     "${USER}"
 
 # Copy executable
-COPY --from=builder /go/bin/beacon-chain /usr/local/bin/
-COPY --from=builder /go/bin/validator /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/validator/linux_amd64_stripped/validator /usr/local/bin/
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm
 
