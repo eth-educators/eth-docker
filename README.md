@@ -193,7 +193,7 @@ git, docker, and docker-compose.
 
 ## Windows 10 Prerequisites
 
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/win), and [Python 3](https://www.python.org/downloads/windows/). Note yyou can also type `python3` into a Powershell window and it will bring you to the Microsoft Store for a recent Python 3 version.
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/win), and [Python 3](https://www.python.org/downloads/windows/). Note you can also type `python3` into a Powershell window and it will bring you to the Microsoft Store for a recent Python 3 version.
 
 Docker Desktop can be used with the WSL2 backend if desired, or without it.
 
@@ -215,8 +215,9 @@ show you how to.
 Run:
 `sudo docker-compose build --no-cache geth`
 
-Then restart geth:
-`sudo docker-compose restart geth`
+Then stop, remove and start geth:
+`sudo docker-compose stop geth && sudo docker-compose rm geth`
+`sudo docker-compose up -d geth`
 
 ### Lighthouse
 
