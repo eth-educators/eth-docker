@@ -1,4 +1,4 @@
-The directory `validator_keys` will contain the `deposit_data-TIMESTAMP.json` and `keystore-m_ID.json`
+This directory `validator_keys` will contain the `deposit_data-TIMESTAMP.json` and `keystore-m_ID.json`
 files created by eth2.0-deposit-cli.
 
 Use `deposit_data-TIMESTAMP.json` for your initial deposit. After that, it can be disposed of.

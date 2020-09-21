@@ -72,6 +72,78 @@ services:
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
     entrypoint: ${LH_VAL_ENTRYPOINT}
     command: ["account", "validator", "import", "--directory", "/var/lib/lighthouse/validator_keys", "--validator-dir", "/var/lib/lighthouse"]
+  prysm-beacon:
+    restart: "on-failure"
+    user: ${PRYSM_UID}:${PRYSM_UID}
+    build:
+      context: ./prysm
+      args:
+        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - USER=${PRYSM_USER}
+        - UID=${PRYSM_UID}
+    image: prysm
+    volumes:
+      - prysmbeacon-data:/var/lib/prysm
+    ports:
+      - ${PRYSM_PORT}:13000/tcp
+      - ${PRYSM_UDP_PORT}:12000/udp
+    expose:
+      - 4000
+    entrypoint: ${PRYSM_BN_ENTRYPOINT}
+    command:
+      - beacon-chain
+      - --datadir
+      - /var/lib/prysm/
+      - --rpc-host 0.0.0.0
+      - --p2p-host-ip
+      - $$ClientIP
+      - --http-web3provider
+      - ${PRYSM_ETH1_NODE}
+  prysm-validator:
+    restart: "on-failure"
+    user: ${PRYSM_UID}:${PRYSM_UID}
+    build:
+      context: ./prysm
+      args:
+        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - USER=${PRYSM_USER}
+        - UID=${PRYSM_UID}
+    image: prysm
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+    entrypoint: ${PRYSM_VAL_ENTRYPOINT}
+    command: 
+      - --beacon-rpc-provider
+      - prysm-beacon:4000
+      - --graffiti
+      - ${GRAFFITI}
+      # If you chose not to store the wallet password during import, comment out the two following lines
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
+  prysm-validator-import:
+    restart: "no"
+    user: ${PRYSM_UID}:${PRYSM_UID}
+    image: prysm
+    build:
+      context: ./prysm
+      args:
+        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - USER=${PRYSM_USER}
+        - UID=${PRYSM_UID}
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/prysm/validator_keys
+    entrypoint: ${PRYSM_VAL_IMPORT_ENTRYPOINT}
+    command:
+      - validator
+      - --datadir
+      - /var/lib/prysm
+      - --wallet-dir
+      - /var/lib/prysm/
+      - accounts-v2
+      - import
+      - --keys-dir
+      - /var/lib/prysm/validator_keys
   deposit-cli:
     restart: "no"
     user: ${DEPCLI_UID}:${DEPCLI_UID}
@@ -89,20 +161,23 @@ services:
       - ${NUMVAL}
       - --chain
       - ${DEPOSIT_CHAIN}
-  eth2:
+  lighthouse:
     image: tianon/true
     restart: "no"
     depends_on:
       - geth
       - lh-beacon
       - lh-validator
-  eth2-3rd:
+  prysm:
     image: tianon/true
     restart: "no"
     depends_on:
-      - lh-beacon
-      - lh-validator
+      - geth
+      - prysm-beacon
+      - prysm-validator
 volumes:
   geth-data:
   lhbeacon-data:
   lhvalidator-data:
+  prysmbeacon-data:
+  prysmvalidator-data:
