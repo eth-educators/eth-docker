@@ -21,6 +21,11 @@ this on Linux. You can find your UID with `echo $UID`.
 
 Installation prerequisites are towards the bottom of this file.
 
+Once they are met, navigate to a convenient directory that you
+have write access to - your $HOME is fine - and pull this repo
+via git: `git clone https://github.com/eth2-educators/eth2-docker.git`,
+then `cd eth2-docker` into the newly created directory.
+
 ## Create an eth2 wallet and deposit files
 
 You will deposit eth to the deposit contract, and receive locked eth2 in turn.
