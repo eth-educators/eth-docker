@@ -33,6 +33,6 @@ COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-EXPOSE 5052 9000 9000/udp
+#EXPOSE 5052 9000 9000/udp
 ENTRYPOINT ["lighthouse", "bn", "--datadir", "/var/lib/lighthouse/", "--http", "--http-address", "0.0.0.0"]
 CMD ["--testnet", "medalla", "--eth1-endpoint", "http://geth:8545"]

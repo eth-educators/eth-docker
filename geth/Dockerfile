@@ -42,6 +42,6 @@ COPY --from=builder --chown=${USER} /var/lib/goethereum /var/lib/goethereum
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-EXPOSE 8545 30303 30303/udp
+#EXPOSE 8545 30303 30303/udp
 ENTRYPOINT ["geth", "--nousb", "--http", "--http.addr", "0.0.0.0", "--http.vhosts", "*", "--http.api", "eth,net", "--ipcdisable", "--datadir", "/var/lib/goethereum"]
 CMD ["--goerli"]

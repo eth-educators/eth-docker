@@ -14,7 +14,7 @@ just leave sudo off the command and run directly as the logged-in user.
 
 You'd run this from the docker-compose one level up. To test build and run here, while mapping to default ports:
 
-sudo docker build -t prysm --build-arg BUILD_TARGET=master --build-arg USER=prysm --build-arg UID=10001 .
+sudo docker build -t prysm --build-arg BUILD_TARGET=master --build-arg USER=prysm --build-arg UID=10003 .
 sudo docker volume create prysm-data
 sudo docker run -d --name prysm -v prysm-data:/var/lib/prysm -p 13000:13000 -p 12000:12000/upd -p 8545:8545 prysm
 
