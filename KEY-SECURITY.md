@@ -7,12 +7,15 @@ Use `keystore-m_ID.json` files to import your validator secret keys into the val
 instance of the client you are running. These files need to be secured when you are done
 with the initial import.
 
-#Key Security
+# Validator Key Security
 
 The `keystore-m_ID.json` files have to be stored securely outside of this server. Offline
 is best, on media that cannot be remotely compromised. Keep the password(s) for
 these files secure as well, for example in a local (not cloud-connected) password vault
 on a PC that is not on the network, or at the very least not used for online access. 
+
+Once you have the keystore files secure and they've been imported to the validator container
+on your server, you should delete them from the `.eth2` directory.
 
 These files will be needed in case you need to restore your validator(s).
 
@@ -21,6 +24,8 @@ An attacker with access to these files could slash your validator(s) or threaten
 to slash your validator(s).
 
 For more on validator key security, read this article: https://www.attestant.io/posts/protecting-validator-keys/
+
+# Withdrawal Key Security
 
 **Critical**
 When you ran eth2.0-deposit-cli, a 24-word mnemonic was created. This mnemonic
