@@ -172,7 +172,7 @@ sudo docker logs -f CONTAINERNAME
 
 or
 
-``
+```
 sudo docker-compose logs -f SERVICENAME
 ```
 
