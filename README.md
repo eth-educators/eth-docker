@@ -9,7 +9,7 @@ Currently included clients:
 - Lighthouse, with local geth
 - Prysm, with local geth
 
-#USAGE
+# USAGE
 
 A file 'default.env' is provided and needs to be copied to '.env'.
 If this is not done, running docker-compose will fail.
@@ -21,7 +21,7 @@ this on Linux. You can find your UID with `echo $UID`.
 
 Installation prerequisites are towards the bottom of this file.
 
-##Create an eth2 wallet and deposit files
+## Create an eth2 wallet and deposit files
 
 You will deposit eth to the deposit contract, and receive locked eth2 in turn.
 The security of this wallet is **critical**. If it is compromised, you will lose
@@ -41,11 +41,11 @@ The created files will be in the directory `.eth2` in this project.
 Please see the file `KEY-SECURITY.md` in this project for some notes on
 key security.
 
-##Verify that the mnemonic works
+## Verify that the mnemonic works
 
 Crucial step, TBD.
 
-##Slashing risks
+## Slashing risks
 
 If you run two validators with the same validator key(s), you are going to get
 "slashed": A large penalty will be levied against you and your validators will
@@ -57,9 +57,9 @@ and then start those clients.
 While this project gives you the freedom to shoot yourself in the foot like that,
 **please do not**. Choose one client and run that, and only that, client.
 
-##Create a wallet by importing validator keys
+## Create a wallet by importing validator keys
 
-###Lighthouse
+### Lighthouse
 
 Once both your withdrawal key (mnemonic) and validator key(s) (`keystore-m_ID.json` file(s))
 are secured offline, and **not** before, import the validator key(s) to the Lighthouse
@@ -71,7 +71,7 @@ If you specify the password here, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
 
-###Prysm
+### Prysm
 
 **Warning** Import your validator key(s) to only *one* client.
 
@@ -90,7 +90,7 @@ If you choose to store the password here, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
 
-##Before depositing
+## Before depositing
 
 You likely want to wait to deposit your eth until you can see in the logs
 that the eth1 node (e.g. geth) is synchronized and the eth2 beacon node
@@ -105,7 +105,7 @@ week.
 Once you are ready, you can send eth to the deposit contract by using
 the `deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
 
-##Start the client
+## Start the client
 
 Before you start any clients, make sure you have the validator set up with a wallet,
 and you secured your withdrawal key (mnemonic) as well as your validator key(s)
@@ -113,7 +113,7 @@ and you secured your withdrawal key (mnemonic) as well as your validator key(s)
 
 Then, and **only** then:
 
-###Lighthouse
+### Lighthouse
 
 To start the lighthouse client, both beacon and validator, with local geth:
 
@@ -132,7 +132,7 @@ sudo docker-compose run lh-validator
 After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detach
 from the running container.
 
-###Prysm
+### Prysm
 
 Note that the Prysm client will find its external IP, but this repo assumes
 that IP is static. You can restart the container, possibly via crontab, with
@@ -156,7 +156,7 @@ sudo docker-compose run prysm-validator
 After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detach
 from the running container.
 
-##Monitor the client
+## Monitor the client
 
 To see a list of running containers:
 
@@ -176,7 +176,7 @@ or
 sudo docker-compose logs -f SERVICENAME
 ```
 
-##Ubuntu Prerequisites
+## Ubuntu Prerequisites
 
 To run the client with defaults, assuming an Ubuntu host:
 
@@ -191,7 +191,7 @@ cp default.env .env
 Other distributions are expected to work as long as they support
 git, docker, and docker-compose.
 
-##Windows 10 Prerequisites
+## Windows 10 Prerequisites
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/win), and [Python 3](https://www.python.org/downloads/windows/). Note yyou can also type `python3` into a Powershell window and it will bring you to the Microsoft Store for a recent Python 3 version.
 
@@ -199,18 +199,18 @@ Docker Desktop can be used with the WSL2 backend if desired, or without it.
 
 You will run the docker-compose and docker commands from Powershell. You do not need `sudo` in front of those commands.
 
-##MacOS Prerequisites
+## MacOS Prerequisites
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/mac) and [Python 3](https://www.python.org/downloads/mac-osx/).
 MacOS has not been tested, if you have the ability to, please get in touch via the ethstaker Discord.
 
-##Update a client
+## Update a client
 
 This project does not monitor client versions. It is up to you to decide that you
 are going to update a component. When you are ready to do so, the below instructions
 show you how to.
 
-###Geth
+### Geth
 
 Run:
 `sudo docker-compose build --no-cache geth`
@@ -218,7 +218,7 @@ Run:
 Then restart geth:
 `sudo docker-compose restart geth`
 
-###Lighthouse
+### Lighthouse
 
 lh-beacon and lh-validator share the same image, we only need to rebuild one.
 
@@ -230,7 +230,7 @@ Then restart the client:
 
 If you did not provide the wallet password to the container, come up more manually instead.
 
-###Prysm
+### Prysm
 
 prysm-beacon and prysm-validator share the same image, we only need to rebuild one.
 
@@ -242,7 +242,7 @@ Then restart the stack:
 
 If you did not provide the wallet password to the container, come up more manually instead.
 
-#Guiding principles:
+# Guiding principles:
 
 - Reduce the attack surface of the client where this is feasible. Not
   all clients lend themselves to be statically compiled and running
