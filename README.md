@@ -2,7 +2,7 @@
 Unofficial and experimental docker build instructions for eth2 clients
 
 **Short-lived spadina branch**
-eth2.0-deposit-cli is ready; clients to come
+eth2.0-deposit-cli is ready; Prysm client is ready
 
 This project builds clients from source. A similar workflow for
 binary images is a TODO, as long as it does not duplicate work
