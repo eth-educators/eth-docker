@@ -1,5 +1,4 @@
 *
 !.gitignore
 !README.md
-!validator_keys
-!validator_keys/.empty
+!.empty
