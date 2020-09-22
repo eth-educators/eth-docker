@@ -1,4 +1,4 @@
-# eth2-docker v0.04
+# eth2-docker v0.05
 Unofficial and experimental docker build instructions for eth2 clients
 
 This project builds clients from source. A similar workflow for
@@ -10,6 +10,13 @@ Currently included clients:
 - Prysm, with local geth
 
 # USAGE
+
+- Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
+- Choose a client, decide whether to run a local eth1 node or use a 3rd-party one
+- Import the validator keystore files generated in the first step
+- Run the client
+- Wait until the eth1 node and beacon node are fully synchronized
+- Finalize the deposit. This is not done within this project
 
 ## Before you start
 
@@ -25,36 +32,28 @@ eth2.0-deposit-cli, because it has no network connection and does not run
 as an ongoing service.
 
 In the interest of readability, warnings about the dangers of running
-eth2 validators have been moved to `RECOMMENDATIONS.md`. This file
-also contains comments on key security. Just know that funds can be
+eth2 validators have been moved to [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
+That file also contains comments on key security. Just know that funds can be
 lost unless precautions are taken.
 
-Some troubleshooting commands are at the very end of the file.
+This README has some [troubleshooting commands](#troubleshooting).
 
 ## Install prerequisites
 
-Installation prerequisites are towards the bottom of this file.
+This project relies on docker and docker-compose, and git to bring the
+project itself in. It has been tested on Linux and Windows 10, and is
+expected to work on MacOS. Notes on how to install prerequites for
+these systems are in [PREREQUISITES.md](PREREQUISITES.md).
 
 Once they are met, navigate to a convenient directory that you
 have write access to - your $HOME is fine - and pull this repo
 via git: `git clone https://github.com/eth2-educators/eth2-docker.git`,
 then `cd eth2-docker` into the newly created directory.
 
-## Choose a client
-
-There is a default file which runs lighthouse with local geth. If you are good with the default, just run with that.
-
-You'll be copying from the directory `clients` to the file `docker-compose.yml` in this directory. Current options are:
-- lighthouse, `cp clients/lh.yml ./docker-compose.yml`
-- prysm, `cp clients/prysm.yml ./docker-compose.yml`
-
-If you are going to use a 3rd-party eth1chain provider, edit `.env` and set either `LH_ETH1_NODE` or `PRYSM_ETH1_NODE` to
-point to your provider, and use the `eth2-3rd` target once you have imported keys and are ready.
-
-## Create an eth2 wallet and deposit files
+## Create an eth2 wallet and validator keystore and deposit files
 
 You will deposit eth to the deposit contract, and receive locked eth2 in turn.<br />
-`RECOMMENDATIONS.md` has comments on key security.
+[RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security.
 
 Edit the `.env` file to set the number of validators you wish to run. The default
 is just one (1) validator.
@@ -65,14 +64,24 @@ This command will get you ready to deposit eth:
 The created files will be in the directory `.eth2/validator_keys` in this project.
 This is also where you'd place your own keystore files if you already have some for import.
 
-
-## Create a wallet by importing validator keys
-
 ### You brought your own keys
 
-They go into `.eth2/validator_keys` in this project directory, not directly under `$HOME`. 
+They go into `.eth2/validator_keys` in this project directory, not directly under `$HOME`.
 
-### Lighthouse
+## Choose a client
+
+There is a default file which runs lighthouse with local geth. If you are good with the default, just run with that.
+
+You'll be copying from the directory `clients` to the file `docker-compose.yml` in this directory. Current options are:
+- [Lighthouse](#lighthouse), `cp clients/lh.yml ./docker-compose.yml`
+- [Prysm](#prysm), `cp clients/prysm.yml ./docker-compose.yml`
+
+If you are going to use a 3rd-party eth1chain provider, edit `.env` and set either `LH_ETH1_NODE` or `PRYSM_ETH1_NODE` to
+point to your provider, and use the `eth2-3rd` target once you have imported keys and are ready.
+
+## Lighthouse 
+
+### Create a validator wallet by importing validator keys
 
 **Warning** Import your validator key(s) to only *one* client.
 
@@ -84,32 +93,7 @@ If you specify the password during import, it'll be available to the client ever
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
 
-### Prysm
-
-**Warning** Import your validator key(s) to only *one* client.
-
-Import the validator key(s) to the Prysm validator client:
-
-`sudo docker-compose run prysm-validator-import`
-
-You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
-
-You will be asked to provide a new wallet password. 
-
-If you choose to store the password during import, it'll be available to the client every
-time it starts. If you do not, you'll need to be present to start the
-validator and start it interactively. Determine your own risk profile.
-
-## Depositing
-
-Once you are ready, you can send eth to the deposit contract by using
-the `deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
-
-## Start the client
-
-Before you start any clients, make sure you have the validator set up with a wallet, see above.
-
-### Lighthouse
+### Start the client
 
 To start the Lighthouse client, both beacon and validator, with local geth:
 
@@ -148,12 +132,29 @@ sudo docker-compose run lh-validator
 After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detach
 from the running container.
 
+## Prysm
 
-### Prysm
+### Create a validator wallet by importing validator keys
 
-The Prysm client requires copying in a file, see the start of this document.
+**Warning** Import your validator key(s) to only *one* client.
 
-Note that the Prysm client will find its external IP, but this repo assumes
+Import the validator key(s) to the Prysm validator client:
+
+`sudo docker-compose run prysm-validator-import`
+
+You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
+
+You will be asked to provide a new wallet password. 
+
+If you choose to store the password during import, it'll be available to the client every
+time it starts. If you do not, you'll need to be present to start the
+validator and start it interactively. Determine your own risk profile.
+
+### Start the client
+
+The Prysm client requires copying in a file, see the [client choice](#choose-a-client) section.
+
+Note that the Prysm client will find its external IP, but this project currently assumes
 that IP is static. You can restart the container, possibly via crontab, with
 `docker-compose restart prysm-beacon` if your IP is dynamic. 
 Work to support dynamic DNS would also be welcome.
@@ -192,7 +193,32 @@ sudo docker-compose run prysm-validator
 After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detach
 from the running container.
 
+## Depositing
+
+Once you are ready, you can send eth to the deposit contract by using
+the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
+
+## Autostart the client on boot
+
+Docker Desktop for Windows 10 and MacOS may do this automatically, TBD.
+
+For Linux systems that use systemd, e.g. Ubuntu, you'd create a systemd
+service. 
+
+- Copy the file: `sudo cp sample-systemd /etc/systemd/system/eth2.service`
+- Edit the file `/etc/systemd/system/eth2.service`
+- Adjust the `WorkingDirectory` to the directory you stored the project in.
+- Adjust the `ExecStart` to use the right target - `eth2-3rd` if you don't run geth
+- Adjust the path to `docker-compose` to be right for your system, see `which docker-compose`
+- Test the service: `sudo systemctl daemon-reload`, `sudo systemctl start eth2`, check `docker ps` to
+see all expected containers are up
+- Enable the service: `sudo systemctl enable eth2`
+
 ## Monitor the client
+
+Monitoring the logs of the client is useful for troubleshooting
+and to judge the amount of time left before the beacon and geth nodes
+are fully synchronized.
 
 To see a list of running containers:
 
@@ -211,39 +237,6 @@ or
 ```
 sudo docker-compose logs -f SERVICENAME
 ```
-
-## Ubuntu Prerequisites
-
-To run the client with defaults, assuming an Ubuntu host:
-
-```
-sudo apt update && sudo apt install docker docker-compose git
-cd
-git clone https://github.com/eth2-educators/eth2-docker.git
-cd eth2-docker
-cp default.env .env
-```
-
-You may want to adjust the contents of `.env` to your environment.
-
-Other distributions are expected to work as long as they support
-git, docker, and docker-compose.
-
-## Windows 10 Prerequisites
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/win), and [Python 3](https://www.python.org/downloads/windows/). Note you can also type `python3` into a Powershell window and it will bring you to the Microsoft Store for a recent Python 3 version.
-
-You have to copy the `default.env` file to `.env`, from Powershell: `cp default.env .env`.
-After copying this file, you may want to adjust the contents of `.env` to your environment.
-
-Docker Desktop can be used with the WSL2 backend if desired, or without it.
-
-You will run the docker-compose and docker commands from Powershell. You do not need `sudo` in front of those commands.
-
-## MacOS Prerequisites
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/mac) and [Python 3](https://www.python.org/downloads/mac-osx/).
-MacOS has not been tested, if you have the ability to, please get in touch via the ethstaker Discord.
 
 ## Update a client
 
@@ -268,9 +261,10 @@ Run:<br />
 `sudo docker-compose build --no-cache lh-beacon`
 
 Then restart the client:<br />
-`sudo docker-compose down && sudo docker-compose up -d lighthouse`
+`sudo docker-compose down && sudo docker-compose up -d eth2`
 
-If you did not provide the wallet password to the container, come up more manually instead.
+If you did not provide the wallet password to the container, or you are not using a local geth
+node, come up [more manually](#start-the-client) instead.
 
 ### Prysm
 
@@ -282,7 +276,8 @@ Run:<br />
 Then restart the client:<br />
 `sudo docker-compose down && sudo docker-compose up -d prysm`
 
-If you did not provide the wallet password to the container, come up more manually instead.
+If you did not provide the wallet password to the container, or you are not using a local geth
+node, come up [more manually](#start-the-client-1) instead.
 
 # Troubleshooting
 

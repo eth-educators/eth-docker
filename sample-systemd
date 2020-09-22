@@ -1,0 +1,17 @@
+# /etc/systemd/system/eth2.service
+
+[Unit]
+Description=Docker Compose Eth2 Node Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/USER/eth2-docker
+ExecStart=/usr/bin/docker-compose up -d eth2
+ExecStop=/usr/bin/docker-compose down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

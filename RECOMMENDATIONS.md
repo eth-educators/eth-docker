@@ -16,7 +16,20 @@ successfully propose blocks.
 
 ## Host Security
 
-Steal /u/SomerEsat's stuff and put it here :)
+The [bare metal installation guide](https://medium.com/@SomerEsat/guide-to-staking-on-ethereum-2-0-ubuntu-medalla-nimbus-5f4b2b0f2d7c)
+by /u/SomerEsat has excellent notes on Linux host security. Running `ntpd`
+is highly recommended, time matters to validators. Note the ports
+you will need to open in `ufw` depend on the client you choose.
+
+## Firewalling
+
+geth: 30303 tcp/udp, forwarded to your server
+lighthouse: 9000 tcp/udp, forwarded to your server
+prysm: 13000 tcp and 12000 udp, forwarded to your server
+grafana: 3000 tcp, open on ufw but not forwarded to your server.
+This is insecure http:// and should only be accessed locally.
+For cloud-hosted instances, a reverse proxy such as nginx or
+traefik can be used.
 
 ## Before depositing
 
@@ -82,3 +95,46 @@ to withdraw funds in future.
 An attacker with access to your mnemonic can drain your funds.
 
 For more on withdrawal key security, read this article: https://www.attestant.io/posts/protecting-withdrawal-keys/
+
+## Resources, hardware
+
+See the client team recommendations. Generally, however, 8 GiB of RAM is considered
+a minimum, and 16 GiB is recommended. 2 or 4 CPU cores, and an SSD for storage
+because the node databases are so IOPS-heavy. The eth1 node (geth) would require
+around 300GB of storage by itself. The beacon node database is small, around 11GB.
+
+Two home server builds that I like and am happy to recommend are below. Both support
+IPMI, which means they can be managed and power-cycled remotely and need neither
+a GPU nor monitor. Both support ECC RAM, though the AMD option as of Sept 2020
+was unable to report ECC errors via IPMI, only OS-level reporting worked.
+
+**Intel**
+
+SuperMicro X11SCL-IF(-O) or X11SCL-F(-O)
+Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
+16 GiB of Micron or Samsung DDR4 ECC RAM
+500GB M.2 NVMe SSD, e.g. Samsung 970 EVO
+
+**AMD**
+
+AsRock Rack X470D4U or X570D4U (if you prefer mITX, X570D4I-2T)
+AMD Ryzen CPU, but not APU (APUs do not support ECC)
+16 GiB of Micron or Samsung DDR4 ECC RAM
+500GB M.2 NVMe SSD, e.g. Samsung 970 EVO
+
+Why ECC? This is a personal preference. The cost difference is minimal,
+and the potential time savings huge. An eth2 client does not require
+ECC RAM; I maintain it is very nice to have regardless.
+
+With non-ECC RAM, if your RAM goes bad, you will be troubleshooting server
+crashes, and potentially spending days with RAM testing tools.
+
+With ECC RAM, if your RAM goes bad, your OS and, if Intel, IPMI, will alert
+you to corrected (or uncorrected) RAM errors. You'll want to have set up
+email alerts for this. You then buy replacement RAM and schedule downtime.
+No RAM troubleshooting required, you will know whether your RAM is functional or has issues
+because it will report this to you, and correct single-bit errors.
+
+I am so protective of my time these days that I build even my
+home PCs with ECC RAM. You know your own tolerance for troubleshooting
+RAM best.
