@@ -74,12 +74,8 @@ services:
     command: ["account", "validator", "import", "--directory", "/var/lib/lighthouse/validator_keys", "--validator-dir", "/var/lib/lighthouse"]
   deposit-cli:
     restart: "no"
-    user: ${DEPCLI_UID}:${DEPCLI_UID}
     build:
       context: ./eth2.0-deposit-cli
-      args:
-        - USER=${DEPCLI_USER}
-        - UID=${DEPCLI_UID}
     image: eth2.0-deposit-cli
     volumes:
       - ${DEPCLI_LOCALDIR}:/var/lib/depcli
