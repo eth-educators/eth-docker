@@ -1,7 +1,7 @@
 version: "3"
 services:
   geth:
-    restart: "on-failure"
+    restart: "no"
     user: ${GETH_UID}:${GETH_UID}      
     build:
       context: ./geth
@@ -21,7 +21,7 @@ services:
     command:
       - ${ETH_NETWORK}
   lh-beacon:
-    restart: "on-failure"
+    restart: "no"
     user: ${LH_UID}:${LH_UID}
     build:
       context: ./lighthouse
@@ -44,7 +44,7 @@ services:
       - --eth1-endpoint
       - ${LH_ETH1_NODE}
   lh-validator:
-    restart: "on-failure"
+    restart: "no"
     user: ${LH_UID}:${LH_UID}
     build:
       context: ./lighthouse
