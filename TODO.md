@@ -1,2 +1,0 @@
-- Grafana and prometheus dashboards
-- docker-compose as a service on system boot
