@@ -96,6 +96,8 @@ services:
     restart: "no"
     build:
       context: ./eth2.0-deposit-cli
+      args:
+        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
     image: eth2.0-deposit-cli
     volumes:
       - ${DEPCLI_LOCALDIR}:/var/lib/depcli
