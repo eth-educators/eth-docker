@@ -16,23 +16,18 @@ Currently included clients:
 A file 'default.env' is provided and needs to be copied to '.env'.
 If this is not done, running docker-compose will fail.
 
-After copying the file, you **must** adjust the contents to your environment.
-Specifically, set the first entry `DEPCLI_UID` to your UID if you are running
-this on Linux. You can find your UID with `echo $UID`.<br />
-You likely also *want* to set `GRAFFITI` inside the same file, and you might
+You likely want to set `GRAFFITI` inside the file `.env`, and you might
 adjust `NUM_VAL` if you are going to create keys for more than one validator.
 
 On Linux, `docker-compose` runs as root. The individual containers
-do not, they run as local users inside the container.
+do not, they run as local users inside the container: With the exception of
+eth2.0-deposit-cli, because it has no network connection and does not run
+as an ongoing service.
 
-**Do not run two validators**<br />
-You'd get yourself slashed, and no-one wants that. Protecting you from this
-is a work in progress. Choose one client, and one client only, and run that.
-
-**You need an eth1 source**<br />
-This project assumes you'll use geth. It doesn't have to be that, it can
-be a 3rd party. You need some source for eth1, so that your validator can
-successfully propose blocks.
+In the interest of readability, warnings about the dangers of running
+eth2 validators have been moved to `RECOMMENDATIONS.md`. This file
+also contains comments on key security. Just know that funds can be
+lost unless precautions are taken.
 
 Some troubleshooting commands are at the very end of the file.
 
@@ -47,12 +42,6 @@ then `cd eth2-docker` into the newly created directory.
 
 ## Choose a client
 
-I am deathly afraid of causing you to run two validators in parallel, leading to you getting slashed.
-
-Therefore, I am asking you to choose one client, and one client only, and copy its corresponding file in.
-This is not ideal. If you'd like to collaborate on a shell wrapper that makes this easier, please get in touch via
-the ethstaker Discord.
-
 There is a default file which runs lighthouse with local geth. If you are good with the default, just run with that.
 
 You'll be copying from the directory `clients` to the file `docker-compose.yml` in this directory. Current options are:
@@ -64,61 +53,34 @@ point to your provider, and use the `eth2-3rd` target once you have imported key
 
 ## Create an eth2 wallet and deposit files
 
-You will deposit eth to the deposit contract, and receive locked eth2 in turn.
-The security of this wallet is **critical**. If it is compromised, you will lose
-your balance. Please make sure you understand eth2 staking before you continue.
-
-When you create the wallet and deposit files, write down your mnemonic and
-choose a cryptographically strong password for your keystores. Something long
-and not used anywhere else, ideally randomized by a generator.
+You will deposit eth to the deposit contract, and receive locked eth2 in turn.<br />
+`RECOMMENDATIONS.md` has comments on key security.
 
 Edit the `.env` file to set the number of validators you wish to run. The default
 is just one (1) validator.
 
-With that said, this command will get you ready to deposit eth:
+This command will get you ready to deposit eth:
 `sudo docker-compose run deposit-cli`
 
 The created files will be in the directory `.eth2/validator_keys` in this project.
 This is also where you'd place your own keystore files if you already have some for import.
 
-Please see the file `KEY-SECURITY.md` in this project for some notes on
-key security.
-
-## Verify that the mnemonic works
-
-Crucial step, TBD.
-
-## Slashing risks
-
-If you run two validators with the same validator key(s), you are going to get
-"slashed": A large penalty will be levied against you and your validators will
-be forced to exit.
-
-This can only happen if you import the same validator keys into multiple clients
-and then start those clients.
-
-While this project gives you the freedom to shoot yourself in the foot like that,
-**please do not**. Choose one client and run that, and only that, client.
 
 ## Create a wallet by importing validator keys
 
 ### You brought your own keys
 
 They go into `.eth2/validator_keys` in this project directory, not directly under `$HOME`. 
-Make **damn sure** your old validator is down and will stay down, you will get slashed
-if both are up at the same time.
 
 ### Lighthouse
 
 **Warning** Import your validator key(s) to only *one* client.
 
-Once both your withdrawal key (mnemonic) and validator key(s) (`keystore-m_ID.json` file(s))
-are secured offline, and **not** before, import the validator key(s) to the Lighthouse
-validator client:
+Import the validator key(s) to the Lighthouse validator client:
 
 `sudo docker-compose run lh-validator-import`
 
-If you specify the password here, it'll be available to the client every
+If you specify the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
 
@@ -126,43 +88,26 @@ validator and start it interactively. Determine your own risk profile.
 
 **Warning** Import your validator key(s) to only *one* client.
 
-Once both your withdrawal key (mnemonic) and validator key(s) (`keystore-m_ID.json` file(s))
-are secured offline, and **not** before, import the validator key(s) to the Prysm
-validator client:
+Import the validator key(s) to the Prysm validator client:
 
 `sudo docker-compose run prysm-validator-import`
 
 You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
 
-You will be asked to provide a new wallet password. Make sure it is unique
-and strong, and: Keep it safe!
+You will be asked to provide a new wallet password. 
 
-If you choose to store the password here, it'll be available to the client every
+If you choose to store the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
 
-## Before depositing
-
-You likely want to wait to deposit your eth until you can see in the logs
-that the eth1 node (e.g. geth) is synchronized and the eth2 beacon node
-is fully synchronized, which happens after that. This takes hours on
-testnet and could take days on mainnet.
-
-If you deposit before your client stack is fully synchronized and running,
-you risk getting penalized for being offline. The offline penalty during
-the first 5 months of mainnet will be roughly 0.13% of your deposit per
-week.
+## Depositing
 
 Once you are ready, you can send eth to the deposit contract by using
 the `deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
 
 ## Start the client
 
-Before you start any clients, make sure you have the validator set up with a wallet,
-and you secured your withdrawal key (mnemonic) as well as your validator key(s)
-(`keystore-m_ID.json` file(s)).
-
-Then, and **only** then:
+Before you start any clients, make sure you have the validator set up with a wallet, see above.
 
 ### Lighthouse
 
@@ -279,12 +224,7 @@ cd eth2-docker
 cp default.env .env
 ```
 
-After copying the `default.env` file, you **must** adjust the contents
-of `.env` to your environment.
-Specifically, set the first entry `DEPCLI_UID` to your UID if you are running
-this on Linux. You can find your UID with `echo $UID`.
-
-There is no need to touch the other UIDs in this file.
+You may want to adjust the contents of `.env` to your environment.
 
 Other distributions are expected to work as long as they support
 git, docker, and docker-compose.
@@ -294,7 +234,7 @@ git, docker, and docker-compose.
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/win), and [Python 3](https://www.python.org/downloads/windows/). Note you can also type `python3` into a Powershell window and it will bring you to the Microsoft Store for a recent Python 3 version.
 
 You have to copy the `default.env` file to `.env`, from Powershell: `cp default.env .env`.
-After copying this file, you *should* adjust the contents of `.env` to your environment.
+After copying this file, you may want to adjust the contents of `.env` to your environment.
 
 Docker Desktop can be used with the WSL2 backend if desired, or without it.
 
