@@ -113,14 +113,19 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 SuperMicro X11SCL-IF(-O) or X11SCL-F(-O)
 Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
 16 GiB of Micron or Samsung DDR4 ECC RAM
-500GB M.2 NVMe SSD, e.g. Samsung 970 EVO
+1TB M.2 NVMe SSD, e.g. Samsung 970 EVO
 
 **AMD**
 
 AsRock Rack X470D4U or X570D4U (if you prefer mITX, X570D4I-2T)
 AMD Ryzen CPU, but not APU (APUs do not support ECC)
 16 GiB of Micron or Samsung DDR4 ECC RAM
-500GB M.2 NVMe SSD, e.g. Samsung 970 EVO
+1TB M.2 NVMe SSD, e.g. Samsung 970 EVO
+
+The SSD size is very, very conservative. The eth1 chain db takes up ~230GB as
+of September 2020. The eth2 beacon chain db does not, as I understand it, grow
+in current client implementations, it is pruned aggressively and only around 11GB. That
+may change as we go through eth2 phases.
 
 Why ECC? This is a personal preference. The cost difference is minimal,
 and the potential time savings huge. An eth2 client does not require
