@@ -47,6 +47,7 @@ services:
       - $$ClientIP
       - --http-web3provider
       - ${PRYSM_ETH1_NODE}
+      - --spadina
   prysm-validator:
     restart: "on-failure"
     user: ${PRYSM_UID}:${PRYSM_UID}
