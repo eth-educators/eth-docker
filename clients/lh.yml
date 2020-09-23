@@ -37,7 +37,7 @@ services:
       - ${LH_PORT}:9000/udp
     expose:
       - 5052
-    entrypoint: bash -c "wait-for-eth1.sh ${LH_ETH1_NODE} ${LH_BN_ENTRYPOINT}"
+    entrypoint: wait-for-eth1.sh ${LH_ETH1_NODE} ${LH_BN_ENTRYPOINT}
     command:
       - --testnet
       - ${LH_TESTNET}
