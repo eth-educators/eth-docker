@@ -15,7 +15,11 @@ cd eth2-docker
 cp default.env .env
 ```
 
-You may want to adjust the contents of `.env` to your environment.
+You **must** adjust the contents of `.env` to your environment. Specifically,
+`LOCAL_UID` needs to be set to your UID, which you can get with `echo $UID`.
+The default is `1000`, which hopefully covers the majority of cases.<br />
+This step became necessary because of an upcoming security change to how
+eth2.0-deposit-cli sets permissions on the files it creates.
 
 Other distributions are expected to work as long as they support
 git, docker, and docker-compose.

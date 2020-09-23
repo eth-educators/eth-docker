@@ -2,13 +2,13 @@ version: "3"
 services:
   geth:
     restart: "no"
-    user: ${GETH_UID}:${GETH_UID}      
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./geth
       args:
         - BUILD_TARGET=${GETH_BUILD_TARGET} 
         - USER=${GETH_USER}
-        - UID=${GETH_UID}
+        - UID=${LOCAL_UID}
     image: geth
     volumes:
       - geth-data:/var/lib/goethereum
@@ -22,13 +22,13 @@ services:
       - ${ETH_NETWORK}
   prysm-beacon:
     restart: "no"
-    user: ${PRYSM_UID}:${PRYSM_UID}
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./prysm
       args:
         - BUILD_TARGET=${PRYSM_BUILD_TARGET}
         - USER=${PRYSM_USER}
-        - UID=${PRYSM_UID}
+        - UID=${LOCAL_UID}
     image: prysm
     volumes:
       - prysmbeacon-data:/var/lib/prysm
@@ -50,13 +50,13 @@ services:
       - --spadina
   prysm-validator:
     restart: "no"
-    user: ${PRYSM_UID}:${PRYSM_UID}
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./prysm
       args:
         - BUILD_TARGET=${PRYSM_BUILD_TARGET}
         - USER=${PRYSM_USER}
-        - UID=${PRYSM_UID}
+        - UID=${LOCAL_UID}
     image: prysm
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -71,14 +71,14 @@ services:
       - /var/lib/prysm/password.txt
   prysm-validator-import:
     restart: "no"
-    user: ${PRYSM_UID}:${PRYSM_UID}
+    user: ${LOCAL_UID}:${LOCAL_UID}
     image: prysm
     build:
       context: ./prysm
       args:
         - BUILD_TARGET=${PRYSM_BUILD_TARGET}
         - USER=${PRYSM_USER}
-        - UID=${PRYSM_UID}
+        - UID=${LOCAL_UID}
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/prysm/validator_keys
@@ -95,13 +95,16 @@ services:
       - /var/lib/prysm/validator_keys
   deposit-cli:
     restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./eth2.0-deposit-cli
       args:
         - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - USER=${DEPCLI_USER}
+        - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
     volumes:
-      - ${DEPCLI_LOCALDIR}:/var/lib/depcli
+      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
     entrypoint: ${DEPCLI_ENTRYPOINT}
     command:
       - --num_validators

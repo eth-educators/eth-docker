@@ -2,13 +2,13 @@ version: "3"
 services:
   geth:
     restart: "no"
-    user: ${GETH_UID}:${GETH_UID}      
+    user: ${LOCAL_UID}:${LOCAL_UID}      
     build:
       context: ./geth
       args:
         - BUILD_TARGET=${GETH_BUILD_TARGET} 
         - USER=${GETH_USER}
-        - UID=${GETH_UID}
+        - UID=${LOCAL_UID}
     image: geth
     volumes:
       - geth-data:/var/lib/goethereum
@@ -22,13 +22,13 @@ services:
       - ${ETH_NETWORK}
   lh-beacon:
     restart: "no"
-    user: ${LH_UID}:${LH_UID}
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
       args:
         - BUILD_TARGET=${LH_BUILD_TARGET}
         - USER=${LH_USER}
-        - UID=${LH_UID}
+        - UID=${LOCAL_UID}
     image: lighthouse
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
@@ -37,7 +37,7 @@ services:
       - ${LH_PORT}:9000/udp
     expose:
       - 5052
-    entrypoint: ${LH_BN_ENTRYPOINT}
+    entrypoint: bash -c "wait-for-eth1.sh ${LH_ETH1_NODE} ${LH_BN_ENTRYPOINT}"
     command:
       - --testnet
       - ${LH_TESTNET}
@@ -45,13 +45,13 @@ services:
       - ${LH_ETH1_NODE}
   lh-validator:
     restart: "no"
-    user: ${LH_UID}:${LH_UID}
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
       args:
         - BUILD_TARGET=${LH_BUILD_TARGET}
         - USER=${LH_USER}
-        - UID=${LH_UID}
+        - UID=${LOCAL_UID}
     image: lighthouse
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -59,14 +59,14 @@ services:
     command: ["validator", "--server", "http://lh-beacon:5052"]
   lh-validator-import:
     restart: "no"
-    user: ${LH_UID}:${LH_UID}
+    user: ${LOCAL_UID}:${LOCAL_UID}
     image: lighthouse
     build:
       context: ./lighthouse
       args:
         - BUILD_TARGET=${LH_BUILD_TARGET}
         - USER=${LH_USER}
-        - UID=${LH_UID}
+        - UID=${LOCAL_UID}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
@@ -74,13 +74,16 @@ services:
     command: ["account", "validator", "import", "--directory", "/var/lib/lighthouse/validator_keys", "--validator-dir", "/var/lib/lighthouse"]
   deposit-cli:
     restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./eth2.0-deposit-cli
       args:
         - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - USER=${DEPCLI_USER}
+        - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
     volumes:
-      - ${DEPCLI_LOCALDIR}:/var/lib/depcli
+      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
     entrypoint: ${DEPCLI_ENTRYPOINT}
     command:
       - --num_validators
