@@ -1,4 +1,4 @@
-# eth2-docker v0.05
+# eth2-docker v0.06
 Unofficial and experimental docker build instructions for eth2 clients
 
 **Short-lived spadina branch**
@@ -26,13 +26,19 @@ Currently included clients:
 A file 'default.env' is provided and needs to be copied to '.env'.
 If this is not done, running docker-compose will fail.
 
+On Linux, you will need to find your UID with `echo $UID` and then
+adjust the `LOCAL_UID` parameter inside `.env`. This is necessary
+so the validator can read the keystore files, see further below
+on keystore import.<br />
+Note that changing `LOCAL_UID` after you already started an 
+"eth2 node stack" with this project is difficult, as all the docker 
+volumes were created with that UID and you will get permissions errors.
+
 You likely want to set `GRAFFITI` inside the file `.env`, and you might
 adjust `NUM_VAL` if you are going to create keys for more than one validator.
 
 On Linux, `docker-compose` runs as root. The individual containers
-do not, they run as local users inside the container: With the exception of
-eth2.0-deposit-cli, because it has no network connection and does not run
-as an ongoing service.
+do not, they run as local users inside the containers.
 
 In the interest of readability, warnings about the dangers of running
 eth2 validators have been moved to [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
@@ -45,7 +51,7 @@ This README has some [troubleshooting commands](#troubleshooting).
 
 This project relies on docker and docker-compose, and git to bring the
 project itself in. It has been tested on Linux and Windows 10, and is
-expected to work on MacOS. Notes on how to install prerequites for
+expected to work on MacOS. Notes on how to install prerequisites for
 these systems are in [PREREQUISITES.md](PREREQUISITES.md).
 
 Once they are met, navigate to a convenient directory that you
@@ -74,11 +80,11 @@ They go into `.eth2/validator_keys` in this project directory, not directly unde
 
 ## Choose a client
 
-There is a default file which runs lighthouse with local geth. If you are good with the default, just run with that.
+There is no default file to avoid overwriting your file during `git pull`.
 
 You'll be copying from the directory `clients` to the file `docker-compose.yml` in this directory. Current options are:
-- [Lighthouse](#lighthouse), `cp clients/lh.yml ./docker-compose.yml`
-- [Prysm](#prysm), `cp clients/prysm.yml ./docker-compose.yml`
+- [Lighthouse](#lighthouse), `cp clients/lh.yml docker-compose.yml`
+- [Prysm](#prysm), `cp clients/prysm.yml docker-compose.yml`
 
 If you are going to use a 3rd-party eth1chain provider, edit `.env` and set either `LH_ETH1_NODE` or `PRYSM_ETH1_NODE` to
 point to your provider, and use the `eth2-3rd` target once you have imported keys and are ready.
@@ -248,6 +254,11 @@ This project does not monitor client versions. It is up to you to decide that yo
 are going to update a component. When you are ready to do so, the below instructions
 show you how to.
 
+### The project itself
+
+Inside the project directory, run:<br />
+`git pull`
+
 ### Geth
 
 Run:<br />
@@ -285,31 +296,37 @@ node, come up [more manually](#start-the-client-1) instead.
 
 # Troubleshooting
 
-A few useful commands if you run into issues.
+A few useful commands if you run into issues. As always, `sudo` is a Linux-ism and not needed on Windows 10.
 
-`docker-compose stop servicename` brings a service down, for example `docker-compose stop lh-validator`.<br />
-`docker-compose down` will stop the entire stack.<br />
-`docker-compose up -d servicename` starts a single service, for example `docker-compose up -d lh-validator`.
+`sudo docker-compose stop servicename` brings a service down, for example `docker-compose stop lh-validator`.<br />
+`sudo docker-compose down` will stop the entire stack.<br />
+`sudo docker-compose up -d servicename` starts a single service, for example `sudo docker-compose up -d lh-validator`.
 The `-d` means "detached", not connected to your input session.<br />
-`docker-compose run servicename` starts a single service and connects your input session to it. Use the Ctrl-p Ctrl-q
+`sudo docker-compose run servicename` starts a single service and connects your input session to it. Use the Ctrl-p Ctrl-q
 key sequence to detach from it again.
 
-`docker ps` lists all running services, with the container name to the right.<br />
-`docker logs containername` shows logs for a container, `docker logs -f containername` scrolls them.<br />
-`docker exec -it containername /bin/bash` will connect you to a running service in a bash shell. The geth service doesn't have a shell.<br />
+`sudo docker ps` lists all running services, with the container name to the right.<br />
+`sudo docker logs containername` shows logs for a container, `sudo docker logs -f containername` scrolls them.<br />
+`sudo docker-compose logs servicename` shows logs for a service, `sudo docker-compose logs -f servicename` scrolls them.<br />
+`sudo docker exec -it containername /bin/bash` will connect you to a running service in a bash shell. The geth service doesn't have a shell.<br />
 
-If a service is continually restarting and you want to bring up its container manually, so you can investigate, first bring everything down:<br />
-`docker-compose down`, tear down everything first.<br />
-`docker ps`, make sure everything is down.<br />
+You may start a service with `sudo docker-compose up -d servicename` and then find it's not in `sudo docker ps`. That means it terminated while
+trying to start. To investigate, you could leave the `-d` off so you see logs on command line:<br />
+`sudo docker-compose up lh-beacon`, for example.<br />
+You could also run `sudo docker-compose logs lh-beacon` to see the last logs of that service and the reason it terminated.<br />
+
+If a service is not starting and you want to bring up its container manually, so you can investigate, first bring everything down:<br />
+`sudo docker-compose down`, tear down everything first.<br />
+`sudo docker ps`, make sure everything is down.<br />
 
 **HERE BE DRAGONS** You can totally run N copies of an image manually and then successfully start a validator in each and get yourself slashed.
 Take extreme care.
 
 Once your stack is down, to run an image and get into a shell, without executing the client automatically:<br />
-`docker run -it --entrypoint=/bin/bash imagename`, for example `docker run -it --entrypoint=/bin/bash lighthouse`.<br />
+`sudo docker run -it --entrypoint=/bin/bash imagename`, for example `sudo docker run -it --entrypoint=/bin/bash lighthouse`.<br />
 You'd then run Linux commands manually in there, you could start components of the client manually. There is one image per client,
 the client images currently supplied are `lighthouse` and `prysm`.<br />
-`docker images` will show you all images.
+`sudo docker images` will show you all images.
 
 # Guiding principles:
 

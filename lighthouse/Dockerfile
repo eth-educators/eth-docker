@@ -8,13 +8,19 @@ RUN apt-get update && apt-get install -y git gcc g++ make cmake pkg-config libss
 WORKDIR /usr/src
 RUN git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git checkout "${BUILD_TARGET}" && make
 
-# Pull all binaries into a second stage deploy alpine container
+# Pull all binaries into a second stage deploy debian container
 FROM debian:latest
 
 ARG USER
 ARG UID
 
-RUN apt-get update && apt-get install -y ca-certificates
+RUN apt-get update && apt-get install -y ca-certificates wget
+
+# Grab dockerize so beacon can wait for geth
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -30,6 +36,8 @@ RUN adduser \
 RUN mkdir -p /var/lib/lighthouse && chown ${USER}:${USER} /var/lib/lighthouse
 # Copy executable
 COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
+# Script to be able to wait for eth1 node to be up
+COPY ./wait-for-eth1.sh /usr/local/bin
 # Use an unprivileged user.
 USER ${USER}:${USER}
 

@@ -1,6 +1,10 @@
 #!/bin/bash
 # This will be passed arguments that start the validator
-$@
+"$@"
+
+if [ $? -ne 0 ]; then
+  exit 1;
+fi
 
 echo Storing the wallet password in plain text will allow the validator to start automatically without user input.
 while true; do
@@ -12,9 +16,9 @@ while true; do
   esac
 done
 while true; do
-  read -sp "Please enter the new wallet password you chose above: " password1
+  read -sp "Please enter the 'New wallet password' you chose above: " password1
   echo
-  read -sp "Please re-enter the wallet password: " password2
+  read -sp "Please re-enter the 'New wallet password': " password2
   echo
   if [ $password1 == $password2 ]; then
     break
