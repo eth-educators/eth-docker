@@ -53,7 +53,8 @@ these systems are in [PREREQUISITES.md](PREREQUISITES.md).
 
 Once they are met, navigate to a convenient directory that you
 have write access to - your $HOME is fine - and pull this repo
-via git: `git clone https://github.com/eth2-educators/eth2-docker.git`,
+via git:<br />
+`git clone https://github.com/eth2-educators/eth2-docker.git`,
 then `cd eth2-docker` into the newly created directory.
 
 ## Create an eth2 wallet and validator keystore and deposit files
@@ -297,7 +298,7 @@ Run:<br />
 `sudo docker-compose build --no-cache prysm-beacon`
 
 Then restart the client:<br />
-`sudo docker-compose down && sudo docker-compose up -d prysm`
+`sudo docker-compose down && sudo docker-compose up -d eth2`
 
 If you did not provide the wallet password to the container, or you are not using a local geth
 node, come up [more manually](#start-the-client-1) instead.
