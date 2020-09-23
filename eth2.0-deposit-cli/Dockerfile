@@ -1,12 +1,32 @@
 from python:buster
 
-RUN mkdir -p /var/lib/depcli
+ARG USER
+ARG UID
+ARG BUILD_TARGET
 
-WORKDIR /root
-RUN git clone https://github.com/ethereum/eth2.0-deposit-cli.git && cd eth2.0-deposit-cli && pip3 install -r requirements.txt && python3 setup.py install
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/depcli && chown ${USER}:${USER} /var/lib/depcli
+RUN mkdir -p /var/lib/depcli-data && chown ${USER}:${USER} /var/lib/depcli-data
+
+WORKDIR /var/lib/depcli
+USER ${USER}
+RUN git clone https://github.com/ethereum/eth2.0-deposit-cli.git
+USER root
+RUN cd eth2.0-deposit-cli && pip3 install -r requirements.txt && python3 setup.py install
+
+USER ${USER}
+WORKDIR /var/lib/depcli/eth2.0-deposit-cli
 
 ENV numvals 1
 ENV chain medalla
 
-WORKDIR /root/eth2.0-deposit-cli
-ENTRYPOINT ./deposit.sh --folder /var/lib/depcli --num_validators $numvals --chain $chain 
+ENTRYPOINT ./deposit.sh --folder /var/lib/depcli-data --num_validators $numvals --chain $chain 

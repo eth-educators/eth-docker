@@ -23,11 +23,11 @@ you will need to open in `ufw` depend on the client you choose.
 
 ## Firewalling
 
-geth: 30303 tcp/udp, forwarded to your server
-lighthouse: 9000 tcp/udp, forwarded to your server
-prysm: 13000 tcp and 12000 udp, forwarded to your server
-grafana: 3000 tcp, open on ufw but not forwarded to your server.
-This is insecure http:// and should only be accessed locally.
+geth: 30303 tcp/udp, forwarded to your server<br />
+lighthouse: 9000 tcp/udp, forwarded to your server<br />
+prysm: 13000 tcp and 12000 udp, forwarded to your server<br />
+grafana: 3000 tcp, open on ufw but not forwarded to your server.<br />
+The grafana port is insecure http:// and should only be accessed locally.
 For cloud-hosted instances, a reverse proxy such as nginx or
 traefik can be used.
 
@@ -45,10 +45,10 @@ week.
 
 ## Wallet and key security
 
-The security of the wallet you create is **critical**. If it is compromised, you will lose
+The security of the wallet mnemonic you create is **critical**. If it is compromised, you will lose
 your balance. Please make sure you understand eth2 staking before you use this project.
 
-When you create the wallet and deposit files, write down your mnemonic and
+When you create the deposit and keystore files, write down your wallet mnemonic and
 choose a cryptographically strong password for your keystores. Something long
 and not used anywhere else, ideally randomized by a generator.
 
@@ -112,15 +112,24 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 
 SuperMicro X11SCL-IF(-O) or X11SCL-F(-O)
 Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
-16 GiB of Micron or Samsung DDR4 ECC RAM
-500GB M.2 NVMe SSD, e.g. Samsung 970 EVO
+16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
+1TB M.2 NVMe SSD, e.g. Samsung 970 EVO
 
 **AMD**
 
 AsRock Rack X470D4U or X570D4U (if you prefer mITX, X570D4I-2T)
 AMD Ryzen CPU, but not APU (APUs do not support ECC)
-16 GiB of Micron or Samsung DDR4 ECC RAM
-500GB M.2 NVMe SSD, e.g. Samsung 970 EVO
+16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
+1TB M.2 NVMe SSD, e.g. Samsung 970 EVO
+
+Plus, obviously, a case, PSU, case fans. Pick your own. Well-liked
+options are Node 304 (mITX) and Node 804 (uATX) with Seasonic PSUs,
+but really any quality case that won't cook your components will do.
+
+On SSD size, 1TB is very, very conservative and assumes you are running
+an eth1 node as well, which currently takes about 230GB and keeps
+growing. The eth2 db is expected to be far smaller, though exact figures
+won't be seen until Phase 1.5 and 2.
 
 Why ECC? This is a personal preference. The cost difference is minimal,
 and the potential time savings huge. An eth2 client does not require
