@@ -87,6 +87,12 @@ point to your provider, and use the `eth2-3rd` target once you have imported key
 
 ## Lighthouse 
 
+Build the components you'll use, so all steps below can be done without delay.
+- Lighthouse with local geth eth1 node: `sudo docker-compose build --no-cache geth deposit-cli lh-beacon`
+- Lighthouse with 3rd-party eth1 node: `sudo docker-compose build --no-cache deposit-cli lh-beacon`
+
+Go walk the dogs, have a beverage, stretch your legs: This may take 20-30 minutes.
+
 ### Create a validator wallet by importing validator keys
 
 **Warning** Import your validator key(s) to only *one* client.
@@ -139,6 +145,12 @@ After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detac
 from the running container.
 
 ## Prysm
+
+Build the components you'll use, so all steps below can be done without delay.
+- Prysm with local geth eth1 node: `sudo docker-compose build --no-cache geth deposit-cli prysm-beacon`
+- Prysm with 3rd-party eth1 node: `sudo docker-compose build --no-cache deposit-cli prysm-beacon`
+
+Go walk the dogs, have a beverage, stretch your legs: This may take 20-30 minutes.
 
 ### Create a validator wallet by importing validator keys
 
