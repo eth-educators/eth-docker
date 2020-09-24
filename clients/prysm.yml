@@ -69,6 +69,8 @@ services:
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
+    depends_on:
+      - prysm-beacon
   prysm-validator-import:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
