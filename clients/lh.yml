@@ -56,7 +56,7 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
     entrypoint: ${LH_VAL_ENTRYPOINT}
-    command: ["validator", "--server", "http://lh-beacon:5052"]
+    command: ["validator", "--server", "http://lh-beacon:5052", "--graffiti", ${GRAFFITI}]
   lh-validator-import:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
