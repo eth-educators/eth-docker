@@ -21,6 +21,7 @@ Please take a look.
 
 - Install [prerequisites](PREREQUISITES.md)
 - [Choose a client](SETUP.md) and do initial setup. This is a required step.
+- Build the client
 - Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
 - Import the validator keystore files generated in the previous step
 - Run the client
