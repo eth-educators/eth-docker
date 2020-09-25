@@ -2,32 +2,32 @@ In the absence of a proper test script, a few quick notes on a test sequence tha
 should show functionality.
 
 Prep that's not client specific:
-- `sudo docker volume rm $(docker volume ls -q | grep eth2-docker)`
 - `cp default.env .env`, adjust LOCAL_UID and ports as needed
+- `sudo docker volume rm $(sudo docker volume ls -q | grep eth2-docker)`, wipe volumes from last pass,
+   assuming that `eth2-docker` is the directory we are testing in.
+
 
 For each client:
-- `cp clients/CLIENT.yml docker-compose.yml`
+- Start with the most "complete" stack to test full build
+- Set `COMPOSE_FILE` in `.env` to full client stack, set `ETH1_NODE` to geth.
 - `sudo docker ps`, make sure nothing is left running
-- `sudo docker-compose build --no-cache deposit-cli geth CLIENT-beacon`
+- Build the client stack:<br />
+  `sudo docker-compose build`
+- There likely is a cached version of the client, let's make sure it's the latest.
+  `sudo docker-compose build --no-cache beacon`
 - Coffee, tea, hall sword fights :)
 - `rm .eth2/validator_keys/*`, wipe keys from last pass
 - `sudo docker-compose run deposit-cli`, create keys
-- `sudo docker-compose run CLIENT-validator-import`, import keys
-- `sudo docker-compose up -d eth2`
-- Check running and logs and see that everything is chill:
+- `sudo docker-compose run validator-import`, import keys
+- `sudo docker-compose up -d eth2`, observe that they come up in order: geth->beacon->validator
+- Check running and logs and see that everything is chill, watch especially for missed connections:
   - `sudo docker ps`
   - `sudo docker-compose logs geth`
-  - `sudo docker-compose logs CLIENT-beacon`
-  - `sudo docker-compose logs CLIENT-validator`
+  - `sudo docker-compose logs beacon`
+  - `sudo docker-compose logs validator`
 - `sudo docker-compose down`
-- Edit `.env` to set the ETH1_NODE to infura.io
-- `sudo docker-compose up -d eth2-3rd`
-- Check running and logs like above, minus geth
-- `sudo docker-compose down`
-- Edit `.env` to set the ETH1_NODE back to geth for the next test round 
-
-Those deposit-cli steps may seem redundant, they test that each client.yml
-has the correct settings to build deposit-cli and geth.
+- Set `ETH1_NODE` to infura.io URL, remove `geth.yml` from `COMPOSE_FILE`, and test again
+  from just after validator import, just without geth.
 
 Specific to systemd:
 - Start the service manually
