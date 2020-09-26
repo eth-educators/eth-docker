@@ -1,13 +1,26 @@
 # eth2-docker v0.1.1
 Unofficial and experimental docker build instructions for eth2 clients
 
+## Acknowledgements
+
+Parts of this guide are based on the Linux [guides](https://medium.com/@SomerEsat) written by [Somer Esat](https://twitter.com/SomerEsat).
+
+Without their previous work, this project would not exist.
+
+## Supported clients
+
 This project builds clients from source. A similar workflow for
 binary images is a TODO, as long as it does not duplicate work
 by client teams.
 
-Currently included clients:
-- Lighthouse, with local geth
-- Prysm, with local geth
+Currently supported clients:
+- Lighthouse
+- Prysm
+
+Currently supported optional components:
+- geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
+  your eth2 beacon node, so you can "propose" blocks.
+- Grafana dashboard
 
 # USAGE
 
