@@ -19,7 +19,7 @@ RUN mkdir -p /var/lib/depcli-data && chown ${USER}:${USER} /var/lib/depcli-data
 
 WORKDIR /var/lib/depcli
 USER ${USER}
-RUN git clone https://github.com/ethereum/eth2.0-deposit-cli.git
+RUN git clone https://github.com/ethereum/eth2.0-deposit-cli.git && cd eth2.0-deposit-cli && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}
 USER root
 RUN cd eth2.0-deposit-cli && pip3 install -r requirements.txt && python3 setup.py install
 
