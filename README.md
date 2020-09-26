@@ -115,7 +115,7 @@ from the running container.
 For spadina genesis, you want to deposit right away so you are part of the genesis event.
 
 Once you are ready, you can send eth to the deposit contract by using
-the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
+the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Spadina launchpad](https://spadina.launchpad.ethereum.org/).
 
 ## Step 8: Grafana Dashboards
 
