@@ -2,15 +2,21 @@
 Unofficial and experimental docker build instructions for eth2 clients
 
 **Short-lived spadina branch**<br />
-With defaults to run Prysm (and maybe Lighthouse) nodes on spadina.
+With defaults to run Prysm nodes on spadina.
+Lighthouse has a bug on spadina as of 9/26, check in with their github to see status.
 
 This project builds clients from source. A similar workflow for
 binary images is a TODO, as long as it does not duplicate work
 by client teams.
 
 Currently included clients:
-- Lighthouse, with local geth
-- Prysm, with local geth
+- Lighthouse
+- Prysm
+
+Currently included optional components:
+- geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
+  your eth2 beacon node, so you can "propose" blocks.
+- Grafana dashboard
 
 # USAGE
 
@@ -22,21 +28,32 @@ Please take a look.
 
 ## Steps to bring an eth2 node up
 
-- Install [prerequisites](PREREQUISITES.md)
-- [Choose a client](SETUP.md) and do initial setup. This is a required step.
-- Build the client
-- Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
-- Import the validator keystore files generated in the previous step
-- Run the client
-- Optional: Wait until the eth1 node and beacon node are fully synchronized
-- Finalize the deposit. This is not done within this project
+1. Install [prerequisites](PREREQUISITES.md)
+2. [Choose a client](SETUP.md) and do initial setup.
+3. Build the client
+4. Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
+5. Import the validator keystore files generated in the previous step
+6. Run the client
+7. Finalize the deposit. This is not done within this project
+8. Set up Grafana dashboards (optional)
+9. Configure your system to start the eth2 node on boot (optional)
 
-## Build the client
+## Step 1: Install prerequisites
+
+You will need git, docker, and docker-compose. This should work on Linux, Windows 10, and MacOS.
+Please see [prerequisites](PREREQUISITES.md) and then come back here.
+
+## Step 2: Choose a client, initial setup
+
+Next, choose a client and configure this project to use it. Lighthouse and Prysm are currently supported.
+Please see [setup instructions](SETUP.md) and then come back here.
+
+## Step 3: Build the client
 
 Build all required images from source. This will take 20-30 minutes.<br />
 `sudo docker-compose build`
 
-## Create an eth2 wallet and validator keystore and deposit files
+## Step 4: Create an eth2 wallet and validator keystore and deposit files
 
 You will deposit eth to the deposit contract, and receive locked eth2 in turn.<br />
 [RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security.
@@ -54,7 +71,7 @@ This is also where you'd place your own keystore files if you already have some 
 
 They go into `.eth2/validator_keys` in this project directory, not directly under `$HOME`.
 
-## Create a validator wallet by importing validator keys
+## Step 5: Create a validator wallet by importing validator keys
 
 **Warning** Import your validator key(s) to only *one* client.
 
@@ -74,7 +91,7 @@ If you choose to save the password during import, it'll be available to the clie
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
 
-## Start the client
+## Step 6: Start the client
 
 To start the client:
 ```
@@ -93,12 +110,14 @@ sudo docker-compose run validator
 After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detach
 from the running container.
 
-## Depositing
+## Step 7: Depositing
+
+For spadina genesis, you want to deposit right away so you are part of the genesis event.
 
 Once you are ready, you can send eth to the deposit contract by using
 the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
 
-## Grafana Dashboards
+## Step 8: Grafana Dashboards
 
 I'll repeat /u/SomerEsat's instructions on how to set up Grafana. 
 - Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
@@ -113,7 +132,7 @@ the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load"
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
 - [Teku Dashboard JSON](https://grafana.com/grafana/dashboards/12199)
 
-## Autostart the client on boot
+## Step 9: Autostart the client on boot
 
 Docker Desktop for Windows 10 and MacOS may do this automatically, TBD.
 
@@ -128,7 +147,7 @@ service.
 see all expected containers are up
 - Enable the service: `sudo systemctl enable eth2`
 
-## Monitor the client
+## Addendum: Monitor the client
 
 Monitoring the logs of the client is useful for troubleshooting
 and to judge the amount of time left before the beacon and geth nodes
@@ -152,7 +171,7 @@ or
 sudo docker-compose logs -f SERVICENAME
 ```
 
-## Update the software
+## Addendum: Update the software
 
 This project does not monitor client versions. It is up to you to decide that you
 are going to update a component. When you are ready to do so, the below instructions
@@ -188,7 +207,7 @@ Then restart the client:<br />
 If you did not store the wallet password with the validator, come up 
 [more manually](#start-the-client) instead.
 
-# Troubleshooting
+# Addendum: Troubleshooting
 
 A few useful commands if you run into issues. As always, `sudo` is a Linux-ism and not needed on Windows 10.
 
