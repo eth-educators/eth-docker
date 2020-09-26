@@ -18,7 +18,7 @@ RUN adduser \
     "${USER}"
 
 RUN go get -d github.com/ethereum/go-ethereum 
-RUN cd $GOPATH/src/github.com/ethereum/go-ethereum && git checkout "${BUILD_TARGET}" && GO111MODULE=on go install -ldflags="-linkmode external -extldflags -static" ./cmd/geth
+RUN cd $GOPATH/src/github.com/ethereum/go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && GO111MODULE=on go install -ldflags="-linkmode external -extldflags -static" ./cmd/geth
 RUN ldd $GOPATH/bin/geth 2>&1 | grep -q "Not a valid dynamic program"
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 

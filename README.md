@@ -1,5 +1,8 @@
-# eth2-docker v0.07
+# eth2-docker v0.1.1
 Unofficial and experimental docker build instructions for eth2 clients
+
+**Short-lived spadina branch**<br />
+With defaults to run Prysm (and maybe Lighthouse) nodes on spadina.
 
 This project builds clients from source. A similar workflow for
 binary images is a TODO, as long as it does not duplicate work
@@ -21,6 +24,7 @@ Please take a look.
 
 - Install [prerequisites](PREREQUISITES.md)
 - [Choose a client](SETUP.md) and do initial setup. This is a required step.
+- Build the client
 - Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
 - Import the validator keystore files generated in the previous step
 - Run the client
@@ -62,6 +66,9 @@ Import the validator key(s) to the validator client:
 > - You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
 > - You will be asked to provide a "New wallet password", independent of the
 >   keystore password. 
+> - If you choose not to store the wallet password with the validator,
+>   you will need to edit `prysm-base.yml` and comment out the wallet-password-file
+>   parameter
 
 If you choose to save the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
@@ -90,6 +97,21 @@ from the running container.
 
 Once you are ready, you can send eth to the deposit contract by using
 the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
+
+## Grafana Dashboards
+
+I'll repeat /u/SomerEsat's instructions on how to set up Grafana. 
+- Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
+- Click on the gear icon on the left, choose "Data Sources", and "Add Data Source". Choose Prometheus, use `http://prometheus:9090` as the URL, then click "Save and Test".
+- Import a Dashboard. Click on the + icon on the left, choose "Import". Copy/paste JSON code from one of the client dashboard links below (click anywhere inside the page
+the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load", choose the "prometheus" data source you just configured, click "Import".
+- For Teku, you can use the grafana.com URL instead of raw JSON.
+
+- [Lighthouse Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
+- [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
+- [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
+- [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
+- [Teku Dashboard JSON](https://grafana.com/grafana/dashboards/12199)
 
 ## Autostart the client on boot
 
