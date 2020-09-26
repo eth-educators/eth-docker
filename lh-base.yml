@@ -36,7 +36,7 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
     entrypoint: ${LH_VAL_ENTRYPOINT}
-    command: ["validator", "--server", "http://beacon:5052", "--graffiti", "${GRAFFITI}"]
+    command: ["validator", "--server", "http://beacon:5052", "--graffiti", "${GRAFFITI}", "--testnet", "${TESTNET}"]
     depends_on:
       - beacon
   validator-import:
