@@ -27,7 +27,7 @@ will need to associate the new user with the root user’s SSH key data.
 
 Finally, log out of `root` and log in as your `USERNAME`.
 
-## "Pull" the project
+## "Pull" the project and get on the spadina branch
 
 From a terminal - Powershell if you are installing the node on Windows - and logged in as the user
 you'll be using from now on, and assuming you'll be storing the project in your `$HOME`, run:
@@ -36,6 +36,7 @@ you'll be using from now on, and assuming you'll be storing the project in your 
 cd ~
 git clone https://github.com/eth2-educators/eth2-docker.git
 cd eth2-docker
+git checkout spadina
 ```
 
 ## Client choice
