@@ -17,12 +17,16 @@ services:
       - ${PRYSM_UDP_PORT}:12000/udp
     expose:
       - 4000
+      - 8080
     entrypoint: ${PRYSM_BN_ENTRYPOINT}
     command:
       - beacon-chain
       - --datadir
       - /var/lib/prysm/
-      - --rpc-host 0.0.0.0
+      - --rpc-host
+      - 0.0.0.0
+      - --monitoring-host
+      - 0.0.0.0
       - --p2p-host-ip
       - $$ClientIP
       - --http-web3provider
@@ -39,8 +43,12 @@ services:
     image: prysm
     volumes:
       - prysmvalidator-data:/var/lib/prysm
+    expose:
+      - 8081
     entrypoint: ${PRYSM_VAL_ENTRYPOINT}
     command: 
+      - --monitoring-host
+      - 0.0.0.0
       - --beacon-rpc-provider
       - beacon:4000
       - --graffiti
