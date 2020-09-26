@@ -54,6 +54,7 @@ services:
       - beacon:4000
       - --graffiti
       - ${GRAFFITI}
+      - --spadina
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
@@ -83,6 +84,7 @@ services:
       - import
       - --keys-dir
       - /var/lib/prysm/validator_keys
+      - --spadina
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}

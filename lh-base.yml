@@ -23,6 +23,8 @@ services:
       - ${TESTNET}
       - --eth1-endpoint
       - ${ETH1_NODE}
+      - --debug-level
+      - ${LOG_LEVEL}
   validator:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -53,7 +55,7 @@ services:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
     entrypoint: ${LH_VAL_ENTRYPOINT}
-    command: ["account", "validator", "import", "--directory", "/var/lib/lighthouse/validator_keys", "--validator-dir", "/var/lib/lighthouse"]
+    command: ["account", "validator", "import", "--directory", "/var/lib/lighthouse/validator_keys", "--validator-dir", "/var/lib/lighthouse", "--testnet", "${TESTNET}"]
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
