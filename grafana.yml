@@ -1,0 +1,34 @@
+version: "3"
+services:
+  prometheus:
+    restart: "no"
+    build:
+      context: ./prometheus
+    image: prometheus
+    volumes:
+      - prom-data:/prometheus
+    expose:
+      - 9090
+    depends_on:
+      - beacon
+      - node-exporter
+  node-exporter:
+    restart: "no"
+    image: prom/node-exporter
+    expose:
+      - 9100
+  grafana:
+    restart: "no"
+    image: grafana/grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    ports: 
+      - ${GRAFANA_PORT}:3000/tcp
+  eth2:
+    depends_on:
+      - grafana
+volumes:
+  grafana-data:
+  prom-data:

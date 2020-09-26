@@ -6,7 +6,7 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y git gcc g++ make cmake pkg-config libssl-dev
 
 WORKDIR /usr/src
-RUN git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git checkout "${BUILD_TARGET}" && make
+RUN git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:latest
