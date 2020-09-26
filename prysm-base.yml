@@ -45,7 +45,7 @@ services:
       - prysmvalidator-data:/var/lib/prysm
     expose:
       - 8081
-    entrypoint: ${PRYSM_VAL_ENTRYPOINT}
+    entrypoint: wait-for-beacon.sh beacon:4000 ${PRYSM_VAL_ENTRYPOINT}
     command: 
       - --monitoring-host
       - 0.0.0.0

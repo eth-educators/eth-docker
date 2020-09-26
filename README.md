@@ -1,4 +1,4 @@
-# eth2-docker v0.1
+# eth2-docker v0.1.1
 Unofficial and experimental docker build instructions for eth2 clients
 
 This project builds clients from source. A similar workflow for
