@@ -25,10 +25,9 @@ Please take a look.
 4. Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
 5. Import the validator keystore files generated in the previous step
 6. Run the client
-7. Optional: Wait until the eth1 node and beacon node are fully synchronized
-8. Finalize the deposit. This is not done within this project
-9. Set up Grafana dashboards (optional)
-10. Configure your system to start the eth2 node on boot (optional)
+7. Finalize the deposit. This is not done within this project
+8. Set up Grafana dashboards (optional)
+9. Configure your system to start the eth2 node on boot (optional)
 
 ## Step 1: Install prerequisites
 
@@ -63,7 +62,7 @@ This is also where you'd place your own keystore files if you already have some 
 
 They go into `.eth2/validator_keys` in this project directory, not directly under `$HOME`.
 
-## Step 5: reate a validator wallet by importing validator keys
+## Step 5: Create a validator wallet by importing validator keys
 
 **Warning** Import your validator key(s) to only *one* client.
 
@@ -102,16 +101,16 @@ sudo docker-compose run validator
 After providing the wallet password, use the key sequence Ctrl-p Ctrl-q to detach
 from the running container.
 
-## Step 7 and 8: Depositing
+## Step 7: Depositing
 
-You may wish to wait until the beacon node is fully synchronized before you deposit. Check
+Optional: You may wish to wait until the beacon node is fully synchronized before you deposit. Check
 its logs with `sudo docker-compose logs -f beacon`. This safe-guards against the validator being
 marked offline if your validator is activated before the beacon syncs.
 
 Once you are ready, you can send eth to the deposit contract by using
 the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
 
-## Step 9: Grafana Dashboards
+## Step 8: Grafana Dashboards
 
 I'll repeat /u/SomerEsat's instructions on how to set up Grafana. 
 - Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
@@ -126,7 +125,7 @@ the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load"
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
 - [Teku Dashboard JSON](https://grafana.com/grafana/dashboards/12199)
 
-## Step 10: Autostart the client on boot
+## Step 9: Autostart the client on boot
 
 Docker Desktop for Windows 10 and MacOS may do this automatically, TBD.
 
