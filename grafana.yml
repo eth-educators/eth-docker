@@ -7,10 +7,15 @@ services:
     image: prometheus
     volumes:
       - prom-data:/prometheus
+    environment:
+      - CLIENT=${COMPOSE_FILE}
     expose:
       - 9090
+    entrypoint: choose-config.sh
+    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
       - beacon
+      - validator
       - node-exporter
   node-exporter:
     restart: "no"
