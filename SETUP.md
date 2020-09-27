@@ -21,13 +21,9 @@ usermod -aG sudo USERNAME
 ```
 
 Optional: If you used SSH keys to connect to your Ubuntu instance via the root user you
-will need to associate the new user with the root user’s SSH key data.
+will need to [associate the new user with your public key(s)](#ssh-key-authentication-with-linux).
 
-`rsync --archive --chown=USERNAME:USERNAME ~/.ssh /home/USERNAME`
-
-Finally, log out of `root` and log in as your `USERNAME`.
-
-## "Pull" the project
+## "Clone" the project
 
 From a terminal - Powershell if you are installing the node on Windows - and logged in as the user
 you'll be using from now on, and assuming you'll be storing the project in your `$HOME`, run:
@@ -41,15 +37,19 @@ cd eth2-docker
 ## Client choice
 
 Please choose:
-- The eth2 client you wish to run
-  - Nimbus
-  - Lighthouse
-  - Prysm
-- Your source of eth1 data
-  - geth
-  - 3rd-party
-- Whether to run a slasher (not yet implemented)
-- Whether to run a grafana dashboard for monitoring
+* The eth2 client you wish to run
+  * Nimbus
+  * Lighthouse
+  * Prysm
+  * Teku
+* Your source of eth1 data
+  * geth
+  * 3rd-party
+* Whether to run a slasher (not yet implemented)
+* Whether to run a grafana dashboard for monitoring
+
+> Note: Teku is written in Java, which makes it memory-hungry. In its default configuration, you may
+> want a machine with 16 GiB of RAM. See .env for a parameter to restrict Teku to 4 GiB of RAM.
 
 First, copy the environment file.<br />
 `cp default.env .env`
@@ -79,9 +79,11 @@ geth with `:` between the file names.
 - `nimbus-base.yml` - Nimbus
 - `lh-base.yml` - Lighthouse
 - `prysm-base.yml` - Prysm
+- `teku-base.yml` - Teku
 - `geth.yml` - local geth eth1 chain node
 - `grafana.yml` - grafana dashboard for Lighthouse or Prysm
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
+- `teku-grafana.yml` - grafana dashboard for Teku
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:grafana.yml`
@@ -98,6 +100,7 @@ to your node if behind a home router, or allowed in via the VPS firewall.
 - 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
 - 13000/tcp - Prysm beacon node. Open to Internet.
 - 12000/udp - Prysm beacon node. Open to Internet.
+- 9000 tcp/udp - Teku beacon node. Open to Internet. Note this is the same as Lighthouse.
 - 3000/tcp - Grafana. **Not** open to Internet, allow locally only. It is insecure http.
 - 22/tcp - SSH. Only open to Internet if this is a remote server (VPS). If open to Internet, configure
   SSH key authentication.
@@ -109,12 +112,17 @@ On Ubuntu, the host firewall `ufw` can be used to only allow specific ports inbo
   * `sudo ufw allow 30303` will allow traffic for geth to port 30303, both tcp and udp.
   * `sudo ufw allow 3000/tcp` will allow traffic to the Grafana dashboard
   * Nimbus
-    * `sudo ufw allow 19000` will allow Nimbus beacon traffic, both tcp and udp.
+    * `sudo ufw allow 19000` will allow Nimbus beacon traffic, both tcp and udp
   * Lighthouse
     * `sudo ufw allow 9000` will allow Lighthouse beacon traffic, both tcp and udp
   * Prysm
     * `sudo ufw allow 13000/tcp && sudo ufw allow 12000/udp` will allow Prysm beacon traffic
-* Enable the firewall and check the rules you created
+  * Teku
+    * `sudo ufw allow 9000` will allow Teku beacon traffic, both tcp and udp
+* Check the rules you created and verify that you are allowing SSH. You can **lock yourself out** if
+you don't allow your SSH port in. `allow OpenSSH` is sufficient for the default SSH port.
+  * `sudo ufw show added`
+* Enable the firewall and see numbered rules once more
   * `sudo ufw enable`
   * `sudo ufw status numbered`
 
@@ -148,12 +156,23 @@ to already be installed. If it isn't, follow that link and install it.
 From your MacOS/Linux Terminal or Windows Powershell, check whether you have an ssh key. You expect an id_TYPE.pub
 file when running `ls ~/.ssh`.
 
+### Create an SSH key pair
+
 Create a key if you need to, or if you don't have `id_ed25519.pub` but prefer that cipher:<br />
 `ssh-keygen -t ed25519`
+> Bonus: On Linux, you can also include a timestamp with your key, like so:<br />
+> `ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)-$(date -I)" -f ~/.ssh/id_ed25519`
 
-Output the contents of your public key file to terminal and copy, here for `id_ed25519.pub`:<br />
-`cat ~/.ssh/id_ed25519.pub`
+### MacOS/Linux, copy public key
 
+ If you are on MacOS or Linux, you can then copy this new public key to the Linux server:<br />
+`ssh-copy-id USERNAME@HOST`
+
+### Windows 10, copy public key
+
+On Windows 10, or if that command is not available, output the contents of your public key file
+to terminal and copy, here for `id_ed25519.pub`:<br />
+`cat ~/.ssh/id_ed25519.pub`<br
 On your Linux server, logged in as your non-root user, add this public key to your account:<br />
 ```
 mkdir ~/.ssh
@@ -161,8 +180,11 @@ nano ~/.ssh/authorized_keys
 ```
 And paste in the public key.
 
+### Test login and turn off password authentication
+
 Test your login. `ssh user@serverIP` from your client's MacOS/Linux Terminal or Windows Powershell should log you in
-directly without prompting for a password.<br />
+directly without prompting for a password.
+
 If you are still prompted for a password, resolve that first. Your ssh client should show you errors in that case.
 On Windows 10 in particular, if the ssh client complains about the "wrong permissions" on the `.ssh` directory or
 `.ssh/config` file, go into Explorer, find the `C:\Users\USERNAME\.ssh` directory, edit its Properties->Security, click

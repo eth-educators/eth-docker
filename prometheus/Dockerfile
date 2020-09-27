@@ -3,6 +3,7 @@ FROM prom/prometheus
 COPY ./lh-prom.yml /etc/prometheus
 COPY ./prysm-prom.yml /etc/prometheus
 COPY ./nimbus-prom.yml /etc/prometheus
+COPY ./teku-prom.yml /etc/prometheus
 COPY ./prometheus.yml /etc/prometheus
 COPY ./choose-config.sh /usr/local/bin/choose-config.sh
 
