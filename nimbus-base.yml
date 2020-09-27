@@ -1,0 +1,67 @@
+version: "3"
+services:
+  beacon:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./nimbus
+      args:
+        - BUILD_TARGET=${NIM_BUILD_TARGET}
+        - USER=${NIM_USER}
+        - UID=${LOCAL_UID}
+        - METRICS=${NIM_METRICS}
+    image: nimbus
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+    ports:
+      - ${NIM_PORT}:19000/tcp
+      - ${NIM_PORT}:19000/udp
+    entrypoint:
+      - /usr/local/bin/beacon_node
+      - --data-dir=/var/lib/nimbus
+      - --non-interactive
+      - --log-file=/var/lib/nimbus/beacon_node.log
+      - --network=${TESTNET}
+      - --web3-url=${ETH1_NODE}
+      - --graffiti=${GRAFFITI}
+      - --log-level=${LOG_LEVEL}
+  validator-import:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    image: nimbus
+    build:
+      context: ./nimbus
+      args:
+        - BUILD_TARGET=${NIM_BUILD_TARGET}
+        - USER=${NIM_USER}
+        - UID=${LOCAL_UID}
+        - METRICS=${NIM_METRICS}
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/nimbus/validator_keys
+    entrypoint: ["/usr/local/bin/beacon_node", "deposits", "import", "--data-dir=/var/lib/nimbus", "--log-file=/var/lib/nimbus/beacon_node.log", "--network=${TESTNET}", "/var/lib/nimbus/validator_keys"]
+  deposit-cli:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./eth2.0-deposit-cli
+      args:
+        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - USER=${DEPCLI_USER}
+        - UID=${LOCAL_UID}
+    image: eth2.0-deposit-cli
+    volumes:
+      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
+    entrypoint: ${DEPCLI_ENTRYPOINT}
+    command:
+      - --num_validators
+      - ${NUMVAL}
+      - --chain
+      - ${DEPOSIT_CHAIN}
+  eth2:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - beacon
+volumes:
+  nimbus-data:
