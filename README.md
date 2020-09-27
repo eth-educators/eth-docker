@@ -1,8 +1,8 @@
-# eth2-docker v0.1.2
+# eth2-docker v0.1.3
 Unofficial and experimental docker build instructions for eth2 clients
 
 **Short-lived spadina branch**<br />
-With defaults to run Nimbus, Lighthouse and Prysm nodes on spadina.
+With defaults to run Nimbus, Lighthouse, Prysm and Teku nodes on spadina.
 
 **Nimbus Caveats**
 
