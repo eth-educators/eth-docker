@@ -9,12 +9,17 @@ WORKDIR /usr/src
 RUN git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:latest
+FROM debian:buster-slim
 
 ARG USER
 ARG UID
 
-RUN apt-get update && apt-get install -y ca-certificates wget
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libssl-dev \
+  ca-certificates \
+  wget \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Grab dockerize so beacon can wait for geth
 ENV DOCKERIZE_VERSION v0.6.1

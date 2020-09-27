@@ -1,4 +1,4 @@
-# eth2-docker v0.1.1
+# eth2-docker v0.1.2
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -14,6 +14,7 @@ binary images is a TODO, as long as it does not duplicate work
 by client teams.
 
 Currently supported clients:
+- Nimbus
 - Lighthouse
 - Prysm
 
