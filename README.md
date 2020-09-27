@@ -30,6 +30,7 @@ Currently supported clients:
 - Nimbus
 - Lighthouse
 - Prysm
+- Teku
 
 Currently supported optional components:
 - geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
@@ -116,7 +117,7 @@ To start the client:
 ```
 sudo docker-compose up -d eth2
 ```
-> **Nimbus**: Beacon and validator run in the same process, there is only one container for both
+> **Nimbus and Teku**: Beacon and validator run in the same process, there is only one container for both
 
 If, however, you chose not to store the wallet password with the validator, you will need
 to bring the beacon and, if in use, geth, up individually instead, then "run"
@@ -156,7 +157,7 @@ the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load"
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
-- [Teku Dashboard JSON](https://grafana.com/grafana/dashboards/12199)
+- [Teku Dashboard](https://grafana.com/grafana/dashboards/12199)
 
 ## Step 9: Autostart the client on boot
 
@@ -166,10 +167,10 @@ For Linux systems that use systemd, e.g. Ubuntu, you'd create a systemd
 service. 
 
 - Copy the file: `sudo cp sample-systemd /etc/systemd/system/eth2.service`
-- Edit the file `/etc/systemd/system/eth2.service`
+- Edit the file: `sudo nano /etc/systemd/system/eth2.service`
 - Adjust the `WorkingDirectory` to the directory you stored the project in.
 - Adjust the path to `docker-compose` to be right for your system, see `which docker-compose`
-- Test the service: `sudo systemctl daemon-reload`, `sudo systemctl start eth2`, check `docker ps` to
+- Test the service: `sudo systemctl daemon-reload`, `sudo systemctl start eth2`, check `sudo docker ps` to
 see all expected containers are up
 - Enable the service: `sudo systemctl enable eth2`
 
@@ -258,6 +259,9 @@ If a service is not starting and you want to bring up its container manually, so
 `sudo docker-compose down`, tear down everything first.<br />
 `sudo docker ps`, make sure everything is down.<br />
 
+If you need to see the files that are being stored by services such as beacon, validator, eth1 node, grafana, &c, in Ubuntu Linux you can find
+those in /var/lib/docker/volumes. `sudo bash` to invoke a shell that has access.
+
 **HERE BE DRAGONS** You can totally run N copies of an image manually and then successfully start a validator in each and get yourself slashed.
 Take extreme care.
 
@@ -269,9 +273,9 @@ the client images currently supplied are `lighthouse` and `prysm`.<br />
 
 # Guiding principles:
 
-- Reduce the attack surface of the client where this is feasible. Not
-  all clients lend themselves to be statically compiled and running
-  in "scratch"
+- Reduce the attack surface of the client as much as feasible.
+  None of the eth2 clients lend themselves to be statically compiled and running
+  in "scratch" containers, alas.
 - Guide users to good key management as much as possible
 - Create something that makes for a good user experience and guides people new to docker and Linux as much as feasible
 
