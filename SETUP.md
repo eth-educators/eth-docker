@@ -81,7 +81,7 @@ geth with `:` between the file names.
 - `prysm-base.yml` - Prysm
 - `geth.yml` - local geth eth1 chain node
 - `grafana.yml` - grafana dashboard for Lighthouse or Prysm
-- `nim-grafana.yml` - grafana dashboard for Nimbus
+- `nimbus-grafana.yml` - grafana dashboard for Nimbus
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:grafana.yml`
