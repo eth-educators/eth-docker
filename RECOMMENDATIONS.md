@@ -101,7 +101,9 @@ For more on withdrawal key security, read this article: https://www.attestant.io
 See the client team recommendations. Generally, however, 8 GiB of RAM is considered
 a minimum, and 16 GiB is recommended. 2 or 4 CPU cores, and an SSD for storage
 because the node databases are so IOPS-heavy. The eth1 node (geth) would require
-around 300GB of storage by itself. The beacon node database is small, around 11GB.
+around 300GB of storage by itself. The beacon node database is small, around 11GB,
+but we don't know what growth will look like from phase 1.5 and 2 on. If
+you are running a slasher, that might be another 100 to 300GB by itself.
 
 Two home server builds that I like and am happy to recommend are below. Both support
 IPMI, which means they can be managed and power-cycled remotely and need neither
@@ -110,17 +112,25 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 
 **Intel**
 
-SuperMicro X11SCL-IF(-O) or X11SCL-F(-O)
-Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
-16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
-1TB M.2 NVMe SSD, e.g. Samsung 970 EVO
+mITX: 
+- SuperMicro X11SCL-IF(-O)
+uATX:
+- SuperMicro X11SCL-F(-O)
+Common components:
+- Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
+- 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
+- 1TB M.2 NVMe SSD or SATA SSD, e.g. Samsung 970 EVO or Samsung 860 EVO
 
 **AMD**
 
-AsRock Rack X470D4U or X570D4U (if you prefer mITX, X570D4I-2T)
-AMD Ryzen CPU, but not APU (APUs do not support ECC)
-16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
-1TB M.2 NVMe SSD, e.g. Samsung 970 EVO
+mITX:
+- AsRock Rack X570D4I-2T
+uATX:
+- AsRock Rack X470D4U (SATA only) or X570D4U (NVMe)
+Common components:
+- AMD Ryzen CPU, but not APU (APUs do not support ECC)
+- 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
+- 1TB M.2 NVMe SSD or SATA SSD, e.g. Samsung 970 EVO or Samsung 860 EVO
 
 Plus, obviously, a case, PSU, case fans. Pick your own. Well-liked
 options are Node 304 (mITX) and Node 804 (uATX) with Seasonic PSUs,
@@ -130,6 +140,14 @@ On SSD size, 1TB is very, very conservative and assumes you are running
 an eth1 node as well, which currently takes about 230GB and keeps
 growing. The eth2 db is expected to be far smaller, though exact figures
 won't be seen until Phase 1.5 and 2.
+
+You'll want decent write endurance. The two models mentioned here have 600TB
+write endurance each. Intel is also well-liked, their data center SSDs
+are quite reliable, if a bit pricey.
+
+You may also consider getting two SSDs and running them in a software mirror
+(RAID-1) setup, in the OS. That way, data loss becomes less likely for the
+chain databases, reducing potential down time because of hardware issues.
 
 Why ECC? This is a personal preference. The cost difference is minimal,
 and the potential time savings huge. An eth2 client does not require

@@ -43,13 +43,14 @@ git checkout spadina
 
 Please choose:
 - The eth2 client you wish to run
+  - Nimbus
   - Lighthouse
   - Prysm
 - Your source of eth1 data
   - geth
   - 3rd-party
 - Whether to run a slasher (not yet implemented)
-- Whether to run a grafana dashboard for monitoring (not yet implemented)
+- Whether to run a grafana dashboard for monitoring
 
 First, copy the environment file.<br />
 `cp default.env .env`
@@ -76,10 +77,12 @@ Work to support dynamic DNS would be welcome.
 
 Set the `COMPOSE_FILE` string depending on which client you are going to use. Add optional services like
 geth with `:` between the file names.
+- `nimbus-base.yml` - Nimbus
 - `lh-base.yml` - Lighthouse
 - `prysm-base.yml` - Prysm
 - `geth.yml` - local geth eth1 chain node
-- `grafana.yml` - grafana dashboard
+- `grafana.yml` - grafana dashboard for Lighthouse or Prysm
+- `nimbus-grafana.yml` - grafana dashboard for Nimbus
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:grafana.yml`
@@ -92,7 +95,8 @@ Ports that I mention should be "Open to Internet" need to be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
 - 30303 tcp/udp - local eth1 node, geth or openethereum. Open to Internet.
-- 9000 tcp/udp - lighthouse beacon node. Open to Internet.
+- 19000 tcp/udp - Nimbus beacon node. Open to Internet.
+- 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
 - 13000/tcp - Prysm beacon node. Open to Internet.
 - 12000/udp - Prysm beacon node. Open to Internet.
 - 3000/tcp - Grafana. **Not** open to Internet, allow locally only. It is insecure http.
@@ -100,13 +104,20 @@ to your node if behind a home router, or allowed in via the VPS firewall.
   SSH key authentication.
 
 On Ubuntu, the host firewall `ufw` can be used to only allow specific ports inbound.
-- Document the ports you need, then allow them to come in. Some examples below.
-  - `sudo ufw allow OpenSSH` will allow ssh inbound
-  - `sudo ufw allow 30303` will allow traffic to port 30303, both tcp and udp.
-  - `sudo ufw allow 13000/tcp` will allow traffic to port 13000, tcp only
-- Enable the firewall and check the rules you created
-  - `sudo ufw enable`
-  - `sudo ufw status numbered`
+* Document the ports you need, then allow them to come in. Adjust as needed if you are
+  not using default ports.
+  * `sudo ufw allow OpenSSH` will allow ssh inbound
+  * `sudo ufw allow 30303` will allow traffic for geth to port 30303, both tcp and udp.
+  * `sudo ufw allow 3000/tcp` will allow traffic to the Grafana dashboard
+  * Nimbus
+    * `sudo ufw allow 19000` will allow Nimbus beacon traffic, both tcp and udp.
+  * Lighthouse
+    * `sudo ufw allow 9000` will allow Lighthouse beacon traffic, both tcp and udp
+  * Prysm
+    * `sudo ufw allow 13000/tcp && sudo ufw allow 12000/udp` will allow Prysm beacon traffic
+* Enable the firewall and check the rules you created
+  * `sudo ufw enable`
+  * `sudo ufw status numbered`
 
 ## Time synchronization on Linux
 

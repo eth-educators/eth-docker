@@ -1,19 +1,37 @@
-# eth2-docker v0.1.1
+# eth2-docker v0.1.2
 Unofficial and experimental docker build instructions for eth2 clients
 
 **Short-lived spadina branch**<br />
-With defaults to run Prysm nodes on spadina.
-Lighthouse has a bug on spadina as of 9/26, check in with their github to see status.
+With defaults to run Nimbus, Lighthouse and Prysm nodes on spadina.
+
+**Nimbus Caveats**
+
+Nimbus requires geth to be synced before the beacon will start. You can
+work around this by starting the entire "stack" with `sudo docker-compose up -d eth2`,
+and repeating that command when geth has caught up to the eth1 chain head.
+
+As of 9/27 noon EDT, Nimbus does not work with 3rd-party eth1 providers and spadina,
+because it tries to use http:// even when https:// is specified. This may get resolved,
+test with the most recent release by rebuilding: `sudo docker-compose build --no-cache beacon`
+
+## Acknowledgements
+
+Parts of this guide are based on the Linux [guides](https://medium.com/@SomerEsat) written by [Somer Esat](https://twitter.com/SomerEsat).
+
+Without their previous work, this project would not exist.
+
+## Supported clients
 
 This project builds clients from source. A similar workflow for
 binary images is a TODO, as long as it does not duplicate work
 by client teams.
 
-Currently included clients:
+Currently supported clients:
+- Nimbus
 - Lighthouse
 - Prysm
 
-Currently included optional components:
+Currently supported optional components:
 - geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
   your eth2 beacon node, so you can "propose" blocks.
 - Grafana dashboard
@@ -87,6 +105,7 @@ Import the validator key(s) to the validator client:
 >   you will need to edit `prysm-base.yml` and comment out the wallet-password-file
 >   parameter
 
+
 If you choose to save the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator and start it interactively. Determine your own risk profile.
@@ -97,6 +116,7 @@ To start the client:
 ```
 sudo docker-compose up -d eth2
 ```
+> **Nimbus**: Beacon and validator run in the same process, there is only one container for both
 
 If, however, you chose not to store the wallet password with the validator, you will need
 to bring the beacon and, if in use, geth, up individually instead, then "run"
@@ -112,7 +132,13 @@ from the running container.
 
 ## Step 7: Depositing
 
+<<<<<<< HEAD
 For spadina genesis, you want to deposit right away so you are part of the genesis event.
+=======
+Optional: You may wish to wait until the beacon node is fully synchronized before you deposit. Check
+its logs with `sudo docker-compose logs -f beacon`. This safe-guards against the validator being
+marked offline if your validator is activated before the beacon syncs.
+>>>>>>> master
 
 Once you are ready, you can send eth to the deposit contract by using
 the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Spadina launchpad](https://spadina.launchpad.ethereum.org/).
@@ -249,4 +275,3 @@ the client images currently supplied are `lighthouse` and `prysm`.<br />
 - Guide users to good key management as much as possible
 - Create something that makes for a good user experience and guides people new to docker and Linux as much as feasible
 
-LICENSE: MIT

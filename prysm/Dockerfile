@@ -9,12 +9,17 @@ WORKDIR /go/src
 RUN git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //beacon-chain:beacon-chain && bazel build --config=release //validator:validator && bazel build --config=release //slasher:slasher
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:buster
+FROM debian:buster-slim
 
 ARG USER
 ARG UID
 
-RUN apt-get update && apt-get install -y ca-certificates curl wget
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  wget \
+  curl \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \

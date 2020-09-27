@@ -6,6 +6,7 @@
 case "$CLIENT" in
   *lh-base* ) conffile=lh-prom.yml ;;
   *prysm-base* ) conffile=prysm-prom.yml ;;
+  *nimbus-base* ) conffile=nimbus-prom.yml ;;
   * ) conffile=prometheus.yml ;;
 esac
 
