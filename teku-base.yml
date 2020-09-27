@@ -1,0 +1,68 @@
+version: "3"
+services:
+  beacon:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./teku
+      args:
+        - BUILD_TARGET=${TEKU_BUILD_TARGET}
+        - USER=${TEKU_USER}
+        - UID=${LOCAL_UID}
+    image: teku
+    volumes:
+      - teku-data:/var/lib/teku
+    environment:
+      - JAVA_OPTS=${TEKU_LOW_MEM}
+    ports:
+      - ${TEKU_PORT}:9000/tcp
+      - ${TEKU_PORT}:9000/udp
+    entrypoint:
+      - /usr/local/teku/bin/teku
+      - --data-path=/var/lib/teku
+      - --log-destination=CONSOLE
+      - --network=${TESTNET}
+      - --eth1-endpoint=${ETH1_NODE}
+      - --validators-keystore-locking-enabled=true
+      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validators-graffiti=${GRAFFITI}
+      - --logging=${LOG_LEVEL}
+  validator-import:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    image: teku
+    build:
+      context: ./teku
+      args:
+        - BUILD_TARGET=${TEKU_BUILD_TARGET}
+        - USER=${TEKU_USER}
+        - UID=${LOCAL_UID}
+    volumes:
+      - teku-data:/var/lib/teku
+      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/teku/validator_keys
+    entrypoint: copy-teku-validator-keys.sh
+  deposit-cli:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./eth2.0-deposit-cli
+      args:
+        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - USER=${DEPCLI_USER}
+        - UID=${LOCAL_UID}
+    image: eth2.0-deposit-cli
+    volumes:
+      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
+    entrypoint: ${DEPCLI_ENTRYPOINT}
+    command:
+      - --num_validators
+      - ${NUMVAL}
+      - --chain
+      - ${DEPOSIT_CHAIN}
+  eth2:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - beacon
+volumes:
+  teku-data:
