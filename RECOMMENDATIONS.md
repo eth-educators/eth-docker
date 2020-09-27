@@ -115,7 +115,7 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 * mITX: 
   * SuperMicro X11SCL-IF(-O)
 * uATX:
-  * SuperMicro X11SCL-F(-O)
+  * SuperMicro X11SCL-F(-O) or X11SCH-F(-O)
 * Common components:
   * Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
   * 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
@@ -142,8 +142,8 @@ growing. The eth2 db is expected to be far smaller, though exact figures
 won't be seen until Phase 1.5 and 2.
 
 You'll want decent write endurance. The two models mentioned here have 600TB
-write endurance each. Intel is also well-liked, their data center SSDs
-are quite reliable, if a bit pricey.
+write endurance each.<br />
+Intel SSDs are also well-liked, their data center SSDs are quite reliable, if a bit pricey.
 
 You may also consider getting two SSDs and running them in a software mirror
 (RAID-1) setup, in the OS. That way, data loss becomes less likely for the
