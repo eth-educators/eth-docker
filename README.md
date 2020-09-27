@@ -102,6 +102,7 @@ To start the client:
 ```
 sudo docker-compose up -d eth2
 ```
+> **Nimbus**: Beacon and validator run in the same process, there is only one container for both
 
 If, however, you chose not to store the wallet password with the validator, you will need
 to bring the beacon and, if in use, geth, up individually instead, then "run"
