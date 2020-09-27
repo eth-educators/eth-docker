@@ -112,25 +112,25 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 
 **Intel**
 
-mITX: 
-- SuperMicro X11SCL-IF(-O)
-uATX:
-- SuperMicro X11SCL-F(-O)
-Common components:
-- Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
-- 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
-- 1TB M.2 NVMe SSD or SATA SSD, e.g. Samsung 970 EVO or Samsung 860 EVO
+* mITX: 
+  * SuperMicro X11SCL-IF(-O)
+* uATX:
+  * SuperMicro X11SCL-F(-O)
+* Common components:
+  * Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
+  * 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
+  * 1TB M.2 NVMe SSD or SATA SSD, e.g. Samsung 970 EVO or Samsung 860 EVO
 
 **AMD**
 
-mITX:
-- AsRock Rack X570D4I-2T
-uATX:
-- AsRock Rack X470D4U (SATA only) or X570D4U (NVMe)
-Common components:
-- AMD Ryzen CPU, but not APU (APUs do not support ECC)
-- 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
-- 1TB M.2 NVMe SSD or SATA SSD, e.g. Samsung 970 EVO or Samsung 860 EVO
+* mITX:
+  * AsRock Rack X570D4I-2T
+* uATX:
+  * AsRock Rack X470D4U (SATA only) or X570D4U (NVMe)
+* Common components:
+  * AMD Ryzen CPU, but not APU (APUs do not support ECC)
+  * 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
+  * 1TB M.2 NVMe SSD or SATA SSD, e.g. Samsung 970 EVO or Samsung 860 EVO
 
 Plus, obviously, a case, PSU, case fans. Pick your own. Well-liked
 options are Node 304 (mITX) and Node 804 (uATX) with Seasonic PSUs,
