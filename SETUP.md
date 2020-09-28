@@ -38,10 +38,10 @@ cd eth2-docker
 
 Please choose:
 * The eth2 client you wish to run
-  * Nimbus
   * Lighthouse
   * Prysm
   * Teku
+  * Nimbus - as of 9/28 requires an archive-mode geth or remote archive like goerli.infura.io
 * Your source of eth1 data
   * geth
   * 3rd-party
@@ -81,12 +81,36 @@ geth with `:` between the file names.
 - `prysm-base.yml` - Prysm
 - `teku-base.yml` - Teku
 - `geth.yml` - local geth eth1 chain node
+- `geth-archive.yml` - local geth node in full archive mode, required for Nimbus
 - `grafana.yml` - grafana dashboard for Lighthouse or Prysm
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:grafana.yml`
+
+In this setup, clients are isolated from each other. Each run their own validator, and if geth
+is in use, their own geth. This is perfect for running a single client, or multiple isolated
+clients each in their own directory.
+
+If you want to run multiple isolated clients, just clone this project into a new directory for
+each. This is perfect for running medalla and spadina in parallel, for example.
+
+Note that a "full archive" geth takes ~80GB for goerli testnet and ~2TB for mainnet.
+
+### Optional: Advanced setup with multiple beacons, shared geth and Vouch client
+
+**Work in progress**, this is not currently functional
+
+In this setup, local eth1 node(s) and local beacons would run each in their own directory,
+and connect via a shared network or the Internet. beacon nodes could be configured to use their own validators
+or a shared validator-client like Vouch. This is very much a work-in-progress and not ready even
+for testing in this release. It will be supported on Linux only, as docker-compose's host network
+behavior differs between MacOS/Windows and Linux, and an advanced setup like this is not likely to run
+on a local user's MacOS/Windows machine.
+
+- `geth-shared.yml` - local geth node, sharable between multiple beacons
+- `geth-archive-shared.yml` - local geth node in full archive mode, sharable between multiple beacons
 
 ## Firewalling
 
