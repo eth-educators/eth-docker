@@ -1,4 +1,4 @@
-# eth2-docker v0.1.3
+# eth2-docker v0.1.4
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -21,12 +21,12 @@ Currently supported clients:
 
 Currently supported optional components:
 - geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
-  your eth2 beacon node, so you can "propose" blocks.
+  your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - Grafana dashboard
 
-**Note**: As of 9/28/2020, Nimbus requires an "archive" source of eth1 chain data.
-This can be a local geth in archive mode, or a 3rd-party provider. Please see [SETUP](SETUP.md)
-for details.
+**Note**: As of 9/30/2020, Nimbus requires an "archive" source of eth1 chain data.
+This can be a local geth in archive mode via ws://, or a 3rd-party provider via wss://. 
+Please see [SETUP](SETUP.md) for details.
 
 # USAGE
 

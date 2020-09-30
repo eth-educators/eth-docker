@@ -13,14 +13,22 @@ services:
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
     ports:
-      - ${LH_PORT}:9000/tcp
-      - ${LH_PORT}:9000/udp
+      - ${LH_PORT}:${LH_PORT}/tcp
+      - ${LH_PORT}:${LH_PORT}/udp
     expose:
       - 5052
-    entrypoint: wait-for-eth1.sh ${ETH1_NODE} ${LH_BN_ENTRYPOINT}
-    command:
+    entrypoint: 
+      - lighthouse
+      - bn
+      - --datadir
+      - /var/lib/lighthouse
+      - --http
+      - --http-address
+      - 0.0.0.0
       - --testnet
       - ${TESTNET}
+      - --port
+      - ${LH_PORT}
       - --eth1-endpoint
       - ${ETH1_NODE}
       - --debug-level
@@ -37,8 +45,19 @@ services:
     image: lighthouse
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-    entrypoint: ${LH_VAL_ENTRYPOINT}
-    command: ["validator", "--server", "http://beacon:5052", "--graffiti", "${GRAFFITI}", "--testnet", "${TESTNET}", "--debug-level", "${LOG_LEVEL}"]
+    entrypoint:
+      - lighthouse
+      - validator
+      - --datadir
+      - /var/lib/lighthouse
+      - --server
+      - http://beacon:5052
+      - --graffiti
+      - ${GRAFFITI}
+      - --testnet
+      - ${TESTNET}
+      - --debug-level
+      - ${LOG_LEVEL}
     depends_on:
       - beacon
   validator-import:
@@ -54,8 +73,20 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
-    entrypoint: ${LH_VAL_ENTRYPOINT}
-    command: ["account", "validator", "import", "--directory", "/var/lib/lighthouse/validator_keys", "--validator-dir", "/var/lib/lighthouse", "--testnet", "${TESTNET}", "--reuse-password"]
+    entrypoint:
+      - query-lh-validator-passwords.sh
+      - lighthouse
+      - account
+      - validator
+      - import
+      - --datadir
+      - /var/lib/lighthouse
+      - --directory
+      - /var/lib/lighthouse/validator_keys
+      - --validator-dir
+      - /var/lib/lighthouse
+      - --testnet
+      - ${TESTNET}
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -73,7 +104,7 @@ services:
       - --num_validators
       - ${NUMVAL}
       - --chain
-      - ${DEPOSIT_CHAIN}
+      - ${TESTNET}
   eth2:
     image: tianon/true
     restart: "no"

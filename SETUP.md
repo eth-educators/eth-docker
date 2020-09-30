@@ -82,7 +82,7 @@ geth with `:` between the file names.
 - `teku-base.yml` - Teku
 - `geth.yml` - local geth eth1 chain node
 - `geth-archive.yml` - local geth node in full archive mode, required for Nimbus
-- `grafana.yml` - grafana dashboard for Lighthouse or Prysm
+- `lh-prysm-grafana.yml` - grafana dashboard for Lighthouse or Prysm
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
@@ -94,9 +94,13 @@ is in use, their own geth. This is perfect for running a single client, or multi
 clients each in their own directory.
 
 If you want to run multiple isolated clients, just clone this project into a new directory for
-each. This is perfect for running medalla and spadina in parallel, for example.
+each. This is great for running medalla and zinken in parallel, for example.
 
-Note that a "full archive" geth takes ~80GB for goerli testnet and ~2TB for mainnet.
+> Nimbus: Nimbus as of 9/30/2020 requires a "full archive" source of eth1 chain data.
+> It should work with a 3rd party via wss://, though possibly not https://, and a local
+> archive node via ws://, though possibly not http://. Nimbus' capabilities will evolve,
+> check with the Nimbus Discord for its current state.
+> Note that a "full archive" geth takes ~60GB for goerli testnet and ~1.3TB for mainnet.
 
 ### Optional: Advanced setup with multiple beacons, shared geth and Vouch client
 
@@ -120,11 +124,11 @@ Ports that I mention should be "Open to Internet" need to be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
 - 30303 tcp/udp - local eth1 node, geth or openethereum. Open to Internet.
-- 19000 tcp/udp - Nimbus beacon node. Open to Internet.
 - 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
 - 13000/tcp - Prysm beacon node. Open to Internet.
 - 12000/udp - Prysm beacon node. Open to Internet.
 - 9000 tcp/udp - Teku beacon node. Open to Internet. Note this is the same as Lighthouse.
+- 9000 tcp/udp - Nimbus beacon node. Open to Internet. Note this is the same as Lighthouse.
 - 3000/tcp - Grafana. **Not** open to Internet, allow locally only. It is insecure http.
 - 22/tcp - SSH. Only open to Internet if this is a remote server (VPS). If open to Internet, configure
   SSH key authentication.
@@ -135,14 +139,14 @@ On Ubuntu, the host firewall `ufw` can be used to only allow specific ports inbo
   * `sudo ufw allow OpenSSH` will allow ssh inbound
   * `sudo ufw allow 30303` will allow traffic for geth to port 30303, both tcp and udp.
   * `sudo ufw allow 3000/tcp` will allow traffic to the Grafana dashboard
-  * Nimbus
-    * `sudo ufw allow 19000` will allow Nimbus beacon traffic, both tcp and udp
   * Lighthouse
     * `sudo ufw allow 9000` will allow Lighthouse beacon traffic, both tcp and udp
   * Prysm
     * `sudo ufw allow 13000/tcp && sudo ufw allow 12000/udp` will allow Prysm beacon traffic
   * Teku
     * `sudo ufw allow 9000` will allow Teku beacon traffic, both tcp and udp
+  * Nimbus
+    * `sudo ufw allow 9000` will allow Nimbus beacon traffic, both tcp and udp
 * Check the rules you created and verify that you are allowing SSH. You can **lock yourself out** if
 you don't allow your SSH port in. `allow OpenSSH` is sufficient for the default SSH port.
   * `sudo ufw show added`

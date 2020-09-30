@@ -41,8 +41,8 @@ RUN adduser \
 RUN mkdir -p /var/lib/lighthouse && chown ${USER}:${USER} /var/lib/lighthouse
 # Copy executable
 COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
-# Script to be able to wait for eth1 node to be up
-COPY ./wait-for-eth1.sh /usr/local/bin
+# Script to query whether all validator key passwords are the same
+COPY ./query-lh-validator-passwords.sh /usr/local/bin
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
