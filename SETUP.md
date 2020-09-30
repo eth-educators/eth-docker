@@ -87,7 +87,7 @@ geth with `:` between the file names.
 - `teku-grafana.yml` - grafana dashboard for Teku
 
 For example, Lighthouse with local geth and grafana:
-`COMPOSE_FILE=lh-base.yml:geth.yml:grafana.yml`
+`COMPOSE_FILE=lh-base.yml:geth.yml:lh-prysm-grafana.yml`
 
 In this setup, clients are isolated from each other. Each run their own validator, and if geth
 is in use, their own geth. This is perfect for running a single client, or multiple isolated
@@ -99,8 +99,10 @@ each. This is great for running medalla and zinken in parallel, for example.
 > Nimbus: Nimbus as of 9/30/2020 requires a "full archive" source of eth1 chain data.
 > It should work with a 3rd party via wss://, though possibly not https://, and a local
 > archive node via ws://, though possibly not http://. Nimbus' capabilities will evolve,
-> check with the Nimbus Discord for its current state.
-> Note that a "full archive" geth takes ~60GB for goerli testnet and ~1.3TB for mainnet.
+> check with the Nimbus Discord for its current state.<br />
+> Note that a "full archive" geth takes ~60GB for goerli testnet and ~1.3TB for mainnet.<br />
+> As of the same date, Nimbus does not detect its external IP via P2P protocol. It will
+> still work, but may take (much) longer to connect to peers.
 
 ### Optional: Advanced setup with multiple beacons, shared geth and Vouch client
 
