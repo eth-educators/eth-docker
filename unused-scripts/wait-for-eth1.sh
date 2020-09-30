@@ -15,4 +15,4 @@ case "$host" in
     ;;
 esac
 shift
-dockerize -wait $target "$@"
+dockerize -wait $target -timeout 60s "$@"

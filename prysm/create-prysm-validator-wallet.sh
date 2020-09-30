@@ -1,5 +1,7 @@
 #!/bin/bash
 # This will be passed arguments that start the validator
+echo When asked for a wallet directory below, enter /var/lib/prysm
+echo
 "$@"
 
 if [ $? -ne 0 ]; then

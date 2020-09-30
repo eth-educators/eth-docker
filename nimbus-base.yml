@@ -14,13 +14,15 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
     ports:
-      - ${NIM_PORT}:19000/tcp
-      - ${NIM_PORT}:19000/udp
+      - ${NIM_PORT}:${NIM_PORT}/tcp
+      - ${NIM_PORT}:${NIM_PORT}/udp
     entrypoint:
       - /usr/local/bin/beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --log-file=/var/lib/nimbus/beacon_node.log
+      - --tcp-port=${NIM_PORT}
+      - --udp-port=${NIM_PORT}
       - --network=${TESTNET}
       - --web3-url=${ETH1_NODE}
       - --graffiti=${GRAFFITI}
@@ -57,7 +59,7 @@ services:
       - --num_validators
       - ${NUMVAL}
       - --chain
-      - ${DEPOSIT_CHAIN}
+      - ${TESTNET}
   eth2:
     image: tianon/true
     restart: "no"

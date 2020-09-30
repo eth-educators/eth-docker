@@ -15,14 +15,15 @@ services:
     environment:
       - JAVA_OPTS=${TEKU_LOW_MEM}
     ports:
-      - ${TEKU_PORT}:9000/tcp
-      - ${TEKU_PORT}:9000/udp
+      - ${TEKU_PORT}:${TEKU_PORT}/tcp
+      - ${TEKU_PORT}:${TEKU_PORT}/udp
     entrypoint:
       - /usr/local/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${TESTNET}
       - --eth1-endpoint=${ETH1_NODE}
+      - --p2p-port=${TEKU_PORT}
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
@@ -58,7 +59,7 @@ services:
       - --num_validators
       - ${NUMVAL}
       - --chain
-      - ${DEPOSIT_CHAIN}
+      - ${TESTNET}
   eth2:
     image: tianon/true
     restart: "no"

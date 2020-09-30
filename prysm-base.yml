@@ -13,13 +13,12 @@ services:
     volumes:
       - prysmbeacon-data:/var/lib/prysm
     ports:
-      - ${PRYSM_PORT}:13000/tcp
-      - ${PRYSM_UDP_PORT}:12000/udp
+      - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
+      - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     expose:
       - 4000
       - 8080
-    entrypoint: ${PRYSM_BN_ENTRYPOINT}
-    command:
+    entrypoint:
       - beacon-chain
       - --datadir
       - /var/lib/prysm/
@@ -27,10 +26,15 @@ services:
       - 0.0.0.0
       - --monitoring-host
       - 0.0.0.0
-      - --p2p-host-ip
-      - $$ClientIP
       - --http-web3provider
       - ${ETH1_NODE}
+      - --p2p-tcp-port
+      - ${PRYSM_PORT}
+      - --p2p-udp-port
+      - ${PRYSM_UDP_PORT}
+      - --verbosity
+      - ${LOG_LEVEL}
+    command: ${PRYSM_NONSTD_TESTNET}
   validator:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -45,7 +49,7 @@ services:
       - prysmvalidator-data:/var/lib/prysm
     expose:
       - 8081
-    entrypoint: wait-for-beacon.sh beacon:4000 ${PRYSM_VAL_ENTRYPOINT}
+    entrypoint: wait-for-beacon.sh beacon:4000 validator --datadir /var/lib/prysm --wallet-dir /var/lib/prysm/
     command: 
       - --monitoring-host
       - 0.0.0.0
@@ -53,9 +57,12 @@ services:
       - beacon:4000
       - --graffiti
       - ${GRAFFITI}
+      - --verbosity
+      - ${LOG_LEVEL}
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
+      - ${PRYSM_NONSTD_TESTNET}
     depends_on:
       - beacon
   validator-import:
@@ -71,7 +78,7 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/prysm/validator_keys
-    entrypoint: ${PRYSM_VAL_IMPORT_ENTRYPOINT}
+    entrypoint: create-prysm-validator-wallet.sh
     command:
       - validator
       - --datadir
@@ -82,6 +89,7 @@ services:
       - import
       - --keys-dir
       - /var/lib/prysm/validator_keys
+      - ${PRYSM_NONSTD_TESTNET}
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -99,7 +107,7 @@ services:
       - --num_validators
       - ${NUMVAL}
       - --chain
-      - ${DEPOSIT_CHAIN}
+      - ${TESTNET}
   eth2:
     image: tianon/true
     restart: "no"
