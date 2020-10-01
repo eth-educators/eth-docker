@@ -169,7 +169,8 @@ sudo timedatectl set-ntp no
 timedatectl
 ```
 
-Then install the ntp package. It will start automatically. `sudo apt update && sudo apt install ntp`
+Then install the ntp package. It will start automatically.<br />
+`sudo apt update && sudo apt install ntp`
 
 Check that ntp is running correctly: Run `ntpq -p` , you expect to see a number of ntp time servers with
 IP addresses in their `refid`, and several servers with a refid of `.POOL.`
