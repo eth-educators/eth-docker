@@ -76,10 +76,10 @@ Work to support dynamic DNS would be welcome.
 
 Set the `COMPOSE_FILE` string depending on which client you are going to use. Add optional services like
 geth with `:` between the file names.
-- `nimbus-base.yml` - Nimbus
 - `lh-base.yml` - Lighthouse
 - `prysm-base.yml` - Prysm
 - `teku-base.yml` - Teku
+- `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
 - `geth-archive.yml` - local geth node in full archive mode, required for Nimbus
 - `lh-prysm-grafana.yml` - grafana dashboard for Lighthouse or Prysm
@@ -171,7 +171,7 @@ timedatectl
 
 Then install the ntp package. It will start automatically. `sudo apt update && sudo apt install ntp`
 
-Check that ntp is running correctly: Run `nptq -p` , you expect to see a number of ntp time servers with
+Check that ntp is running correctly: Run `ntpq -p` , you expect to see a number of ntp time servers with
 IP addresses in their `refid`, and several servers with a refid of `.POOL.`
 
 ## SSH key authentication with Linux
