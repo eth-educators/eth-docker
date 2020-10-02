@@ -76,9 +76,10 @@ sudo docker-compose build
 ## Step 4: Create an eth2 wallet and validator keystore and deposit files
 
 You will deposit eth to the deposit contract, and receive locked eth2 in turn.<br />
-[RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security. If you haven't
+> **Vital** [RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security. If you haven't
 read these yet, please do so now. You need to know how to guard your keystore password
-and your seed phrase (mnemonic).
+and your seed phrase (mnemonic). **Without the mnemonic, you will be unable to withdraw your funds
+in phase 2. You need the seed phrase or your eth is gone forever.**
 
 Make sure you're in the project directory, `cd ~/eth2-docker` by default.
 
