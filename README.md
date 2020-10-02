@@ -50,7 +50,8 @@ Please take a look.
 
 ## Step 1: Install prerequisites
 
-You will need git, docker, and docker-compose. This should work on Linux, Windows 10, and MacOS.
+You will need git, docker, and docker-compose. This should work on Linux, possibly MacOS.
+Running a node on Windows 10 is highly discouraged because of time synchronization concerns.
 Please see [prerequisites](PREREQUISITES.md) and then come back here.
 
 ## Step 2: Choose a client, initial setup

@@ -19,16 +19,22 @@ On Linux, docker-compose runs as root by default. The individual containers do n
 they run as local users inside the containers. "Rootless mode" is expected to
 work for docker with this project, as it does not (yet) use AppArmor.
 
-## Windows 10 Prerequisites
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/win), and [Python 3](https://www.python.org/downloads/windows/). Note you can also type `python3` into a Powershell window and it will bring you to the Microsoft Store for a recent Python 3 version.
-
-Docker Desktop can be used with the WSL2 backend if desired, or without it.
-
-You will run the docker-compose and docker commands from Powershell. You do not need `sudo` in front of those commands.
-
 ## MacOS Prerequisites
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/mac) and [Python 3](https://www.python.org/downloads/mac-osx/).
 MacOS has not been tested, if you have the ability to, please get in touch via the ethstaker Discord.
 
+## Windows 10 discouraged
+
+While it is technically possible to run this project, and thus a node, on Windows 10,
+I want to discourage that idea.
+
+In testing, Windows 10 time synchronization was less than accurate, and WSL2 would lose
+time sync when a machine goes to sleep and comes back out. In addition, WSL2 has no systemd
+and so cannot run Linux-native time sync easily.
+
+While this can all be solved with the use of 3rd-party software, I don't want to be
+responsible for someone losing money because time was off.
+
+If you know enough to get Windows 10 and WSL2 time sync stable, you likely also know enough
+to run a Linux server in the first place.
