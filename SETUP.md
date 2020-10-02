@@ -34,6 +34,10 @@ git clone https://github.com/eth2-educators/eth2-docker.git
 cd eth2-docker
 ```
 
+> Note: All work will be done from within the `~/eth2-docker` directory.
+> All commands that have you interact with the "dockerized" client will
+> be carried out from within that directory.
+
 ## Client choice
 
 Please choose:
@@ -49,18 +53,28 @@ Please choose:
 * Whether to run a grafana dashboard for monitoring
 
 > Note: Teku is written in Java, which makes it memory-hungry. In its default configuration, you may
-> want a machine with 16 GiB of RAM. See .env for a parameter to restrict Teku to 4 GiB of RAM.
+> want a machine with 16 GiB of RAM. See `.env` for a parameter to restrict Teku to 4 GiB of RAM.
 
 First, copy the environment file.<br />
 `cp default.env .env`
 
+> This file is called `.env` (dot env), and that name has to be exact. docker-compose
+> will otherwise show errors about not being able to find a `docker-compose.yml` file,
+> which this project does not use.
+ 
 Then, adjust the contents of `.env`. On Ubuntu Linux, you can run `nano .env`.
 - Set the `GRAFFITI` string if you want a POAP or just a specific string
-- If you are on Linux, adjust `LOCAL_UID` to the UID of the logged-in user. 
+- If you are on Linux, **adjust `LOCAL_UID` to the UID of the logged-in user**. 
 `echo $UID` will show it to you. It is highly recommended to run as a non-root
 user on Linux. On [Debian](https://devconnected.com/how-to-add-a-user-to-sudoers-on-debian-10-buster/)
 you may need to install `sudo` and add your user to the `sudoers` group. Ubuntu
 has that functionality built-in.
+
+> **Important**: The step above needs to be completed before the client is
+> built. Use the same user to configure, build and run the client. If the
+> UID in `.env` does not match the UID of the user, then you will get
+> permissions errors during use.
+
 - Set the `COMPOSE_FILE` entry depending on the client you are going to run,
 and with which options. See below for available compose files.
 - If you are going to use a 3rd-party provider as your eth1 chain source, set `ETH1_NODE` to that URL.
