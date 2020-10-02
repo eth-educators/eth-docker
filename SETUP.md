@@ -25,8 +25,8 @@ will need to [associate the new user with your public key(s)](#ssh-key-authentic
 
 ## "Clone" the project
 
-From a terminal - Powershell if you are installing the node on Windows - and logged in as the user
-you'll be using from now on, and assuming you'll be storing the project in your `$HOME`, run:
+From a terminal and logged in as the user you'll be using from now on, and assuming
+you'll be storing the project in your `$HOME`, run:
 
 ```
 cd ~
