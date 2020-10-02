@@ -203,7 +203,8 @@ Create a key if you need to, or if you don't have `id_ed25519.pub` but prefer th
 
 On Windows 10, or if that command is not available, output the contents of your public key file
 to terminal and copy, here for `id_ed25519.pub`:<br />
-`cat ~/.ssh/id_ed25519.pub`<br
+`cat ~/.ssh/id_ed25519.pub`
+
 On your Linux server, logged in as your non-root user, add this public key to your account:<br />
 ```
 mkdir ~/.ssh

@@ -113,9 +113,9 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 **Intel**
 
 * mITX: 
-  * SuperMicro X11SCL-IF(-O)
+  * SuperMicro X11SCL-IF(-O) (1 NVMe)
 * uATX:
-  * SuperMicro X11SCL-F(-O) or X11SCH-F(-O)
+  * SuperMicro X11SCL-F(-O) (1 NVMe) or X11SCH-F(-O) (2 NVMe)
 * Common components:
   * Intel i3-9100F or Intel Xeon E-2xxx (i5/7 do not support ECC)
   * 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
@@ -124,9 +124,9 @@ was unable to report ECC errors via IPMI, only OS-level reporting worked.
 **AMD**
 
 * mITX:
-  * AsRock Rack X570D4I-2T
+  * AsRock Rack X570D4I-2T (1 NVMe)
 * uATX:
-  * AsRock Rack X470D4U (SATA only) or X570D4U (NVMe)
+  * AsRock Rack X470D4U or X570D4U (2 NVMe both)
 * Common components:
   * AMD Ryzen CPU, but not APU (APUs do not support ECC)
   * 16 GiB of Micron or Samsung DDR4 UDIMM ECC RAM (unbuffered, **not** registered)
