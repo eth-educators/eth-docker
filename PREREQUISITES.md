@@ -25,13 +25,18 @@ work for docker with this project, as it does not (yet) use AppArmor.
 
 ## MacOS Prerequisites
 
+> The following prerequisites apply if you are going to use MacOS as a server
+> to run an eth2 node. If you use MacOS to connect *to* a node server, all
+> you need is an SSH client.
+
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop), [git](https://git-scm.com/download/mac) and [Python 3](https://www.python.org/downloads/mac-osx/).
 MacOS has not been tested, if you have the ability to, please get in touch via the ethstaker Discord.
 
 ## Windows 10 discouraged
 
 While it is technically possible to run this project, and thus a node, on Windows 10,
-I want to discourage that idea.
+I want to discourage that idea. Windows 10 is fine as an SSH client to connect *to*
+your Linux server, but not as a basis for the node server itself.
 
 In testing, Windows 10 time synchronization was less than accurate, and WSL2 would lose
 time sync when a machine goes to sleep and comes back out. In addition, WSL2 has no systemd
