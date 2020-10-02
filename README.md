@@ -61,13 +61,26 @@ Please see [setup instructions](SETUP.md) and then come back here.
 
 ## Step 3: Build the client
 
-Build all required images from source. This will take 20-30 minutes.<br />
-`sudo docker-compose build`
+> **Important** Before you build, verify once more that `LOCAL_UID` in `.env`
+> is the UID of your user (check with `echo $UID`), and that the file `.env`
+> (dot env) is called exactly that, and contains the parameters you expect.
+> You will get errors about missing permissions, during Step 4, if the UID is wrong.
+
+Build all required images from source. This will take 20-30 minutes. Assuming
+you cloned the project into `eth2-docker`:
+```
+cd ~/eth2-docker
+sudo docker-compose build
+```
 
 ## Step 4: Create an eth2 wallet and validator keystore and deposit files
 
 You will deposit eth to the deposit contract, and receive locked eth2 in turn.<br />
-[RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security.
+[RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security. If you haven't
+read these yet, please do so now. You need to know how to guard your keystore password
+and your seed phrase (mnemonic).
+
+Make sure you're in the project directory, `cd ~/eth2-docker` by default.
 
 Edit the `.env` file to set the number of validators you wish to run. The default
 is just one (1) validator.

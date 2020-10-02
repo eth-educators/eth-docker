@@ -2,10 +2,14 @@
 
 
 This project relies on docker and docker-compose, and git to bring the
-project itself in. It has been tested on Linux and Windows 10, and is
+project itself in. It has been tested on Linux, and is
 expected to work on MacOS.
 
 ## Ubuntu Prerequisites
+
+> Note: The following prerequisites will be installed on the Linux server you
+> will run your node on. The machine you use to connect *to* the Linux server
+> only requires an SSH client.
 
 ```
 sudo apt update && sudo apt dist-upgrade
