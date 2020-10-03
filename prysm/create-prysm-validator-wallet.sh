@@ -23,7 +23,7 @@ while true; do
   read -sp "Please enter the 'New wallet password' you chose above: " password1
   echo
   read -sp "Please re-enter the 'New wallet password': " password2
-  if [ $password1 == $password2 ]; then
+  if [ "$password1" == "$password2" ]; then
     break
   else
     echo "The two entered passwords do not match, please try again."
@@ -32,5 +32,5 @@ while true; do
 done
 
 echo
-echo $password1 >/var/lib/prysm/password.txt
+echo "$password1" >/var/lib/prysm/password.txt
 echo "Wallet password has been stored."
