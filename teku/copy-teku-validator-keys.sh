@@ -30,7 +30,7 @@ if [ $justone -eq 1 ]; then
     echo
     read -sp "Please re-enter the password: " password2
     echo
-    if [ $password1 == $password2 ]; then
+    if [ "$password1" == "$password2" ]; then
       break
     else
       echo "The two entered passwords do not match, please try again."
@@ -40,7 +40,7 @@ if [ $justone -eq 1 ]; then
 
   for file in /var/lib/teku/validator-keys/keystore-m*.json ; do
     filename=$(basename $file .json)
-    echo $password1 > "/var/lib/teku/validator-passwords/$filename.txt"
+    echo "$password1" > "/var/lib/teku/validator-passwords/$filename.txt"
   done
 else
   for file in /var/lib/teku/validator-keys/keystore-m*.json ; do
@@ -50,14 +50,14 @@ else
       echo
       read -sp "Please re-enter the password: " password2
       echo
-      if [ $password1 == $password2 ]; then
+      if [ "$password1" == "$password2" ]; then
         break
       else
         echo "The two entered passwords do not match, please try again."
         echo
       fi
     done
-    echo $password1 > "/var/lib/teku/validator-passwords/$filename.txt"
+    echo "$password1" > "/var/lib/teku/validator-passwords/$filename.txt"
   done
 fi
 
