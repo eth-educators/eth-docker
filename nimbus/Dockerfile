@@ -30,7 +30,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus
+RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus
 
 # Copy executable
 COPY --from=builder /usr/src/nim-beacon-chain/build/beacon_node /usr/local/bin/beacon_node
