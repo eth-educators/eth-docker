@@ -135,7 +135,9 @@ on a local user's MacOS/Windows machine.
 ## Firewalling
 
 You'll want to forward ports to the services of your eth2 node, and on Linux, enable a host firewall.
-These are the relevant ports, and commands to add them to `ufw` if you are on Ubuntu Linux.
+These are the relevant ports. docker will open eth2 node ports and the grafana port automatically,
+please make sure the grafana port cannot be reached directly. If you need to get to grafana remotely,
+an SSH tunnel is a good choice.
 Ports that I mention should be "Open to Internet" need to be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
@@ -149,22 +151,14 @@ to your node if behind a home router, or allowed in via the VPS firewall.
 - 22/tcp - SSH. Only open to Internet if this is a remote server (VPS). If open to Internet, configure
   SSH key authentication.
 
-On Ubuntu, the host firewall `ufw` can be used to only allow specific ports inbound.
-* Document the ports you need, then allow them to come in. Adjust as needed if you are
-  not using default ports.
-  * `sudo ufw allow OpenSSH` will allow ssh inbound
-  * `sudo ufw allow 30303` will allow traffic for geth to port 30303, both tcp and udp.
-  * `sudo ufw allow 3000/tcp` will allow traffic to the Grafana dashboard
-  * Lighthouse
-    * `sudo ufw allow 9000` will allow Lighthouse beacon traffic, both tcp and udp
-  * Prysm
-    * `sudo ufw allow 13000/tcp && sudo ufw allow 12000/udp` will allow Prysm beacon traffic
-  * Teku
-    * `sudo ufw allow 9000` will allow Teku beacon traffic, both tcp and udp
-  * Nimbus
-    * `sudo ufw allow 9000` will allow Nimbus beacon traffic, both tcp and udp
-* Check the rules you created and verify that you are allowing SSH. You can **lock yourself out** if
-you don't allow your SSH port in. `allow OpenSSH` is sufficient for the default SSH port.
+On Ubuntu, the host firewall `ufw` can be used to allow SSH traffic. docker bypasses ufw and opens additional
+ports directly via "iptables" for all ports that are public on the host.
+* Allow SSH in ufw so you can still get to your server, while relying on the default "deny all" rule.
+  * `sudo ufw allow OpenSSH` will allow ssh inbound on the default port. Use your specific port if you changed
+    the port SSH runs on.
+* Check the rule you created and verify that you are allowing SSH, on the port you are running it on.
+  You can **lock yourself out** if you don't allow your SSH port in. `allow OpenSSH` is sufficient
+  for the default SSH port.
   * `sudo ufw show added`
 * Enable the firewall and see numbered rules once more
   * `sudo ufw enable`

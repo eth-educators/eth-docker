@@ -44,7 +44,7 @@ COPY --from=builder /go/src/prysm/bazel-bin/slasher/linux_amd64_stripped/slasher
 COPY ./create-prysm-validator-wallet.sh /usr/local/bin
 COPY ./wait-for-beacon.sh /usr/local/bin
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm
+RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
 # Use an unprivileged user.
 USER ${USER}:${USER}

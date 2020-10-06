@@ -29,7 +29,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && chown -R ${USER}:${USER} /var/lib/teku
+RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && chown -R ${USER}:${USER} /var/lib/teku && chmod -R 700 /var/lib/teku
 
 # Copy executable
 COPY --from=builder /usr/src/teku/build/install/teku/. /usr/local/teku/

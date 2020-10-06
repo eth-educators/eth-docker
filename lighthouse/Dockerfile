@@ -22,10 +22,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Grab dockerize so beacon can wait for geth
-ENV DOCKERIZE_VERSION v0.6.1
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+#ENV DOCKERIZE_VERSION v0.6.1
+#RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+#    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+#    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -38,7 +38,7 @@ RUN adduser \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/lighthouse && chown ${USER}:${USER} /var/lib/lighthouse
+RUN mkdir -p /var/lib/lighthouse && chown ${USER}:${USER} /var/lib/lighthouse && chmod 700 /var/lib/lighthouse
 # Copy executable
 COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
 # Script to query whether all validator key passwords are the same
