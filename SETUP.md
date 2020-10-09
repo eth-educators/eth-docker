@@ -45,7 +45,7 @@ Please choose:
   * Lighthouse
   * Prysm
   * Teku
-  * Nimbus - as of 9/28 requires an archive-mode geth or remote archive like goerli.infura.io
+  * Nimbus - as of 10/09 requires an archive-mode geth or remote archive like goerli.infura.io
 * Your source of eth1 data
   * geth
   * 3rd-party
@@ -78,13 +78,9 @@ has that functionality built-in.
 - Set the `COMPOSE_FILE` entry depending on the client you are going to run,
 and with which options. See below for available compose files.
 - If you are going to use a 3rd-party provider as your eth1 chain source, set `ETH1_NODE` to that URL.
+  This is most relevant to Nimbus, see [how to create your own Infura account](https://status-im.github.io/nimbus-eth2/infura-guide).
 - Adjust ports if you are going to need custom ports instead of the defaults. These are the ports
-exposed to the Internet via your firewall/router.
-
-Note that the Prysm client will find its external IP, but this project currently assumes
-that IP is static. You can restart the container, possibly via crontab, with
-`docker-compose restart beacon` if your IP is dynamic.<br />
-Work to support dynamic DNS would be welcome.
+exposed to the host, and for everything but Grafana to the Internet via your firewall/router.
 
 ### Client compose files
 
@@ -96,12 +92,13 @@ geth with `:` between the file names.
 - `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
 - `geth-archive.yml` - local geth node in full archive mode, required for Nimbus
-- `lh-prysm-grafana.yml` - grafana dashboard for Lighthouse or Prysm
+- `lh-grafana.yml` - grafana dashboard for Lighthouse
+- `prysm-grafana.yml` - grafana dashboard for Prysm
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
 For example, Lighthouse with local geth and grafana:
-`COMPOSE_FILE=lh-base.yml:geth.yml:lh-prysm-grafana.yml`
+`COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
 
 In this setup, clients are isolated from each other. Each run their own validator, and if geth
 is in use, their own geth. This is perfect for running a single client, or multiple isolated
@@ -110,9 +107,9 @@ clients each in their own directory.
 If you want to run multiple isolated clients, just clone this project into a new directory for
 each. This is great for running medalla and zinken in parallel, for example.
 
-> Nimbus: Nimbus as of 9/30/2020 requires a "full archive" source of eth1 chain data.
-> It should work with a 3rd party via wss://, though possibly not https://, and a local
-> archive node via ws://, though possibly not http://. Nimbus' capabilities will evolve,
+> Nimbus: Nimbus as of 10/09/2020 requires a "full archive" source of eth1 chain data.
+> It will work with a 3rd party via wss://, though not https://, and a local
+> archive node via ws://, though not http://. Nimbus' capabilities will evolve,
 > check with the Nimbus Discord for its current state.<br />
 > Note that a "full archive" geth takes ~60GB for goerli testnet and ~1.3TB for mainnet.<br />
 > As of the same date, Nimbus does not detect its external IP via P2P protocol. It will

@@ -101,9 +101,9 @@ For more on withdrawal key security, read this article: https://www.attestant.io
 See the client team recommendations. Generally, however, 8 GiB of RAM is considered
 a minimum, and 16 GiB is recommended. 2 or 4 CPU cores, and an SSD for storage
 because the node databases are so IOPS-heavy. The eth1 node (geth) would require
-around 300GB of storage by itself. The beacon node database is small, around 11GB,
+around 310GiB of storage by itself. The beacon node database is small, around 11GiB,
 but we don't know what growth will look like from phase 1.5 and 2 on. If
-you are running a slasher, that might be another 100 to 300GB by itself.
+you are running a slasher, that might be another 100 to 300GiB by itself.
 
 Two home server builds that I like and am happy to recommend are below. Both support
 IPMI, which means they can be managed and power-cycled remotely and need neither
@@ -137,7 +137,7 @@ options are Node 304 (mITX) and Node 804 (uATX) with Seasonic PSUs,
 but really any quality case that won't cook your components will do.
 
 On SSD size, 1TB is very, very conservative and assumes you are running
-an eth1 node as well, which currently takes about 230GB and keeps
+an eth1 node as well, which currently takes about 310GiB and keeps
 growing. The eth2 db is expected to be far smaller, though exact figures
 won't be seen until Phase 1.5 and 2.
 

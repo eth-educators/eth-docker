@@ -2,7 +2,7 @@ version: "3"
 services:
   beacon:
     expose:
-      - 8008
+      - 8008/tcp
     command:
       - --metrics
       - --metrics-port=8008
@@ -17,7 +17,7 @@ services:
     environment:
       - CLIENT=${COMPOSE_FILE}
     expose:
-      - 9090
+      - 9090/tcp
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
@@ -27,7 +27,7 @@ services:
     restart: "no"
     image: prom/node-exporter
     expose:
-      - 9100
+      - 9100/tcp
   grafana:
     restart: "no"
     image: grafana/grafana

@@ -1,13 +1,5 @@
 version: "3"
 services:
-  beacon:
-    expose:
-      - 8008/tcp
-    command:
-      - --metrics-enabled=true
-      - --metrics-port=8008
-      - --metrics-interface=0.0.0.0
-      - --metrics-host-allowlist=*
   prometheus:
     restart: "no"
     build:
@@ -23,6 +15,7 @@ services:
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
       - beacon
+      - validator
       - node-exporter
   node-exporter:
     restart: "no"

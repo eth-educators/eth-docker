@@ -16,7 +16,7 @@ services:
       - ${LH_PORT}:${LH_PORT}/tcp
       - ${LH_PORT}:${LH_PORT}/udp
     expose:
-      - 5052
+      - 5052/tcp
     entrypoint: 
       - lighthouse
       - bn
@@ -31,8 +31,7 @@ services:
       - ${LH_PORT}
       - --eth1-endpoint
       - ${ETH1_NODE}
-      - --debug-level
-      - ${LOG_LEVEL}
+      - --debug-level=${LOG_LEVEL}
   validator:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -50,14 +49,13 @@ services:
       - validator
       - --datadir
       - /var/lib/lighthouse
-      - --server
+      - --beacon-node
       - http://beacon:5052
       - --graffiti
       - ${GRAFFITI}
       - --testnet
       - ${TESTNET}
-      - --debug-level
-      - ${LOG_LEVEL}
+      - --debug-level=${LOG_LEVEL}
     depends_on:
       - beacon
   validator-import:
@@ -83,10 +81,9 @@ services:
       - /var/lib/lighthouse
       - --directory
       - /var/lib/lighthouse/validator_keys
-      - --validator-dir
-      - /var/lib/lighthouse
       - --testnet
       - ${TESTNET}
+      - --debug-level=${LOG_LEVEL}
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
