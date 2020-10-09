@@ -1,4 +1,4 @@
-# eth2-docker v0.1.5
+# eth2-docker v0.1.6
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -24,7 +24,7 @@ Currently supported optional components:
   your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - Grafana dashboard
 
-**Note**: As of 9/30/2020, Nimbus requires an "archive" source of eth1 chain data.
+**Note**: As of 10/09/2020, Nimbus requires an "archive" source of eth1 chain data.
 This can be a local geth in archive mode via ws://, or a 3rd-party provider via wss://. 
 Please see [SETUP](SETUP.md) for details.
 
@@ -205,6 +205,8 @@ This project does not monitor client versions. It is up to you to decide that yo
 are going to update a component. When you are ready to do so, the below instructions
 show you how to.
 
+Please see the [changelog](CHANGELOG.md) to see what changed between versions.
+
 ### The project itself
 
 Inside the project directory, run:<br />
@@ -237,7 +239,7 @@ If you did not store the wallet password with the validator, come up
 
 # Addendum: Troubleshooting
 
-A few useful commands if you run into issues. As always, `sudo` is a Linux-ism and not needed on Windows 10.
+A few useful commands if you run into issues. As always, `sudo` is a Linux-ism and may not be needed on MacOS.
 
 `sudo docker-compose stop servicename` brings a service down, for example `docker-compose stop validator`.<br />
 `sudo docker-compose down` will stop the entire stack.<br />
