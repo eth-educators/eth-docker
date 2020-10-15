@@ -1,4 +1,4 @@
-# eth2-docker v0.1.6
+# eth2-docker v0.1.7
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -155,6 +155,7 @@ the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load"
 - For Teku, you can use the grafana.com URL instead of raw JSON.
 
 - [Lighthouse Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
+- [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
@@ -237,7 +238,41 @@ Then restart the client:<br />
 If you did not store the wallet password with the validator, come up 
 [more manually](#start-the-client) instead.
 
-# Addendum: Troubleshooting
+## Addendum: Voluntary client exit
+
+Ethereum 2.0 has a concept of "voluntary client exit", which will remove the
+validator from attesting duties. Locked eth could be withdrawn in phase 2,
+and not sooner.
+
+Currently, Prysm supports voluntary exit. This requires a fully synced
+Prysm client.
+
+To exit, run `sudo docker-compose run validator-voluntary-exit` and follow the
+prompts.
+
+If you wish to exit validators that were running on other clients, you can do this
+as follows:
+
+- Stop the other client(s), and wait 10 minutes
+- Copy all `keystore-m` JSON files into `.eth2/validator_keys` in this project
+  directory.
+- Stop the Prysm client in this project, `sudo docker-compose down`
+- Import the new keys via `sudo docker-compose run validator-import`. Note
+  that Prysm assumes they all have the same password. If that's not the case,
+  maybe work in batches.
+- Verify once more that the old client is down, has been for 10 minutes, and
+  can't come back up. **If both the old client and this Prysm run at the same time,
+  you will slash yourself**
+- Bring the Prysm client up: `sudo docker-compose up -d eth2`
+- Check logs until the beacon is synced: `sudo docker-compose logs -f beacon`
+- Initiate voluntary exit and follow the prompts: `sudo docker-compose run validator-voluntary-exit`
+
+> Note you will need to continue running your validator until the exit
+> has been processed by the chain, if you wish to avoid incurring offline
+> penalties. You can check the status of your validator with tools such
+> as beaconcha.in and beaconscan.
+
+## Addendum: Troubleshooting
 
 A few useful commands if you run into issues. As always, `sudo` is a Linux-ism and may not be needed on MacOS.
 

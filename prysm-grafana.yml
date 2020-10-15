@@ -1,7 +1,31 @@
 version: "3"
 services:
+  beacon:
+    expose:
+      - 3500
+      - 8080
+    command:
+      - --monitoring-host
+      - 0.0.0.0
+      - --grpc-gateway-host
+      - 0.0.0.0
+  validator:
+    ports:
+      - 4242:4242/tcp
+    expose:
+      - 8081
+    command:
+      - --monitoring-host
+      - 0.0.0.0
+      - --web
+      - --web-host
+      - 0.0.0.0
+      - --beacon-rpc-gateway-provider
+      - beacon:3500
+      - --grpc-gateway-host
+      - 0.0.0.0
   prometheus:
-    restart: "no"
+    restart: "${RESTART}"
     build:
       context: ./prometheus
     image: prometheus
@@ -18,12 +42,12 @@ services:
       - validator
       - node-exporter
   node-exporter:
-    restart: "no"
+    restart: "${RESTART}"
     image: prom/node-exporter
     expose:
       - 9100/tcp
   grafana:
-    restart: "no"
+    restart: "${RESTART}"
     image: grafana/grafana
     volumes:
       - grafana-data:/var/lib/grafana

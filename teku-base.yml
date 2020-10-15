@@ -1,7 +1,7 @@
 version: "3"
 services:
   beacon:
-    restart: "no"
+    restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./teku
