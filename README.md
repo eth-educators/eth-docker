@@ -256,14 +256,15 @@ prompts.
 If you wish to exit validators that were running on other clients, you can do this
 as follows:
 
-- Stop the other client(s), and wait 10 minutes
+- Stop the other client(s), and wait 20 minutes. This is so you won't have
+  a validator attest in the same epoch twice.
 - Copy all `keystore-m` JSON files into `.eth2/validator_keys` in this project
   directory.
 - Stop the Prysm client in this project, `sudo docker-compose down`
 - Import the new keys via `sudo docker-compose run validator-import`. Note
   that Prysm assumes they all have the same password. If that's not the case,
   maybe work in batches.
-- Verify once more that the old client is down, has been for 10 minutes, and
+- Verify once more that the old client is down, has been for 20 minutes, and
   can't come back up. **If both the old client and this Prysm run at the same time,
   you will slash yourself**
 - Bring the Prysm client up: `sudo docker-compose up -d eth2`
