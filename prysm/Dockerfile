@@ -17,7 +17,8 @@ ARG UID
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
   wget \
-  curl \
+  w3m \
+  xdg-utils \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -32,17 +33,16 @@ RUN adduser \
     "${USER}"
 
 # Grab dockerize so validator can wait for beacon
-ENV DOCKERIZE_VERSION v0.6.1
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+#ENV DOCKERIZE_VERSION v0.6.1
+#RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+#    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+#    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # Copy executable
 COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /usr/local/bin/
 COPY --from=builder /go/src/prysm/bazel-bin/validator/linux_amd64_stripped/validator /usr/local/bin/
 COPY --from=builder /go/src/prysm/bazel-bin/slasher/linux_amd64_stripped/slasher /usr/local/bin/
 COPY ./create-prysm-validator-wallet.sh /usr/local/bin
-COPY ./wait-for-beacon.sh /usr/local/bin
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 

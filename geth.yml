@@ -1,7 +1,7 @@
 version: "3"
 services:
   geth:
-    restart: "no"
+    restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./geth

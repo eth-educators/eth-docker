@@ -1,7 +1,7 @@
 version: "3"
 services:
   beacon:
-    restart: "no"
+    restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
@@ -33,7 +33,7 @@ services:
       - ${ETH1_NODE}
       - --debug-level=${LOG_LEVEL}
   validator:
-    restart: "no"
+    restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse

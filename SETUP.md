@@ -163,11 +163,13 @@ ports directly via "iptables" for all ports that are public on the host.
 
 ## Time synchronization on Linux
 
-The blockchain requires precise time-keeping. Configure [ntpd](https://en.wikipedia.org/wiki/Network_Time_Protocol)
-to synchronize time on your Linux server.
+The blockchain requires precise time-keeping. You can use systemd-timesyncd if your system offers it,
+or [ntpd](https://en.wikipedia.org/wiki/Network_Time_Protocol) to synchronize time on your Linux server.
+systemd-timesyncd uses a single ntp server as source, and ntpd uses several, typically a pool.
+My recommendation is to use ntpd for better redundancy.
 
-For Ubuntu, first we switch off the built-in, less precise synchronization and verify it is off. You should see
-`NTP service: inactive`.
+For Ubuntu, first switch off the built-in, less redundant synchronization and verify it is off. 
+You should see `NTP service: inactive`.
 
 ```
 sudo timedatectl set-ntp no
@@ -179,6 +181,10 @@ Then install the ntp package. It will start automatically.<br />
 
 Check that ntp is running correctly: Run `ntpq -p` , you expect to see a number of ntp time servers with
 IP addresses in their `refid`, and several servers with a refid of `.POOL.`
+
+If you wish to stay with systemd-timesyncd, check that `NTP service: active` via 
+`timedatectl`, and switch it on with `sudo timedatectl set-ntp yes` if it isn't. You can check
+time sync with `timedatectl timesync-status --all`.
 
 ## SSH key authentication with Linux
 

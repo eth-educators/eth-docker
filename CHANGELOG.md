@@ -12,7 +12,20 @@ directoy (`cd ~/eth2-docker` by default):
 * `sudo docker-compose build --no-cache beacon` (go for a 30 minute walk)
 * `sudo docker-compose down`
 * !! If coming from Lighthouse v0.2.x, make changes as per notes for [v0.1.6](#v016-2020-10-09)
+* !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
+
+## v0.1.7 2020-10-15
+
+* Added "validator-voluntary-exit" to Prysm, see [readme](README.md#addendum-voluntary-client-exit)
+* Default restart policy is now "unless-stopped" and can be changed via `.env`
+* Preliminary work to support Prysm Web UI, not yet functional
+* Changed testnet parameter for Prysm to conform with alpha.29
+* Use `--blst` with Prysm by default for faster sync speed
+* Handles Terms Of Service for Prysm, user is prompted during validator-import, and choice is remembered
+* If you are upgrading this project and you are using Prysm, please run `sudo docker-compose run validator`
+  and accept the terms of use. You can then Ctrl-C that process and start up normally again. This step
+  is not necessary if you are starting from scratch.
 
 ## v0.1.6 2020-10-09
 
