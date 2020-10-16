@@ -85,7 +85,7 @@ services:
       - ${LOG_LEVEL}
       - --datadir
       - /var/lib/prysm
-      - accounts-v2
+      - accounts
       - import
       - --wallet-dir
       - /var/lib/prysm/
@@ -110,7 +110,7 @@ services:
       - ${LOG_LEVEL}
       - --datadir
       - /var/lib/prysm
-      - accounts-v2
+      - accounts
       - voluntary-exit
       - --wallet-dir
       - /var/lib/prysm/
