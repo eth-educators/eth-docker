@@ -15,6 +15,10 @@ directoy (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.7.1 2020-10-16
+
+* Prysm renamed `accounts-v2` to `accounts`, keeping pace with it
+
 ## v0.1.7 2020-10-15
 
 * Added "validator-voluntary-exit" to Prysm, see [readme](README.md#addendum-voluntary-client-exit)
