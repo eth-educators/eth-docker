@@ -38,8 +38,8 @@ Please take a look.
 
 ## Steps to bring an eth2 node up
 
-1. Install [prerequisites](PREREQUISITES.md)
-2. [Choose a client](SETUP.md) and do initial setup.
+1. Install prerequisites
+2. Choose a client and do initial setup.
 3. Build the client
 4. Generate deposit files and an eth2 wallet. This can be done within this project, or outside of it
 5. Import the validator keystore files generated in the previous step
@@ -56,7 +56,7 @@ Please see [prerequisites](PREREQUISITES.md) and then come back here.
 
 ## Step 2: Choose a client, initial setup
 
-Next, choose a client and configure this project to use it. Lighthouse and Prysm are currently supported.
+Next, choose a client and configure this project to use it.
 Please see [setup instructions](SETUP.md) and then come back here.
 
 ## Step 3: Build the client
@@ -305,8 +305,7 @@ Take extreme care.
 
 Once your stack is down, to run an image and get into a shell, without executing the client automatically:<br />
 `sudo docker run -it --entrypoint=/bin/bash imagename`, for example `sudo docker run -it --entrypoint=/bin/bash lighthouse`.<br />
-You'd then run Linux commands manually in there, you could start components of the client manually. There is one image per client,
-the client images currently supplied are `lighthouse` and `prysm`.<br />
+You'd then run Linux commands manually in there, you could start components of the client manually. There is one image per client.<br />
 `sudo docker images` will show you all images.
 
 # Guiding principles:
