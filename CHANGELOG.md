@@ -15,6 +15,10 @@ directoy (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.7.2 2020-10-23
+
+* Prysm changes to allow creation of new protection DB and remove experimental web support while it is in flux
+
 ## v0.1.7.1 2020-10-16
 
 * Prysm renamed `accounts-v2` to `accounts`, keeping pace with it

@@ -52,6 +52,7 @@ services:
       - /var/lib/prysm
       - --wallet-dir
       - /var/lib/prysm/
+      - --allow-new-protection-db
       - --beacon-rpc-provider
       - beacon:4000
       - --graffiti
