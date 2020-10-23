@@ -17,13 +17,7 @@ services:
     command:
       - --monitoring-host
       - 0.0.0.0
-      - --web
-      - --web-host
-      - 0.0.0.0
-      - --beacon-rpc-gateway-provider
-      - beacon:3500
-      - --grpc-gateway-host
-      - 0.0.0.0
+#      - --web
   prometheus:
     restart: "${RESTART}"
     build:
