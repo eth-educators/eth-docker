@@ -1,7 +1,13 @@
 #!/bin/bash
 # Copy the validator keys in and prompt for password. There's no check that the password is right.
 
-cp /var/lib/teku/validator_keys/keystore-m*.json /var/lib/teku/validator-keys/
+cp /var/lib/teku/validator_keys/keystore-*.json /var/lib/teku/validator-keys/
+
+if [ $? -ne 0 ]; then
+  echo "Unable to copy keys from .eth2/validator_keys, please verify they are there."
+  exit 1
+fi
+
 echo "Copied validator key(s) from .eth2/validator_keys"
 echo
 echo "Storing the validator key password(s) in plain text will allow the validator to start automatically without user input."
