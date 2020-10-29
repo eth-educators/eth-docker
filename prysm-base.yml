@@ -60,6 +60,7 @@ services:
       - ${LOG_LEVEL}
       - --blst
       - --${TESTNET}
+      - --accept-terms-of-use
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt

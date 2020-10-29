@@ -84,6 +84,28 @@ services:
       - --testnet
       - ${TESTNET}
       - --debug-level=${LOG_LEVEL}
+  validator-account:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    image: lighthouse
+    build:
+      context: ./lighthouse
+      args:
+        - BUILD_TARGET=${LH_BUILD_TARGET}
+        - USER=${LH_USER}
+        - UID=${LOCAL_UID}
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ${DEPCLI_LOCALDIR}:/interchange
+    entrypoint:
+      - lighthouse
+      - account
+      - validator
+      - --datadir
+      - /var/lib/lighthouse
+      - --testnet
+      - ${TESTNET}
+      - --debug-level=${LOG_LEVEL}
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}

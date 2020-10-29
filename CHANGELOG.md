@@ -15,6 +15,10 @@ directoy (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.7.4 2020-10-29
+
+* Support experimental Prysm Web UI
+
 ## v0.1.7.3 2020-10-27
 
 * Prysm change to remove creation of new protection DB, Prysm no longer has this flag
