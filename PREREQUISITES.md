@@ -11,10 +11,14 @@ expected to work on MacOS.
 > will run your node on. The machine you use to connect *to* the Linux server
 > only requires an SSH client.
 
+Run these one line at a time:
 ```
 sudo apt update && sudo apt dist-upgrade
-sudo apt install docker docker-compose git
+sudo apt install -y docker docker-compose git
 ```
+
+You know it was successful when you saw messages scrolling past that install git,
+docker and docker-compose.
 
 Other distributions are expected to work as long as they support
 git, docker, and docker-compose.

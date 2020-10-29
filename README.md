@@ -1,4 +1,4 @@
-# eth2-docker v0.1.7.2
+# eth2-docker v0.1.7.4
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -27,6 +27,9 @@ Currently supported optional components:
 **Note**: As of 10/09/2020, Nimbus requires an "archive" source of eth1 chain data.
 This can be a local geth in archive mode via ws://, or a 3rd-party provider via wss://. 
 Please see [SETUP](SETUP.md) for details.
+
+Please see [WEB](WEB.md) for experimental Web UI support on Prysm, and use the Web instead
+of validator-import to import keys.
 
 # USAGE
 
@@ -99,6 +102,9 @@ They go into `.eth2/validator_keys` in this project directory, not directly unde
 ## Step 5: Create a validator wallet by importing validator keys
 
 **Warning** Import your validator key(s) to only *one* client.
+
+> If you want to use the experimental [Prysm Web UI](WEB.md), use it to
+> import keys and not this command-line process.
 
 Import the validator key(s) to the validator client:
 

@@ -1,13 +1,27 @@
 #!/bin/bash
 # This will be passed arguments that start the validator
-echo When asked for a wallet directory below, enter /var/lib/prysm
-echo
-"$@"
+while true; do
+  read -p "Will you import keys via the Web UI? (y/n) " yn
+  case $yn in
+    [Yy]* ) import=0; echo "Skipping import. If you choose to store the wallet password, use the one you created during Web UI wallet creation"; break;;
+    [Nn]* ) import=1; echo "Continuing to key import"; break;;
+    * ) echo "Please answer yes or no.";;
+  esac
+done
 
-if [ $? -ne 0 ]; then
-  exit 1;
-fi
 echo
+
+if [ $import -ne 0 ]; then
+  echo When asked for a wallet directory below, enter /var/lib/prysm
+  echo
+  "$@"
+
+  if [ $? -ne 0 ]; then
+    exit 1;
+  fi
+  echo
+fi
+
 echo Storing the wallet password in plain text will allow the validator to start automatically without user input.
 echo
 while true; do
@@ -20,9 +34,14 @@ while true; do
 done
 echo
 while true; do
-  read -sp "Please enter the 'New wallet password' you chose above: " password1
+  if [ $import -ne 0 ]; then
+    prompt="Please enter the 'New wallet password' you chose above : "
+  else
+    prompt="Please choose a wallet password, which you will then also provide during Web UI Wallet Creation: "
+  fi
+  read -sp "${prompt}" password1
   echo
-  read -sp "Please re-enter the 'New wallet password': " password2
+  read -sp "Please re-enter the wallet password: " password2
   if [ "$password1" == "$password2" ]; then
     break
   else

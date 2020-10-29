@@ -29,10 +29,10 @@ From a terminal and logged in as the user you'll be using from now on, and assum
 you'll be storing the project in your `$HOME`, run:
 
 ```
-cd ~
-git clone https://github.com/eth2-educators/eth2-docker.git
-cd eth2-docker
+cd ~ && git clone https://github.com/eth2-educators/eth2-docker.git && cd eth2-docker
 ```
+
+You know this was successful when your prompt shows `user@host:~/eth2-docker`
 
 > Note: All work will be done from within the `~/eth2-docker` directory.
 > All commands that have you interact with the "dockerized" client will
@@ -93,12 +93,14 @@ geth with `:` between the file names.
 - `geth.yml` - local geth eth1 chain node
 - `geth-archive.yml` - local geth node in full archive mode, required for Nimbus
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
-- `prysm-grafana.yml` - grafana dashboard for Prysm
+- `prysm-grafana.yml` - grafana dashboard for Prysm, as well as experimental Web UI
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
+
+> See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
 
 In this setup, clients are isolated from each other. Each run their own validator, and if geth
 is in use, their own geth. This is perfect for running a single client, or multiple isolated
