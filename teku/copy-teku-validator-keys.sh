@@ -44,12 +44,12 @@ if [ $justone -eq 1 ]; then
     fi
   done
 
-  for file in /var/lib/teku/validator-keys/keystore-m*.json ; do
+  for file in /var/lib/teku/validator-keys/keystore-*.json ; do
     filename=$(basename $file .json)
     echo "$password1" > "/var/lib/teku/validator-passwords/$filename.txt"
   done
 else
-  for file in /var/lib/teku/validator-keys/keystore-m*.json ; do
+  for file in /var/lib/teku/validator-keys/keystore-*.json ; do
     filename=$(basename $file .json)
     while true; do
       read -sp "Please enter the password for your validator key stored in $filename: " password1
