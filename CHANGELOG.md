@@ -15,6 +15,11 @@ directoy (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.8.1 2020-11-05
+
+* Experimental Prysm slasher - thank you @danb!
+* Fixed Prysm Grafana which got broken when pulling out Prysm Web
+
 ## v0.1.8 2020-11-04
 
 * eth2.0-deposit-cli 1.0.0 for Ethereum 2.0 main net

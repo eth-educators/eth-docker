@@ -27,3 +27,40 @@ services:
       - http://127.0.0.1:7500
       - --grpc-gateway-port
       - "7500"
+  prometheus:
+    restart: "${RESTART}"
+    build:
+      context: ./prometheus
+    image: prometheus
+    volumes:
+      - prom-data:/prometheus
+    environment:
+      - CLIENT=${COMPOSE_FILE}
+    expose:
+      - 9090/tcp
+    entrypoint: choose-config.sh
+    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+    depends_on:
+      - beacon
+      - validator
+      - node-exporter
+  node-exporter:
+    restart: "${RESTART}"
+    image: prom/node-exporter
+    expose:
+      - 9100/tcp
+  grafana:
+    restart: "${RESTART}"
+    image: grafana/grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    ports:
+      - ${GRAFANA_PORT}:3000/tcp
+  eth2:
+    depends_on:
+      - grafana
+volumes:
+  grafana-data:
+  prom-data:
