@@ -5,7 +5,7 @@ ARG BUILD_TARGET
 ARG USER
 ARG UID
 
-RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git ca-certificates
+RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git ca-certificates bash
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -18,7 +18,7 @@ RUN adduser \
     "${USER}"
 
 RUN go get -d github.com/ethereum/go-ethereum 
-RUN cd $GOPATH/src/github.com/ethereum/go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && GO111MODULE=on go install -ldflags="-linkmode external -extldflags -static" ./cmd/geth
+RUN bash -c "cd $GOPATH/src/github.com/ethereum/go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && GO111MODULE=on go install -ldflags='-linkmode external -extldflags -static' ./cmd/geth"
 RUN ldd $GOPATH/bin/geth 2>&1 | grep -q "Not a valid dynamic program"
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 

@@ -1,4 +1,4 @@
-# eth2-docker v0.1.7.5
+# eth2-docker v0.1.8
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -23,10 +23,6 @@ Currently supported optional components:
 - geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
   your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - Grafana dashboard
-
-**Note**: As of 10/09/2020, Nimbus requires an "archive" source of eth1 chain data.
-This can be a local geth in archive mode via ws://, or a 3rd-party provider via wss://. 
-Please see [SETUP](SETUP.md) for details.
 
 Please see [WEB](WEB.md) for experimental Web UI support on Prysm, and use the Web instead
 of validator-import to import keys.
@@ -90,7 +86,7 @@ Edit the `.env` file to set the number of validators you wish to run. The defaul
 is just one (1) validator.
 
 This command will get you ready to deposit eth:<br />
-`sudo docker-compose run deposit-cli`
+`sudo docker-compose run --rm deposit-cli`
 
 The created files will be in the directory `.eth2/validator_keys` in this project.
 This is also where you'd place your own keystore files if you already have some for import.
@@ -108,7 +104,7 @@ They go into `.eth2/validator_keys` in this project directory, not directly unde
 
 Import the validator key(s) to the validator client:
 
-`sudo docker-compose run validator-import`
+`sudo docker-compose run --rm validator-import`
 
 > #### Prysm-specific
 > - You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
@@ -144,12 +140,13 @@ from the running container.
 
 ## Step 7: Depositing
 
-Optional: You may wish to wait until the beacon node is fully synchronized before you deposit. Check
+**Caution**: You may wish to wait until the beacon node is fully synchronized before you deposit. Check
 its logs with `sudo docker-compose logs -f beacon`. This safe-guards against the validator being
 marked offline if your validator is activated before the beacon syncs.
 
 Once you are ready, you can send eth to the deposit contract by using
-the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/).
+the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/)
+or [Mainnet launchpad](https://launchpad.ethereum.org).
 
 ## Step 8: Grafana Dashboards
 
@@ -247,14 +244,36 @@ Then restart the client:<br />
 If you did not store the wallet password with the validator, come up 
 [more manually](#start-the-client) instead.
 
+## Addendum: Add or recover validators
+
+You can use eth2.0-deposit-cli to either recover validator signing keys or add
+additional ones, if you wish to deposit more validators against the same mnemonic.
+
+In order to recover all your validator signing keys, edit `.env`, set `NUMVALS` to the number
+of validators you had created previously, then run `sudo docker-compose run --rm deposit-cli-add-recover`
+and provide your mnemonic.
+
+In order to add additional validator signing keys, edit `.env`, and set `VAL_START_INDEX`
+to the number of validator keys you had created previously, for example, `4`. New validators
+will be created after this point. Set `NUMVALS` to the number of new validators you wish to
+create and deposit, then run `sudo docker-compose run --rm deposit-cli-add-recover`
+and provide your mnemonic. You will receive new `keystore-m` signing keys and a new `deposit_data` JSON.
+
+> Please triple-check your work here. You want to be sure the new validator keys are created after
+> the existing ones. Launchpad will likely safeguard you against depositing twice, but don't rely
+> on it. Verify that the public keys in `deposit_data` are new and you did not deposit for them
+> previously.
+ 
 ## Addendum: Voluntary client exit
 
 Ethereum 2.0 has a concept of "voluntary client exit", which will remove the
 validator from attesting duties. Locked eth could be withdrawn in phase 2,
 and not sooner.
 
-Currently, Prysm supports voluntary exit. This requires a fully synced
-Prysm client.
+Currently, Prysm and Lighthouse support voluntary exit. This requires a fully synced
+beacon node.
+
+### Prysm
 
 To exit, run `sudo docker-compose run validator-voluntary-exit` and follow the
 prompts.
@@ -276,6 +295,19 @@ as follows:
 - Bring the Prysm client up: `sudo docker-compose up -d eth2`
 - Check logs until the beacon is synced: `sudo docker-compose logs -f beacon`
 - Initiate voluntary exit and follow the prompts: `sudo docker-compose run validator-voluntary-exit`
+
+
+### Lighthouse
+
+The exit procedure for lighthouse is not very refined, yet.
+
+- Copy the `keystore-m` JSON files into `.eth2/validator_keys` in this project
+  directory.
+- Run `sudo docker-compose run --rm validator-voluntary-exit /var/lib/lighthouse/validator_keys/<name-of-keystore-file>`,
+  once for each keystore (validator) you wish to exit.
+- Follow prompts.
+
+### Avoid penalties
 
 > Note you will need to continue running your validator until the exit
 > has been processed by the chain, if you wish to avoid incurring offline

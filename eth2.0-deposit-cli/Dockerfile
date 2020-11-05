@@ -1,4 +1,4 @@
-from python:buster
+from python:buster as builder
 
 ARG USER
 ARG UID
@@ -19,14 +19,21 @@ RUN mkdir -p /var/lib/depcli-data && chown ${USER}:${USER} /var/lib/depcli-data
 
 WORKDIR /var/lib/depcli
 USER ${USER}
-RUN git clone https://github.com/ethereum/eth2.0-deposit-cli.git && cd eth2.0-deposit-cli && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}
-USER root
-RUN cd eth2.0-deposit-cli && pip3 install -r requirements.txt && python3 setup.py install
+RUN bash -c "git clone https://github.com/ethereum/eth2.0-deposit-cli.git && cd eth2.0-deposit-cli && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}"
+
+FROM python:3.7-alpine
+
+WORKDIR /app
+
+COPY --from=builder /var/lib/depcli/eth2.0-deposit-cli/requirements.txt /var/lib/depcli/eth2.0-deposit-cli/setup.py ./
+COPY --from=builder /var/lib/depcli/eth2.0-deposit-cli/eth2deposit ./eth2deposit
+
+RUN apk add --update gcc libc-dev linux-headers
+
+RUN pip3 install -r requirements.txt
+
+RUN python3 setup.py install
 
 USER ${USER}
-WORKDIR /var/lib/depcli/eth2.0-deposit-cli
 
-ENV numvals 1
-ENV chain medalla
-
-ENTRYPOINT ./deposit.sh --folder /var/lib/depcli-data --num_validators $numvals --chain $chain 
+ENTRYPOINT [ "python3", "./eth2deposit/deposit.py" ]
