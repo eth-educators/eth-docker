@@ -98,6 +98,7 @@ geth with `:` between the file names.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
 - `prysm-web.yml` - Prysm experimental Web UI. Not encrypted, do not expose to Internet.
+- `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to miss attestations do to the additional resource demand.
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
@@ -112,6 +113,12 @@ clients each in their own directory.
 
 If you want to run multiple isolated clients, just clone this project into a new directory for
 each. This is great for running medalla and zinken in parallel, for example.
+
+### `SLASHER`   
+Running [slasher](https://docs.prylabs.network/docs/prysm-usage/slasher/) is an optional client compose file, but helps secure the chain and may result in additional earnings.
+```
+Slasher can be a huge resource hog during times of no chain finality, which can manifest as massive RAM usage. Please make sure you understand the risks of this, especially if you want high uptime for your beacon nodes. Slasher places significant stress on beacon nodes when the chain has no finality, and might be the reason why your validators are underperforming if your beacon node is under this much stress.
+```
 
 ## Firewalling
 

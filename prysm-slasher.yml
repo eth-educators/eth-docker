@@ -1,0 +1,33 @@
+version: "3"
+services:
+  slasher:
+    restart: "${RESTART}"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./prysm
+      args:
+        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - USER=${PRYSM_USER}
+        - UID=${LOCAL_UID}
+    image: prysm
+    volumes:
+      - prysmslasher-data:/var/lib/prysm
+    entrypoint:
+      - slasher
+      - --datadir
+      - /var/lib/prysm
+      - --beacon-rpc-provider
+      - beacon:4000
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --${NETWORK}
+      - --accept-terms-of-use
+    depends_on:
+      - validator
+  eth2:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - slasher
+volumes:
+  prysmslasher-data:

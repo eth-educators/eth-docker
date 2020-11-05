@@ -22,6 +22,7 @@ Currently supported clients:
 Currently supported optional components:
 - geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
   your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
+- slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
 - Grafana dashboard
 
 Please see [WEB](WEB.md) for experimental Web UI support on Prysm, and use the Web instead
