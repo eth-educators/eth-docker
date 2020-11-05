@@ -6,7 +6,7 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y ca-certificates git
 
 WORKDIR /usr/src
-RUN git clone https://github.com/PegaSysEng/teku.git && cd teku && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist
+RUN bash -c "git clone https://github.com/PegaSysEng/teku.git && cd teku && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
 
 # Pull all binaries into a second stage deploy debian container
 FROM openjdk:14-slim-buster

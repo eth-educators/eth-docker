@@ -6,7 +6,7 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y git gcc g++ make cmake pkg-config libssl-dev
 
 WORKDIR /usr/src
-RUN git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make
+RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:buster-slim
@@ -45,6 +45,9 @@ COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
 COPY ./query-lh-validator-passwords.sh /usr/local/bin
 # Use an unprivileged user.
 USER ${USER}:${USER}
+
+# For voluntary exit
+ENV KEYSTORE=nonesuch
 
 #EXPOSE 5052 9000 9000/udp
 ENTRYPOINT ["lighthouse", "bn", "--datadir", "/var/lib/lighthouse/", "--http", "--http-address", "0.0.0.0"]

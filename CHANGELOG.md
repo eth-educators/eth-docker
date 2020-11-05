@@ -15,6 +15,12 @@ directoy (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.8 2020-11-04
+
+* eth2.0-deposit-cli 1.0.0 for Ethereum 2.0 main net
+* First stab at Lighthouse voluntary exit
+* More conservative build targets for Lighthouse, Prysm, Teku, and Geth: Latest release tag instead of `master`
+
 ## v0.1.7.5 2020-10-29
 
 * validator-import for Teku now understands Prysm export

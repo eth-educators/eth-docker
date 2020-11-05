@@ -1,0 +1,29 @@
+version: "3"
+services:
+  beacon:
+    ports:
+      - 3500:3500/tcp
+      - 8080:8080/tcp
+    command:
+      - --monitoring-host
+      - 0.0.0.0
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --grpc-gateway-corsdomain
+      - http://127.0.0.1:7500
+      - --grpc-gateway-port
+      - "3500"
+  validator:
+    ports:
+      - 7500:7500/tcp
+      - 8081:8081/tcp
+    command:
+      - --monitoring-host
+      - 0.0.0.0
+      - --web
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --grpc-gateway-corsdomain
+      - http://127.0.0.1:7500
+      - --grpc-gateway-port
+      - "7500"

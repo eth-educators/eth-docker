@@ -53,7 +53,8 @@ Please choose:
 * Whether to run a grafana dashboard for monitoring
 
 > Note: Teku is written in Java, which makes it memory-hungry. In its default configuration, you may
-> want a machine with 16 GiB of RAM. See `.env` for a parameter to restrict Teku to 4 GiB of RAM.
+> want a machine with 16 GiB of RAM. See `.env` for a parameter to restrict Teku to 6 GiB of heap. It
+> may still take more than 6 GiB of RAM in total.
 
 First, copy the environment file.<br />
 `cp default.env .env`
@@ -63,7 +64,6 @@ First, copy the environment file.<br />
 > which this project does not use.
  
 Then, adjust the contents of `.env`. On Ubuntu Linux, you can run `nano .env`.
-- Set the `GRAFFITI` string if you want a POAP or just a specific string
 - If you are on Linux, **adjust `LOCAL_UID` to the UID of the logged-in user**. 
 `echo $UID` will show it to you. It is highly recommended to run as a non-root
 user on Linux. On [Debian](https://devconnected.com/how-to-add-a-user-to-sudoers-on-debian-10-buster/)
@@ -76,11 +76,15 @@ has that functionality built-in.
 > permissions errors during use.
 
 - Set the `COMPOSE_FILE` entry depending on the client you are going to run,
-and with which options. See below for available compose files.
+and with which options. See below for available compose files
 - If you are going to use a 3rd-party provider as your eth1 chain source, set `ETH1_NODE` to that URL.
-  This is most relevant to Nimbus, see [how to create your own Infura account](https://status-im.github.io/nimbus-eth2/infura-guide).
+  See [how to create your own Infura account](https://status-im.github.io/nimbus-eth2/infura-guide)
 - Adjust ports if you are going to need custom ports instead of the defaults. These are the ports
-exposed to the host, and for everything but Grafana to the Internet via your firewall/router.
+exposed to the host, and for everything but Grafana to the Internet via your firewall/router
+- Set the `NETWORK` variable to either "mainnet" or a test network such as "medalla"
+- Comment out the `ETH_NETWORK` variable, to use the main net, or set it to a test network such as "--goerli",
+  with the two dashes.
+- Set the `GRAFFITI` string if you want a specific string
 
 ### Client compose files
 
@@ -91,9 +95,9 @@ geth with `:` between the file names.
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
-- `geth-archive.yml` - local geth node in full archive mode, required for Nimbus
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
-- `prysm-grafana.yml` - grafana dashboard for Prysm, as well as experimental Web UI
+- `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
+- `prysm-web.yml` - Prysm experimental Web UI. Not encrypted, do not expose to Internet.
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
@@ -108,28 +112,6 @@ clients each in their own directory.
 
 If you want to run multiple isolated clients, just clone this project into a new directory for
 each. This is great for running medalla and zinken in parallel, for example.
-
-> Nimbus: Nimbus as of 10/09/2020 requires a "full archive" source of eth1 chain data.
-> It will work with a 3rd party via wss://, though not https://, and a local
-> archive node via ws://, though not http://. Nimbus' capabilities will evolve,
-> check with the Nimbus Discord for its current state.<br />
-> Note that a "full archive" geth takes ~60GB for goerli testnet and ~1.3TB for mainnet.<br />
-> As of the same date, Nimbus does not detect its external IP via P2P protocol. It will
-> still work, but may take (much) longer to connect to peers.
-
-### Optional: Advanced setup with multiple beacons, shared geth and Vouch client
-
-**Work in progress**, this is not currently functional
-
-In this setup, local eth1 node(s) and local beacons would run each in their own directory,
-and connect via a shared network or the Internet. beacon nodes could be configured to use their own validators
-or a shared validator-client like Vouch. This is very much a work-in-progress and not ready even
-for testing in this release. It will be supported on Linux only, as docker-compose's host network
-behavior differs between MacOS/Windows and Linux, and an advanced setup like this is not likely to run
-on a local user's MacOS/Windows machine.
-
-- `geth-shared.yml` - local geth node, sharable between multiple beacons
-- `geth-archive-shared.yml` - local geth node in full archive mode, sharable between multiple beacons
 
 ## Firewalling
 

@@ -32,7 +32,7 @@ services:
       - --verbosity
       - ${LOG_LEVEL}
       - --blst
-      - --${TESTNET}
+      - --${NETWORK}
       - --accept-terms-of-use
   validator:
     restart: "${RESTART}"
@@ -59,7 +59,7 @@ services:
       - --verbosity
       - ${LOG_LEVEL}
       - --blst
-      - --${TESTNET}
+      - --${NETWORK}
       - --accept-terms-of-use
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
@@ -92,7 +92,7 @@ services:
       - /var/lib/prysm/
       - --keys-dir
       - /var/lib/prysm/validator_keys
-      - --${TESTNET}
+      - --${NETWORK}
   validator-voluntary-exit:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -119,7 +119,7 @@ services:
       - beacon:4000
       - --wallet-password-file
       - /var/lib/prysm/password.txt
-      - --${TESTNET}
+      - --${NETWORK}
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -132,12 +132,40 @@ services:
     image: eth2.0-deposit-cli
     volumes:
       - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
-    entrypoint: ${DEPCLI_ENTRYPOINT}
-    command:
+    entrypoint:
+      - python3
+      - /app/eth2deposit/deposit.py
+      - new-mnemonic
+      - --folder
+      - /var/lib/depcli-data
       - --num_validators
       - ${NUMVAL}
       - --chain
-      - ${TESTNET}
+      - ${NETWORK}
+  deposit-cli-add-recover:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./eth2.0-deposit-cli
+      args:
+        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - USER=${DEPCLI_USER}
+        - UID=${LOCAL_UID}
+    image: eth2.0-deposit-cli
+    volumes:
+      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
+    entrypoint:
+      - python3
+      - /app/eth2deposit/deposit.py
+      - existing-mnemonic
+      - --folder
+      - /var/lib/depcli-data
+      - --num_validators
+      - ${NUMVAL}
+      - --validator_start_index
+      - ${VAL_START_INDEX}
+      - --chain
+      - ${NETWORK}
   eth2:
     image: tianon/true
     restart: "no"

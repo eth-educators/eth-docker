@@ -7,7 +7,7 @@ ARG METRICS
 RUN apt-get update && apt-get install -y build-essential git libpcre3-dev ca-certificates
 
 WORKDIR /usr/src
-RUN git clone https://github.com/status-im/nim-beacon-chain && cd nim-beacon-chain && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make ${METRICS} beacon_node
+RUN bash -c "git clone https://github.com/status-im/nim-beacon-chain && cd nim-beacon-chain && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make ${METRICS} beacon_node"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:buster-slim
