@@ -1,10 +1,14 @@
 version: "3"
 services:
   beacon:
+    expose:
+      - 8080
     command:
       - --monitoring-host
       - 0.0.0.0
   validator:
+    expose:
+      - 8081
     command:
       - --monitoring-host
       - 0.0.0.0
