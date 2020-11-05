@@ -98,7 +98,7 @@ geth with `:` between the file names.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
 - `prysm-web.yml` - Prysm experimental Web UI. Not encrypted, do not expose to Internet.
-- `prysm-slasher.yml` - Prysm experimental Web UI. Not encrypted, do not expose to Internet.
+- `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to miss attestations do to the additional resource demand.
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
