@@ -20,7 +20,7 @@ services:
       - beacon:4000
       - --verbosity
       - ${LOG_LEVEL}
-      - --${TESTNET}
+      - --${NETWORK}
       - --accept-terms-of-use
     depends_on:
       - validator
