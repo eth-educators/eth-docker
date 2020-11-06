@@ -1,4 +1,5 @@
-# eth2-docker v0.1.8.1
+# eth2-docker v0.1.8.2
+
 Unofficial and experimental docker build instructions for eth2 clients
 
 ## Acknowledgements
@@ -9,9 +10,8 @@ Without their previous work, this project would not exist.
 
 ## Supported clients
 
-This project builds clients from source. A similar workflow for
-binary images is a TODO, as long as it does not duplicate work
-by client teams.
+This project builds clients from official source repositories. A similar workflow for
+binary images is a TODO.
 
 Currently supported clients:
 - Lighthouse

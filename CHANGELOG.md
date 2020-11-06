@@ -3,7 +3,7 @@
 ## Updating the project
 
 To update the components of the project, run from within the project
-directoy (`cd ~/eth2-docker` by default):
+directory (`cd ~/eth2-docker` by default):
 
 * `git pull`
 * `cp .env .env.bak && cp default.env .env`
@@ -14,6 +14,10 @@ directoy (`cd ~/eth2-docker` by default):
 * !! If coming from Lighthouse v0.2.x, make changes as per notes for [v0.1.6](#v016-2020-10-09)
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
+
+## v0.1.8.2 2020-11-06
+
+* Add OpenEthereum eth1 client option
 
 ## v0.1.8.1 2020-11-05
 
