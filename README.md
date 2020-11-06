@@ -20,8 +20,10 @@ Currently supported clients:
 - Nimbus
 
 Currently supported optional components:
-- geth, local eth1 node. Use this or a 3rd-party provider of eth1 chain data to "feed"
-  your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
+- openethereum, local eth1 node
+- geth, local eth1 node.
+> Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
+> your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
 - Grafana dashboard
 
@@ -128,11 +130,11 @@ sudo docker-compose up -d eth2
 > **Nimbus and Teku**: Beacon and validator run in the same process, there is only one container for both
 
 If, however, you chose not to store the wallet password with the validator, you will need
-to bring the beacon and, if in use, geth, up individually instead, then "run"
+to bring the beacon and, if in use, eth1, up individually instead, then "run"
 the validator so it can prompt you for input:
 
 ```
-sudo docker-compose up -d geth beacon
+sudo docker-compose up -d eth1 beacon
 sudo docker-compose run validator
 ```
 
@@ -186,7 +188,7 @@ service.
 ## Addendum: Monitor the client
 
 Monitoring the logs of the client is useful for troubleshooting
-and to judge the amount of time left before the beacon and geth nodes
+and to judge the amount of time left before the beacon and eth1 nodes
 are fully synchronized.
 
 To see a list of running containers:
@@ -223,14 +225,14 @@ Inside the project directory, run:<br />
 Then `cp .env .env.bak` and `cp default.env .env`, and set variables inside `.env`
 the way you need them, with `.env.bak` as a guide.
 
-### Geth
+### Eth1
 
 Run:<br />
-`sudo docker-compose build --no-cache geth`
+`sudo docker-compose build --no-cache eth1`
 
-Then stop, remove and start geth:<br />
-`sudo docker-compose stop geth && sudo docker-compose rm geth`<br />
-`sudo docker-compose up -d geth`
+Then stop, remove and start eth1:<br />
+`sudo docker-compose stop eth1 && sudo docker-compose rm eth1`<br />
+`sudo docker-compose up -d eth1`
 
 ### Client
 
@@ -329,7 +331,8 @@ key sequence to detach from it again.
 `sudo docker ps` lists all running services, with the container name to the right.<br />
 `sudo docker logs containername` shows logs for a container, `sudo docker logs -f containername` scrolls them.<br />
 `sudo docker-compose logs servicename` shows logs for a service, `sudo docker-compose logs -f servicename` scrolls them.<br />
-`sudo docker exec -it containername /bin/bash` will connect you to a running service in a bash shell. The geth service doesn't have a shell.<br />
+`sudo docker exec -it containername /bin/bash` will connect you to a running service in a bash shell. The eth1 service doesn't have a shell
+if using geth.<br />
 
 You may start a service with `sudo docker-compose up -d servicename` and then find it's not in `sudo docker ps`. That means it terminated while
 trying to start. To investigate, you could leave the `-d` off so you see logs on command line:<br />

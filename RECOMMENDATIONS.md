@@ -10,7 +10,7 @@ You'd get yourself slashed, and no-one wants that. Protecting you from this
 is a work in progress. Choose one client, and one client only, and run that.
 
 **You need an eth1 source**<br />
-This project assumes you'll use geth. It doesn't have to be that, it can
+This project assumes you'll use openethereum or geth. It doesn't have to be that, it can
 be a 3rd party. You need some source for eth1, so that your validator can
 successfully propose blocks.
 
@@ -23,18 +23,19 @@ you will need to open in `ufw` depend on the client you choose.
 
 ## Firewalling
 
-geth: 30303 tcp/udp, forwarded to your server<br />
+eth1: 30303 tcp/udp, forwarded to your server<br />
 lighthouse: 9000 tcp/udp, forwarded to your server<br />
 prysm: 13000 tcp and 12000 udp, forwarded to your server<br />
 grafana: 3000 tcp, open on ufw but not forwarded to your server.<br />
-The grafana port is insecure http:// and should only be accessed locally.
-For cloud-hosted instances, a reverse proxy such as nginx or
-traefik can be used.
+> The grafana port is insecure http:// and should only be accessed locally.
+> For cloud-hosted instances, a reverse proxy such as nginx or
+> traefik can be used. An [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/)
+> is also a great option.
 
 ## Before depositing
 
 You likely want to wait to deposit your eth until you can see in the logs
-that the eth1 node (e.g. geth) is synchronized and the eth2 beacon node
+that the eth1 node (e.g. openethereum) is synchronized and the eth2 beacon node
 is fully synchronized, which happens after that. This takes hours on
 testnet and could take days on mainnet.
 
@@ -98,12 +99,14 @@ For more on withdrawal key security, read this article: https://www.attestant.io
 
 ## Resources, hardware
 
-See the client team recommendations. Generally, however, 8 GiB of RAM is considered
-a minimum, and 16 GiB is recommended. 2 or 4 CPU cores, and an SSD for storage
-because the node databases are so IOPS-heavy. The eth1 node (geth) would require
-around 310GiB of storage by itself. The beacon node database is small, around 11GiB,
-but we don't know what growth will look like from phase 1.5 and 2 on. If
-you are running a slasher, that might be another 100 to 300GiB by itself.
+See the client team recommendations. Generally, however, 8 GiB of RAM is a tight
+fit, and 16 GiB is recommended. Some clients such as Teku may need more RAM out
+of the box. 2 or 4 CPU cores, and an SSD for storage because the node databases
+are so IOPS-heavy. The Geth eth1 node would require around 330GiB of storage by
+itself initially, which can grow to 500 GiB over a year. The OpenEthereum eth1
+node would require 110 to 200GiB of storage. The beacon node database is small,
+around 11GiB, but we don't know what growth will look like from phase 1.5 and 2 on.
+If you are running a slasher, that might be another 100 to 300GiB by itself.
 
 Two home server builds that I like and am happy to recommend are below. Both support
 IPMI, which means they can be managed and power-cycled remotely and need neither

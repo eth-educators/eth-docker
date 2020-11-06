@@ -4,35 +4,31 @@ services:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
-      context: ./geth
+      context: ./openethereum
       args:
-        - BUILD_TARGET=${GETH_BUILD_TARGET} 
-        - USER=${GETH_USER}
+        - BUILD_TARGET=${OE_BUILD_TARGET} 
+        - USER=${OE_USER}
         - UID=${LOCAL_UID}
-    image: geth
+    image: openethereum
     volumes:
-      - eth1-data:/var/lib/goethereum
+      - eth1-data:/var/lib/openethereum
     ports:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
     expose:
       - 8545
-      - 8546
     entrypoint:
-      - geth
-      - --nousb
-      - --http
-      - --http.addr
-      - 0.0.0.0
-      - --http.vhosts=*
-      - --http.api
-      - eth,net
-      - --ipcdisable
-      - --datadir
-      - /var/lib/goethereum
+      - openethereum
+      - --no-ws
+      - --no-ipc
+      - --no-secretstore
+      - --base-path=/var/lib/openethereum
+      - --jsonrpc-interface=all
+      - --jsonrpc-apis=net,eth
+      - --jsonrpc-hosts=all
+      - --chain=${ETH1_NETWORK}
       - --port
       - ${ETH1_PORT}
-    command: ${GETH1_NETWORK}
   beacon:
     depends_on:
       - eth1
