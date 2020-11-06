@@ -1,0 +1,60 @@
+FROM alpine:edge AS builder
+
+# show backtraces
+ENV RUST_BACKTRACE 1
+
+ARG BUILD_TARGET
+
+RUN apk update && apk add --no-cache \
+  build-base \
+  cargo \
+  cmake \
+  eudev-dev \
+  linux-headers \
+  perl \
+  rust \
+  git \
+  bash
+
+WORKDIR /
+RUN bash -c "git clone https://github.com/openethereum/openethereum.git && cd openethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && cargo build --release --features final --target x86_64-alpine-linux-musl --verbose && strip target/x86_64-alpine-linux-musl/release/openethereum"
+
+FROM alpine:edge
+
+# show backtraces
+ENV RUST_BACKTRACE 1
+
+ARG USER
+ARG UID
+
+# curl and jq are installed to help create health and readiness checks on Kubernetes
+RUN apk update && apk add --no-cache \
+  libstdc++ \
+  eudev-libs \
+  libgcc \
+  curl \
+  jq
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/openethereum && chown ${USER}:${USER} /var/lib/openethereum && chmod 700 /var/lib/openethereum
+
+# Use an unprivileged user.
+USER ${USER}:${USER}
+
+EXPOSE 8080 8545 8180
+
+WORKDIR /var/lib/openethereum
+
+COPY --chown=openethereum:openethereum --from=builder /openethereum/target/x86_64-alpine-linux-musl/release/openethereum /usr/local/bin
+
+ENTRYPOINT ["openethereum", "--base-path=/var/lib/openethereum"]

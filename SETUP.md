@@ -45,15 +45,16 @@ Please choose:
   * Lighthouse
   * Prysm
   * Teku
-  * Nimbus - as of 10/09 requires an archive-mode geth or remote archive like goerli.infura.io
+  * Nimbus
 * Your source of eth1 data
+  * openethereum
   * geth
   * 3rd-party
-* Whether to run a slasher (not yet implemented)
+* Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
 
 > Note: Teku is written in Java, which makes it memory-hungry. In its default configuration, you may
-> want a machine with 16 GiB of RAM. See `.env` for a parameter to restrict Teku to 6 GiB of heap. It
+> want a machine with 24 GiB of RAM or more. See `.env` for a parameter to restrict Teku to 6 GiB of heap. It
 > may still take more than 6 GiB of RAM in total.
 
 First, copy the environment file.<br />
@@ -89,26 +90,27 @@ exposed to the host, and for everything but Grafana to the Internet via your fir
 ### Client compose files
 
 Set the `COMPOSE_FILE` string depending on which client you are going to use. Add optional services like
-geth with `:` between the file names.
+openethereum with `:` between the file names.
 - `lh-base.yml` - Lighthouse
 - `prysm-base.yml` - Prysm
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
+- `oe.yml` - local openethereum eth1 chain node
 - `geth.yml` - local geth eth1 chain node
+- `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
 - `prysm-web.yml` - Prysm experimental Web UI and Grafana dashboard. Not encrypted, do not expose to Internet. **Mutually exclusive** with `prysm-grafana.yml`
-- `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to miss attestations do to the additional resource demand.
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
-For example, Lighthouse with local geth and grafana:
-`COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
+For example, Lighthouse with local openethereum and grafana:
+`COMPOSE_FILE=lh-base.yml:oe.yml:lh-grafana.yml`
 
 > See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
 
-In this setup, clients are isolated from each other. Each run their own validator, and if geth
-is in use, their own geth. This is perfect for running a single client, or multiple isolated
+In this setup, clients are isolated from each other. Each run their own validator, and if eth1
+is in use, their own eth1 node. This is perfect for running a single client, or multiple isolated
 clients each in their own directory.
 
 If you want to run multiple isolated clients, just clone this project into a new directory for
