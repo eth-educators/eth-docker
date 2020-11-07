@@ -36,12 +36,14 @@ services:
       - 9100/tcp
   grafana:
     restart: "${RESTART}"
-    image: grafana/grafana
+    build:
+      context: ./grafana
+    image: grafana
     volumes:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
-    ports: 
+    ports:
       - ${GRAFANA_PORT}:3000/tcp
   eth2:
     depends_on:
