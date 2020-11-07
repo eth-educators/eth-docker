@@ -19,8 +19,8 @@ directory (`cd ~/eth2-docker` by default):
 
 * Auto configure Grafana with prometheus datasource.
 * Auto Add `Metanull's Prysm Dashboard JSON` to Grafana
- * Auto Add `Prysm Dashboard JSON` to Grafana
- * Auto Add `Prysm Dashboard JSON for more than 10 validators` to Grafana
+* Auto Add `Prysm Dashboard JSON` to Grafana
+* Auto Add `Prysm Dashboard JSON for more than 10 validators` to Grafana
 
 ## v0.1.8.2 2020-11-06
 
