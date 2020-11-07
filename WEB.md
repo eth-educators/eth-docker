@@ -3,7 +3,7 @@
 The Prysm Web UI is new and still experimental. It is designed to be accessed locally, not remotely,
 which means an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) is required to access it.
 
-The `prysm-grafana.yml` file, specified in the `COMPOSE_FILE` variable inside `.env`, enables both Grafana
+The `prysm-web.yml` file, specified in the `COMPOSE_FILE` variable inside `.env`, enables both Grafana
 and Web UI.
 
 ## Prepare the validator client
