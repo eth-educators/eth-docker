@@ -12,8 +12,11 @@ COPY ./datasource.yml /etc/grafana/provisioning/datasources/
 #  metanull-dashboard
 RUN wget -qcO - https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json >/etc/grafana/provisioning/dashboards/eth2-grafana-dashboard-single-source.json
 
-# prysm-grafana-dashboard
+# prysm-grafana-dashboard-less-10
 RUN wget -qcO - https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json >/etc/grafana/provisioning/dashboards/less_10_validators.json
+
+# prysm-grafana-dashboard-more-10
+RUN wget -qcO - https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json >/etc/grafana/provisioning/dashboards/more_10_validators.json
 
 RUN tree /etc/grafana/provisioning/
 
