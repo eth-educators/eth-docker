@@ -4,6 +4,7 @@ USER root
 RUN apk add wget
 RUN apk add tree
 RUN apk add jq
+RUN apk add sed
 
 RUN mkdir -p /etc/grafana/provisioning/dashboards/
 RUN mkdir -p /etc/grafana/provisioning/datasources/
@@ -13,7 +14,7 @@ COPY ./datasource.yml /etc/grafana/provisioning/datasources/
 #  prysm_metanull
 ARG prysm_metanull_url='https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json'
 ARG prysm_metanull_file='/etc/grafana/provisioning/dashboards/prysm_metanull.json'
-RUN wget -qcO - $prysm_metanull_url | jq '.title = "prysm_metanull"' >$prysm_metanull_file
+RUN wget -qcO - $prysm_metanull_url | jq '.title = "prysm_metanull"' | sed 's/job=\\"beacon\\"/job=\\"beacon node\\"/g' >$prysm_metanull_file
 
 #  prysm_less_10
 ARG prysm_less_10_url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json'
