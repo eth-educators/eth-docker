@@ -47,7 +47,7 @@ Please take a look.
 5. Import the validator keystore files generated in the previous step
 6. Run the client
 7. Finalize the deposit. This is not done within this project
-8. Set up Grafana dashboards (optional)
+8. A baseline set of Grafana dashboards are included, see step 8.  Feel free to add more, or submit a PR with your favorite dashboards.
 9. Configure your system to start the eth2 node on boot (optional)
 
 ## Step 1: Install prerequisites
@@ -153,17 +153,18 @@ or [Mainnet launchpad](https://launchpad.ethereum.org).
 
 ## Step 8: Grafana Dashboards
 
-I'll repeat /u/SomerEsat's instructions on how to set up Grafana. 
+A baseline set of dashboards has been included.  
+- [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
+- [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
+- [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
+  
+ To further customize grafana, see /u/SomerEsat's instructions on how to set up Grafana here.
 - Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
-- Click on the gear icon on the left, choose "Data Sources", and "Add Data Source". Choose Prometheus, use `http://prometheus:9090` as the URL, then click "Save and Test".
 - Import a Dashboard. Click on the + icon on the left, choose "Import". Copy/paste JSON code from one of the client dashboard links below (click anywhere inside the page
 the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load", choose the "prometheus" data source you just configured, click "Import".
 - For Teku, you can use the grafana.com URL instead of raw JSON.
 
 - [Lighthouse Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
-- [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
-- [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
-- [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
 - [Teku Dashboard](https://grafana.com/grafana/dashboards/12199)
 

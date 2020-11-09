@@ -15,6 +15,13 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.8.3 2020-11-07
+
+* Auto configure Grafana with prometheus datasource.
+* Auto Add `Metanull's Prysm Dashboard JSON` to Grafana
+* Auto Add `Prysm Dashboard JSON` to Grafana
+* Auto Add `Prysm Dashboard JSON for more than 10 validators` to Grafana
+
 ## v0.1.8.2 2020-11-06
 
 * Add OpenEthereum eth1 client option
