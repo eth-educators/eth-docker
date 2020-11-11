@@ -1,0 +1,6 @@
+# To be used in conjunction with oe.yml, nm.yml or geth.yml
+version: "3"
+services:
+  eth1:
+    ports:
+      - ${ETH1_RPC_PORT}:${ETH1_RPC_PORT}/tcp
