@@ -15,6 +15,10 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.8.5 2020-11-11
+
+* Added option to run eth1 node exposed to the host on RPC port
+
 ## v0.1.8.4 2020-11-08
 
 * Updated grafana image to change all occurrences of `job="beacon"` to `jon=beacon_node` in the metanull dashboard.
