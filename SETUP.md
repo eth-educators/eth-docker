@@ -97,6 +97,7 @@ openethereum with `:` between the file names.
 - `nimbus-base.yml` - Nimbus
 - `oe.yml` - local openethereum eth1 chain node
 - `geth.yml` - local geth eth1 chain node
+- `shared-eth1.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
