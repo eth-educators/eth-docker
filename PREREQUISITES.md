@@ -14,7 +14,7 @@ expected to work on MacOS.
 Run these one line at a time:
 ```
 sudo apt update && sudo apt dist-upgrade
-sudo apt install -y docker docker-compose git
+sudo apt install -y docker docker-compose git dotnet-sdk-3.1
 ```
 
 You know it was successful when you saw messages scrolling past that install git,

@@ -1,0 +1,45 @@
+version: "3"
+services:
+  eth1:
+    restart: "${RESTART}"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./nethermind
+      args:
+        - BUILD_TARGET=${NM_BUILD_TARGET} 
+        - USER=${NM_USER}
+        - UID=${LOCAL_UID}
+        - ETH1_NETWORK=${ETH1_NETWORK}
+    image: nethermind
+    volumes:
+      - eth1-data:/var/lib/nethermind
+    ports:
+      - ${ETH1_PORT}:${ETH1_PORT}/tcp
+      - ${ETH1_PORT}:${ETH1_PORT}/udp
+    expose:
+      - 8645
+    entrypoint:
+      - dotnet
+      - Nethermind.Runner.dll
+      - --Init.IsMining
+      - "false"
+      - --Network.DiscoveryPort
+      -  ${ETH1_PORT}
+      - --Network.P2PPort
+      -  ${ETH1_PORT}
+      - --JsonRpc.Enabled
+      - "true"
+      - --JsonRpc.Host
+      - 0.0.0.0
+      - --JsonRpc.Port
+      - "8645"
+      - --Sync.FastSync
+      - "true"
+  beacon:
+    depends_on:
+      - eth1
+  eth2:
+    depends_on:
+      - eth1
+volumes:
+  eth1-data:
