@@ -10,6 +10,7 @@ services:
         - USER=${NM_USER}
         - UID=${LOCAL_UID}
         - ETH1_NETWORK=${ETH1_NETWORK}
+        - NETHERMIND_CONFIG=${ETH1_NETWORK}
     image: nethermind
     volumes:
       - eth1-data:/var/lib/nethermind
