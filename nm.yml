@@ -33,7 +33,7 @@ services:
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
-      - "8645"
+      - ${ETH1_RPC_PORT}
       - --Sync.FastSync
       - "true"
   beacon:
