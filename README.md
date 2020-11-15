@@ -21,6 +21,7 @@ Currently supported clients:
 
 Currently supported optional components:
 - openethereum, local eth1 node
+- nethermind, local eth1 node
 - geth, local eth1 node.
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
