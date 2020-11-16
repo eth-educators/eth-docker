@@ -39,9 +39,9 @@ RUN adduser \
 #    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # Copy executable
-COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/validator/linux_amd64_stripped/validator /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/slasher/linux_amd64_stripped/slasher /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/validator/validator_/validator /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/slasher/slasher_/slasher /usr/local/bin/
 COPY ./create-prysm-validator-wallet.sh /usr/local/bin
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
