@@ -1,6 +1,9 @@
 # Build Prysm in a stock Go build container
 FROM golang:buster as builder
 
+# Here only to avoid build-time errors
+ARG DOCKER_TAG
+
 ARG BUILD_TARGET
 
 RUN apt-get update && apt-get install -y cmake libtinfo5 libgmp-dev npm && npm install -g @bazel/bazelisk && bazel version
@@ -9,7 +12,7 @@ WORKDIR /go/src
 RUN bash -c "git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //beacon-chain:beacon-chain && bazel build --config=release //validator:validator && bazel build --config=release //slasher:slasher"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:buster-slim
+FROM debian:buster-slim as beacon
 
 ARG USER
 ARG UID
@@ -33,9 +36,9 @@ RUN adduser \
     "${USER}"
 
 # Copy executable
-COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/linux_amd64_stripped/beacon-chain /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/validator/linux_amd64_stripped/validator /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/slasher/linux_amd64_stripped/slasher /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/validator/validator_/validator /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/slasher/slasher_/slasher /usr/local/bin/
 
 COPY ./create-prysm-validator-wallet.sh /usr/local/bin
 # Create data mount point with permissions
@@ -46,3 +49,7 @@ USER ${USER}:${USER}
 
 #EXPOSE 4000 13000 12000/udp
 ENTRYPOINT ["beacon-chain", "--datadir", "/var/lib/prysm", "--http-web3provider", "http://geth:8545", "--rpc-host", "0.0.0.0"]
+
+FROM beacon as validator
+FROM beacon as slasher
+

@@ -60,7 +60,6 @@ services:
       - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
-      - --blst
       - --${NETWORK}
       - --accept-terms-of-use
       # If you chose not to store the wallet password during import, comment out the two following lines
@@ -91,7 +90,7 @@ services:
       - /var/lib/prysm/
       - --keys-dir
       - /var/lib/prysm/validator_keys
-      - --${NETWORK}
+      - ${NETWORK}
   validator-voluntary-exit:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}

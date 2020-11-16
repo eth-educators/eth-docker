@@ -1,10 +1,11 @@
-version: "3"
+version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./geth
+      dockerfile: ${GETH_DOCKERFILE}
       args:
         - BUILD_TARGET=${GETH_SRC_BUILD_TARGET} 
         - USER=${GETH_USER}
