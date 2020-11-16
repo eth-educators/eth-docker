@@ -6,9 +6,10 @@ services:
     build:
       context: ./openethereum
       args:
-        - BUILD_TARGET=${OE_BUILD_TARGET} 
+        - BUILD_TARGET=${OE_SRC_BUILD_TARGET} 
         - USER=${OE_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum
     volumes:
       - eth1-data:/var/lib/openethereum

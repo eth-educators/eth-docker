@@ -1,15 +1,21 @@
-version: "3"
+version: "3.4"
+x-build: &prysm-build
+  context: ./prysm
+  dockerfile: ${PRYSM_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
+    - USER=${PRYSM_USER}
+    - UID=${LOCAL_UID}
+    - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+
 services:
   beacon:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
-      context: ./prysm
-      args:
-        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
-        - USER=${PRYSM_USER}
-        - UID=${LOCAL_UID}
-    image: prysm
+      target: beacon
+      <<: *prysm-build
+    image: prysm-beacon
     volumes:
       - prysmbeacon-data:/var/lib/prysm
     ports:
@@ -31,19 +37,15 @@ services:
       - ${PRYSM_UDP_PORT}
       - --verbosity
       - ${LOG_LEVEL}
-      - --blst
       - --${NETWORK}
       - --accept-terms-of-use
   validator:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
-      context: ./prysm
-      args:
-        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
-        - USER=${PRYSM_USER}
-        - UID=${LOCAL_UID}
-    image: prysm
+      target: validator
+      <<: *prysm-build
+    image: prysm-validator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
     entrypoint:
@@ -69,13 +71,10 @@ services:
   validator-import:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
-    image: prysm
+    image: prysm-validator
     build:
-      context: ./prysm
-      args:
-        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
-        - USER=${PRYSM_USER}
-        - UID=${LOCAL_UID}
+      target: validator
+      <<: *prysm-build
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/prysm/validator_keys
@@ -96,13 +95,10 @@ services:
   validator-voluntary-exit:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
-    image: prysm
+    image: prysm-validator
     build:
-      context: ./prysm
-      args:
-        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
-        - USER=${PRYSM_USER}
-        - UID=${LOCAL_UID}
+      target: validator
+      <<: *prysm-build
     volumes:
       - prysmvalidator-data:/var/lib/prysm
     entrypoint:
@@ -126,7 +122,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
@@ -148,7 +144,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli

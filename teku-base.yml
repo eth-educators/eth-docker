@@ -48,7 +48,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
@@ -70,7 +70,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli

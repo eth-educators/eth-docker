@@ -2,8 +2,7 @@ ARG DOCKER_TAG
 
 FROM sigp/lighthouse:${DOCKER_TAG}
 
-# Unused, this is here to avoid build time complaints
-ARG BUILD_TARGET
+ARG BUILD_TARGET # Unused, this is here to avoid build time complaints
 ARG USER
 ARG UID
 

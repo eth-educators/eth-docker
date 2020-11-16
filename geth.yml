@@ -6,9 +6,10 @@ services:
     build:
       context: ./geth
       args:
-        - BUILD_TARGET=${GETH_BUILD_TARGET} 
+        - BUILD_TARGET=${GETH_SRC_BUILD_TARGET} 
         - USER=${GETH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${GETH_DOCKER_TAG}
     image: geth
     volumes:
       - eth1-data:/var/lib/goethereum

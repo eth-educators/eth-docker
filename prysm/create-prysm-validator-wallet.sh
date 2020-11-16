@@ -20,7 +20,6 @@ done
 echo
 
 if [ $import -ne 0 ]; then
-  echo When asked for a wallet directory below, enter /var/lib/prysm
   echo
 
   if ! "$@"; then
