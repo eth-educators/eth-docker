@@ -48,6 +48,7 @@ Please choose:
   * Nimbus
 * Your source of eth1 data
   * openethereum
+  * nethermind
   * geth
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
@@ -96,6 +97,7 @@ openethereum with `:` between the file names.
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
 - `oe.yml` - local openethereum eth1 chain node
+- 'nm.yml' - local nethermind eth1 chain node
 - `geth.yml` - local geth eth1 chain node
 - `shared-eth1.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
@@ -132,7 +134,7 @@ an SSH tunnel is a good choice.
 Ports that I mention should be "Open to Internet" need to be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
-- 30303 tcp/udp - local eth1 node, geth or openethereum. Open to Internet.
+- 30303 tcp/udp - local eth1 node, geth or openethereum or nethermind. Open to Internet.
 - 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
 - 13000/tcp - Prysm beacon node. Open to Internet.
 - 12000/udp - Prysm beacon node. Open to Internet.
