@@ -47,8 +47,9 @@ Please choose:
   * Teku
   * Nimbus
 * Your source of eth1 data
-  * openethereum
   * geth
+  * openethereum - testing only, DB corruption observed
+  * nethermind - testing only, API calls not stable
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
@@ -95,8 +96,9 @@ openethereum with `:` between the file names.
 - `prysm-base.yml` - Prysm
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
-- `oe.yml` - local openethereum eth1 chain node
 - `geth.yml` - local geth eth1 chain node
+- `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed
+- `nm.yml` - local nethermind eth1 chain node - testing only, API calls not stable
 - `shared-eth1.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse

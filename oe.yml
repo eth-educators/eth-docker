@@ -1,25 +1,27 @@
-version: "3"
+version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./openethereum
+      dockerfile: ${OE_DOCKERFILE}
       args:
-        - BUILD_TARGET=${OE_BUILD_TARGET} 
+        - BUILD_TARGET=${OE_SRC_BUILD_TARGET} 
         - USER=${OE_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum
     volumes:
-      - eth1-data:/var/lib/openethereum
+      - oe-eth1-data:/var/lib/openethereum
     ports:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
     expose:
       - ${ETH1_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}/tcp
     entrypoint:
       - openethereum
-      - --no-ws
       - --no-ipc
       - --no-secretstore
       - --base-path=/var/lib/openethereum
@@ -27,6 +29,11 @@ services:
       - --jsonrpc-apis=net,eth
       - --jsonrpc-hosts=all
       - --jsonrpc-cors=${ETH1_RPC_CORS}
+      - --ws-interface=all
+      - --ws-apis=net,eth
+      - --ws-hosts=all
+      - --ws-origins=all
+      - --ws-port=${ETH1_WS_PORT}
       - --chain=${ETH1_NETWORK}
       - --port
       - ${ETH1_PORT}
@@ -39,4 +46,4 @@ services:
     depends_on:
       - eth1
 volumes:
-  eth1-data:
+  oe-eth1-data:

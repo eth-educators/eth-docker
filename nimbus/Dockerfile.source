@@ -1,6 +1,9 @@
 # Build Nimbus in a stock debian container
 FROM debian:buster-slim as builder
 
+# Included here to avoid build-time complaints
+ARG DOCKER_TAG
+
 ARG BUILD_TARGET
 ARG METRICS
 
@@ -33,9 +36,9 @@ RUN adduser \
 RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus
 
 # Copy executable
-COPY --from=builder /usr/src/nim-beacon-chain/build/beacon_node /usr/local/bin/beacon_node
+COPY --from=builder /usr/src/nim-beacon-chain/build/beacon_node /usr/local/bin/nimbus_beacon_node
 
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-ENTRYPOINT ["beacon_node", "--data-dir=/var/lib/nimbus", "--web3-url=http://geth:8545", "--network=medalla", "--log-file=/var/lib/nimbus/beacon_node.log"]
+ENTRYPOINT ["nimbus_beacon_node", "--data-dir=/var/lib/nimbus", "--web3-url=http://geth:8545", "--network=medalla", "--log-file=/var/lib/nimbus/beacon_node.log"]

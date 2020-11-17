@@ -1,17 +1,19 @@
-version: "3"
+version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./geth
+      dockerfile: ${GETH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${GETH_BUILD_TARGET} 
+        - BUILD_TARGET=${GETH_SRC_BUILD_TARGET} 
         - USER=${GETH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${GETH_DOCKER_TAG}
     image: geth
     volumes:
-      - eth1-data:/var/lib/goethereum
+      - geth-eth1-data:/var/lib/goethereum
     ports:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
@@ -33,6 +35,14 @@ services:
       - ${ETH1_PORT}
       - --rpcport
       - ${ETH1_RPC_PORT}
+      - --ws
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - ${ETH1_WS_PORT}
+      - --ws.api
+      - eth,net
+      - --ws.origins=*
     command: ${GETH1_NETWORK}
   beacon:
     depends_on:
@@ -41,4 +51,4 @@ services:
     depends_on:
       - eth1
 volumes:
-  eth1-data:
+  geth-eth1-data:
