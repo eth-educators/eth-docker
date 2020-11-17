@@ -13,7 +13,7 @@ services:
         - UID=${LOCAL_UID}
     image: nethermind
     volumes:
-      - eth1-data:/var/lib/nethermind
+      - nm-eth1-data:/var/lib/nethermind
     ports:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
@@ -55,4 +55,4 @@ services:
     depends_on:
       - eth1
 volumes:
-  eth1-data:
+  nm-eth1-data:

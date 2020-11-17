@@ -13,7 +13,7 @@ services:
         - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum
     volumes:
-      - eth1-data:/var/lib/openethereum
+      - oe-eth1-data:/var/lib/openethereum
     ports:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
@@ -46,4 +46,4 @@ services:
     depends_on:
       - eth1
 volumes:
-  eth1-data:
+  oe-eth1-data:

@@ -13,7 +13,7 @@ services:
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     image: geth
     volumes:
-      - eth1-data:/var/lib/goethereum
+      - geth-eth1-data:/var/lib/goethereum
     ports:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
@@ -51,4 +51,4 @@ services:
     depends_on:
       - eth1
 volumes:
-  eth1-data:
+  geth-eth1-data:
