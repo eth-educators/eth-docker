@@ -20,9 +20,9 @@ Currently supported clients:
 - Nimbus
 
 Currently supported optional components:
-- openethereum, local eth1 node
-- nethermind, local eth1 node
 - geth, local eth1 node.
+- openethereum, local eth1 node - testing only, DB corruption observed on mainnet
+- nethermind, local eth1 node - testing only, issues with API calls
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
@@ -111,7 +111,6 @@ Import the validator key(s) to the validator client:
 `sudo docker-compose run --rm validator-import`
 
 > #### Prysm-specific
-> - You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
 > - You will be asked to provide a "New wallet password", independent of the
 >   keystore password. 
 > - If you choose not to store the wallet password with the validator,

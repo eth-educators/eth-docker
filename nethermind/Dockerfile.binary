@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 
-FROM ethereum/client-go:${DOCKER_TAG}
+FROM nethermind/nethermind:${DOCKER_TAG}
 
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
@@ -18,11 +18,10 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
+RUN chown -R ${USER}:${USER} /nethermind
+RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
 
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-#EXPOSE 8545 30303 30303/udp
-ENTRYPOINT ["geth", "--nousb", "--http", "--http.addr", "0.0.0.0", "--http.vhosts", "*", "--http.api", "eth,net", "--ipcdisable", "--datadir", "/var/lib/goethereum"]
-CMD ["--goerli"]
+ENTRYPOINT dotnet /nethermind/Nethermind.Runner.dll

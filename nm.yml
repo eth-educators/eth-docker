@@ -5,12 +5,12 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./nethermind
+      dockerfile: ${NM_DOCKERFILE}
       args:
-        - BUILD_TARGET=${NM_BUILD_TARGET} 
+        - BUILD_TARGET=${NM_SRC_BUILD_TARGET} 
+        - DOCKER_TAG=${NM_DOCKER_TAG}
         - USER=${NM_USER}
         - UID=${LOCAL_UID}
-        - ETH1_NETWORK=${ETH1_NETWORK}
-        - NETHERMIND_CONFIG=${ETH1_NETWORK}
     image: nethermind
     volumes:
       - eth1-data:/var/lib/nethermind
@@ -18,24 +18,32 @@ services:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
     expose:
-      - 8645
+      - ${ETH1_RPC_PORT}
     entrypoint:
       - dotnet
-      - Nethermind.Runner.dll
-      - --Init.IsMining
-      - "false"
+      - /nethermind/Nethermind.Runner.dll
+      - --Init.BaseDbPath
+      - /var/lib/nethermind
+      - --Init.WebSocketsEnabled
+      - "true"
       - --Network.DiscoveryPort
       -  ${ETH1_PORT}
       - --Network.P2PPort
       -  ${ETH1_PORT}
       - --JsonRpc.Enabled
       - "true"
+      - --JsonRpc.EnabledModules
+      - "net,eth"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
       - ${ETH1_RPC_PORT}
+      - --JsonRpc.WebSocketsPort
+      - ${ETH1_WS_PORT}
       - --Sync.FastSync
       - "true"
+      - --config
+      - ${ETH1_NETWORK}
   beacon:
     depends_on:
       - eth1

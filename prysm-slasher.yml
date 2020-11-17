@@ -5,11 +5,14 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./prysm
+      target: slasher
+      dockerfile: ${PRYSM_DOCKERFILE}
       args:
-        - BUILD_TARGET=${PRYSM_BUILD_TARGET}
+        - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
         - USER=${PRYSM_USER}
         - UID=${LOCAL_UID}
-    image: prysm
+        - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+    image: prysm-slasher
     volumes:
       - prysmslasher-data:/var/lib/prysm
     entrypoint:

@@ -35,6 +35,14 @@ services:
       - ${ETH1_PORT}
       - --rpcport
       - ${ETH1_RPC_PORT}
+      - --ws
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - ${ETH1_WS_PORT}
+      - --ws.api
+      - eth,net
+      - --ws.origins=*
     command: ${GETH1_NETWORK}
   beacon:
     depends_on:

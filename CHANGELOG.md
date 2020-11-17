@@ -17,8 +17,8 @@ directory (`cd ~/eth2-docker` by default):
 
 ## v0.1.8.6 2020-11-16
 
-* Nethermind added as eth1 option, thanks to adrienlac
-* First attempt at binary option for Lighthouse, Prysm, Geth, OpenEthereum.
+* Nethermind added as eth1 option, thanks to adrienlac. Not stable in testing.
+* First attempt at binary option for all but eth2.0-deposit-cli
 
 ## v0.1.8.5 2020-11-11
 

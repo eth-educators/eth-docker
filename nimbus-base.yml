@@ -6,10 +6,12 @@ services:
     build:
       context: ./nimbus
       args:
-        - BUILD_TARGET=${NIM_BUILD_TARGET}
+        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${NIM_DOCKER_TAG}
         - USER=${NIM_USER}
         - UID=${LOCAL_UID}
         - METRICS=${NIM_METRICS}
+      dockerfile: ${NIM_DOCKERFILE}
     image: nimbus
     volumes:
       - nimbus-data:/var/lib/nimbus
@@ -17,10 +19,9 @@ services:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
     entrypoint:
-      - /usr/local/bin/beacon_node
+      - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
-      - --log-file=/var/lib/nimbus/beacon_node.log
       - --tcp-port=${NIM_PORT}
       - --udp-port=${NIM_PORT}
       - --network=${NETWORK}
@@ -34,17 +35,18 @@ services:
     build:
       context: ./nimbus
       args:
-        - BUILD_TARGET=${NIM_BUILD_TARGET}
+        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${NIM_DOCKER_TAG}
         - USER=${NIM_USER}
         - UID=${LOCAL_UID}
         - METRICS=${NIM_METRICS}
+      dockerfile: ${NIM_DOCKERFILE}
     volumes:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/nimbus/validator_keys
     entrypoint:
-      - /usr/local/bin/beacon_node
+      - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
-      - --log-file=/var/lib/nimbus/beacon_node.log
       - --network=${NETWORK}
       - deposits
       - import

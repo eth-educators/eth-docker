@@ -3,6 +3,7 @@ FROM golang:alpine as builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
+
 ARG BUILD_TARGET
 ARG USER
 ARG UID

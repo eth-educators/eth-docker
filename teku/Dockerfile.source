@@ -1,9 +1,9 @@
 # Build Teku in a stock debian container
-FROM openjdk:14-slim-buster as builder
+FROM openjdk:14-jdk-slim-buster as builder
 
 ARG BUILD_TARGET
 
-RUN apt-get update && apt-get install -y ca-certificates git
+RUN apt-get update && apt-get install -y ca-certificates git libnetty-java
 
 WORKDIR /usr/src
 RUN bash -c "git clone https://github.com/PegaSysEng/teku.git && cd teku && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
@@ -32,10 +32,10 @@ RUN adduser \
 RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && chown -R ${USER}:${USER} /var/lib/teku && chmod -R 700 /var/lib/teku
 
 # Copy executable
-COPY --from=builder /usr/src/teku/build/install/teku/. /usr/local/teku/
+COPY --from=builder /usr/src/teku/build/install/teku/. /opt/teku/
 COPY ./copy-teku-validator-keys.sh /usr/local/bin
 
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-#ENTRYPOINT ["beacon_node", "--data-dir=/var/lib/nimbus", "--web3-url=http://geth:8545", "--network=medalla", "--log-file=/var/lib/nimbus/beacon_node.log"]
+ENTRYPOINT /opt/teku/bin/teku
