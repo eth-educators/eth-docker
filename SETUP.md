@@ -134,7 +134,7 @@ an SSH tunnel is a good choice.
 Ports that I mention should be "Open to Internet" need to be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
-- 30303 tcp/udp - local eth1 node, geth or openethereum. Open to Internet.
+- 30303 tcp/udp - local eth1 node, geth or openethereum or nethermind. Open to Internet.
 - 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
 - 13000/tcp - Prysm beacon node. Open to Internet.
 - 12000/udp - Prysm beacon node. Open to Internet.
