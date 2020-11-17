@@ -13,7 +13,7 @@ echo
 echo "Storing the validator key password(s) in plain text will allow the validator to start automatically without user input."
 echo
 while true; do
-  read -p "Do you wish to store the validator key password(s) inside this container? (y/n) " yn
+  read -rp "Do you wish to store the validator key password(s) inside this container? (y/n) " yn
   case $yn in
     [Yy]* ) break;;
     [Nn]* ) echo "Not storing plaintext validator key password(s)."; echo; echo "Please adjust teku-base.yml and see instructions in README.md on how to start the client"; exit;;
@@ -22,7 +22,7 @@ while true; do
 done
 echo
 while true; do
-  read -p "Do all validator keys have the same password? (y/n) " yn
+  read -rp "Do all validator keys have the same password? (y/n) " yn
   case $yn in
     [Yy]* ) justone=1; break;;
     [Nn]* ) justone=0; break;;
@@ -32,9 +32,9 @@ done
 echo
 if [ $justone -eq 1 ]; then
   while true; do
-    read -sp "Please enter the password for your validator key(s): " password1
+    read -srp "Please enter the password for your validator key(s): " password1
     echo
-    read -sp "Please re-enter the password: " password2
+    read -srp "Please re-enter the password: " password2
     echo
     if [ "$password1" == "$password2" ]; then
       break
@@ -52,9 +52,9 @@ else
   for file in /var/lib/teku/validator-keys/keystore-*.json ; do
     filename=$(basename $file .json)
     while true; do
-      read -sp "Please enter the password for your validator key stored in $filename: " password1
+      read -srp "Please enter the password for your validator key stored in $filename: " password1
       echo
-      read -sp "Please re-enter the password: " password2
+      read -srp "Please re-enter the password: " password2
       echo
       if [ "$password1" == "$password2" ]; then
         break

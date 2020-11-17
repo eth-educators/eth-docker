@@ -1,6 +1,8 @@
 Docker container for go-ethereum geth
 Configured for goerli testnet, see CMD and override as desired
 
+Use Dockerfile.sourcebuild to compile from source
+
 This creates a statically compiled geth, in a scratch container, for minimal attack surface
 
 Pass BUILD_TARGET, USER and UID during build if you are not using docker-compose

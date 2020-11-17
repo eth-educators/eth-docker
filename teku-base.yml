@@ -1,4 +1,4 @@
-version: "3"
+version: "3.4"
 services:
   beacon:
     restart: "${RESTART}"
@@ -6,9 +6,11 @@ services:
     build:
       context: ./teku
       args:
-        - BUILD_TARGET=${TEKU_BUILD_TARGET}
+        - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${TEKU_DOCKER_TAG}
         - USER=${TEKU_USER}
         - UID=${LOCAL_UID}
+      dockerfile: ${TEKU_DOCKERFILE}
     image: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -18,7 +20,7 @@ services:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
     entrypoint:
-      - /usr/local/teku/bin/teku
+      - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
@@ -35,9 +37,11 @@ services:
     build:
       context: ./teku
       args:
-        - BUILD_TARGET=${TEKU_BUILD_TARGET}
+        - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${TEKU_DOCKER_TAG}
         - USER=${TEKU_USER}
         - UID=${LOCAL_UID}
+      dockerfile: ${TEKU_DOCKERFILE}
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/teku/validator_keys
@@ -48,7 +52,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
@@ -70,7 +74,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
