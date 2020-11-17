@@ -111,6 +111,9 @@ Import the validator key(s) to the validator client:
 `sudo docker-compose run --rm validator-import`
 
 > #### Prysm-specific
+> - You will be asked whether you will be using the Web UI to import keys.
+> Answer "y"es only if you are testing Prysm's experimental Web UI via
+> `prysm-web.yml`
 > - You will be asked to provide a "New wallet password", independent of the
 >   keystore password. 
 > - If you choose not to store the wallet password with the validator,
