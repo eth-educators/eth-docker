@@ -1,9 +1,12 @@
 # Build Teku in a stock debian container
 FROM openjdk:14-jdk-slim-buster as builder
 
+# This is here to avoid build-time complaints
+ARG DOCKER_TAG
+
 ARG BUILD_TARGET
 
-RUN apt-get update && apt-get install -y ca-certificates git libnetty-java
+RUN apt-get update && apt-get install -y ca-certificates git
 
 WORKDIR /usr/src
 RUN bash -c "git clone https://github.com/PegaSysEng/teku.git && cd teku && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
