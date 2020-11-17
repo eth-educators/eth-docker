@@ -20,9 +20,9 @@ Currently supported clients:
 - Nimbus
 
 Currently supported optional components:
+- geth, local eth1 node.
 - openethereum, local eth1 node
 - nethermind, local eth1 node
-- geth, local eth1 node.
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
