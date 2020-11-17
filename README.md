@@ -10,8 +10,8 @@ Without their previous work, this project would not exist.
 
 ## Supported clients
 
-This project builds clients from official source repositories. A similar workflow for
-binary images is a TODO.
+This project can build from official docker images or from official source repositories. In most cases,
+binary is the default.
 
 Currently supported clients:
 - Lighthouse
