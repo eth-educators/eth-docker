@@ -21,8 +21,8 @@ Currently supported clients:
 
 Currently supported optional components:
 - geth, local eth1 node.
+- nethermind, local eth1 node - appears to work, no long-term test done yet
 - openethereum, local eth1 node - testing only, DB corruption observed on mainnet
-- nethermind, local eth1 node - testing only, issues with API calls
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
@@ -231,7 +231,10 @@ the way you need them, with `.env.bak` as a guide.
 
 ### Eth1
 
-Run:<br />
+If not building from source, run:<br />
+`sudo docker-compose build --pull eth1`
+
+Else, if building from source:<br />
 `sudo docker-compose build --no-cache eth1`
 
 Then stop, remove and start eth1:<br />
@@ -240,10 +243,19 @@ Then stop, remove and start eth1:<br />
 
 ### Client
 
-Beacon and validator share the same image, we only need to rebuild one.
+Beacon and validator share the same image for most clients, we only need to rebuild one.
 
-Run:<br />
+If not building from source, run:<br />
+`sudo docker-compose build --pull beacon`
+
+Else, if building from source:<br />
 `sudo docker-compose build --no-cache beacon`
+
+For Prysm, also run:<br />
+`sudo docker-compose build --pull validator`
+
+Or, if building from source:<br />
+`sudo docker-compose build --no-cache validator`
 
 Then restart the client:<br />
 `sudo docker-compose down && sudo docker-compose up -d eth2`
