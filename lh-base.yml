@@ -1,14 +1,16 @@
-version: "3"
+version: "3.4"
 services:
   beacon:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${LH_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
@@ -37,10 +39,12 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${LH_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -64,10 +68,12 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${LH_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
@@ -90,10 +96,12 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${LH_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
@@ -118,10 +126,12 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${LH_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}:/interchange
@@ -140,7 +150,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
@@ -162,7 +172,7 @@ services:
     build:
       context: ./eth2.0-deposit-cli
       args:
-        - BUILD_TARGET=${DEPCLI_BUILD_TARGET}
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
         - USER=${DEPCLI_USER}
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli

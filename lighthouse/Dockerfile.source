@@ -11,6 +11,8 @@ RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse &
 # Pull all binaries into a second stage deploy debian container
 FROM debian:buster-slim
 
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
 ARG USER
 ARG UID
 
@@ -20,12 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-
-# Grab dockerize so beacon can wait for geth
-#ENV DOCKERIZE_VERSION v0.6.1
-#RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-#    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-#    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -49,6 +45,4 @@ USER ${USER}:${USER}
 # For voluntary exit
 ENV KEYSTORE=nonesuch
 
-#EXPOSE 5052 9000 9000/udp
-ENTRYPOINT ["lighthouse", "bn", "--datadir", "/var/lib/lighthouse/", "--http", "--http-address", "0.0.0.0"]
-CMD ["--testnet", "medalla", "--eth1-endpoint", "http://geth:8545"]
+ENTRYPOINT lighthouse
