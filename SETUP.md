@@ -84,8 +84,9 @@ and with which options. See below for available compose files
 - Adjust ports if you are going to need custom ports instead of the defaults. These are the ports
 exposed to the host, and for everything but Grafana to the Internet via your firewall/router
 - Set the `NETWORK` variable to either "mainnet" or a test network such as "medalla"
-- Comment out the `ETH_NETWORK` variable, to use the main net, or set it to a test network such as "--goerli",
+- If using geth as the eth1 node, comment out the `GETH1_NETWORK` variable, to use the main net, or set it to a test network such as "--goerli",
   with the two dashes.
+- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function, and can be set to `ethereum` to use the main eth1 network.
 - Set the `GRAFFITI` string if you want a specific string
 
 ### Client compose files
@@ -108,7 +109,7 @@ openethereum with `:` between the file names.
 - `teku-grafana.yml` - grafana dashboard for Teku
 
 For example, Lighthouse with local openethereum and grafana:
-`COMPOSE_FILE=lh-base.yml:oe.yml:lh-grafana.yml`
+`COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
 
 > See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
 
@@ -138,8 +139,8 @@ to your node if behind a home router, or allowed in via the VPS firewall.
 - 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
 - 13000/tcp - Prysm beacon node. Open to Internet.
 - 12000/udp - Prysm beacon node. Open to Internet.
-- 9000 tcp/udp - Teku beacon node. Open to Internet. Note this is the same as Lighthouse.
-- 9000 tcp/udp - Nimbus beacon node. Open to Internet. Note this is the same as Lighthouse.
+- 9000 tcp/udp - Teku beacon node. Open to Internet. Note this is the same default port as Lighthouse.
+- 9000 tcp/udp - Nimbus beacon node. Open to Internet. Note this is the same default port as Lighthouse.
 - 3000/tcp - Grafana. **Not** open to Internet, allow locally only. It is insecure http.
 - 22/tcp - SSH. Only open to Internet if this is a remote server (VPS). If open to Internet, configure
   SSH key authentication.

@@ -5,8 +5,9 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -38,8 +39,9 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -66,8 +68,9 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -93,8 +96,9 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -122,8 +126,9 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
