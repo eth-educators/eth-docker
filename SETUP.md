@@ -48,8 +48,8 @@ Please choose:
   * Nimbus
 * Your source of eth1 data
   * geth
+  * nethermind - appears to work, no long-term tests done yet
   * openethereum - testing only, DB corruption observed
-  * nethermind - testing only, API calls not stable
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
@@ -86,7 +86,8 @@ exposed to the host, and for everything but Grafana to the Internet via your fir
 - Set the `NETWORK` variable to either "mainnet" or a test network such as "medalla"
 - If using geth as the eth1 node, comment out the `GETH1_NETWORK` variable, to use the main net, or set it to a test network such as "--goerli",
   with the two dashes.
-- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function, and can be set to `ethereum` to use the main eth1 network.
+- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function. It can be set to `mainnet` to use the main eth1 network with
+Nethermind, or `ethereum` to use the main eth1 network with OpenEthereum.
 - Set the `GRAFFITI` string if you want a specific string
 
 ### Client compose files
@@ -98,8 +99,8 @@ openethereum with `:` between the file names.
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
+- `nm.yml` - local nethermind eth1 chain node - appears to work, no long-term tests done yet
 - `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed
-- `nm.yml` - local nethermind eth1 chain node - testing only, API calls not stable
 - `shared-eth1.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
