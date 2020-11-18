@@ -4,3 +4,4 @@ services:
   eth1:
     ports:
       - ${ETH1_RPC_PORT}:${ETH1_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}:$(ETH1_WS_PORT}/tcp
