@@ -1,4 +1,7 @@
 Docker container for Prysmatic prysm
+
+If building from source, use Dockerfile.sourcebuild
+
 Configured for medalla testnet, see CMD and override as desired
 
 This creates a statically compiled prysm, in a scratch container, for minimal attack surface

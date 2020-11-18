@@ -1,7 +1,7 @@
 # Build Lighthouse in a stock Rust build container
 FROM rust:latest as builder
 
-ARG BUILD_TARGET
+ARG SRC_BUILD_TARGET
 
 RUN apt-get update && apt-get install -y git gcc g++ make cmake pkg-config libssl-dev
 
@@ -11,6 +11,8 @@ RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse &
 # Pull all binaries into a second stage deploy debian container
 FROM debian:buster-slim
 
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
 ARG USER
 ARG UID
 

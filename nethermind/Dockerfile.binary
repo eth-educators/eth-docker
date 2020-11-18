@@ -1,0 +1,27 @@
+ARG DOCKER_TAG
+
+FROM nethermind/nethermind:${DOCKER_TAG}
+
+# Unused, this is here to avoid build time complaints
+ARG BUILD_TARGET
+
+ARG USER
+ARG UID
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN chown -R ${USER}:${USER} /nethermind
+RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
+
+# Use an unprivileged user.
+USER ${USER}:${USER}
+
+ENTRYPOINT dotnet /nethermind/Nethermind.Runner.dll

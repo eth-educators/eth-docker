@@ -1,4 +1,4 @@
-# eth2-docker v0.1.8.5
+# eth2-docker v0.1.8.6
 
 Unofficial and experimental docker build instructions for eth2 clients
 
@@ -10,8 +10,8 @@ Without their previous work, this project would not exist.
 
 ## Supported clients
 
-This project builds clients from official source repositories. A similar workflow for
-binary images is a TODO.
+This project can build from official docker images or from official source repositories. In most cases,
+binary is the default.
 
 Currently supported clients:
 - Lighthouse
@@ -21,8 +21,8 @@ Currently supported clients:
 
 Currently supported optional components:
 - geth, local eth1 node.
-- openethereum, local eth1 node
-- nethermind, local eth1 node
+- openethereum, local eth1 node - testing only, DB corruption observed on mainnet
+- nethermind, local eth1 node - testing only, issues with API calls
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
@@ -111,7 +111,9 @@ Import the validator key(s) to the validator client:
 `sudo docker-compose run --rm validator-import`
 
 > #### Prysm-specific
-> - You will be asked to provide a wallet directory. Use `/var/lib/prysm`.
+> - You will be asked whether you will be using the Web UI to import keys.
+> Answer "y"es only if you are testing Prysm's experimental Web UI via
+> `prysm-web.yml`
 > - You will be asked to provide a "New wallet password", independent of the
 >   keystore password. 
 > - If you choose not to store the wallet password with the validator,
