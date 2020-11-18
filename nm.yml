@@ -26,9 +26,9 @@ services:
       - /var/lib/nethermind
       - --Init.WebSocketsEnabled
       - "true"
-      - Sync.DownloadBodiesInFastSync
+      - --Sync.DownloadBodiesInFastSync
       - "true"
-      - Sync.DownloadReceiptsInFastSync
+      - --Sync.DownloadReceiptsInFastSync
       - "true"
       - --Network.DiscoveryPort
       -  ${ETH1_PORT}
