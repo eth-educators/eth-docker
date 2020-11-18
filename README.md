@@ -21,7 +21,7 @@ Currently supported clients:
 
 Currently supported optional components:
 - geth, local eth1 node.
-- nethermind, local eth1 node - appears to work, no long-term test done yet
+- nethermind, local eth1 node - testing only, DB corruption observed on goerli
 - openethereum, local eth1 node - testing only, DB corruption observed on mainnet
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
@@ -35,7 +35,7 @@ of validator-import to import keys.
 
 ## Before you start
 
-Warnings about the dangers of running eth2 validators are in [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
+Warnings about the dangers of running eth2 nodes are in [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
 That file also contains a link to SomerEsat's [guide on host security](https://medium.com/@SomerEsat/guide-to-staking-on-ethereum-2-0-ubuntu-medalla-nimbus-5f4b2b0f2d7c), and comments on key security.
 Please take a look.
 
@@ -86,20 +86,25 @@ in phase 2. You need the seed phrase or your eth is gone forever.**
 
 Make sure you're in the project directory, `cd ~/eth2-docker` by default.
 
-Edit the `.env` file to set the number of validators you wish to run. The default
+Edit the `.env` file to set the number of validators you wish to create. The default
 is just one (1) validator.
+> A validator is synonymous to one 32 Ethereum stake. Multiple validators
+> can be imported to a single validator client.
 
 This command will get you ready to deposit eth:<br />
 `sudo docker-compose run --rm deposit-cli`
 
 The created files will be in the directory `.eth2/validator_keys` in this project.
+> eth2.0-deposit-cli shows you a different directory, that's because it has a view
+> from inside the container.
+ 
 This is also where you'd place your own keystore files if you already have some for import.
 
 ### You brought your own keys
 
 They go into `.eth2/validator_keys` in this project directory, not directly under `$HOME`.
 
-## Step 5: Create a validator wallet by importing validator keys
+## Step 5: Create a validator client wallet by importing validator keys
 
 **Warning** Import your validator key(s) to only *one* client.
 
@@ -122,7 +127,7 @@ Import the validator key(s) to the validator client:
 
 If you choose to save the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
-validator and start it interactively. Determine your own risk profile.
+validator client and start it interactively. Determine your own risk profile.
 
 ## Step 6: Start the client
 
@@ -130,11 +135,11 @@ To start the client:
 ```
 sudo docker-compose up -d eth2
 ```
-> **Nimbus and Teku**: Beacon and validator run in the same process, there is only one container for both
+> **Nimbus and Teku**: Beacon and validator client run in the same process, there is only one container for both
 
-If, however, you chose not to store the wallet password with the validator, you will need
+If, however, you chose not to store the wallet password with the validator client, you will need
 to bring the beacon and, if in use, eth1, up individually instead, then "run"
-the validator so it can prompt you for input:
+the validator client so it can prompt you for input:
 
 ```
 sudo docker-compose up -d eth1 beacon
@@ -243,7 +248,7 @@ Then stop, remove and start eth1:<br />
 
 ### Client
 
-Beacon and validator share the same image for most clients, we only need to rebuild one.
+Beacon and validator client share the same image for most clients, we only need to rebuild one.
 
 If not building from source, run:<br />
 `sudo docker-compose build --pull beacon`
@@ -260,7 +265,7 @@ Or, if building from source:<br />
 Then restart the client:<br />
 `sudo docker-compose down && sudo docker-compose up -d eth2`
 
-If you did not store the wallet password with the validator, come up 
+If you did not store the wallet password with the validator client, come up 
 [more manually](#start-the-client) instead.
 
 ## Addendum: Add or recover validators
