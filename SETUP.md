@@ -48,8 +48,8 @@ Please choose:
   * Nimbus
 * Your source of eth1 data
   * geth
-  * openethereum - testing only, DB corruption observed
-  * nethermind - testing only, API calls not stable
+  * nethermind - testing only, DB corruption observed on goerli and mainnet
+  * openethereum - testing only, DB corruption observed on mainnet
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
@@ -86,7 +86,8 @@ exposed to the host, and for everything but Grafana to the Internet via your fir
 - Set the `NETWORK` variable to either "mainnet" or a test network such as "medalla"
 - If using geth as the eth1 node, comment out the `GETH1_NETWORK` variable, to use the main net, or set it to a test network such as "--goerli",
   with the two dashes.
-- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function, and can be set to `ethereum` to use the main eth1 network.
+- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function. It can be set to `mainnet` to use the main eth1 network with
+Nethermind, or `ethereum` to use the main eth1 network with OpenEthereum.
 - Set the `GRAFFITI` string if you want a specific string
 
 ### Client compose files
@@ -98,9 +99,10 @@ openethereum with `:` between the file names.
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
-- `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed
-- `nm.yml` - local nethermind eth1 chain node - testing only, API calls not stable
-- `shared-eth1.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
+- `nm.yml` - local nethermind eth1 chain node - testing only, DB corruptionb observed on goerli and mainnet
+- `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed on mainnet
+- `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
+- `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". Also not encrypted, not meant for a fully distributed setup quite yet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
@@ -113,7 +115,7 @@ For example, Lighthouse with local openethereum and grafana:
 
 > See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
 
-In this setup, clients are isolated from each other. Each run their own validator, and if eth1
+In this setup, clients are isolated from each other. Each run their own validator client, and if eth1
 is in use, their own eth1 node. This is perfect for running a single client, or multiple isolated
 clients each in their own directory.
 

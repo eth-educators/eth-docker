@@ -33,7 +33,7 @@ services:
       - /var/lib/goethereum
       - --port
       - ${ETH1_PORT}
-      - --rpcport
+      - --http.port
       - ${ETH1_RPC_PORT}
       - --ws
       - --ws.addr

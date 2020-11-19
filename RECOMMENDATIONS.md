@@ -5,7 +5,7 @@ and key security.
 
 ## Operation
 
-**Do not run two validators**<br />
+**Do not run two validator clients with the same validator keys imported at the same time**<br />
 You'd get yourself slashed, and no-one wants that. Protecting you from this
 is a work in progress. Choose one client, and one client only, and run that.
 
@@ -58,7 +58,7 @@ files created by eth2.0-deposit-cli.
 
 Use `deposit_data-TIMESTAMP.json` for your initial deposit. After that, it can be disposed of.
 
-Use `keystore-m_ID.json` files to import your validator secret keys into the validator
+Use `keystore-m_ID.json` files to import your validator secret keys into the validator client
 instance of the client you are running. These files need to be secured when you are done
 with the initial import.
 
@@ -69,7 +69,7 @@ is best, on media that cannot be remotely compromised. Keep the password(s) for
 these files secure as well, for example in a local (not cloud-connected) password vault
 on a PC that is not on the network, or at the very least not used for online access.
 
-Once you have the keystore files secure and they've been imported to the validator container
+Once you have the keystore files secure and they've been imported to the validator client container
 on your server, you should delete them from the `.eth2` directory.
 
 These files will be needed in case you need to restore your validator(s).
