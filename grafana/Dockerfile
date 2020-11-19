@@ -26,6 +26,11 @@ ARG prysm_more_10_url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm
 ARG prysm_more_10_file='/etc/grafana/provisioning/dashboards/prysm_more_10.json'
 RUN wget -qcO - $prysm_more_10_url | jq '.title = "prysm_more_10"' >$prysm_more_10_file
 
+#  lighthouse_summary
+ARG lighthouse_summary_url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json'
+ARG lighthouse_summary_file='/etc/grafana/provisioning/dashboards/lighthouse_summary.json'
+RUN wget -qcO - $lighthouse_summary_url | jq '.title = "lighthouse_summary"' >$lighthouse_summary_file
+
 RUN tree /etc/grafana/provisioning/
 
 ENTRYPOINT [ "/run.sh" ]
