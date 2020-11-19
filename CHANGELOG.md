@@ -15,6 +15,10 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.8.7 2020-11-19
+
+* Integrated community dashboard for lighthouse, teku, and nimbus.
+
 ## v0.1.8.6 2020-11-16
 
 * Nethermind added as eth1 option, thanks to adrienlac. Not stable in testing.
