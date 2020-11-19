@@ -1,12 +1,51 @@
 # eth2-docker v0.1.8.6
 
-Unofficial and experimental docker build instructions for eth2 clients
+Unofficial docker environment for Ethereum 2.0 clients
 
 ## Acknowledgements
 
 Parts of this guide are based on the Linux [guides](https://medium.com/@SomerEsat) written by [Somer Esat](https://twitter.com/SomerEsat).
 
 Without their previous work, this project would not exist.
+
+## High Level Overview
+
+An Ethereum 2.0 node has many moving parts. Here's a high level, conceptual overview.
+
+![Ethereum 2.0 Node](Ethereum-2.0.png)
+
+When setting up an Ethereum 2.0 node, you'll:
+
+- Configure and run an Ethereum 1 node and sync it with the Görli testnet or main net
+- Alternatively, choose an external provider of Ethereum 1 chain data
+- Configure and run an Ethereum 2.0 beacon node and sync it with an Ethereum 2.0 testnet or main net
+- Generate validator keys, one per 32 eth you wish to stake. This can and often is done outside of the
+  machine used to run the node, for security reasons.
+- Import validator keys into the validator client, each validator key activates one validator
+- Once the ethereum 1 and ethereum 2.0 nodes are fully synced with the chain, deposit Ethereum
+  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until phase 2, maybe 1.5,
+  of Ethereum 2.0.
+
+Here's what then happens:
+
+- The chain processes the deposit and activates the validators: Your validators start earning rewards
+  and penalties.
+- The beacon node is where it all happens: Block generation, attestations, slashings, with the help
+  of the validator(s) inside the validator client, for signing.
+- A validator earns a reward for every epoch (6.4 minutes) it is online, and a penalty of 3/4 that
+  amount for every epoch it is offline. "Online" means that it sent its scheduled attestation / block
+  proposal. This means you want to be online almost 24/7, but do not have to be afraid of a few hours
+  of downtime, with the exception of periods of non-finality.
+- Greater 2/3 of validators need to be online for the chain to "finalize". If the chain stops finalizing,
+  far harsher penalties for offline validators kick in. Stay online during non-finality. The initial
+  penalties on main net for this "inactivity" during non-finality have been reduced to 1/4th of their eventual
+  values.
+- "Slashing" is a harsh penalty and forced exit for malicious validators; regular penalties could be
+  described as "Leaking" instead. The most likely mistake that gets you slashed is to run a validator key
+  in two separate validator clients simultaneously. The initial slashing penalty on main net has been reduced
+  to 1/4th of its eventual value.
+- If all of the above was so much Gobbledegook, you need to read the [Ethereum 2.0 primer](https://ethos.dev/beacon-chain/) and come
+  back to it every time you have questions. 
 
 ## Supported clients
 
@@ -180,7 +219,8 @@ the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load"
 
 If you are using the "unless-stopped" restart policy, docker will start the 
 client for you. That said, you may wish to make sure this happens on
-startup no matter what.
+startup even if the client was stopped. In that case, create a service
+to start the client on boot.
 
 For Linux systems that use systemd, e.g. Ubuntu, you'd create a systemd
 service. 
@@ -267,6 +307,18 @@ Then restart the client:<br />
 
 If you did not store the wallet password with the validator client, come up 
 [more manually](#start-the-client) instead.
+
+## Addendum: Remove all traces of the client
+
+This project uses docker volumes to store the Ethereum 1 and Ethereum 2.0 databases, as
+well as validator keys for the validator client. You can see these volumes with
+`sudo docker volume ls` and remove them with `sudo docker volume rm`, as long as they are
+not in use.
+
+This can be useful when moving between testnets or from a testnet to main net, without
+changing the directory name the project is stored in; or when you want to start over
+with a fresh database. Keep in mind that synchronizing Ethereum 1 can take days on main
+net, however.
 
 ## Addendum: Add or recover validators
 
