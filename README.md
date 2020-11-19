@@ -204,6 +204,9 @@ A baseline set of dashboards has been included.
 - [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
+- [Lighthouse Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
+- [Nimbus Dashboard JSON](https://raw.githubusercontent.com/status-im/nimbus-eth2/master/grafana/beacon_nodes_Grafana_dashboard.json)
+- [Teku Dashboard](https://grafana.com/api/dashboards/12199/revisions/1/download)
 
 - Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
 
@@ -211,11 +214,7 @@ In order to load Dashboards for other clients, follow these instructions
 
 - Import a Dashboard. Click on the + icon on the left, choose "Import". Copy/paste JSON code from one of the client dashboard links below (click anywhere inside the page
 the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load", choose the "prometheus" data source you just configured, click "Import".
-- For Teku, you can use the grafana.com URL instead of raw JSON.
 
-- [Lighthouse Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
-- [Nimbus Dashboard JSON](https://raw.githubusercontent.com/SomerEsat/ethereum-staking-guide/master/NimbusGrafana.json)
-- [Teku Dashboard](https://grafana.com/grafana/dashboards/12199)
 
 ## Step 9: Autostart the client on boot
 
