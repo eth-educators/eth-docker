@@ -108,7 +108,7 @@ Please see [setup instructions](SETUP.md) and then come back here.
 > (dot env) is called exactly that, and contains the parameters you expect.
 > You will get errors about missing permissions, during Step 4, if the UID is wrong.
 
-Build all required images from source. This will take 20-30 minutes. Assuming
+Build all required images. If building from source, this may take 20-30 minutes. Assuming
 you cloned the project into `eth2-docker`:
 ```
 cd ~/eth2-docker
@@ -195,7 +195,7 @@ its logs with `sudo docker-compose logs -f beacon`. This safe-guards against the
 marked offline if your validator is activated before the beacon syncs.
 
 Once you are ready, you can send eth to the deposit contract by using
-the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Medalla launchpad](https://medalla.launchpad.ethereum.org/)
+the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Pyrmont launchpad](https://pyrmont.launchpad.ethereum.org/)
 or [Mainnet launchpad](https://launchpad.ethereum.org).
 
 ## Step 8: Grafana Dashboards
@@ -204,9 +204,12 @@ A baseline set of dashboards has been included.
 - [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
+
+In order to load Dashboards for other clients, follow these instructions
   
- To further customize grafana, see /u/SomerEsat's instructions on how to set up Grafana here.
 - Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
+- Create a new datasource under the Gear icon, datasources, and choose prometheus with a URL of `http://prometheus:9090`. If that data source already exists,
+  this step can be skipped.
 - Import a Dashboard. Click on the + icon on the left, choose "Import". Copy/paste JSON code from one of the client dashboard links below (click anywhere inside the page
 the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load", choose the "prometheus" data source you just configured, click "Import".
 - For Teku, you can use the grafana.com URL instead of raw JSON.
