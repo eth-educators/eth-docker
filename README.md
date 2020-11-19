@@ -60,7 +60,7 @@ Currently supported clients:
 
 Currently supported optional components:
 - geth, local eth1 node.
-- nethermind, local eth1 node - testing only, DB corruption observed on goerli
+- nethermind, local eth1 node - testing only, DB corruption observed on goerli and mainnet
 - openethereum, local eth1 node - testing only, DB corruption observed on mainnet
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
@@ -205,11 +205,10 @@ A baseline set of dashboards has been included.
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
 
-In order to load Dashboards for other clients, follow these instructions
-  
 - Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
-- Create a new datasource under the Gear icon, datasources, and choose prometheus with a URL of `http://prometheus:9090`. If that data source already exists,
-  this step can be skipped.
+
+In order to load Dashboards for other clients, follow these instructions
+
 - Import a Dashboard. Click on the + icon on the left, choose "Import". Copy/paste JSON code from one of the client dashboard links below (click anywhere inside the page
 the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load", choose the "prometheus" data source you just configured, click "Import".
 - For Teku, you can use the grafana.com URL instead of raw JSON.

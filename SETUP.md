@@ -48,8 +48,8 @@ Please choose:
   * Nimbus
 * Your source of eth1 data
   * geth
-  * nethermind - testing only, DB corruption observed on goerli
-  * openethereum - testing only, DB corruption observed on main net
+  * nethermind - testing only, DB corruption observed on goerli and mainnet
+  * openethereum - testing only, DB corruption observed on mainnet
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
@@ -99,8 +99,8 @@ openethereum with `:` between the file names.
 - `teku-base.yml` - Teku
 - `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
-- `nm.yml` - local nethermind eth1 chain node - testing only, DB corruptionb observed on goerli
-- `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed on main net
+- `nm.yml` - local nethermind eth1 chain node - testing only, DB corruptionb observed on goerli and mainnet
+- `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed on mainnet
 - `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
 - `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". Also not encrypted, not meant for a fully distributed setup quite yet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
