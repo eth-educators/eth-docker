@@ -1,0 +1,56 @@
+version: "3.4"
+services:
+  eth1:
+    restart: "${RESTART}"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      context: ./besu
+      dockerfile: ${BESU_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${BESU_SRC_BUILD_TARGET} 
+        - DOCKER_TAG=${BESU_DOCKER_TAG}
+        - USER=${BESU_USER}
+        - UID=${LOCAL_UID}
+    image: besu
+    volumes:
+      - besu-eth1-data:/var/lib/besu
+    ports:
+      - ${ETH1_PORT}:${ETH1_PORT}/tcp
+      - ${ETH1_PORT}:${ETH1_PORT}/udp
+    expose:
+      - ${ETH1_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}/tcp
+    entrypoint:
+      - /opt/besu/bin/besu
+      - --data-path
+      - /var/lib/besu
+      - --pruning-enabled
+      - --p2p-port
+      -  ${ETH1_PORT}
+      - --rpc-http-enabled
+      - --rpc-http-api
+      - "net,eth"
+      - --rpc-http-host
+      - 0.0.0.0
+      - --rpc-http-port
+      - ${ETH1_RPC_PORT}
+      - --rpc-http-cors-origins=*
+      - --rpc-ws-enabled
+      - --rpc-ws-api
+      - "net,eth"
+      - --rpc-ws-host
+      - 0.0.0.0
+      - --rpc-ws-port
+      - ${ETH1_WS_PORT}
+      - --logging
+      - ${LOG_LEVEL}
+      - --network
+      - ${ETH1_NETWORK}
+  beacon:
+    depends_on:
+      - eth1
+  eth2:
+    depends_on:
+      - eth1
+volumes:
+  besu-eth1-data:
