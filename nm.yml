@@ -46,6 +46,10 @@ services:
       - ${ETH1_WS_PORT}
       - --Sync.FastSync
       - "true"
+      - --Sync.AncientBodiesBarrier
+      - ${ETH1_ANCIENT_BARRIER}
+      - --Sync.AncientReceiptsBarrier
+      - ${ETH1_ANCIENT_BARRIER}
       - --config
       - ${ETH1_NETWORK}
   beacon:
