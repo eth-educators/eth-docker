@@ -50,6 +50,7 @@ Please choose:
   * geth
   * nethermind - testing only, DB corruption observed on goerli and mainnet
   * openethereum - testing only, DB corruption observed on mainnet
+  * besu - testing for now, I have not solved interop issues with Lighthouse
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
@@ -78,22 +79,22 @@ has that functionality built-in.
 > permissions errors during use.
 
 - Set the `COMPOSE_FILE` entry depending on the client you are going to run,
-and with which options. See below for available compose files
+and with which options. See below for available compose files. Think of this as
+blocks you combine: One ethereum 2 client, optionally one ethereum 1 node, optionally reporting.
 - If you are going to use a 3rd-party provider as your eth1 chain source, set `ETH1_NODE` to that URL.
-  See [how to create your own Infura account](https://status-im.github.io/nimbus-eth2/infura-guide)
+  Look into [Alchemy](https://alchemyapi.io) or see [how to create your own Infura account](https://status-im.github.io/nimbus-eth2/infura-guide)
 - Adjust ports if you are going to need custom ports instead of the defaults. These are the ports
-exposed to the host, and for everything but Grafana to the Internet via your firewall/router
-- Set the `NETWORK` variable to either "mainnet" or a test network such as "medalla"
+exposed to the host, and for the P2P ports to the Internet via your firewall/router.
+- Set the `NETWORK` variable to either "mainnet" or a test network such as "pyrmont"
 - If using geth as the eth1 node, comment out the `GETH1_NETWORK` variable, to use the main net, or set it to a test network such as "--goerli",
   with the two dashes.
-- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function. It can be set to `mainnet` to use the main eth1 network with
-Nethermind, or `ethereum` to use the main eth1 network with OpenEthereum.
-- Set the `GRAFFITI` string if you want a specific string
+- With other eth1 nodes, the `ETH1_NETWORK` variable serves the same function. It can be set to `mainnet` to use the main eth1 network.
+- Set the `GRAFFITI` string if you want a specific string.
 
 ### Client compose files
 
 Set the `COMPOSE_FILE` string depending on which client you are going to use. Add optional services like
-openethereum with `:` between the file names.
+geth with `:` between the file names.
 - `lh-base.yml` - Lighthouse
 - `prysm-base.yml` - Prysm
 - `teku-base.yml` - Teku
@@ -101,6 +102,7 @@ openethereum with `:` between the file names.
 - `geth.yml` - local geth eth1 chain node
 - `nm.yml` - local nethermind eth1 chain node - testing only, DB corruptionb observed on goerli and mainnet
 - `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed on mainnet
+- `besu.yml` - local besu eth1 chain mode - testing for now, I have not solved interop with the Ethereum 2.0 client
 - `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
 - `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". Also not encrypted, not meant for a fully distributed setup quite yet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
@@ -110,7 +112,7 @@ openethereum with `:` between the file names.
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 
-For example, Lighthouse with local openethereum and grafana:
+For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
 
 > See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
@@ -120,29 +122,39 @@ is in use, their own eth1 node. This is perfect for running a single client, or 
 clients each in their own directory.
 
 If you want to run multiple isolated clients, just clone this project into a new directory for
-each. This is great for running medalla and zinken in parallel, for example.
+each. This is great for running testnet and mainnet in parallel, for example.
 
-### `SLASHER`   
-Running [slasher](https://docs.prylabs.network/docs/prysm-usage/slasher/) is an optional client compose file, but helps secure the chain and may result in additional earnings.
-```
-Slasher can be a huge resource hog during times of no chain finality, which can manifest as massive RAM usage. Please make sure you understand the risks of this, especially if you want high uptime for your beacon nodes. Slasher places significant stress on beacon nodes when the chain has no finality, and might be the reason why your validators are underperforming if your beacon node is under this much stress.
-```
+### Prysm Slasher   
+Running [slasher](https://docs.prylabs.network/docs/prysm-usage/slasher/) is an optional client compose file, but helps secure the chain and may result in additional earnings,
+though the chance of additional earnings is low in phase 0 as whistleblower rewards have not been implemented yet.
+
+> Slasher can be a huge resource hog during times of no chain finality, which can manifest as massive RAM usage. Please make sure you understand the risks of this, 
+> especially if you want high uptime for your beacon nodes. Slasher places significant stress on beacon nodes when the chain has no finality, and might be the reason
+> why your validators are underperforming if your beacon node is under this much stress.
 
 ## Firewalling
 
-You'll want to forward ports to the services of your eth2 node, and on Linux, enable a host firewall.
+You'll want to enable a host firewall. You can also forward the P2P ports of your eth1 and eth2
+nodes for faster peer acquisition.
+
 These are the relevant ports. docker will open eth2 node ports and the grafana port automatically,
 please make sure the grafana port cannot be reached directly. If you need to get to grafana remotely,
-an SSH tunnel is a good choice.
-Ports that I mention should be "Open to Internet" need to be either forwarded
+an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) is a good choice.
+
+Ports that I mention can be "Open to Internet" can be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
-- 30303 tcp/udp - local eth1 node, geth or openethereum or nethermind. Open to Internet.
-- 9000 tcp/udp - Lighthouse beacon node. Open to Internet.
-- 13000/tcp - Prysm beacon node. Open to Internet.
-- 12000/udp - Prysm beacon node. Open to Internet.
-- 9000 tcp/udp - Teku beacon node. Open to Internet. Note this is the same default port as Lighthouse.
-- 9000 tcp/udp - Nimbus beacon node. Open to Internet. Note this is the same default port as Lighthouse.
+> Opening the P2P ports to the Internet is optional. It will speed up peer acquisition, which
+> can be helpful. To learn how to forward your ports in a home network, first verify
+> that you are [not behind CGNAT](https://winbuzzer.com/2020/05/29/windows-10-how-to-tell-if-your-isp-uses-carrier-grade-nat-cg-nat-xcxwbt/).
+> Then look at [port-forwarding instructions](https://portforward.com/) for your specific router/firewall. 
+
+- 30303 tcp/udp - local eth1 node P2P. Open to Internet.
+- 9000 tcp/udp - Lighthouse beacon node P2P. Open to Internet.
+- 13000/tcp - Prysm beacon node P2P. Open to Internet.
+- 12000/udp - Prysm beacon node P2P. Open to Internet.
+- 9000 tcp/udp - Teku beacon node P2P. Open to Internet. Note this is the same default port as Lighthouse.
+- 9000 tcp/udp - Nimbus beacon node P2P. Open to Internet. Note this is the same default port as Lighthouse.
 - 3000/tcp - Grafana. **Not** open to Internet, allow locally only. It is insecure http.
 - 22/tcp - SSH. Only open to Internet if this is a remote server (VPS). If open to Internet, configure
   SSH key authentication.
@@ -200,7 +212,7 @@ file when running `ls ~/.ssh`.
 ### Create an SSH key pair
 
 Create a key if you need to, or if you don't have `id_ed25519.pub` but prefer that cipher:<br />
-`ssh-keygen -t ed25519`
+`ssh-keygen -t ed25519`. Set a strong passphrase for the key.
 > Bonus: On Linux, you can also include a timestamp with your key, like so:<br />
 > `ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)-$(date -I)" -f ~/.ssh/id_ed25519`
 
@@ -225,13 +237,16 @@ And paste in the public key.
 ### Test login and turn off password authentication
 
 Test your login. `ssh user@serverIP` from your client's MacOS/Linux Terminal or Windows Powershell should log you in
-directly without prompting for a password.
+directly, prompting for your key passphrase, but not the user password.
 
-If you are still prompted for a password, resolve that first. Your ssh client should show you errors in that case.
+If you are still prompted for a password, resolve that first. Your ssh client should show you errors in that case. You
+can run `ssh -v user@serverIP` to get more detailed output on what went wrong.
+
 On Windows 10 in particular, if the ssh client complains about the "wrong permissions" on the `.ssh` directory or
 `.ssh/config` file, go into Explorer, find the `C:\Users\USERNAME\.ssh` directory, edit its Properties->Security, click
 Advanced, then make your user the owner with Full Access, while removing access rights to anyone else, such as SYSTEM
-and Administrators. That should solve the issues the OpenSSH client had.
+and Administrators. Check "Replace all child object permissions", and click OK. That should solve the issues the
+OpenSSH client had.
 
 Lastly, once key authentication has been tested, turn off password authentication. On your Linux server:<br />
 `sudo nano /etc/ssh/sshd_config`

@@ -93,7 +93,8 @@ Please take a look.
 ## Step 1: Install prerequisites
 
 You will need git, docker, and docker-compose. This should work on Linux, possibly MacOS.
-Running a node on Windows 10 is highly discouraged because of time synchronization concerns.
+Running a node via this project on Windows 10 is [highly discouraged](WINDOWS.md) because of time
+synchronization concerns.
 Please see [prerequisites](PREREQUISITES.md) and then come back here.
 
 ## Step 2: Choose a client, initial setup
@@ -111,8 +112,7 @@ Please see [setup instructions](SETUP.md) and then come back here.
 Build all required images. If building from source, this may take 20-30 minutes. Assuming
 you cloned the project into `eth2-docker`:
 ```
-cd ~/eth2-docker
-sudo docker-compose build
+cd ~/eth2-docker && sudo docker-compose build
 ```
 
 ## Step 4: Create an eth2 wallet and validator keystore and deposit files
@@ -121,7 +121,16 @@ You will deposit eth to the deposit contract, and receive locked eth2 in turn.<b
 > **Vital** [RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security. If you haven't
 read these yet, please do so now. You need to know how to guard your keystore password
 and your seed phrase (mnemonic). **Without the mnemonic, you will be unable to withdraw your funds
-in phase 2. You need the seed phrase or your eth is gone forever.**
+after the "merge", also called phase 1.5 of Ethereum 2.0. You need the seed phrase or your eth is gone forever.**
+
+> You can create the keys using eth2-docker. For mainnet, you may want to create
+> the keys on a machine that is not connected to the Internet, and will be wiped
+> afterwards. This can be done by downloading [eth2.0-deposit-cli](https://github.com/ethereum/eth2.0-deposit-cli)
+> directly and copying it to that machine, or by fetching the eth2-docker project
+> on that machine, then disconnecting it from Internet. After you've created
+> keys, you'd move them off the machine, wipe the machine used to create them,
+> copy them to the machine the node will run on, and continue from
+> "You brought your own keys", below.
 
 Make sure you're in the project directory, `cd ~/eth2-docker` by default.
 
@@ -196,7 +205,10 @@ marked offline if your validator is activated before the beacon syncs.
 
 Once you are ready, you can send eth to the deposit contract by using
 the `.eth2/validator_keys/deposit_data-TIMESTAMP.json` file at the [Pyrmont launchpad](https://pyrmont.launchpad.ethereum.org/)
-or [Mainnet launchpad](https://launchpad.ethereum.org).
+or [Mainnet launchpad](https://launchpad.ethereum.org). This file was created in Step 4.
+
+> You can transfer files from your node to a machine with a browser using scp. A graphical
+> tool such as WinSCP will work, or you can use [command line scp](https://linuxize.com/post/how-to-use-scp-command-to-securely-transfer-files/).
 
 ## Step 8: Grafana Dashboards
 
@@ -208,13 +220,17 @@ A baseline set of dashboards has been included.
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/status-im/nimbus-eth2/master/grafana/beacon_nodes_Grafana_dashboard.json)
 - [Teku Dashboard](https://grafana.com/api/dashboards/12199/revisions/1/download)
 
-- Connect to http://YOURSERVERIP:3000/, log in as admin/admin, set a new password
+Connect to http://YOURSERVERIP:3000/, log in as admin/admin, and set a new password.
+> Grafana runs over http without encryption, which is not secure. Do not expose the Grafana port to the Internet. You can
+> use [SSH tunneling](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to reach Grafana securely over the Internet.
 
-In order to load Dashboards for other clients, follow these instructions
+In order to load other Dashboards, follow these instructions.
 
-- Import a Dashboard. Click on the + icon on the left, choose "Import". Copy/paste JSON code from one of the client dashboard links below (click anywhere inside the page
-the link gets you to, use Ctrl-a to select all and Ctrl-C to copy), click "Load", choose the "prometheus" data source you just configured, click "Import".
-
+- Click on the + icon on the left, choose "Import".
+- Copy/paste JSON code from the Raw github page of the Dashboard you chose - click anywhere inside the page, use Ctrl-A to select all and Ctrl-C to copy
+- Click "Load"
+- If prompted for a data source choose the "prometheus" data source
+- Click "Import".
 
 ## Step 9: Autostart the client on boot
 
@@ -267,7 +283,7 @@ show you how to.
 
 Please see the [changelog](CHANGELOG.md) to see what changed between versions.
 
-### The project itself
+### The eth2-docker tool itself
 
 Inside the project directory, run:<br />
 `git pull`
@@ -275,13 +291,17 @@ Inside the project directory, run:<br />
 Then `cp .env .env.bak` and `cp default.env .env`, and set variables inside `.env`
 the way you need them, with `.env.bak` as a guide.
 
+### The client "stack"
+
+If you are using binary build files - the default - you can update everything
+in the client "stack" with `sudo docker-compose build --pull`. If you
+run shared components in a different directory, such as eth1, traefik, or portainer,
+you'd `cd` into those directories and run the command there.
+
 ### Eth1
 
-If not building from source, run:<br />
-`sudo docker-compose build --pull eth1`
-
-Else, if building from source:<br />
-`sudo docker-compose build --no-cache eth1`
+Run:<br />
+`sudo docker-compose build --no-cache --pull eth1`
 
 Then stop, remove and start eth1:<br />
 `sudo docker-compose stop eth1 && sudo docker-compose rm eth1`<br />
@@ -291,17 +311,14 @@ Then stop, remove and start eth1:<br />
 
 Beacon and validator client share the same image for most clients, we only need to rebuild one.
 
-If not building from source, run:<br />
-`sudo docker-compose build --pull beacon`
-
-Else, if building from source:<br />
-`sudo docker-compose build --no-cache beacon`
+Run:<br />
+`sudo docker-compose build --no-cache --pull beacon`
 
 For Prysm, also run:<br />
-`sudo docker-compose build --pull validator`
+`sudo docker-compose build --no-cache --pull validator`
 
-Or, if building from source:<br />
-`sudo docker-compose build --no-cache validator`
+And if using the Prysm slasher, run:<br />
+`sudo docker-compose build --no-cache --pull slasher`
 
 Then restart the client:<br />
 `sudo docker-compose down && sudo docker-compose up -d eth2`
