@@ -29,7 +29,7 @@ RUN wget -qcO - $prysm_more_10_url | jq '.title = "prysm_more_10"' >$prysm_more_
 #  lighthouse_summary
 ARG lighthouse_summary_url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json'
 ARG lighthouse_summary_file='/etc/grafana/provisioning/dashboards/lighthouse_summary.json'
-RUN wget -qcO - $lighthouse_summary_url | jq '.title = "lighthouse_summary"' >$lighthouse_summary_file
+RUN wget -qcO - $lighthouse_summary_url | jq '.title = "lighthouse_summary"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$lighthouse_summary_file
 
 #  teku_overview
 ARG teku_overview_url='https://grafana.com/api/dashboards/12199/revisions/1/download'
