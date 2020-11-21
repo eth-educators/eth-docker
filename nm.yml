@@ -18,7 +18,8 @@ services:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}
+      - ${ETH1_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}/tcp
     entrypoint:
       - dotnet
       - /nethermind/Nethermind.Runner.dll
@@ -46,6 +47,10 @@ services:
       - ${ETH1_WS_PORT}
       - --Sync.FastSync
       - "true"
+      - --Sync.AncientBodiesBarrier
+      - ${ETH1_ANCIENT_BARRIER}
+      - --Sync.AncientReceiptsBarrier
+      - ${ETH1_ANCIENT_BARRIER}
       - --config
       - ${ETH1_NETWORK}
   beacon:

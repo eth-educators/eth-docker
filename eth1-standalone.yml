@@ -1,4 +1,4 @@
-# To be used in conjunction with oe.yml, nm.yml or geth.yml
+# To be used in conjunction with oe.yml, nm.yml, besu.yml or geth.yml
 version: "3.4"
 services:
   eth1:

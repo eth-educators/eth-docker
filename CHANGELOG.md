@@ -15,6 +15,11 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.1.8.8 2020-11-20
+
+* Initial attempt at Besu integration. While Besu builds, Lighthouse doesn't communicate with it.
+  Strictly for testing.
+
 ## v0.1.8.7 2020-11-19
 
 * Integrated community dashboard for lighthouse, teku, and nimbus.
