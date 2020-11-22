@@ -19,12 +19,12 @@ When setting up an Ethereum 2.0 node, you'll:
 - Configure and run an Ethereum 1 node and sync it with the Görli testnet or main net
 - Alternatively, choose an external provider of Ethereum 1 chain data
 - Configure and run an Ethereum 2.0 beacon node and sync it with an Ethereum 2.0 testnet or main net
-- Generate validator keys, one per 32 eth you wish to stake. This can and often is done outside of the
+- Generate validator keys, one per 32 Eth you wish to stake. This can and often is done outside of the
   machine used to run the node, for security reasons.
 - Import validator keys into the validator client, each validator key activates one validator
-- Once the ethereum 1 and ethereum 2.0 nodes are fully synced with the chain, deposit Ethereum
-  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until phase 2, maybe 1.5,
-  of Ethereum 2.0.
+- Once the Ethereum 1 and Ethereum 2.0 nodes are fully synced with the chain, deposit Ethereum
+  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until the "merge" phase
+  of Ethereum 2.0, sometimes also referred to as "phase 1.5".
 
 Here's what then happens:
 
