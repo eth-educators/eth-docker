@@ -401,12 +401,26 @@ The exit procedure for lighthouse is not very refined, yet.
   once for each keystore (validator) you wish to exit.
 - Follow prompts.
 
+> The directory `.eth2/validator_keys` is passed through to docker as `/var/lib/lighthouse/validator_keys`. Lighthouse
+> expects you to explicitly name the `keystore-m` file for which you wish to process an exit. Because this can
+> be confusing, here's an example:
+```
+yorick@ethlinux:~/eth2-pyrmont$ ls .eth2/validator_keys/
+deposit_data-1605672506.json  keystore-m_12381_3600_0_0_0-1605672506.json
+yorick@ethlinux:~/eth2-pyrmont$ sudo docker-compose run --rm validator-voluntary-exit /var/lib/lighthouse/validator_keys/keystore-m_12381_3600_0_0_0-1605672506.json
+Starting eth2-pyrmont_beacon_1 ... done
+Running account manager for pyrmont testnet
+validator-dir path: "/var/lib/lighthouse/validators"
+
+Enter the keystore password for validator in "/var/lib/lighthouse/validator_keys/keystore-m_12381_3600_0_0_0-1605672506.json":
+```
+
 ### Avoid penalties
 
-> Note you will need to continue running your validator until the exit
-> has been processed by the chain, if you wish to avoid incurring offline
-> penalties. You can check the status of your validator with tools such
-> as beaconcha.in and beaconscan.
+Note you will need to continue running your validator until the exit
+has been processed by the chain, if you wish to avoid incurring offline
+penalties. You can check the status of your validator with tools such
+as [beaconcha.in](https://beaconcha.in) and [beaconscan](https://beaconscan.com).
 
 ## Addendum: Troubleshooting
 
