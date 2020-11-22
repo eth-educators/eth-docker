@@ -90,7 +90,7 @@ services:
       - /var/lib/prysm/
       - --keys-dir
       - /var/lib/prysm/validator_keys
-      - ${NETWORK}
+      - --${NETWORK}
   validator-voluntary-exit:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
