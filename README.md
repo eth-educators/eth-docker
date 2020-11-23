@@ -134,13 +134,12 @@ after the "merge", also called phase 1.5 of Ethereum 2.0. You need the seed phra
 
 Make sure you're in the project directory, `cd ~/eth2-docker` by default.
 
-Edit the `.env` file to set the number of validators you wish to create. The default
-is just one (1) validator.
+This command will create the keys to deposit Eth against:<br />
+`sudo docker-compose run --rm deposit-cli`
+
+Choose the number of validators you wish to create.
 > A validator is synonymous to one 32 Ethereum stake. Multiple validators
 > can be imported to a single validator client.
-
-This command will get you ready to deposit eth:<br />
-`sudo docker-compose run --rm deposit-cli`
 
 The created files will be in the directory `.eth2/validator_keys` in this project.
 > eth2.0-deposit-cli shows you a different directory, that's because it has a view
@@ -342,16 +341,18 @@ net, however.
 
 You can use eth2.0-deposit-cli to either recover validator signing keys or add
 additional ones, if you wish to deposit more validators against the same mnemonic.
+> The same cautions apply as when creating keys in the first place. You
+> may wish to take these steps on a machine that is disconnected from Internet
+> and will be wiped immediately after creating the keys.
 
-In order to recover all your validator signing keys, edit `.env`, set `NUMVALS` to the number
-of validators you had created previously, then run `sudo docker-compose run --rm deposit-cli-add-recover`
-and provide your mnemonic.
+In order to recover all your validator signing keys, run `sudo docker-compose run --rm deposit-cli-add-recover`
+and provide your mnemonic, then set index to "0" and the number of validators to the number you had created previously
+and are now recreating.
 
-In order to add additional validator signing keys, edit `.env`, and set `VAL_START_INDEX`
-to the number of validator keys you had created previously, for example, `4`. New validators
-will be created after this point. Set `NUMVALS` to the number of new validators you wish to
-create and deposit, then run `sudo docker-compose run --rm deposit-cli-add-recover`
-and provide your mnemonic. You will receive new `keystore-m` signing keys and a new `deposit_data` JSON.
+In order to add additional validator signing keys, likewise run `sudo docker-compose run --rm deposit-cli-add-recover`
+and provide your mnemonic, but this time set the index to the number of validator keys you had created previously,
+for example, `4`. New validators will be created after this point. You will receive new `keystore-m` signing keys
+and a new `deposit_data` JSON.
 
 > Please triple-check your work here. You want to be sure the new validator keys are created after
 > the existing ones. Launchpad will likely safeguard you against depositing twice, but don't rely
@@ -361,8 +362,8 @@ and provide your mnemonic. You will receive new `keystore-m` signing keys and a 
 ## Addendum: Voluntary client exit
 
 Ethereum 2.0 has a concept of "voluntary client exit", which will remove the
-validator from attesting duties. Locked eth could be withdrawn in phase 2,
-and not sooner.
+validator from attesting duties. Locked Eth could be withdrawn after the "merge"
+aka "phase 1.5", and not sooner.
 
 Currently, Prysm and Lighthouse support voluntary exit. This requires a fully synced
 beacon node.

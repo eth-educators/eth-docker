@@ -69,8 +69,6 @@ services:
       - new-mnemonic
       - --folder
       - /var/lib/depcli-data
-      - --num_validators
-      - ${NUMVAL}
       - --chain
       - ${NETWORK}
   deposit-cli-add-recover:
@@ -91,10 +89,6 @@ services:
       - existing-mnemonic
       - --folder
       - /var/lib/depcli-data
-      - --num_validators
-      - ${NUMVAL}
-      - --validator_start_index
-      - ${VAL_START_INDEX}
       - --chain
       - ${NETWORK}
   eth2:

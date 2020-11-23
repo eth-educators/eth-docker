@@ -2,7 +2,7 @@ In the absence of a proper test script, a few quick notes on a test sequence tha
 should show functionality.
 
 Prep that's not client specific:
-- `cp default.env .env`, adjust LOCAL_UID and ports as needed, set `NUMVAL` to `2`
+- `cp default.env .env`, adjust LOCAL_UID and ports as needed
 - `sudo docker volume rm $(sudo docker volume ls -q | grep eth2-docker)`, wipe volumes from last pass,
    assuming that `eth2-docker` is the directory we are testing in.
 
