@@ -28,7 +28,6 @@ services:
       - --jsonrpc-interface=all
       - --jsonrpc-apis=net,eth
       - --jsonrpc-hosts=all
-      - --jsonrpc-cors=${ETH1_RPC_CORS}
       - --ws-interface=all
       - --ws-apis=net,eth
       - --ws-hosts=all
@@ -39,6 +38,8 @@ services:
       - ${ETH1_PORT}
       - --jsonrpc-port
       - ${ETH1_RPC_PORT}
+      - --logging
+      - ${LOG_LEVEL}
   beacon:
     depends_on:
       - eth1

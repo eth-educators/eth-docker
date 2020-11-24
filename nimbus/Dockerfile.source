@@ -41,4 +41,4 @@ COPY --from=builder /usr/src/nim-beacon-chain/build/beacon_node /usr/local/bin/n
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-ENTRYPOINT ["nimbus_beacon_node", "--data-dir=/var/lib/nimbus", "--web3-url=http://geth:8545", "--network=medalla", "--log-file=/var/lib/nimbus/beacon_node.log"]
+ENTRYPOINT ["nimbus_beacon_node", "--data-dir=/var/lib/nimbus", "--log-file=/var/lib/nimbus/beacon_node.log"]

@@ -1,4 +1,4 @@
-# eth2-docker v0.2.0
+# eth2-docker v0.2.1
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -59,8 +59,9 @@ Currently supported clients:
 - Nimbus
 
 Currently supported optional components:
-- geth, local eth1 node.
-- nethermind, local eth1 node - testing only, DB corruption observed on goerli and mainnet
+- geth, local eth1 node
+- besu, local eth1 node - support in eth2-docker is new, has not been tested extensively by us. Feedback welcome.
+- nethermind, local eth1 node - support in eth2-docker is new, has not been tested extensively by us. Feedback welcome.
 - openethereum, local eth1 node - testing only, DB corruption observed on mainnet
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.

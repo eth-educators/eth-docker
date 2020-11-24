@@ -14,9 +14,7 @@ RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git ca-cert
 RUN adduser \
     --disabled-password \
     --gecos "" \
-    --home "/nonexistent" \
     --shell "/sbin/nologin" \
-    --no-create-home \
     --uid "${UID}" \
     "${USER}"
 
