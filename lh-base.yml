@@ -27,7 +27,7 @@ services:
       - --http
       - --http-address
       - 0.0.0.0
-      - --testnet
+      - --network
       - ${NETWORK}
       - --port
       - ${LH_PORT}
@@ -57,7 +57,7 @@ services:
       - http://beacon:5052
       - --graffiti
       - ${GRAFFITI}
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
     depends_on:
@@ -87,7 +87,7 @@ services:
       - /var/lib/lighthouse
       - --directory
       - /var/lib/lighthouse/validator_keys
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-voluntary-exit:
@@ -114,7 +114,7 @@ services:
       - http://beacon:5052 
       - --datadir
       - /var/lib/lighthouse
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --keystore
@@ -141,7 +141,7 @@ services:
       - validator
       - --datadir
       - /var/lib/lighthouse
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   deposit-cli:
