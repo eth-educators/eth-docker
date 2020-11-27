@@ -34,7 +34,6 @@ services:
       - 0.0.0.0
       - --rpc-http-port
       - ${ETH1_RPC_PORT}
-      - --rpc-http-cors-origins=*
       - --rpc-ws-enabled
       - --rpc-ws-api
       - "net,eth"
@@ -42,6 +41,7 @@ services:
       - 0.0.0.0
       - --rpc-ws-port
       - ${ETH1_WS_PORT}
+      - --host-allowlist=eth1,localhost
       - --logging
       - ${LOG_LEVEL}
       - --network

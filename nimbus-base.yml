@@ -21,6 +21,7 @@ services:
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
+      - --log-file=/var/lib/nimbus/beacon_node.log
       - --non-interactive
       - --tcp-port=${NIM_PORT}
       - --udp-port=${NIM_PORT}
@@ -47,6 +48,7 @@ services:
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
+      - --log-file=/var/lib/nimbus/beacon_node.log
       - --network=${NETWORK}
       - deposits
       - import

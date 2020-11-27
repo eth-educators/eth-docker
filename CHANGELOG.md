@@ -9,11 +9,20 @@ directory (`cd ~/eth2-docker` by default):
 * `cp .env .env.bak && cp default.env .env`
 * Adjust contents of new `.env`, use `.env.bak` for guidance (LOCAL_UID
   and COMPOSE_FILE are the most common variables that may need to be adjusted)
-* `sudo docker-compose build --no-cache beacon` (go for a 30 minute walk)
+* `sudo docker-compose build --pull` if you are using binary builds, the default
+* `sudo docker-compose build --pull --no-cache beacon` **only** if you are using source builds, then
+  run `sudo docker-compose build -pull` to update the rest of the "stack"
 * `sudo docker-compose down`
 * !! If coming from Lighthouse v0.2.x, make changes as per notes for [v0.1.6](#v016-2020-10-09)
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
+
+## v0.2.1 2020-11-24
+
+* Support for Besu eth1 client
+* Fixed an issue with Nimbus log file
+* Removed CORS settings for eth1, for now
+* Tightened hosts values for Geth and Besu
 
 ## v0.2.0 2020-11-24
 
