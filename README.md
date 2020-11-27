@@ -1,4 +1,4 @@
-# eth2-docker v0.2.1
+# eth2-docker v0.2.2
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -216,7 +216,8 @@ A baseline set of dashboards has been included.
 - [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
-- [Lighthouse Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
+- [Lighthouse Beacon Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
+- [Lighthouse Validator Client Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorClient.json)
 - [Nimbus Dashboard JSON](https://raw.githubusercontent.com/status-im/nimbus-eth2/master/grafana/beacon_nodes_Grafana_dashboard.json)
 - [Teku Dashboard](https://grafana.com/api/dashboards/12199/revisions/1/download)
 
@@ -338,6 +339,11 @@ changing the directory name the project is stored in; or when you want to start 
 with a fresh database. Keep in mind that synchronizing Ethereum 1 can take days on main
 net, however.
 
+> **Caution** If you are removing the client to recreate it, please be careful
+> to wait 10 minutes before importing validator key(s) and starting it again.
+> The slashing protection DB will be gone, and you risk slashing your validator(s)
+> otherwise.
+
 ## Addendum: Add or recover validators
 
 You can use eth2.0-deposit-cli to either recover validator signing keys or add
@@ -377,7 +383,7 @@ prompts.
 If you wish to exit validators that were running on other clients, you can do this
 as follows:
 
-- Stop the other client(s), and wait 20 minutes. This is so you won't have
+- Stop the other client(s), and wait 10 minutes. This is so you won't have
   a validator attest in the same epoch twice.
 - Copy all `keystore-m` JSON files into `.eth2/validator_keys` in this project
   directory.
@@ -385,7 +391,7 @@ as follows:
 - Import the new keys via `sudo docker-compose run validator-import`. Note
   that Prysm assumes they all have the same password. If that's not the case,
   maybe work in batches.
-- Verify once more that the old client is down, has been for 20 minutes, and
+- Verify once more that the old client is down, has been for 10 minutes, and
   can't come back up. **If both the old client and this Prysm run at the same time,
   you will slash yourself**
 - Bring the Prysm client up: `sudo docker-compose up -d eth2`

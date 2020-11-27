@@ -17,6 +17,9 @@ scrape_configs:
   - job_name: 'nodes'
     static_configs:
       - targets: ['beacon:5054']
+  - job_name: 'validator'
+    static_configs:
+      - targets: ['validator:5064']
   - job_name: 'node_exporter'
     static_configs:
       - targets: ['node-exporter:9100']

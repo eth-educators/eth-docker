@@ -83,6 +83,8 @@ and with which options. See below for available compose files. Think of this as
 blocks you combine: One ethereum 2 client, optionally one ethereum 1 node, optionally reporting.
 - If you are going to use a 3rd-party provider as your eth1 chain source, set `ETH1_NODE` to that URL.
   Look into [Alchemy](https://alchemyapi.io) or see [how to create your own Infura account](https://status-im.github.io/nimbus-eth2/infura-guide)
+- For Lighthouse, you can set `ETH1_NODE` to a comma-separated list, for example `http://eth1:8545,https://<alchemy-url>`
+  would use a local eth1 first, and fail back to Alchemy when it does not respond.
 - Adjust ports if you are going to need custom ports instead of the defaults. These are the ports
 exposed to the host, and for the P2P ports to the Internet via your firewall/router.
 - Set the `NETWORK` variable to either "mainnet" or a test network such as "pyrmont"

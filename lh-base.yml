@@ -31,7 +31,7 @@ services:
       - ${NETWORK}
       - --port
       - ${LH_PORT}
-      - --eth1-endpoint
+      - --eth1-endpoints
       - ${ETH1_NODE}
       - --debug-level=${LOG_LEVEL}
   validator:
