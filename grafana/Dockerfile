@@ -31,6 +31,12 @@ ARG lighthouse_summary_url='https://raw.githubusercontent.com/sigp/lighthouse-me
 ARG lighthouse_summary_file='/etc/grafana/provisioning/dashboards/lighthouse_summary.json'
 RUN wget -qcO - $lighthouse_summary_url | jq '.title = "lighthouse_summary"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$lighthouse_summary_file
 
+#  lighthouse_validator_client
+
+ARG lighthouse_validator_client_url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorClient.json'
+ARG lighthouse_validator_client_file='/etc/grafana/provisioning/dashboards/lighthouse_validator_client.json'
+RUN wget -qcO - $lighthouse_validator_client_url | jq '.title = "lighthouse_validator_client"' >$lighthouse_validator_client_file
+
 #  teku_overview
 ARG teku_overview_url='https://grafana.com/api/dashboards/12199/revisions/1/download'
 ARG teku_overview_file='/etc/grafana/provisioning/dashboards/teku_overview.json'

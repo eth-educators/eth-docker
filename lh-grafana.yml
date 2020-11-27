@@ -7,6 +7,13 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+  validator:
+    expose:
+      - 5064/tcp
+    command:
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
   prometheus:
     restart: "${RESTART}"
     build:
