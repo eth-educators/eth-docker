@@ -14,13 +14,6 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
-  eth1:
-    expose:
-      - 6060/tcp
-    command:
-      - --metrics
-      - --metrics.addr
-      - 0.0.0.0
   prometheus:
     restart: "${RESTART}"
     build:
@@ -32,15 +25,12 @@ services:
       - CLIENT=${COMPOSE_FILE}
     expose:
       - 9090/tcp
-    ports: 
-      - 9090:9090/tcp
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
       - beacon
       - validator
       - node-exporter
-      - eth1
   node-exporter:
     restart: "${RESTART}"
     image: prom/node-exporter
