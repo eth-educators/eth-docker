@@ -1,0 +1,6 @@
+  - job_name: geth
+    metrics_path: /debug/metrics/prometheus
+    scheme: http
+    static_configs:
+    - targets:
+      - eth1:6060
