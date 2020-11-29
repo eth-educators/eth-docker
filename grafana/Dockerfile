@@ -47,6 +47,11 @@ ARG nimbus_dashboard_url='https://raw.githubusercontent.com/status-im/nimbus-eth
 ARG nimbus_dashboard_file='/etc/grafana/provisioning/dashboards/nimbus_dashboard.json'
 RUN wget -qcO - $nimbus_dashboard_url | jq '.title = "nimbus_dashboard"' >$nimbus_dashboard_file
 
+#  geth_dashboard
+ARG geth_dashboard_url='https://raw.githubusercontent.com/hunterlong/gethexporter/master/dashboard.json'
+ARG geth_dashboard_file='/etc/grafana/provisioning/dashboards/geth_dashboard.json'
+RUN wget -qcO - $geth_dashboard_url | jq '.title = "geth_dashboard"' >$geth_dashboard_file
+
 RUN tree /etc/grafana/provisioning/
 
 ENTRYPOINT [ "/run.sh" ]
