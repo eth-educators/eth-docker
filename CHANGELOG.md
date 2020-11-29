@@ -17,6 +17,11 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.3 2020-11-29
+
+* First attempt at Geth Grafana metrics. Does not work for eth1-standalone currently
+* Removed Nethermind manual barrier, as it is now part of Nethermind's default mainnet config
+
 ## v0.2.2 2020-11-27
 
 * Lighthouse v1.0.1 validator metrics supported

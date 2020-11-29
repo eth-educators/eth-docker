@@ -4,7 +4,8 @@ COPY ./lh-prom.yml /etc/prometheus
 COPY ./prysm-prom.yml /etc/prometheus
 COPY ./nimbus-prom.yml /etc/prometheus
 COPY ./teku-prom.yml /etc/prometheus
-COPY ./prometheus.yml /etc/prometheus
+COPY ./geth-prom.yml /etc/prometheus
+COPY ./none.yml /etc/prometheus
 COPY ./choose-config.sh /usr/local/bin/choose-config.sh
 
 # For reference and local testing with docker; this is otherwise set by docker-compose

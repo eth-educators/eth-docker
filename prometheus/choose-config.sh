@@ -8,7 +8,13 @@ case "$CLIENT" in
   *prysm-base* ) conffile=prysm-prom.yml ;;
   *nimbus-base* ) conffile=nimbus-prom.yml ;;
   *teku-base* ) conffile=teku-prom.yml ;;
-  * ) conffile=prometheus.yml ;;
+  * ) conffile=none.yml ;;
 esac
 
-"$@" --config.file=/etc/prometheus/$conffile
+cp /etc/prometheus/$conffile /etc/prometheus/prometheus.yml
+
+case "$CLIENT" in
+  *geth* ) cat /etc/prometheus/geth-prom.yml >> /etc/prometheus/prometheus.yml ;;
+esac
+
+"$@" --config.file=/etc/prometheus/prometheus.yml
