@@ -1,0 +1,43 @@
+# Build Teku in a stock debian container
+FROM openjdk:14-jdk-slim-buster as builder
+
+# This is here to avoid build-time complaints
+ARG DOCKER_TAG
+
+ARG BUILD_TARGET
+
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates git
+
+WORKDIR /usr/src
+RUN bash -c "git clone --recursive https://github.com/hyperledger/besu.git && cd besu && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
+
+# Pull all binaries into a second stage deploy debian container
+FROM openjdk:14-slim-buster
+
+ARG USER
+ARG UID
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/usr/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/besu && chown -R ${USER}:${USER} /var/lib/besu && chmod -R 700 /var/lib/besu
+
+# Copy executable
+COPY --from=builder /usr/src/besu/build/install/besu/. /opt/besu/
+
+# Use an unprivileged user.
+USER ${USER}:${USER}
+
+ENTRYPOINT /opt/besu/bin/besu

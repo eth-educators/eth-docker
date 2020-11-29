@@ -5,8 +5,9 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -26,11 +27,11 @@ services:
       - --http
       - --http-address
       - 0.0.0.0
-      - --testnet
+      - --network
       - ${NETWORK}
       - --port
       - ${LH_PORT}
-      - --eth1-endpoint
+      - --eth1-endpoints
       - ${ETH1_NODE}
       - --debug-level=${LOG_LEVEL}
   validator:
@@ -38,8 +39,9 @@ services:
     user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -55,7 +57,7 @@ services:
       - http://beacon:5052
       - --graffiti
       - ${GRAFFITI}
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
     depends_on:
@@ -66,8 +68,9 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -84,7 +87,7 @@ services:
       - /var/lib/lighthouse
       - --directory
       - /var/lib/lighthouse/validator_keys
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-voluntary-exit:
@@ -93,8 +96,9 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -110,7 +114,7 @@ services:
       - http://beacon:5052 
       - --datadir
       - /var/lib/lighthouse
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --keystore
@@ -122,8 +126,9 @@ services:
     image: lighthouse
     build:
       context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
       args:
-        - SRC_BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - USER=${LH_USER}
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
@@ -136,7 +141,7 @@ services:
       - validator
       - --datadir
       - /var/lib/lighthouse
-      - --testnet
+      - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   deposit-cli:
@@ -157,8 +162,6 @@ services:
       - new-mnemonic
       - --folder
       - /var/lib/depcli-data
-      - --num_validators
-      - ${NUMVAL}
       - --chain
       - ${NETWORK}
   deposit-cli-add-recover:
@@ -179,10 +182,6 @@ services:
       - existing-mnemonic
       - --folder
       - /var/lib/depcli-data
-      - --num_validators
-      - ${NUMVAL}
-      - --validator_start_index
-      - ${VAL_START_INDEX}
       - --chain
       - ${NETWORK}
   eth2:

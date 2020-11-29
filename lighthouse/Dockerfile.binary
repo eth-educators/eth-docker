@@ -28,6 +28,4 @@ USER ${USER}:${USER}
 # For voluntary exit
 ENV KEYSTORE=nonesuch
 
-#EXPOSE 5052 9000 9000/udp
-ENTRYPOINT ["lighthouse", "bn", "--datadir", "/var/lib/lighthouse/", "--http", "--http-address", "0.0.0.0"]
-CMD ["--testnet", "medalla", "--eth1-endpoint", "http://geth:8545"]
+ENTRYPOINT lighthouse

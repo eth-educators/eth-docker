@@ -39,15 +39,8 @@ MacOS has not been tested, if you have the ability to, please get in touch via t
 ## Windows 10 discouraged
 
 While it is technically possible to run this project, and thus a node, on Windows 10,
-I want to discourage that idea. Windows 10 is fine as an SSH client to connect *to*
-your Linux server, but not as a basis for the node server itself.
+I want to [discourage that idea](WINDOWS.md). Windows 10 is fine as an SSH client to connect *to*
+your Linux server, but not as a basis to run the node server itself inside Docker.
 
-In testing, Windows 10 time synchronization was less than accurate, and WSL2 would lose
-time sync when a machine goes to sleep and comes back out. In addition, WSL2 has no systemd
-and so cannot run Linux-native time sync easily.
-
-While this can all be solved with the use of 3rd-party software, I don't want to be
-responsible for someone losing money because time was off.
-
-If you know enough to get Windows 10 and WSL2 time sync stable, you likely also know enough
-to run a Linux server in the first place.
+The challenges inherent in running on Windows 10 are easier to solve when using the Windows-native
+versions of the clients, rather than wrapping Docker around them.

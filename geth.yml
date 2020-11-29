@@ -19,21 +19,21 @@ services:
       - ${ETH1_PORT}:${ETH1_PORT}/udp
     expose:
       - ${ETH1_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}/tcp
     entrypoint:
       - geth
       - --nousb
       - --http
       - --http.addr
       - 0.0.0.0
-      - --http.vhosts=*
+      - --http.vhosts=eth1,localhost
       - --http.api
       - eth,net
-      - --ipcdisable
       - --datadir
       - /var/lib/goethereum
       - --port
       - ${ETH1_PORT}
-      - --rpcport
+      - --http.port
       - ${ETH1_RPC_PORT}
       - --ws
       - --ws.addr
@@ -42,7 +42,6 @@ services:
       - ${ETH1_WS_PORT}
       - --ws.api
       - eth,net
-      - --ws.origins=*
     command: ${GETH1_NETWORK}
   beacon:
     depends_on:

@@ -18,17 +18,14 @@ services:
       - ${ETH1_PORT}:${ETH1_PORT}/tcp
       - ${ETH1_PORT}:${ETH1_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}
+      - ${ETH1_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}/tcp
     entrypoint:
       - dotnet
       - /nethermind/Nethermind.Runner.dll
       - --Init.BaseDbPath
       - /var/lib/nethermind
       - --Init.WebSocketsEnabled
-      - "true"
-      - Sync.DownloadBodiesInFastSync
-      - "true"
-      - Sync.DownloadReceiptsInFastSync
       - "true"
       - --Network.DiscoveryPort
       -  ${ETH1_PORT}

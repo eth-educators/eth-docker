@@ -9,11 +9,43 @@ directory (`cd ~/eth2-docker` by default):
 * `cp .env .env.bak && cp default.env .env`
 * Adjust contents of new `.env`, use `.env.bak` for guidance (LOCAL_UID
   and COMPOSE_FILE are the most common variables that may need to be adjusted)
-* `sudo docker-compose build --no-cache beacon` (go for a 30 minute walk)
+* `sudo docker-compose build --pull` if you are using binary builds, the default
+* `sudo docker-compose build --pull --no-cache beacon` **only** if you are using source builds, then
+  run `sudo docker-compose build -pull` to update the rest of the "stack"
 * `sudo docker-compose down`
 * !! If coming from Lighthouse v0.2.x, make changes as per notes for [v0.1.6](#v016-2020-10-09)
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
+
+## v0.2.3 2020-11-29
+
+* First attempt at Geth Grafana metrics. Does not work for eth1-standalone currently
+* Removed Nethermind manual barrier, as it is now part of Nethermind's default mainnet config
+
+## v0.2.2 2020-11-27
+
+* Lighthouse v1.0.1 validator metrics supported
+
+## v0.2.1 2020-11-24
+
+* Support for Besu eth1 client
+* Fixed an issue with Nimbus log file
+* Removed CORS settings for eth1, for now
+* Tightened hosts values for Geth and Besu
+
+## v0.2.0 2020-11-24
+
+* Support for Lighthouse v1.0.0
+* Change default tags for Lighthouse and Prysm to track v1.0.0 release
+
+## v0.1.8.8 2020-11-20
+
+* Initial attempt at Besu integration. While Besu builds, Lighthouse doesn't communicate with it.
+  Strictly for testing.
+
+## v0.1.8.7 2020-11-19
+
+* Integrated community dashboard for lighthouse, teku, and nimbus.
 
 ## v0.1.8.6 2020-11-16
 
