@@ -27,10 +27,6 @@ services:
       - /var/lib/nethermind
       - --Init.WebSocketsEnabled
       - "true"
-      - --Sync.DownloadBodiesInFastSync
-      - "true"
-      - --Sync.DownloadReceiptsInFastSync
-      - "true"
       - --Network.DiscoveryPort
       -  ${ETH1_PORT}
       - --Network.P2PPort
@@ -47,10 +43,6 @@ services:
       - ${ETH1_WS_PORT}
       - --Sync.FastSync
       - "true"
-      - --Sync.AncientBodiesBarrier
-      - ${ETH1_ANCIENT_BARRIER}
-      - --Sync.AncientReceiptsBarrier
-      - ${ETH1_ANCIENT_BARRIER}
       - --config
       - ${ETH1_NETWORK}
   beacon:

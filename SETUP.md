@@ -113,6 +113,7 @@ geth with `:` between the file names.
 - `prysm-web.yml` - Prysm experimental Web UI and Grafana dashboard. Not encrypted, do not expose to Internet. **Mutually exclusive** with `prysm-grafana.yml`
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
+- `geth-grafana.yml` - grafana dashboard for Geth, to be combined with one of the client dashboards: Does not work standalone currently. Example `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml:geth-grafana.yml`
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
