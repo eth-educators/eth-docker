@@ -4,3 +4,4 @@ docker-compose.yml
 !.eth2/README.md
 !.eth2/validator_keys/.empty
 *.swp
+alertmanager/config.yml
