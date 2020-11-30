@@ -5,13 +5,14 @@ global:
 # Alertmanager configuration
 alerting:
   alertmanagers:
-  - static_configs:
-    - targets:
-      # - alertmanager:9093
+  - scheme: http
+    static_configs:
+    - targets: 
+      - 'alertmanager:9093'
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
+  - "alert_rules.yml"
+
 # A scrape configuration containing beacon node and node exporter
 scrape_configs:
   - job_name: 'nodes'
@@ -23,3 +24,10 @@ scrape_configs:
   - job_name: 'node_exporter'
     static_configs:
       - targets: ['node-exporter:9100']
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+

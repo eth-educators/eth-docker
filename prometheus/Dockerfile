@@ -7,6 +7,7 @@ COPY ./teku-prom.yml /etc/prometheus
 COPY ./geth-prom.yml /etc/prometheus
 COPY ./none.yml /etc/prometheus
 COPY ./choose-config.sh /usr/local/bin/choose-config.sh
+COPY ./alert_rules.yml /etc/prometheus
 
 # For reference and local testing with docker; this is otherwise set by docker-compose
 ENV CLIENT=lh-base
