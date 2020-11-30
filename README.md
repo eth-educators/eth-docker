@@ -1,4 +1,4 @@
-# eth2-docker v0.2.3
+# eth2-docker v0.2.3.1
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -49,8 +49,8 @@ Here's what then happens:
 
 ## Supported clients
 
-This project can build from official docker images or from official source repositories. In most cases,
-binary is the default.
+This project builds from client teams' official docker images or from official source repositories, pulled
+directly from docker hub or github, respectively. In most cases, binary is the default.
 
 Currently supported clients:
 - Lighthouse
@@ -176,6 +176,12 @@ Import the validator key(s) to the validator client:
 If you choose to save the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator client and start it interactively. Determine your own risk profile.
+
+> After import, the files in `.eth2/validator_keys` can be safely removed from the node,
+> once you have copied them off the node. You'll need the `deposit_data` file to
+> deposit at the launchpad. The `keystore-m` files can be safeguarded in case
+> the node needs to be rebuilt, or deleted and recreated from mnemonic if required.
+> See [recommendations](RECOMMENDATIONS.md) for some thoughts on key security.
 
 ## Step 6: Start the client
 

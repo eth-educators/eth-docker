@@ -17,6 +17,11 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.3.1 2020-11-30
+
+* Changed Geth shutdown to SIGINT with 2 min timeout so that Geth does not need to resync after
+  `sudo docker-compose down`. In testing Geth took ~50s to shut down on my entry level server.
+
 ## v0.2.3 2020-11-29
 
 * First attempt at Geth Grafana metrics. Does not work for eth1-standalone currently
