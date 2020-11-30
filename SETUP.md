@@ -105,8 +105,8 @@ geth with `:` between the file names.
 - `besu.yml` - local besu eth1 chain node - support in eth2-docker is new, has not been tested extensively by us. Feedback welcome.
 - `nm.yml` - local nethermind eth1 chain node - support in eth2-docker is new, has not been tested extensively by us. Feedback welcome.
 - `oe.yml` - local openethereum eth1 chain node - testing only, DB corruption observed on mainnet
-- `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. **Not encrypted**, do not expose to Internet.
-- `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". Also not encrypted, not meant for a fully distributed setup quite yet.
+- `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. To be used alongside one of the eth1 yml files. **Not encrypted**, do not expose to Internet.
+- `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". To be used alongside one of the eth1 yml files. Also not encrypted, not meant for a fully distributed setup quite yet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
