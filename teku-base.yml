@@ -26,6 +26,7 @@ services:
       - --network=${NETWORK}
       - --eth1-endpoint=${ETH1_NODE}
       - --p2p-port=${TEKU_PORT}
+      - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}

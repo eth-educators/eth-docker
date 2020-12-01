@@ -17,6 +17,10 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.3.2 2020-12-01
+
+* Added max peer values to `default.env`. Make sure to transfer this from `default.env` to your `.env`
+
 ## v0.2.3.1 2020-11-30
 
 * Changed Geth shutdown to SIGINT with 2 min timeout so that Geth does not need to resync after
