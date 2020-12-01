@@ -35,6 +35,8 @@ services:
       - ${PRYSM_PORT}
       - --p2p-udp-port
       - ${PRYSM_UDP_PORT}
+      - --p2p-max-peers
+      - ${PRYSM_PEER_COUNT}
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}

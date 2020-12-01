@@ -31,6 +31,8 @@ services:
       - ${NETWORK}
       - --port
       - ${LH_PORT}
+      - --target-peers
+      - ${LH_PEER_COUNT}
       - --eth1-endpoints
       - ${ETH1_NODE}
       - --debug-level=${LOG_LEVEL}

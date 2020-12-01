@@ -1,4 +1,4 @@
-# eth2-docker v0.2.3.1
+# eth2-docker v0.2.3.2
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -288,6 +288,8 @@ This project does not monitor client versions. It is up to you to decide that yo
 are going to update a component. When you are ready to do so, the below instructions
 show you how to.
 
+You can find the current version of your client by running `sudo docker-compose run beacon --version`.
+
 Please see the [changelog](CHANGELOG.md) to see what changed between versions.
 
 ### The eth2-docker tool itself
@@ -480,5 +482,11 @@ You'd then run Linux commands manually in there, you could start components of t
   in "scratch" containers, alas.
 - Guide users to good key management as much as possible
 - Create something that makes for a good user experience and guides people new to docker and Linux as much as feasible
+
+# Tip Jar
+
+If we've helped you out, in-person or by creating this project, a tip will be very welcome.
+
+Yorick Ethereum: 0xDccf8451070a86183eE70D330C4c43b686E9CF86
 
 LICENSE: MIT
