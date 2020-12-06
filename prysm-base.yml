@@ -69,6 +69,29 @@ services:
       - /var/lib/prysm/password.txt
     depends_on:
       - beacon
+  validator-account-list:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    build:
+      target: validator
+      <<: *prysm-build
+    image: prysm-validator
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+    entrypoint:
+      - validator
+      - --datadir
+      - /var/lib/prysm
+      - --verbosity
+      - ${LOG_LEVEL}
+      - accounts
+      - list
+      - --wallet-dir
+      - /var/lib/prysm/
+      - --${NETWORK}
+      # If you chose not to store the wallet password during import, comment out the two following lines
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
   validator-import:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -117,6 +140,8 @@ services:
       - --wallet-password-file
       - /var/lib/prysm/password.txt
       - --${NETWORK}
+    depends_on:
+      - beacon
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
