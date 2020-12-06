@@ -1,4 +1,4 @@
-# eth2-docker v0.2.3.2
+# eth2-docker v0.2.3.3
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -76,8 +76,10 @@ of validator-import to import keys.
 ## Before you start
 
 Warnings about the dangers of running eth2 nodes are in [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
-That file also contains a link to SomerEsat's [guide on host security](https://medium.com/@SomerEsat/guide-to-staking-on-ethereum-2-0-ubuntu-medalla-nimbus-5f4b2b0f2d7c), and comments on key security.
-Please take a look.
+In particular, you must be sure to secure your seed phrase, the mnemonic. Without it, your
+staked funds *cannot* be withdrawn.
+
+You may also want to take a look at a [guide to Linux host security](https://www.coincashew.com/coins/overview-eth/guide-or-security-best-practices-for-a-eth2-validator-beaconchain-node#setup-two-factor-authentication-for-ssh-optional).
 
 ## Steps to bring an eth2 node up
 
