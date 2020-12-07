@@ -44,11 +44,43 @@ services:
       - beacon
       - validator
       - node-exporter
+      - blackbox-exporter
+      - json-exporter
+      - cryptowat-exporter
   node-exporter:
     restart: "${RESTART}"
     image: prom/node-exporter
     expose:
       - 9100/tcp
+  blackbox-exporter:
+    restart: ${RESTART}"
+    image: prom/blackbox-exporter:master
+    volumes:
+      - ./prometheus:/config
+    expose:
+      - 9115/tcp
+    command:
+      - --config.file=/config/blackbox.yml
+  json-exporter:
+    restart: ${RESTART}"
+    image: quay.io/prometheuscommunity/json-exporter
+    volumes:
+      - ./prometheus/json.yml:/config/json.yml
+    expose:
+      - 7979/tcp
+    command:
+      - --config.file
+      - /config/json.yml
+  cryptowat-exporter:
+    restart: "${RESTART}"
+    image: nbarrientos/cryptowat_exporter
+    environment:
+      - CRYPTOWAT_EXCHANGES=kraken
+      - CRYPTOWAT_PAIRS=ethusd,ethchf
+      - CRYPTOWAT_CACHESECONDS=300
+      - TZ=Europe/Zurich
+    expose:
+      - 9745/tcp 
   grafana:
     restart: "${RESTART}"
     build:

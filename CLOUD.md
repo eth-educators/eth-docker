@@ -14,7 +14,7 @@ be used to secure Grafana.
 
 ### 1) Edit after.rules:
 
-`sudo nano /etc/ufw/after.rules` and add to the end of the file:
+`sudo nano /etc/ufw/after.rules` and add to the end of the file, *after* the existing `COMMIT`:
 
 ```
 *filter
@@ -73,7 +73,7 @@ Next, create ufw rules to allow access from `localhost` and drop access from any
 - `sudo ufw allow from 127.0.0.1 to any port 3000` 
 - `sudo ufw deny 3000` 
 
-Check again that port 3000 is now closed.
+Check again on "yougetsignal" or the like that port 3000 is now closed.
 
 Connect to your node with ssh tunneling, e.g. `ssh -L3000:node-IP:3000 user@node-IP` and browse to `http://127.0.0.1:3000` on the client
 you started the SSH session *from*. You expect to be able to reach the Grafana dashboard.
