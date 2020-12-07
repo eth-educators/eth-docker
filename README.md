@@ -1,4 +1,4 @@
-# eth2-docker v0.2.3.3
+# eth2-docker v0.2.4
 
 Unofficial docker environment for Ethereum 2.0 clients
 
