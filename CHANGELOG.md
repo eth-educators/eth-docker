@@ -17,6 +17,11 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.4 2020-12-07
+
+* Support for new metanull dashboard
+* Initial support for ynager dashboard, eth price not working yet
+
 ## v0.2.3.3 2020-12-06
 
 * More time for OpenEthereum to shut down
