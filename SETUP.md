@@ -114,7 +114,7 @@ geth with `:` between the file names.
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 - `geth-grafana.yml` - grafana dashboard for Geth, to be combined with one of the client dashboards: Does not work standalone currently. Example `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml:geth-grafana.yml`
-- `alerts.yml` - Alertmanager to send alerts based on rules. Run `cp alertmanager/default_config.yml alertmanager/config.yml` and `cp prometheus/default_alert_rules.yml prometheus/alert_rules.yml`. The defaults are email alerts for down containers thus set your SMTP settings in `alertmanager/config.yml`. Different communication methods can be customised in `alertmanager/config.yml` and rules can be customised in `prometheus/alert_rules.yml`. *(If sending with gmail beware that you must set “Allow less secure apps: OFF” in your gmail settings.)*
+- `alerts.yml` - Alertmanager to send alerts based on rules. Run `cp alertmanager/default_config.yml alertmanager/config.yml` and `cp prometheus/default_alert_rules.yml prometheus/alert_rules.yml`. The defaults are email alerts for down docker instances thus set your SMTP settings in `alertmanager/config.yml`. Different communication methods can be customised in `alertmanager/config.yml` and rules can be customised in `prometheus/alert_rules.yml`. *(If sending with gmail beware that you must set “Allow less secure apps: OFF” in your gmail settings.)*
 
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
