@@ -1,4 +1,4 @@
-# eth2-docker v0.2.3
+# eth2-docker v0.2.4
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -49,8 +49,8 @@ Here's what then happens:
 
 ## Supported clients
 
-This project can build from official docker images or from official source repositories. In most cases,
-binary is the default.
+This project builds from client teams' official docker images or from official source repositories, pulled
+directly from docker hub or github, respectively. In most cases, binary is the default.
 
 Currently supported clients:
 - Lighthouse
@@ -76,8 +76,10 @@ of validator-import to import keys.
 ## Before you start
 
 Warnings about the dangers of running eth2 nodes are in [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
-That file also contains a link to SomerEsat's [guide on host security](https://medium.com/@SomerEsat/guide-to-staking-on-ethereum-2-0-ubuntu-medalla-nimbus-5f4b2b0f2d7c), and comments on key security.
-Please take a look.
+In particular, you must be sure to secure your seed phrase, the mnemonic. Without it, your
+staked funds *cannot* be withdrawn.
+
+You may also want to take a look at a [guide to Linux host security](https://www.coincashew.com/coins/overview-eth/guide-or-security-best-practices-for-a-eth2-validator-beaconchain-node#setup-two-factor-authentication-for-ssh-optional).
 
 ## Steps to bring an eth2 node up
 
@@ -176,6 +178,12 @@ Import the validator key(s) to the validator client:
 If you choose to save the password during import, it'll be available to the client every
 time it starts. If you do not, you'll need to be present to start the
 validator client and start it interactively. Determine your own risk profile.
+
+> After import, the files in `.eth2/validator_keys` can be safely removed from the node,
+> once you have copied them off the node. You'll need the `deposit_data` file to
+> deposit at the launchpad. The `keystore-m` files can be safeguarded in case
+> the node needs to be rebuilt, or deleted and recreated from mnemonic if required.
+> See [recommendations](RECOMMENDATIONS.md) for some thoughts on key security.
 
 ## Step 6: Start the client
 
@@ -281,6 +289,8 @@ sudo docker-compose logs -f SERVICENAME
 This project does not monitor client versions. It is up to you to decide that you
 are going to update a component. When you are ready to do so, the below instructions
 show you how to.
+
+You can find the current version of your client by running `sudo docker-compose run beacon --version`.
 
 Please see the [changelog](CHANGELOG.md) to see what changed between versions.
 
@@ -474,5 +484,11 @@ You'd then run Linux commands manually in there, you could start components of t
   in "scratch" containers, alas.
 - Guide users to good key management as much as possible
 - Create something that makes for a good user experience and guides people new to docker and Linux as much as feasible
+
+# Tip Jar
+
+If we've helped you out, in-person or by creating this project, a tip will be very welcome.
+
+Yorick Ethereum: 0xDccf8451070a86183eE70D330C4c43b686E9CF86
 
 LICENSE: MIT

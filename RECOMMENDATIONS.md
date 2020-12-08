@@ -85,10 +85,11 @@ For more on validator key security, read this article: https://www.attestant.io/
 **Critical**<br />
 When you ran eth2.0-deposit-cli, a 24-word mnemonic was created. This mnemonic
 will be used for eth2 withdrawals in the future. It must be securely kept offline.
+Without this mnemonic, there is **no** way to withdraw your funds.
 
 Precise methods are beyond this README, but consider something as simple as
-a sheet of paper kept in a fireproof envelope in a safe, or one of the steel
-mnemonic safeguards that are available.
+a sheet of paper kept in a fireproof envelope in a safe, or one of the [steel
+mnemonic safeguards](https://jlopp.github.io/metal-bitcoin-storage-reviews/) that are available.
 
 Test your mnemonic **before** you deposit, so you know that you will be able
 to withdraw funds in future.
@@ -97,6 +98,12 @@ An attacker with access to your mnemonic can drain your funds.
 
 For more on withdrawal key security, read this article: https://www.attestant.io/posts/protecting-withdrawal-keys/
 
+> Testing your mnemonic can be as simple as typing it into deposit-cli
+> with `existing-mnemonic`, then comparing the public key(s) of the resulting
+> keystore-m signing key files to the public keys you know your validator(s)
+> to have. The safest way to do this is offline, on a machine that will
+> never be connected to Internet and will be wiped after use.
+
 ## Resources, hardware
 
 See the client team recommendations. Generally, however, 8 GiB of RAM is a tight
@@ -104,9 +111,9 @@ fit, and 16 GiB is recommended. Some clients such as Teku may need more RAM out
 of the box. 2 or 4 CPU cores, and an SSD for storage because the node databases
 are so IOPS-heavy. The Geth eth1 node would require around 330GiB of storage by
 itself initially, which can grow to 500 GiB over a year. The OpenEthereum eth1
-node would require 110 to 200GiB of storage. The beacon node database is small,
-around 11GiB, but we don't know what growth will look like from phase 1.5 and 2 on.
-If you are running a slasher, that might be another 100 to 300GiB by itself.
+node would require 110 to 200 GiB of storage. The beacon node database is small,
+around 11 GiB, but we don't know what growth will look like from phase 1.5 and 2 on.
+If you are running a slasher, that might be another 100 to 300 GiB by itself.
 
 Two home server builds that I like and am happy to recommend are below. Both support
 IPMI, which means they can be managed and power-cycled remotely and need neither
@@ -140,7 +147,7 @@ options are Node 304 (mITX) and Node 804 (uATX) with Seasonic PSUs,
 but really any quality case that won't cook your components will do.
 
 On SSD size, 1TB is very, very conservative and assumes you are running
-an eth1 node as well, which currently takes about 310GiB and keeps
+an eth1 node as well, which currently takes about 330 GiB and keeps
 growing. The eth2 db is expected to be far smaller, though exact figures
 won't be seen until Phase 1.5 and 2.
 
