@@ -1,0 +1,38 @@
+version: "3.4"
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.38.4
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    restart: ${RESTART}
+    expose:
+      - 8080
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    build:
+      context: ./alertmanager
+    image: alertmanager:latest
+    volumes:
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: ${RESTART}
+    ports:
+      - '${ALERTMANAGER_PORT}:9093'
+    expose:
+      - ${ALERTMANAGER_PORT}/tcp
+    depends_on:
+      - cadvisor
+    
+  eth2:
+    depends_on:
+      - alertmanager
+
+volumes:
+  alertmanager-data:
