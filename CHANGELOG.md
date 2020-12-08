@@ -17,6 +17,20 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.4 2020-12-07
+
+* Support for new metanull dashboard
+* Initial support for ynager dashboard, eth price not working yet
+
+## v0.2.3.3 2020-12-06
+
+* More time for OpenEthereum to shut down
+* Added documentation on how to restrict access to Grafana when using a VPS
+
+## v0.2.3.2 2020-12-01
+
+* Added max peer values to `default.env`. Make sure to transfer this from `default.env` to your `.env`
+
 ## v0.2.3.1 2020-11-30
 
 * Changed Geth shutdown to SIGINT with 2 min timeout so that Geth does not need to resync after

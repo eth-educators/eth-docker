@@ -13,6 +13,8 @@ services:
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${PRYSM_DOCKER_TAG}
     image: prysm-slasher
+    expose:
+      - 8082
     volumes:
       - prysmslasher-data:/var/lib/prysm
     entrypoint:
@@ -21,12 +23,14 @@ services:
       - /var/lib/prysm
       - --beacon-rpc-provider
       - beacon:4000
+      - --monitoring-host
+      - 0.0.0.0
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}
       - --accept-terms-of-use
     depends_on:
-      - validator
+      - beacon
   eth2:
     image: tianon/true
     restart: "no"

@@ -5,9 +5,12 @@ This file steps you through client choice as well as some basic host security st
 
 ## Non-root user on Linux
 
-If you are logged in as root, create a non-root user with your `USERNAME` of choice to log in as,
-and give it sudo rights. `sudo` allows you to run commands `as root` while logged in as a non-root
-user. This may be needed on a VPS, and is not typically needed on a local fresh install of Ubuntu.
+If you are logged in as root and do not have a non-root user already, create a non-root user 
+with your `USERNAME` of choice to log in as, and give it sudo rights. `sudo` allows you to 
+run commands `as root` while logged in as a non-root user. 
+
+This step may be needed on a VPS, and is not typically needed on a local fresh install of Ubuntu,
+as Ubuntu creates a non-root user by default.
 
 ```
 adduser USERNAME
@@ -23,6 +26,19 @@ usermod -aG sudo USERNAME
 Optional: If you used SSH keys to connect to your Ubuntu instance via the root user you
 will need to [associate the new user with your public key(s)](#ssh-key-authentication-with-linux).
 
+## Static IP
+
+You'll want a static IP address for your server, one that doesn't change. This allows easier
+port-forwarding for your Ethereum client peering, and easier management and remote access for you:
+You do not need to find a changing server address. You can do set an unchanging IP address a few
+different ways.
+
+- You can configure your router to use a [DHCP reservation](https://homenetworkadmin.com/dhcp-reservation/).
+How to do this depends on your router.
+- You could instead choose an IP address *outside* your DHCP range and [configure it as a static IP](https://linuxhint.com/setup_static_ip_address_ubuntu/).
+In Ubuntu Desktop this is done through Network Manager from the UI, and in Ubuntu Server you'll handle it
+from CLI via netplan. Check your router configuration to see where your DHCP range is, and what
+values to use for default gateway and DNS.
 ## "Clone" the project
 
 From a terminal and logged in as the user you'll be using from now on, and assuming
@@ -147,6 +163,10 @@ These are the relevant ports. docker will open eth2 node ports and the grafana p
 please make sure the grafana port cannot be reached directly. If you need to get to grafana remotely,
 an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) is a good choice.
 
+For a VPS/cloud setup, please take a look at notes on [cloud security](CLOUD.md). You'll want to
+place ufw "in front of" Docker if you are using Grafana or a standalone eth1 (Ethereum PoW) client,
+and if your cloud provider does not offer firewall rules for the VPS.
+
 Ports that I mention can be "Open to Internet" can be either forwarded
 to your node if behind a home router, or allowed in via the VPS firewall.
 
@@ -167,6 +187,7 @@ to your node if behind a home router, or allowed in via the VPS firewall.
 
 On Ubuntu, the host firewall `ufw` can be used to allow SSH traffic. docker bypasses ufw and opens additional
 ports directly via "iptables" for all ports that are public on the host.
+
 * Allow SSH in ufw so you can still get to your server, while relying on the default "deny all" rule.
   * `sudo ufw allow OpenSSH` will allow ssh inbound on the default port. Use your specific port if you changed
     the port SSH runs on.
@@ -178,6 +199,15 @@ ports directly via "iptables" for all ports that are public on the host.
   * `sudo ufw enable`
   * `sudo ufw status numbered`
 
+> There is one exception to the rule that Docker opens ports automatically: Traffic that targets a port
+> mapped by Docker, where the traffic originates somewhere on the same machine the container runs on,
+> and not from a machine somewhere else, will not be automatically handled by the Docker firewall rules, 
+> and will require an explicit ufw rule. For example, if the intent is to have multiple eth2 beacons 
+> reference one eth1 node: `sudo ufw allow from 172.16.0.0/12 to any port 8545` and `sudo ufw deny 8545`. 
+> The assumption here is that port `8545` is used for the connection to eth1, and that the eth2 beacons
+> are themselves inside docker containers. With this rule, traffic from other containers to eth1
+> would succeed, and traffic from "the Internet" to eth1 would not, as long as [cloud security](CLOUD.md)
+> steps have also been taken.
 ## Time synchronization on Linux
 
 The blockchain requires precise time-keeping. You can use systemd-timesyncd if your system offers it,
@@ -199,13 +229,17 @@ Then install the ntp package. It will start automatically.<br />
 Check that ntp is running correctly: Run `ntpq -p` , you expect to see a number of ntp time servers with
 IP addresses in their `refid`, and several servers with a refid of `.POOL.`
 
-If you wish to stay with systemd-timesyncd, check that `NTP service: active` via 
-`timedatectl`, and switch it on with `sudo timedatectl set-ntp yes` if it isn't. You can check
-time sync with `timedatectl timesync-status --all`.
+> If you wish to stay with systemd-timesyncd instead, check that `NTP service: active` via 
+> `timedatectl`, and switch it on with `sudo timedatectl set-ntp yes` if it isn't. You can check
+> time sync with `timedatectl timesync-status --all`.
 
 ## SSH key authentication with Linux
 
-This is for logging into your node server, assuming that node server runs Linux. You will start
+For security reasons, you want some form of two-factor authentication for SSH login, particularly if SSH
+is exposed to the Internet. These instructions accomplish that by creating an SSH key with passphrase.
+Alternatively or in addition, you could set up [two-factor authentication with one-time passwords](https://www.coincashew.com/coins/overview-eth/guide-or-security-best-practices-for-a-eth2-validator-beaconchain-node#setup-two-factor-authentication-for-ssh-optional).
+
+To switch to SSH key authentication instead of password authentication, you will start
 on the machine you are logging in from, whether that is Windows 10, MacOS or Linux, and then
 make changes to the server you are logging in to.
 
@@ -261,6 +295,23 @@ Find the line that reads `#PasswordAuthentication yes` and remove the comment ch
 
 And restart the ssh service, for Ubuntu you'd run `sudo systemctl restart ssh`.
 
+## Set Linux to auto-update
+
+Since this system will be running 24/7 for the better part of 2 years, it's a good idea to have it patch itself.
+Enable [automatic updates](https://libre-software.net/ubuntu-automatic-updates/) and install software so the
+server can [email you](https://www.havetheknowhow.com/Configure-the-server/Install-ssmtp.html).
+
+For automatic updates, `"only-on-error"` mail reports make sense once you know email reporting is working and
+if you choose automatic reboots, trusting that your services will all come back up on reboot. If you'd like
+to keep a closer eye or schedule reboots yourself, `"on-change"` MailReport is a better choice.
+
+For ssmtp, I followed the instructions as-is with one change: I do not see the sense of changing the `hostname`
+to my email address, and so didn't.
+
+## Set up IPMI
+
+This step is highly hardware-dependent. If you went with a server that has IPMI/BMC - out of band management of
+the hardware - then you'll want to configure IPMI to email you on error.
 ## Continue with README file
 
 You are now ready to build and run your eth2 client.

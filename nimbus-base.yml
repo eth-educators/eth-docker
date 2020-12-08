@@ -25,6 +25,7 @@ services:
       - --non-interactive
       - --tcp-port=${NIM_PORT}
       - --udp-port=${NIM_PORT}
+      - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
       - --web3-url=${ETH1_NODE}
       - --graffiti=${GRAFFITI}
