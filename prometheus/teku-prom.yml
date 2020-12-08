@@ -1,5 +1,18 @@
 global:
   scrape_interval: 15s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets: 
+      - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "alert_rules.yml"
+
 scrape_configs:
   - job_name: 'node_exporter'
     static_configs:
