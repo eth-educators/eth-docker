@@ -18,7 +18,7 @@ services:
       context: ./alertmanager
     image: alertmanager:latest
     volumes:
-      - alertmanager-data:/etc/alertmanager
+      - alertmanager-data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
