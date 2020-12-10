@@ -13,7 +13,7 @@ SSD, RAM and CPU use is after initial sync, when keeping up with head. 100% CPU 
 |--------|---------|----------|-----------|-----|-----|-------|
 | OpenEthereum | 3.1.0rc1 | ~100 GiB | unknown | 1 GiB | 100-300% | 200 GiB during initial sync, then prunes |
 | Geth   | 1.9.24  | ~330 GiB | ~500 GiB after 1 year | 8.5 GiB | 200-400% | "Freezer Trick" can be used to prune state |
-| Nethermind | | ~100 GiB | 3-5 GiB/day | | | no pruning, will grow until it fills disk |
+| Nethermind | 1.9.47 | ~100 GiB | ~ 8 GiB/day |  | 100-200% | no pruning, will grow until it fills disk |
 | Besu | v20.10.2 | ~330 GiB | unknown | 5.5 GiB | | |
 
 ## Test Systems
