@@ -53,7 +53,7 @@ services:
     expose:
       - 9100/tcp
   blackbox-exporter:
-    restart: ${RESTART}"
+    restart: "${RESTART}"
     image: prom/blackbox-exporter:master
     volumes:
       - ./prometheus:/config
@@ -62,7 +62,7 @@ services:
     command:
       - --config.file=/config/blackbox.yml
   json-exporter:
-    restart: ${RESTART}"
+    restart: "${RESTART}"
     image: quay.io/prometheuscommunity/json-exporter
     volumes:
       - ./prometheus/json.yml:/config/json.yml
