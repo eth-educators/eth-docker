@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.4'
 services:
   beacon:
     ports:
@@ -12,7 +12,7 @@ services:
       - --grpc-gateway-corsdomain
       - http://127.0.0.1:7500
       - --grpc-gateway-port
-      - "3500"
+      - '3500'
   validator:
     ports:
       - 7500:7500/tcp
@@ -26,9 +26,9 @@ services:
       - --grpc-gateway-corsdomain
       - http://127.0.0.1:7500
       - --grpc-gateway-port
-      - "7500"
+      - '7500'
   prometheus:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     build:
       context: ./prometheus
     image: prometheus
@@ -39,7 +39,13 @@ services:
     expose:
       - 9090/tcp
     entrypoint: choose-config.sh
-    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+    command:
+      [
+        '/bin/prometheus',
+        '--storage.tsdb.path=/prometheus',
+        '--web.console.libraries=/usr/share/prometheus/console_libraries',
+        '--web.console.templates=/usr/share/prometheus/consoles',
+      ]
     depends_on:
       - beacon
       - validator
@@ -48,12 +54,12 @@ services:
       - json-exporter
       - cryptowat-exporter
   node-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: prom/node-exporter
     expose:
       - 9100/tcp
   blackbox-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: prom/blackbox-exporter:master
     volumes:
       - ./prometheus:/config
@@ -62,7 +68,7 @@ services:
     command:
       - --config.file=/config/blackbox.yml
   json-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: quay.io/prometheuscommunity/json-exporter
     volumes:
       - ./prometheus/json.yml:/config/json.yml
@@ -72,7 +78,7 @@ services:
       - --config.file
       - /config/json.yml
   cryptowat-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: nbarrientos/cryptowat_exporter
     environment:
       - CRYPTOWAT_EXCHANGES=kraken
@@ -80,9 +86,9 @@ services:
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     expose:
-      - 9745/tcp 
+      - 9745/tcp
   grafana:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     build:
       context: ./grafana
     image: grafana
@@ -91,7 +97,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - ${GRAFANA_PORT}:3000/tcp
+      - 127.0.0.1:${GRAFANA_PORT}:3000/tcp
   eth2:
     depends_on:
       - grafana

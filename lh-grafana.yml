@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.4'
 services:
   beacon:
     expose:
@@ -15,7 +15,7 @@ services:
       - --metrics-address
       - 0.0.0.0
   prometheus:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     build:
       context: ./prometheus
     image: prometheus
@@ -26,18 +26,24 @@ services:
     expose:
       - 9090/tcp
     entrypoint: choose-config.sh
-    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+    command:
+      [
+        '/bin/prometheus',
+        '--storage.tsdb.path=/prometheus',
+        '--web.console.libraries=/usr/share/prometheus/console_libraries',
+        '--web.console.templates=/usr/share/prometheus/consoles',
+      ]
     depends_on:
       - beacon
       - validator
       - node-exporter
   node-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: prom/node-exporter
     expose:
       - 9100/tcp
   grafana:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     build:
       context: ./grafana
     image: grafana
@@ -45,8 +51,8 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
-    ports: 
-      - ${GRAFANA_PORT}:3000/tcp
+    ports:
+      - 127.0.0.1:${GRAFANA_PORT}:3000/tcp
   eth2:
     depends_on:
       - grafana

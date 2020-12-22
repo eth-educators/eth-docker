@@ -1,10 +1,10 @@
 # To be used in conjunction with oe.yml, nm.yml, besu.yml or geth.yml
-version: "3.4"
+version: '3.4'
 services:
   eth1:
     ports:
-      - ${ETH1_RPC_PORT}:${ETH1_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}:${ETH1_WS_PORT}/tcp
+      - 127.0.0.1:127.0.0.1:${ETH1_RPC_PORT}:${ETH1_RPC_PORT}/tcp
+      - 127.0.0.1:${ETH1_WS_PORT}:${ETH1_WS_PORT}/tcp
   eth2:
     image: tianon/true
   beacon:

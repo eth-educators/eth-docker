@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.4'
 services:
   beacon:
     expose:
@@ -13,7 +13,7 @@ services:
       - --monitoring-host
       - 0.0.0.0
   prometheus:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     build:
       context: ./prometheus
     image: prometheus
@@ -24,7 +24,13 @@ services:
     expose:
       - 9090/tcp
     entrypoint: choose-config.sh
-    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+    command:
+      [
+        '/bin/prometheus',
+        '--storage.tsdb.path=/prometheus',
+        '--web.console.libraries=/usr/share/prometheus/console_libraries',
+        '--web.console.templates=/usr/share/prometheus/consoles',
+      ]
     depends_on:
       - beacon
       - validator
@@ -33,12 +39,12 @@ services:
       - json-exporter
       - cryptowat-exporter
   node-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: prom/node-exporter
     expose:
       - 9100/tcp
   blackbox-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: prom/blackbox-exporter:master
     volumes:
       - ./prometheus/blackbox.yml:/config/blackbox.yml
@@ -47,7 +53,7 @@ services:
     command:
       - --config.file=/config/blackbox.yml
   json-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: quay.io/prometheuscommunity/json-exporter
     volumes:
       - ./prometheus/json.yml:/config/json.yml
@@ -57,7 +63,7 @@ services:
       - --config.file
       - /config/json.yml
   cryptowat-exporter:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     image: nbarrientos/cryptowat_exporter
     environment:
       - CRYPTOWAT_EXCHANGES=kraken
@@ -65,9 +71,9 @@ services:
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     expose:
-      - 9745/tcp 
+      - 9745/tcp
   grafana:
-    restart: "${RESTART}"
+    restart: '${RESTART}'
     build:
       context: ./grafana
     image: grafana
@@ -76,7 +82,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - ${GRAFANA_PORT}:3000/tcp
+      - 127.0.0.1:${GRAFANA_PORT}:3000/tcp
   eth2:
     depends_on:
       - grafana
