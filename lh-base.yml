@@ -55,7 +55,7 @@ services:
       - validator
       - --datadir
       - /var/lib/lighthouse
-      - --beacon-node
+      - --beacon-nodes
       - http://beacon:5052
       - --graffiti
       - ${GRAFFITI}
@@ -112,7 +112,7 @@ services:
       - account
       - validator
       - exit
-      - --beacon-node
+      - --beacon-nodes
       - http://beacon:5052 
       - --datadir
       - /var/lib/lighthouse

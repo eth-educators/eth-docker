@@ -17,6 +17,10 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.4.2 2020-12-24
+
+* Support for Lighthouse v1.0.5
+
 ## v0.2.4.1 2020-12-16
 
 * Support for Pyrsm fallback eth1 nodes
