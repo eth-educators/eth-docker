@@ -113,7 +113,7 @@ are so IOPS-heavy. The Geth eth1 node would require around 350GiB of storage by
 itself initially, which can grow to 500 GiB over 1 year. Offline pruning is available.
 Other clients grow at different rates, see [resource use](RESOURCE-USE.md).
 The beacon node database is small, around 11 GiB, but we don't know what growth will
-look like from phase 1.5 and 2 on.
+look like once the merge with Eth1 is done.
 If you are running a slasher, that might be another 100 to 300 GiB by itself.
 
 Two home server builds that I like and am happy to recommend are below. Both support
@@ -150,7 +150,7 @@ but really any quality case that won't cook your components will do.
 On SSD size, 1TB is very, very conservative and assumes you are running
 an eth1 node as well, which currently takes about 330 GiB and keeps
 growing. The eth2 db is expected to be far smaller, though exact figures
-won't be seen until Phase 1.5 and 2.
+won't be seen until the merge with eth1 is complete.
 
 You'll want decent write endurance. The two models mentioned here have 600TB
 write endurance each.<br />
