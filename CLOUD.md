@@ -85,7 +85,13 @@ staking docker-compose stack as well as a pool docker-compose stack.
 
 To allow Docker traffic to eth1 while dropping all other traffic:
 - `sudo ufw allow from 172.16.0.0/12 to any port 8545`
+- `sudo ufw allow from 192.168.0.0/16 to any port 8545`
+- `sudo ufw allow from 10.0.0.0/8 to any port 8545`
 - `sudo ufw deny 8545`
+- `sudo ufw allow from 172.16.0.0/12 to any port 8546`
+- `sudo ufw allow from 192.168.0.0/16 to any port 8546`
+- `sudo ufw allow from 10.0.0.0/8 to any port 8546`
+- `sudo ufw deny 8546`
 
 > With ISP traffic caps, it could be quite attractive to run eth1 in a small VPS, and reference it from a beacon somewhere
 > else. This would require an eth1 proxy and TLS encryption, and likely client authentication. If that is your use case,

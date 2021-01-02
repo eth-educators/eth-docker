@@ -148,7 +148,7 @@ each. This is great for running testnet and mainnet in parallel, for example.
 
 ### Prysm Slasher   
 Running [slasher](https://docs.prylabs.network/docs/prysm-usage/slasher/) is an optional client compose file, but helps secure the chain and may result in additional earnings,
-though the chance of additional earnings is low in phase 0 as whistleblower rewards have not been implemented yet.
+though the chance of additional earnings is low initially whistleblower rewards have not been implemented yet.
 
 > Slasher can be a huge resource hog during times of no chain finality, which can manifest as massive RAM usage. Please make sure you understand the risks of this, 
 > especially if you want high uptime for your beacon nodes. Slasher places significant stress on beacon nodes when the chain has no finality, and might be the reason

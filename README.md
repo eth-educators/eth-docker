@@ -23,8 +23,8 @@ When setting up an Ethereum 2.0 node, you'll:
   machine used to run the node, for security reasons.
 - Import validator keys into the validator client, each validator key activates one validator
 - Once the Ethereum 1 and Ethereum 2.0 nodes are fully synced with the chain, deposit Ethereum
-  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until the "merge" phase
-  of Ethereum 2.0, sometimes also referred to as "phase 1.5".
+  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until the "merge" 
+  of Ethereum 2.0 with Ethereum 1.
 
 Here's what then happens:
 
@@ -124,7 +124,7 @@ You will deposit eth to the deposit contract, and receive locked eth2 in turn.<b
 > **Vital** [RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security. If you haven't
 read these yet, please do so now. You need to know how to guard your keystore password
 and your seed phrase (mnemonic). **Without the mnemonic, you will be unable to withdraw your funds
-after the "merge", also called phase 1.5 of Ethereum 2.0. You need the seed phrase or your eth is gone forever.**
+after the "merge" of Ethereum 2.0 with Ethereum 1. You need the seed phrase or your eth is gone forever.**
 
 > You can create the keys using eth2-docker. For mainnet, you may want to create
 > the keys on a machine that is not connected to the Internet, and will be wiped
@@ -380,7 +380,7 @@ and a new `deposit_data` JSON.
 
 Ethereum 2.0 has a concept of "voluntary client exit", which will remove the
 validator from attesting duties. Locked Eth could be withdrawn after the "merge"
-aka "phase 1.5", and not sooner.
+of Ethereum 2.0 with Ethereum 1, and not sooner.
 
 Currently, Prysm and Lighthouse support voluntary exit. This requires a fully synced
 beacon node.
@@ -440,6 +440,10 @@ has been processed by the chain, if you wish to avoid incurring offline
 penalties. You can check the status of your validator with tools such
 as [beaconcha.in](https://beaconcha.in) and [beaconscan](https://beaconscan.com).
 
+## Addendum: Moving a client
+
+Please see the [moving checklist](MOVING.md)
+
 ## Addendum: Troubleshooting
 
 A few useful commands if you run into issues. As always, `sudo` is a Linux-ism and may not be needed on MacOS.
@@ -476,6 +480,11 @@ Once your stack is down, to run an image and get into a shell, without executing
 `sudo docker run -it --entrypoint=/bin/bash imagename`, for example `sudo docker run -it --entrypoint=/bin/bash lighthouse`.<br />
 You'd then run Linux commands manually in there, you could start components of the client manually. There is one image per client.<br />
 `sudo docker images` will show you all images.
+
+## Addendum: Additional resources
+
+[Youtube Channel](https://www.youtube.com/c/YorickDowne)
+[Security Best Practices](https://www.coincashew.com/coins/overview-eth/guide-or-security-best-practices-for-a-eth2-validator-beaconchain-node)
 
 # Guiding principles:
 
