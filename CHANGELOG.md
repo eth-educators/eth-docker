@@ -17,6 +17,10 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.5 2021-01-07
+
+* Support for Nethermind 1.10.x-beta source builds
+
 ## v0.2.4.2 2020-12-24
 
 * Support for Lighthouse v1.0.5
