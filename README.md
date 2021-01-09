@@ -1,4 +1,4 @@
-# eth2-docker v0.2.4.2
+# eth2-docker v0.2.5
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -61,8 +61,8 @@ Currently supported clients:
 Currently supported optional components:
 - geth, local eth1 node
 - besu, local eth1 node - has not been tested extensively by this team. Feedback welcome.
-- nethermind, local eth1 node - does not prune, DB grows indefinitely. Feedback welcome.
-- openethereum, local eth1 node - testing mainly, DB corruption resolved in `dev`, performance issues remaining.
+- nethermind, local eth1 node - pruning in beta. Feedback welcome.
+- openethereum, local eth1 node - testing mainly, DB corruption resolved.
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
