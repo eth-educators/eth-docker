@@ -13,7 +13,7 @@ SSD, RAM and CPU use is after initial sync, when keeping up with head. 100% CPU 
 |--------|---------|----------|-----------|-----|-----|-------|
 | OpenEthereum | 3.1.0rc1 | ~380 GiB | moderate | 1 GiB | 100-300% | DB grows with chain, prunes itself |
 | Geth   | 1.9.24  | ~350 GiB | ~1-2 GiB/day | 9 GiB | 200-400% | offline prune available via snapshot |
-| Nethermind | | ~100 GiB | TBD | 6.5 GiB | 100-300% | pruning in beta; initial size lower bcs of ancient barrier |
+| Nethermind | 1.10.2-beta | ~100 GiB | TBD | 6.5 GiB | 100-300% | pruning in beta; initial size lower bcs of ancient barrier |
 | Besu | v20.10.2 | ~350 GiB | unknown | 5.5 GiB | | |
 
 ## Test Systems

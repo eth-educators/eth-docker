@@ -1,4 +1,4 @@
-# eth2-docker v0.2.5
+# eth2-docker v0.2.5.1
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -128,10 +128,8 @@ after the "merge" of Ethereum 2.0 with Ethereum 1. You need the seed phrase or y
 
 > You can create the keys using eth2-docker. For mainnet, you may want to create
 > the keys on a machine that is not connected to the Internet, and will be wiped
-> afterwards. This can be done by downloading [eth2.0-deposit-cli](https://github.com/ethereum/eth2.0-deposit-cli)
-> directly and copying it to that machine, or by fetching the eth2-docker project
-> on that machine, then disconnecting it from Internet. After you've created
-> keys, you'd move them off the machine, wipe the machine used to create them,
+> afterwards. This can be done by using an [Ubuntu Live USB](https://agstakingco.gitbook.io/eth-2-0-key-generation-ubuntu-live-usb/)
+> with [eth2.0-deposit-cli](https://github.com/ethereum/eth2.0-deposit-cli), then
 > copy them to the machine the node will run on, and continue from
 > "You brought your own keys", below.
 
