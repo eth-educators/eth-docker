@@ -11,11 +11,22 @@ expected to work on MacOS.
 > will run your node on. The machine you use to connect *to* the Linux server
 > only requires an SSH client.
 
-Run these one line at a time:
+Update all packages
 ```
 sudo apt update && sudo apt dist-upgrade
+```
+and install prerequisites
+```
 sudo apt install -y docker docker-compose git
 ```
+then enable the docker service
+```
+sudo systemctl enable --now docker
+```
+
+> After installation, the docker service might not be enabled to start on
+> boot. The systemctl command above enables it.
+> Verify the status of the docker service with `sudo systemctl status docker`
 
 You know it was successful when you saw messages scrolling past that install git,
 docker and docker-compose.
