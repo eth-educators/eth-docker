@@ -17,6 +17,13 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.5.2 2021-01-14
+
+* Added support for Nimbus voluntary exit
+* Updated Teku source build to JDK15
+* Changed Teku binary docker to new consensys/teku repository
+* Changed default Nimbus source build target to `stable`
+
 ## v0.2.5.1 2021-01-09
 
 * Changed sample-systemd to start services after containerd restart, which helps them survive Ubuntu auto-update
