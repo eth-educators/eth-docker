@@ -18,17 +18,19 @@ SSD, RAM and CPU use is after initial sync, when keeping up with head. 100% CPU 
 
 ## Test Systems
 
-| Name                 | RAM    | SSD Size | CPU        | Notes |
-|----------------------|--------|----------|------------|-------|
-| Homebrew Xeon        | 32 GiB | 700 GiB  | Intel Quad | Xeon E3-2225v6 |
-| Dell R420            | 32 GiB | 1 TB     | Dual Intel Octo | Xeon E5-2450 |
-| Contabo M VPS        | 16 GiB | 400 GiB  | AMD Hexa   |       |
-| Contabo L VPS        | 30 GiB | 800 GiB  | AMD Octo   |       |
+IOPS is random read-write IOPS [measured by fio with "typical" DB parameters](https://arstech.net/how-to-measure-disk-performance-iops-with-fio-in-linux/).
+
+| Name                 | RAM    | SSD Size | CPU        | IOPS | Notes |
+|----------------------|--------|----------|------------|------|-------|
+| Homebrew Xeon        | 32 GiB | 700 GiB  | Intel Quad | 18.3k read / 6,100 write | Xeon E3-2225v6 |
+| Dell R420            | 32 GiB | 1 TB     | Dual Intel Octo | 28.9k read / 9,600 write | Xeon E5-2450 |
+| Contabo M VPS        | 16 GiB | 400 GiB  | AMD Hexa   | 3000 read / 1000 write |      |
+| Contabo L VPS        | 30 GiB | 800 GiB  | AMD Octo   | 3000 read / 1000 write |      |
 
 ## Initial sync times
 
-| Client | Test System | Time Taken | Cache Size | Notes |
-|--------|-------------|------------|------------|-------|
-| Geth   | Dell R420   | ~ 24 hours | default    | |
-| Geth   | Homebrew Xeon | ~ 48 hours | default  | |
-| Geth   | Contabo L VPS | ~ 24 hours | default  | |
+| Client | Version | Test System | Time Taken | Cache Size | Notes |
+|--------|---------|-------------|------------|------------|-------|
+| Geth   | 1.9.24  | Dell R420   | ~ 24 hours | default    | |
+| Geth   | 1.9.24  | Homebrew Xeon | ~ 48 hours | default  | |
+| Geth   | 1.9.25  | Contabo L VPS | ~ 24 hours | default  | |
