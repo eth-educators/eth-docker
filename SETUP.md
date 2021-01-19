@@ -126,7 +126,7 @@ geth with `:` between the file names.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
-- `prysm-web.yml` - Prysm experimental Web UI and Grafana dashboard. Not encrypted, do not expose to Internet. **Mutually exclusive** with `prysm-grafana.yml`
+- `prysm-web.yml` - Prysm Web UI. Not encrypted, do not expose to Internet. If you also want Grafana, add `prysm-grafana.yml`
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 - `geth-grafana.yml` - grafana dashboard for Geth, to be combined with one of the client dashboards: Does not work standalone currently. Example `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml:geth-grafana.yml`
@@ -134,7 +134,7 @@ geth with `:` between the file names.
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
 
-> See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
+> See [WEB](WEB.md) for notes on using the Prysm Web UI
 
 In this setup, clients are isolated from each other. Each run their own validator client, and if eth1
 is in use, their own eth1 node. This is perfect for running a single client, or multiple isolated

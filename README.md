@@ -1,4 +1,4 @@
-# eth2-docker v0.2.5.2
+# eth2-docker v0.2.5.3
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -68,8 +68,7 @@ Currently supported optional components:
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
 - Grafana dashboard
 
-Please see [WEB](WEB.md) for experimental Web UI support on Prysm, and use the Web instead
-of validator-import to import keys.
+Please see [WEB](WEB.md) for Web UI support on Prysm.
 
 # USAGE
 
@@ -156,8 +155,8 @@ They go into `.eth2/validator_keys` in this project directory, not directly unde
 
 **Warning** Import your validator key(s) to only *one* client.
 
-> If you want to use the experimental [Prysm Web UI](WEB.md), use it to
-> import keys and not this command-line process.
+> If you use the [Prysm Web UI](WEB.md), you can use it
+> or this command-line process to import keys.
 
 Import the validator key(s) to the validator client:
 
@@ -165,12 +164,12 @@ Import the validator key(s) to the validator client:
 
 > #### Prysm-specific
 > - You will be asked whether you will be using the Web UI to import keys.
-> Answer "y"es only if you are testing Prysm's experimental Web UI via
-> `prysm-web.yml`
+> Answer "y"es if you wish to use Prysm's Web UI to import keys. The Web UI
+> is enabled by adding `prysm-web.yml` to `COMPOSE_FILE`
 > - You will be asked to provide a "New wallet password", independent of the
 >   keystore password. 
 > - If you choose not to store the wallet password with the validator,
->   you will need to edit `prysm-base.yml` and comment out the wallet-password-file
+>   you will need to edit `prysm-base.yml` and `prysm-web.yml` and comment out the wallet-password-file
 >   parameter
 
 If you choose to save the password during import, it'll be available to the client every

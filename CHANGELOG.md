@@ -17,6 +17,11 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.5.3 2021-01-18
+
+* Changed Nimbus source build to use post-1.0.6 make target and binary names
+* Support for simplified Web UI in Prysm 1.1.0. **NB: prysm-web.yml no longer includes prysm-grafana.yml**
+
 ## v0.2.5.2 2021-01-14
 
 * Added support for Nimbus voluntary exit

@@ -1,16 +1,15 @@
 # Prsym Web UI
 
-The Prysm Web UI is new and still experimental. It is designed to be accessed locally, not remotely,
-which means an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) is required to access it.
+The Prysm Web UI is new. It is insecure http, which means an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/)
+should be used to access it if your node is on a cloud VPS.
 
-The `prysm-web.yml` file, specified in the `COMPOSE_FILE` variable inside `.env`, enables both Grafana
-and Web UI.
+The `prysm-web.yml` file, specified in the `COMPOSE_FILE` variable inside `.env`, enables the Web UI.
 
 ## Prepare the validator client
 
-The Web UI will be used to import keys and create a wallet, but we also need the password for this
+The Web UI can be used to import keys and create a wallet, but we also need the password for this
 wallet while starting the validator. To get around this chicken-and-egg problem, you can either
-edit `prysm-base.yml` and choose to provide the password whenever the validator starts, or run
+edit `prysm-web.yml` and choose to provide the password whenever the validator starts, or run
 `sudo docker-compose run validator-import` now and choose the wallet password you will use during
 the Web UI Wallet Creation.
 
@@ -22,12 +21,16 @@ and validator.
 
 ## Connect to the Web UI
 
-Assuming you will access the Web UI remotely, from a machine that is not running the node, you'll need
-to open an SSH connection and tunnel the ports used by the Web UI.
+If your node is on a local, protected LAN, you can access the Web UI on a browser from
+any machine on your network via `http://NODEIP:7500`
+
+If the node is running on a cloud VPS, you'll want to open an SSH connection and tunnel the port
+used by the Web UI. For budget providers without a firewall, please also take a look at
+[cloud security](CLOUD.md) for notes on how to restrict Web UI access to only SSH tunnels.
 
 Example ssh command:
 ```
-ssh -L 7500:<host>:7500 -L 3500:<host>:3500 -L 8080:<host>:8080 -L 8081:<host>:8081 -L 3000:<host>:3000 <user>@<host>
+ssh -L 7500:<host>:7500 <user>@<host>
 ```
 
 where `<host>` is the name or IP address of the node.
@@ -35,10 +38,10 @@ where `<host>` is the name or IP address of the node.
 Placing this into an alias or shell script can make life easier.
 
 Once the SSH tunnel is open, in a browser, open `http://127.0.0.1:7500`. You'll be prompted for a web password,
-which doesn't yet exist, and there is an option to "Create a Wallet".
+which doesn't yet exist, and there may be an option to "Create a Wallet" if you did not do so from
+command line.
 
-> Note this is insecure http. Encrypting this connection is supported by Prysm, but not yet incorporated in
-> this project. Look into TLS keys if you wish to change the gRPC connections to be encrypted.
+> Note this is insecure http. The SSH tunnel encrypts the traffic.
 
 # Import keys
 
