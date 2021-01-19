@@ -1,8 +1,5 @@
 # Partially from Nethermind github
-FROM nethermindeth/rocksdb AS rocksdb
-FROM nethermindeth/secp256k1 AS secp256k1
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
-
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
@@ -32,8 +29,6 @@ RUN adduser \
 WORKDIR /nethermind
 
 COPY --from=build /nethermind/out .
-COPY --from=secp256k1 /nethermind/libsecp256k1.so /nethermind/runtimes/linux-x64/native/libsecp256k1.so
-COPY --from=rocksdb /nethermind/librocksdb.so /nethermind/librocksdb.so
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
