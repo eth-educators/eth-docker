@@ -76,6 +76,7 @@ services:
       - --data-dir=/var/lib/nimbus
       - --log-file=/var/lib/nimbus/beacon_node.log
       - --network=${NETWORK}
+      - --log-level=${LOG_LEVEL}
       - deposits
       - exit
       - --rpc-url=http://beacon:9190
