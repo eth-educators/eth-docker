@@ -11,7 +11,7 @@ directory (`cd ~/eth2-docker` by default):
   and COMPOSE_FILE are the most common variables that may need to be adjusted)
 * `sudo docker-compose build --pull` if you are using binary builds, the default
 * `sudo docker-compose build --pull --no-cache beacon` **only** if you are using source builds, then
-  run `sudo docker-compose build -pull` to update the rest of the "stack"
+  run `sudo docker-compose build --pull` to update the rest of the "stack"
 * `sudo docker-compose down`
 * !! If coming from Lighthouse v0.2.x, make changes as per notes for [v0.1.6](#v016-2020-10-09)
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
