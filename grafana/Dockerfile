@@ -42,6 +42,11 @@ ARG lighthouse_validator_client_url='https://raw.githubusercontent.com/sigp/ligh
 ARG lighthouse_validator_client_file='/etc/grafana/provisioning/dashboards/lighthouse_validator_client.json'
 RUN wget -qcO - $lighthouse_validator_client_url | jq '.title = "lighthouse_validator_client"' >$lighthouse_validator_client_file
 
+# lighthouse_validator_monitor
+ARG lighthouse_validator_monitor_url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorMonitor.json'
+ARG lighthouse_validator_monitor_file='/etc/grafana/provisioning/dashboards/lighthouse_validator_monitor.json'
+RUN wget -qcO - $lighthouse_validator_monitor_url | jq '.title = "lighthouse_validator_monitor"' >$lighthouse_validator_monitor_file
+
 #  teku_overview
 ARG teku_overview_url='https://grafana.com/api/dashboards/12199/revisions/1/download'
 ARG teku_overview_file='/etc/grafana/provisioning/dashboards/teku_overview.json'

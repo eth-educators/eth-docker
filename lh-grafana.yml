@@ -7,6 +7,7 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --validator-monitor-auto
   validator:
     expose:
       - 5064/tcp
@@ -41,12 +42,14 @@ services:
     build:
       context: ./grafana
     image: grafana
+    environment:
+      - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
     volumes:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
     ports: 
-      - ${GRAFANA_PORT}:3000/tcp
+      - ${GRAFANA_PORT}:${GRAFANA_PORT}/tcp
   eth2:
     depends_on:
       - grafana

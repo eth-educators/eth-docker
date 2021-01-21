@@ -17,6 +17,12 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.5.4 2021-01-21
+
+* Support for new Lighthouse Validator Monitor Grafana Dashboard
+* Better Grafana port handling for use on cloud VPS with ufw
+* OpenEthereum defaults to release tracking with the release of 3.1.1
+
 ## v0.2.5.3 2021-01-18
 
 * Changed Nimbus source build to use post-1.0.6 make target and binary names
