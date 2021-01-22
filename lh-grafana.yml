@@ -21,10 +21,9 @@ services:
     image: prometheus
     volumes:
       - prom-data:/prometheus
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
     environment:
       - CLIENT=${COMPOSE_FILE}
-    ports:
-      - '${PROMETHEUS_PORT}:9090'
     expose:
       - 9090/tcp
     entrypoint: choose-config.sh
