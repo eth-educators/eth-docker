@@ -1,100 +1,32 @@
 version: "3.4"
 services:
   beacon:
-    ports:
-      - 3500:3500/tcp
-      - 8080:8080/tcp
-    command:
-      - --monitoring-host
-      - 0.0.0.0
-      - --grpc-gateway-host
-      - 0.0.0.0
-      - --grpc-gateway-corsdomain
-      - http://127.0.0.1:7500
-      - --grpc-gateway-port
-      - "3500"
+    expose:
+      - 3500/tcp
   validator:
     ports:
-      - 7500:7500/tcp
-      - 8081:8081/tcp
-    command:
-      - --monitoring-host
-      - 0.0.0.0
+      - ${PRYSM_WEB_PORT}:${PRYSM_WEB_PORT}/tcp
+    entrypoint:
+      - validator
+      - --datadir
+      - /var/lib/prysm
+      - --wallet-dir
+      - /var/lib/prysm/
+      - --beacon-rpc-provider
+      - beacon:4000
+      - --graffiti
+      - ${GRAFFITI}
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --${NETWORK}
+      - --accept-terms-of-use
       - --web
       - --grpc-gateway-host
       - 0.0.0.0
-      - --grpc-gateway-corsdomain
-      - http://127.0.0.1:7500
       - --grpc-gateway-port
-      - "7500"
-  prometheus:
-    restart: "${RESTART}"
-    build:
-      context: ./prometheus
-    image: prometheus
-    volumes:
-      - prom-data:/prometheus
-    environment:
-      - CLIENT=${COMPOSE_FILE}
-    expose:
-      - 9090/tcp
-    entrypoint: choose-config.sh
-    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
-    depends_on:
-      - beacon
-      - validator
-      - node-exporter
-      - blackbox-exporter
-      - json-exporter
-      - cryptowat-exporter
-  node-exporter:
-    restart: "${RESTART}"
-    image: prom/node-exporter
-    expose:
-      - 9100/tcp
-  blackbox-exporter:
-    restart: "${RESTART}"
-    image: prom/blackbox-exporter:master
-    volumes:
-      - ./prometheus:/config
-    expose:
-      - 9115/tcp
-    command:
-      - --config.file=/config/blackbox.yml
-  json-exporter:
-    restart: "${RESTART}"
-    image: quay.io/prometheuscommunity/json-exporter
-    volumes:
-      - ./prometheus/json.yml:/config/json.yml
-    expose:
-      - 7979/tcp
-    command:
-      - --config.file
-      - /config/json.yml
-  cryptowat-exporter:
-    restart: "${RESTART}"
-    image: nbarrientos/cryptowat_exporter
-    environment:
-      - CRYPTOWAT_EXCHANGES=kraken
-      - CRYPTOWAT_PAIRS=ethusd,ethchf
-      - CRYPTOWAT_CACHESECONDS=300
-      - TZ=Europe/Zurich
-    expose:
-      - 9745/tcp 
-  grafana:
-    restart: "${RESTART}"
-    build:
-      context: ./grafana
-    image: grafana
-    volumes:
-      - grafana-data:/var/lib/grafana
-    depends_on:
-      - prometheus
-    ports:
-      - ${GRAFANA_PORT}:3000/tcp
-  eth2:
-    depends_on:
-      - grafana
-volumes:
-  grafana-data:
-  prom-data:
+      - ${PRYSM_WEB_PORT}
+      - --beacon-rpc-gateway-provider
+      - beacon:3500
+      # If you chose not to store the wallet password during import, comment out the two following lines
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt

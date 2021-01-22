@@ -11,11 +11,41 @@ directory (`cd ~/eth2-docker` by default):
   and COMPOSE_FILE are the most common variables that may need to be adjusted)
 * `sudo docker-compose build --pull` if you are using binary builds, the default
 * `sudo docker-compose build --pull --no-cache beacon` **only** if you are using source builds, then
-  run `sudo docker-compose build -pull` to update the rest of the "stack"
+  run `sudo docker-compose build --pull` to update the rest of the "stack"
 * `sudo docker-compose down`
 * !! If coming from Lighthouse v0.2.x, make changes as per notes for [v0.1.6](#v016-2020-10-09)
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
+
+## v0.2.5.4 2021-01-21
+
+* Support for new Lighthouse Validator Monitor Grafana Dashboard
+* Better Grafana port handling for use on cloud VPS with ufw
+* OpenEthereum defaults to release tracking with the release of 3.1.1
+
+## v0.2.5.3 2021-01-18
+
+* Changed Nimbus source build to use post-1.0.6 make target and binary names
+* Support for simplified Web UI in Prysm 1.1.0. **NB: prysm-web.yml no longer includes prysm-grafana.yml**
+
+## v0.2.5.2 2021-01-14
+
+* Added support for Nimbus voluntary exit
+* Updated Teku source build to JDK15
+* Changed Teku binary docker to new consensys/teku repository
+* Changed default Nimbus source build target to `stable`
+
+## v0.2.5.1 2021-01-09
+
+* Changed sample-systemd to start services after containerd restart, which helps them survive Ubuntu auto-update
+
+## v0.2.5 2021-01-07
+
+* Support for Nethermind 1.10.x-beta source builds
+
+## v0.2.4.2 2020-12-24
+
+* Support for Lighthouse v1.0.5
 
 ## v0.2.4.1 2020-12-16
 

@@ -65,8 +65,8 @@ Please choose:
 * Your source of eth1 data
   * geth
   * besu - has not been tested extensively by this team. Feedback welcome.
-  * nethermind - does not prune, DB grows indefinitely. Feedback welcome.
-  * openethereum - testing mainly, DB corruption resolved in `dev`, performance issues remain.
+  * nethermind - pruning in beta. Feedback welcome.
+  * openethereum
   * 3rd-party
 * Whether to run a slasher (experimental for Prysm)
 * Whether to run a grafana dashboard for monitoring
@@ -119,14 +119,14 @@ geth with `:` between the file names.
 - `nimbus-base.yml` - Nimbus
 - `geth.yml` - local geth eth1 chain node
 - `besu.yml` - local besu eth1 chain node - has not been tested extensively by this team. Feedback welcome.
-- `nm.yml` - local nethermind eth1 chain node - does not prune, DB grows indefinitely. Feedback welcome.
-- `oe.yml` - local openethereum eth1 chain node - testing mainly, DB corruption resolved in `dev`, performance issues remain.
+- `nm.yml` - local nethermind eth1 chain node - pruning in beta. Feedback welcome.
+- `oe.yml` - local openethereum eth1 chain node
 - `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. To be used alongside one of the eth1 yml files. **Not encrypted**, do not expose to Internet.
 - `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". To be used alongside one of the eth1 yml files. Also not encrypted, not meant for a fully distributed setup quite yet.
 - `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
-- `prysm-web.yml` - Prysm experimental Web UI and Grafana dashboard. Not encrypted, do not expose to Internet. **Mutually exclusive** with `prysm-grafana.yml`
+- `prysm-web.yml` - Prysm Web UI. Not encrypted, do not expose to Internet. If you also want Grafana, add `prysm-grafana.yml`
 - `nimbus-grafana.yml` - grafana dashboard for Nimbus
 - `teku-grafana.yml` - grafana dashboard for Teku
 - `geth-grafana.yml` - grafana dashboard for Geth, to be combined with one of the client dashboards: Does not work standalone currently. Example `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml:geth-grafana.yml`
@@ -135,7 +135,7 @@ geth with `:` between the file names.
 For example, Lighthouse with local geth and grafana:
 `COMPOSE_FILE=lh-base.yml:geth.yml:lh-grafana.yml`
 
-> See [WEB](WEB.md) for notes on using the experimental Prysm Web UI
+> See [WEB](WEB.md) for notes on using the Prysm Web UI
 
 In this setup, clients are isolated from each other. Each run their own validator client, and if eth1
 is in use, their own eth1 node. This is perfect for running a single client, or multiple isolated
@@ -149,7 +149,7 @@ each. This is great for running testnet and mainnet in parallel, for example.
 
 ### Prysm Slasher   
 Running [slasher](https://docs.prylabs.network/docs/prysm-usage/slasher/) is an optional client compose file, but helps secure the chain and may result in additional earnings,
-though the chance of additional earnings is low in phase 0 as whistleblower rewards have not been implemented yet.
+though the chance of additional earnings is low initially whistleblower rewards have not been implemented yet.
 
 > Slasher can be a huge resource hog during times of no chain finality, which can manifest as massive RAM usage. Please make sure you understand the risks of this, 
 > especially if you want high uptime for your beacon nodes. Slasher places significant stress on beacon nodes when the chain has no finality, and might be the reason

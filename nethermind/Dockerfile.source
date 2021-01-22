@@ -1,26 +1,19 @@
 # Partially from Nethermind github
-FROM debian:buster-slim AS clone
-
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
 ARG BUILD_TARGET
 
-WORKDIR /src
+WORKDIR /
 
 RUN apt-get update -y && apt-get install -y git
-RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git -c submodule.'src/tests'.update=none submodule update --init"
+RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git submodule update --init src/Dirichlet src/int256 src/rocksdb-sharp && \
+    dotnet publish src/Nethermind/Nethermind.Runner -c release -o out" 
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS builder
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
 
-COPY --from=clone /src .
-
-RUN cd nethermind/src/Nethermind/Nethermind.Runner && \
-    dotnet publish -c release -o out
-
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
-
-RUN apt-get update -y && apt-get install -y libsnappy-dev libc6-dev libc6 unzip
+RUN apt-get update && apt-get -y install libsnappy-dev libc6-dev libc6
 
 ARG USER
 ARG UID
@@ -33,14 +26,14 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-COPY --from=builder /nethermind/src/Nethermind/Nethermind.Runner/out /nethermind
-RUN chown -R ${USER}:${USER} /nethermind
-
 WORKDIR /nethermind
 
+COPY --from=build /nethermind/out .
+
+RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
 
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-ENTRYPOINT dotnet /nethermind/Nethermind.Runner.dll
+ENTRYPOINT ["./Nethermind.Runner"]

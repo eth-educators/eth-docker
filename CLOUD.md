@@ -78,6 +78,26 @@ Check again on "yougetsignal" or the like that port 3000 is now closed.
 Connect to your node with ssh tunneling, e.g. `ssh -L3000:node-IP:3000 user@node-IP` and browse to `http://127.0.0.1:3000` on the client
 you started the SSH session *from*. You expect to be able to reach the Grafana dashboard.
 
+### Example: Prysm Web UI on port 7500
+
+Reference [common ufw rules and commands](https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands)
+to help in creating ufw rules.
+
+Say I have the Prysm Web UI enabled on port 7500 and no reverse proxy. I'd like to keep it reachable via [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/)
+while dropping all other connections.
+
+First, verify that Prysm Web UI is running and port 7500 is open to world using something like [you get signal](https://www.yougetsignal.com/tools/open-ports/)
+
+Next, create ufw rules to allow access from `localhost` and drop access from anywhere else:
+
+- `sudo ufw allow from 127.0.0.1 to any port 7500`
+- `sudo ufw deny 7500`
+
+Check again on [you get signal](https://www.yougetsignal.com/tools/open-ports/) or the like that port 7500 is now closed.
+
+Connect to your node with ssh tunneling, e.g. `ssh -L7500:node-IP:7500 user@node-IP` and browse to `http://127.0.0.1:7500` on the client
+you started the SSH session *from*. You expect to be able to reach the Prysm Web UI.
+
 ### Example: Shared or standalone eth1 on port 8545
 
 It can be useful to have a single eth1 node service multiple beacons, for example when testing, or running a solo
@@ -85,7 +105,13 @@ staking docker-compose stack as well as a pool docker-compose stack.
 
 To allow Docker traffic to eth1 while dropping all other traffic:
 - `sudo ufw allow from 172.16.0.0/12 to any port 8545`
+- `sudo ufw allow from 192.168.0.0/16 to any port 8545`
+- `sudo ufw allow from 10.0.0.0/8 to any port 8545`
 - `sudo ufw deny 8545`
+- `sudo ufw allow from 172.16.0.0/12 to any port 8546`
+- `sudo ufw allow from 192.168.0.0/16 to any port 8546`
+- `sudo ufw allow from 10.0.0.0/8 to any port 8546`
+- `sudo ufw deny 8546`
 
 > With ISP traffic caps, it could be quite attractive to run eth1 in a small VPS, and reference it from a beacon somewhere
 > else. This would require an eth1 proxy and TLS encryption, and likely client authentication. If that is your use case,

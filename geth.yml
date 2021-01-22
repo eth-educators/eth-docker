@@ -12,7 +12,7 @@ services:
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_signal: SIGINT
-    stop_grace_period: 2m
+    stop_grace_period: 3m
     image: geth
     volumes:
       - geth-eth1-data:/var/lib/goethereum

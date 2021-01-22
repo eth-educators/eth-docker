@@ -29,6 +29,8 @@ services:
       - /var/lib/prysm/
       - --rpc-host
       - 0.0.0.0
+      - --grpc-gateway-host
+      - 0.0.0.0
       - --http-web3provider
       - ${ETH1_NODE}
       - --fallback-web3provider

@@ -12,7 +12,7 @@ services:
         - UID=${LOCAL_UID}
         - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum
-    stop_grace_period: 1m
+    stop_grace_period: 3m
     volumes:
       - oe-eth1-data:/var/lib/openethereum
     ports:

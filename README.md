@@ -1,4 +1,4 @@
-# eth2-docker v0.2.4.1
+# eth2-docker v0.2.5.4
 
 Unofficial docker environment for Ethereum 2.0 clients
 
@@ -23,8 +23,8 @@ When setting up an Ethereum 2.0 node, you'll:
   machine used to run the node, for security reasons.
 - Import validator keys into the validator client, each validator key activates one validator
 - Once the Ethereum 1 and Ethereum 2.0 nodes are fully synced with the chain, deposit Ethereum
-  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until the "merge" phase
-  of Ethereum 2.0, sometimes also referred to as "phase 1.5".
+  at the launchpad, 32 eth per validator key. That Ethereum is now locked up until the "merge" 
+  of Ethereum 2.0 with Ethereum 1.
 
 Here's what then happens:
 
@@ -61,15 +61,14 @@ Currently supported clients:
 Currently supported optional components:
 - geth, local eth1 node
 - besu, local eth1 node - has not been tested extensively by this team. Feedback welcome.
-- nethermind, local eth1 node - does not prune, DB grows indefinitely. Feedback welcome.
-- openethereum, local eth1 node - testing mainly, DB corruption resolved in `dev`, performance issues remaining.
+- nethermind, local eth1 node - pruning in beta. Feedback welcome.
+- openethereum, local eth1 node
 > Use one of the local eth1 node options or a 3rd-party provider of eth1 chain data to "feed"
 > your eth2 beacon node, so you can [propose](https://ethos.dev/beacon-chain/) blocks.
 - slasher, Running slasher is optional, but helps secure the chain and may result in additional earnings.
 - Grafana dashboard
 
-Please see [WEB](WEB.md) for experimental Web UI support on Prysm, and use the Web instead
-of validator-import to import keys.
+Please see [WEB](WEB.md) for Web UI support on Prysm.
 
 # USAGE
 
@@ -124,14 +123,12 @@ You will deposit eth to the deposit contract, and receive locked eth2 in turn.<b
 > **Vital** [RECOMMENDATIONS.md](RECOMMENDATIONS.md) has comments on key security. If you haven't
 read these yet, please do so now. You need to know how to guard your keystore password
 and your seed phrase (mnemonic). **Without the mnemonic, you will be unable to withdraw your funds
-after the "merge", also called phase 1.5 of Ethereum 2.0. You need the seed phrase or your eth is gone forever.**
+after the "merge" of Ethereum 2.0 with Ethereum 1. You need the seed phrase or your eth is gone forever.**
 
 > You can create the keys using eth2-docker. For mainnet, you may want to create
 > the keys on a machine that is not connected to the Internet, and will be wiped
-> afterwards. This can be done by downloading [eth2.0-deposit-cli](https://github.com/ethereum/eth2.0-deposit-cli)
-> directly and copying it to that machine, or by fetching the eth2-docker project
-> on that machine, then disconnecting it from Internet. After you've created
-> keys, you'd move them off the machine, wipe the machine used to create them,
+> afterwards. This can be done by using an [Ubuntu Live USB](https://agstakingco.gitbook.io/eth-2-0-key-generation-ubuntu-live-usb/)
+> with [eth2.0-deposit-cli](https://github.com/ethereum/eth2.0-deposit-cli), then
 > copy them to the machine the node will run on, and continue from
 > "You brought your own keys", below.
 
@@ -158,8 +155,8 @@ They go into `.eth2/validator_keys` in this project directory, not directly unde
 
 **Warning** Import your validator key(s) to only *one* client.
 
-> If you want to use the experimental [Prysm Web UI](WEB.md), use it to
-> import keys and not this command-line process.
+> If you use the [Prysm Web UI](WEB.md), you can use it
+> or this command-line process to import keys.
 
 Import the validator key(s) to the validator client:
 
@@ -167,12 +164,12 @@ Import the validator key(s) to the validator client:
 
 > #### Prysm-specific
 > - You will be asked whether you will be using the Web UI to import keys.
-> Answer "y"es only if you are testing Prysm's experimental Web UI via
-> `prysm-web.yml`
+> Answer "y"es if you wish to use Prysm's Web UI to import keys. The Web UI
+> is enabled by adding `prysm-web.yml` to `COMPOSE_FILE`
 > - You will be asked to provide a "New wallet password", independent of the
 >   keystore password. 
 > - If you choose not to store the wallet password with the validator,
->   you will need to edit `prysm-base.yml` and comment out the wallet-password-file
+>   you will need to edit `prysm-base.yml` and `prysm-web.yml` and comment out the wallet-password-file
 >   parameter
 
 If you choose to save the password during import, it'll be available to the client every
@@ -221,7 +218,7 @@ or [Mainnet launchpad](https://launchpad.ethereum.org). This file was created in
 ## Step 8: Grafana Dashboards
 
 A baseline set of dashboards has been included.  
-- [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source.json)
+- [Metanull's Prysm Dashboard JSON](https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source-beacon_node.json)
 - [Prysm Dashboard JSON](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json)
 - [Prysm Dashboard JSON for more than 10 validators](https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json)
 - [Lighthouse Beacon Dashboard JSON](https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json)
@@ -380,14 +377,14 @@ and a new `deposit_data` JSON.
 
 Ethereum 2.0 has a concept of "voluntary client exit", which will remove the
 validator from attesting duties. Locked Eth could be withdrawn after the "merge"
-aka "phase 1.5", and not sooner.
+of Ethereum 2.0 with Ethereum 1, and not sooner.
 
 Currently, Prysm and Lighthouse support voluntary exit. This requires a fully synced
 beacon node.
 
 ### Prysm
 
-To exit, run `sudo docker-compose run validator-voluntary-exit` and follow the
+To exit, run `sudo docker-compose run --rm validator-voluntary-exit` and follow the
 prompts.
 
 If you wish to exit validators that were running on other clients, you can do this
@@ -406,7 +403,7 @@ as follows:
   you will slash yourself**
 - Bring the Prysm client up: `sudo docker-compose up -d eth2`
 - Check logs until the beacon is synced: `sudo docker-compose logs -f beacon`
-- Initiate voluntary exit and follow the prompts: `sudo docker-compose run validator-voluntary-exit`
+- Initiate voluntary exit and follow the prompts: `sudo docker-compose run --rm validator-voluntary-exit`
 
 
 ### Lighthouse
@@ -433,12 +430,24 @@ validator-dir path: "/var/lib/lighthouse/validators"
 Enter the keystore password for validator in "/var/lib/lighthouse/validator_keys/keystore-m_12381_3600_0_0_0-1605672506.json":
 ```
 
+### Nimbus
+
+You will need to know the index of your validator as it shows on https://beaconcha.in/ or https://pyrmont.beaconcha.in/ if on Pyrmont testnet, or its public key.
+
+Run `sudo docker-compose run --rm validator-voluntary-exit <INDEX or 0xPUBKEY>` and follow prompts to exit. For example:
+- If using an index, here 0, `sudo docker-compose run --rm validator-voluntary-exit 0`
+- If using a public key, you need to include "0x" in front of it, for example `sudo docker-compose run --rm validator-voluntary-exit 0xb0127e191555550fae82788061320428d2cef31b0807aa33b88f48c53682baddce6398bb737b1ba5c503ca696d0cab4a`
+
 ### Avoid penalties
 
 Note you will need to continue running your validator until the exit
 has been processed by the chain, if you wish to avoid incurring offline
 penalties. You can check the status of your validator with tools such
 as [beaconcha.in](https://beaconcha.in) and [beaconscan](https://beaconscan.com).
+
+## Addendum: Moving a client
+
+Please see the [moving checklist](MOVING.md)
 
 ## Addendum: Troubleshooting
 
@@ -476,6 +485,11 @@ Once your stack is down, to run an image and get into a shell, without executing
 `sudo docker run -it --entrypoint=/bin/bash imagename`, for example `sudo docker run -it --entrypoint=/bin/bash lighthouse`.<br />
 You'd then run Linux commands manually in there, you could start components of the client manually. There is one image per client.<br />
 `sudo docker images` will show you all images.
+
+## Addendum: Additional resources
+
+[Youtube Channel](https://www.youtube.com/c/YorickDowne)
+[Security Best Practices](https://www.coincashew.com/coins/overview-eth/guide-or-security-best-practices-for-a-eth2-validator-beaconchain-node)
 
 # Guiding principles:
 

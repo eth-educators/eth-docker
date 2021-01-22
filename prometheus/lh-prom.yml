@@ -10,11 +10,9 @@ alerting:
     static_configs:
     - targets: 
       - 'alertmanager:9093'
-
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
   - "alert_rules.yml"
-
 # A scrape configuration containing beacon node and node exporter
 scrape_configs:
   - job_name: 'nodes'

@@ -30,6 +30,8 @@ services:
       - --web3-url=${ETH1_NODE}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
+      - --rpc
+      - --rpc-address=0.0.0.0 
   validator-import:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}
@@ -54,6 +56,31 @@ services:
       - deposits
       - import
       - /var/lib/nimbus/validator_keys
+  validator-voluntary-exit:
+    restart: "no"
+    user: ${LOCAL_UID}:${LOCAL_UID}
+    image: nimbus
+    build:
+      context: ./nimbus
+      args:
+        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${NIM_DOCKER_TAG}
+        - USER=${NIM_USER}
+        - UID=${LOCAL_UID}
+        - METRICS=${NIM_METRICS}
+      dockerfile: ${NIM_DOCKERFILE}
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+    entrypoint:
+      - /usr/local/bin/nimbus_beacon_node
+      - --data-dir=/var/lib/nimbus
+      - --log-file=/var/lib/nimbus/beacon_node.log
+      - --network=${NETWORK}
+      - --log-level=${LOG_LEVEL}
+      - deposits
+      - exit
+      - --rpc-url=http://beacon:9190
+      - --validator=
   deposit-cli:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}

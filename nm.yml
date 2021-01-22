@@ -3,6 +3,7 @@ services:
   eth1:
     restart: "${RESTART}"
     user: ${LOCAL_UID}:${LOCAL_UID}
+    stop_grace_period: 3m
     build:
       context: ./nethermind
       dockerfile: ${NM_DOCKERFILE}
