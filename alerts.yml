@@ -1,19 +1,20 @@
 version: "3.4"
 services:
   alertmanager:
-    build:
-      context: ./alertmanager
-    image: alertmanager:latest
+    restart: ${RESTART}
+    image: prom/alertmanager
     volumes:
       - alertmanager-data:/alertmanager
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml
     command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
-    restart: ${RESTART}
+      - --config.file
+      - /etc/alertmanager/config.yml
+      - --storage.path
+      - /alertmanager
+      - --log.level
+      - ${LOG_LEVEL}
     ports:
-      - '${ALERTMANAGER_PORT}:9093'
-    expose:
-      - ${ALERTMANAGER_PORT}/tcp
+      - 9093:9093/tcp
     depends_on:
       - prometheus
     
