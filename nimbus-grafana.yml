@@ -14,6 +14,7 @@ services:
     image: prometheus
     volumes:
       - prom-data:/prometheus
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
     environment:
       - CLIENT=${COMPOSE_FILE}
     expose:
