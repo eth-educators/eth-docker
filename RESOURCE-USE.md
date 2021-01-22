@@ -11,14 +11,16 @@ SSD, RAM and CPU use is after initial sync, when keeping up with head. 100% CPU 
 
 | Client | Version | DB Size  | DB Growth | RAM | CPU | Notes |
 |--------|---------|----------|-----------|-----|-----|-------|
-| OpenEthereum | 3.1.0rc1 | ~380 GiB | moderate | 1 GiB | 100-300% | DB grows with chain, prunes itself |
-| Geth   | 1.9.24  | ~350 GiB | ~1-2 GiB/day | 9 GiB | 200-400% | DB size can be reduced by [using removedb](https://blog.ethereum.org/2019/07/10/geth-v1-9-0/) |
-| Nethermind | 1.10.7-beta | ~130 GiB | TBD | 6.5 GiB | 100-300% | pruning in beta; initial size lower bcs of ancient barrier |
+| OpenEthereum | 3.1.0rc1 | ~380 GiB | ~ 3.2 GiB / week | 1 GiB | 100-300% | DB grows with chain, prunes itself |
+| Geth   | 1.9.24  | ~350 GiB | ~ 10 GiB / week | 9 GiB | 200-400% | DB size can be reduced by [using removedb](https://blog.ethereum.org/2019/07/10/geth-v1-9-0/) |
+| Nethermind | 1.10.7-beta | ~130 GiB | TBD | 7 - 11.5 GiB | 100-300% | memory use w/ pruning; initial size lower bcs of ancient barrier |
 | Besu | v20.10.2 | ~350 GiB | unknown | 5.5 GiB | | |
 
 ## Test Systems
 
 IOPS is random read-write IOPS [measured by fio with "typical" DB parameters](https://arstech.net/how-to-measure-disk-performance-iops-with-fio-in-linux/).
+
+A note on Contabo: Stability of their service [is questionable](https://www.reddit.com/r/ethstaker/comments/l5d69l/if_youre_struggling_with_contabo/).
 
 | Name                 | RAM    | SSD Size | CPU        | IOPS | Notes |
 |----------------------|--------|----------|------------|------|-------|
@@ -26,6 +28,7 @@ IOPS is random read-write IOPS [measured by fio with "typical" DB parameters](ht
 | Dell R420            | 32 GiB | 1 TB     | Dual Intel Octo | 28.9k read / 9.6k write | Xeon E5-2450 |
 | Contabo M VPS        | 16 GiB | 400 GiB  | Intel Hexa   | 3k read / 1k write | Xeon E5-2630 v4 - some Contabo VPS are AMD |
 | Contabo L VPS        | 30 GiB | 800 GiB  | Intel Octo   | 3k read / 1k write | Xeon E5-2630 v4 - some Contabo VPS are AMD |
+| [Netcup](https://netcup.eu) VPS 2000 G9   | 16 GiB | 320 GiB  | AMD Quad | 46.4k read / 15.5k write | |
 
 ## Initial sync times
 
@@ -42,3 +45,4 @@ node will "catch up" and get in sync.
 | Geth   | 1.9.25  | Contabo L VPS | ~ 24 hours | default  | |
 | Nethermind | 1.10.7-beta | Contabo L VPS | Never | default | VPS IOPS too low to finish Nethermind sync |
 | Nethermind | 1.10.7-beta | Homebrew Xeon | ~ 27 hours | default | |
+| Nethermind | 1.10.9 | Netcup VPS 2000 G9 | ~ 20 hours | default | |
