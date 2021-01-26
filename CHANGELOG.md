@@ -17,6 +17,10 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.6 2021-01-26
+
+* Added alert manager code. Thanks to @DarrenMa!
+
 ## v0.2.5.4 2021-01-21
 
 * Support for new Lighthouse Validator Monitor Grafana Dashboard
