@@ -1,0 +1,26 @@
+version: "3.4"
+services:
+  alertmanager:
+    restart: ${RESTART}
+    image: prom/alertmanager
+    volumes:
+      - alertmanager-data:/alertmanager
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml
+    command:
+      - --config.file
+      - /etc/alertmanager/config.yml
+      - --storage.path
+      - /alertmanager
+      - --log.level
+      - ${LOG_LEVEL}
+    ports:
+      - 9093:9093/tcp
+    depends_on:
+      - prometheus
+    
+  eth2:
+    depends_on:
+      - alertmanager
+
+volumes:
+  alertmanager-data:
