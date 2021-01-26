@@ -41,6 +41,8 @@ services:
       - ${ETH1_RPC_PORT}
       - --logging
       - ${LOG_LEVEL}
+      - --snapshot-peers
+      - "250"
   beacon:
     depends_on:
       - eth1
