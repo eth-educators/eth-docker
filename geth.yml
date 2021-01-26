@@ -24,7 +24,6 @@ services:
       - ${ETH1_WS_PORT}/tcp
     entrypoint:
       - geth
-      - --nousb
       - --http
       - --http.addr
       - 0.0.0.0
