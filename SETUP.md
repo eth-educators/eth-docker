@@ -123,7 +123,7 @@ geth with `:` between the file names.
 - `oe.yml` - local openethereum eth1 chain node
 - `eth1-shared.yml` - makes the RPC port of the eth1 node available from the host, for using the eth1 node with other nodes or with Metamask. To be used alongside one of the eth1 yml files. **Not encrypted**, do not expose to Internet.
 - `eth1-standalone.yml` - like eth1-shared but for running *just* eth1, instead of running it alongside a beacon node in the same "stack". To be used alongside one of the eth1 yml files. Also not encrypted, not meant for a fully distributed setup quite yet.
-- `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations do to the additional resource demand.
+- `prysm-slasher.yml` - Prysm experimental Slasher which helps secure the chain and may result in additional earnings. The experimental slasher can lead to missed attestations due to the additional resource demand.
 - `lh-grafana.yml` - grafana dashboard for Lighthouse
 - `prysm-grafana.yml` - grafana dashboard for Prysm. Not encrypted, do not expose to Internet.
 - `prysm-web.yml` - Prysm Web UI. Not encrypted, do not expose to Internet. If you also want Grafana, add `prysm-grafana.yml`
