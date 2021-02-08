@@ -14,7 +14,7 @@ SSD, RAM and CPU use is after initial sync, when keeping up with head. 100% CPU 
 | OpenEthereum | 3.1.0rc1 | ~380 GiB | ~ 3.5 GiB / week | 1 GiB | 100-300% | DB grows with chain, prunes itself |
 | Geth   | 1.9.24  | ~350 GiB | ~ 10 GiB / week | 9 GiB | 200-400% | DB size can be reduced by [using removedb](https://blog.ethereum.org/2019/07/10/geth-v1-9-0/) |
 | Nethermind | 1.10.7-beta | ~130 GiB | ~ 22 GiB / week | 7 - 11.5 GiB | 100-300% | memory use w/ pruning; initial size lower bcs of ancient barrier |
-| Besu | v20.10.2 | ~350 GiB | unknown | 6 - 9 GiB | | |
+| Besu | v20.10.2 | ~420 GiB | ~ 78 GiB / week | 6 - 9 GiB | 200-300% | |
 
 ## Test Systems
 
@@ -46,3 +46,4 @@ node will "catch up" and get in sync.
 | Nethermind | 1.10.7-beta | Contabo L VPS | Never | default | VPS IOPS too low to finish Nethermind sync |
 | Nethermind | 1.10.7-beta | Homebrew Xeon | ~ 27 hours | default | |
 | Nethermind | 1.10.9 | Netcup VPS 2000 G9 | ~ 20 hours | default | |
+| Besu | 20.10.4 | Homebrew Xeon | ~ 6 days 8 hours | default | |

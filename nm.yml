@@ -46,6 +46,7 @@ services:
       - "true"
       - --config
       - ${ETH1_NETWORK}
+      - --Pruning.Enabled
   beacon:
     depends_on:
       - eth1

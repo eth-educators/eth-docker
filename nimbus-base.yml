@@ -32,6 +32,7 @@ services:
       - --log-level=${LOG_LEVEL}
       - --rpc
       - --rpc-address=0.0.0.0 
+      - --enr-auto-update=true
   validator-import:
     restart: "no"
     user: ${LOCAL_UID}:${LOCAL_UID}

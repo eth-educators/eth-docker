@@ -17,6 +17,11 @@ directory (`cd ~/eth2-docker` by default):
 * !! If coming from Prysm alpha.29 or earlier, make changes as per notes for [v0.1.7](#v017-2020-10-15)
 * `sudo docker-compose up -d eth2`
 
+## v0.2.6.1 2021-02-08
+
+* Nethermind pruning on by default
+* Nimbus ENR IP auto-update on by default
+
 ## v0.2.6 2021-01-26
 
 * Added alert manager code. Thanks to @DarrenMa!
