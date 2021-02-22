@@ -112,7 +112,7 @@ services:
       - account
       - validator
       - exit
-      - --beacon-nodes
+      - --beacon-node
       - http://beacon:5052 
       - --datadir
       - /var/lib/lighthouse
