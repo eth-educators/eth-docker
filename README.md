@@ -15,5 +15,5 @@ Please see the [official documentation](https://eth2-docker.net).
 
 If we've helped you out, in-person or by creating this project, a tip will be very welcome.
 
-Yorick Ethereum: [0xDccf8451070a86183eE70D330C4c43b686E9CF86](tip_yorick.html)  
-danb.eth: [0xBe5Bd61fd37444290913Eff8f5dfF8C4D0d7A093](tip_dan.html) (NFTs welcome)
+Yorick Ethereum: 0xDccf8451070a86183eE70D330C4c43b686E9CF86  
+danb.eth: 0xBe5Bd61fd37444290913Eff8f5dfF8C4D0d7A093 (NFTs welcome)
