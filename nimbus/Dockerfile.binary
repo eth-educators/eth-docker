@@ -1,27 +1,26 @@
 ARG DOCKER_TAG
 
-FROM statusteam/nimbus_beacon_node:${DOCKER_TAG}
+FROM statusim/nimbus-eth2:${DOCKER_TAG}
 
-# Unused, the next two are here to avoid build time complaints
+# Unused, the next three are here to avoid build time complaints
 ARG BUILD_TARGET
 ARG METRICS
-
 ARG USER
+
 ARG UID
 
-# See https://stackoverflow.com/a/55757473/12429735RUN
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    "${USER}"
+USER root
+
+RUN usermod -u "${UID}" user
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus
+RUN mkdir -p /var/lib/nimbus && chown -R user:user /var/lib/nimbus && chmod 700 /var/lib/nimbus
+
+# Copy beacon_node into $PATH
+
+RUN cp /home/user/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
 
 # Use an unprivileged user.
-USER ${USER}:${USER}
+USER user
 
+ENTRYPOINT ['nimbus_beacon_node']

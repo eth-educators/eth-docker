@@ -1,6 +1,5 @@
 # eth2-docker: Unofficial docker environment for Ethereum 2.0 clients.
 
-
 eth2-docker, an unofficial docker environment for [Ethereum 2.0](https://ethereum.org/en/eth2/) clients. 
 
 ### Getting Started
