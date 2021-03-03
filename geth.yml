@@ -43,7 +43,7 @@ services:
       - ${ETH1_WS_PORT}
       - --ws.api
       - eth,net
-    command: ${GETH1_NETWORK}
+      - --${ETH1_NETWORK}
   beacon:
     depends_on:
       - eth1
