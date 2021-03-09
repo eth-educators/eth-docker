@@ -157,13 +157,11 @@ services:
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
     volumes:
-      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
+      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
     entrypoint:
       - python3
       - /app/eth2deposit/deposit.py
       - new-mnemonic
-      - --folder
-      - /var/lib/depcli-data
       - --chain
       - ${NETWORK}
   deposit-cli-add-recover:
@@ -177,13 +175,12 @@ services:
         - UID=${LOCAL_UID}
     image: eth2.0-deposit-cli
     volumes:
-      - ${DEPCLI_LOCALDIR}:/var/lib/depcli-data
+      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
+      - ${DEPCLI_LOCALDIR}/seed_check:/app/seed_check
     entrypoint:
       - python3
       - /app/eth2deposit/deposit.py
       - existing-mnemonic
-      - --folder
-      - /var/lib/depcli-data
       - --chain
       - ${NETWORK}
   eth2:
