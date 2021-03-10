@@ -27,13 +27,12 @@ RUN adduser \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
-COPY --from=bnsource /app/beacon-chain/beacon-chain /usr/local/bin/beacon-chain
+COPY --from=bnsource /app/cmd/beacon-chain/beacon-chain /usr/local/bin/beacon-chain
 
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-#EXPOSE 4000 13000 12000/udp
-ENTRYPOINT ["beacon-chain", "--datadir", "/var/lib/prysm", "--http-web3provider", "http://geth:8545", "--rpc-host", "0.0.0.0"]
+ENTRYPOINT ["beacon-chain"]
 
 FROM prysmaticlabs/prysm-validator:${DOCKER_TAG} as vcsource
 
@@ -41,7 +40,7 @@ FROM beacon as validator
 
 USER root
 
-COPY --from=vcsource /app/validator/validator /usr/local/bin/validator
+COPY --from=vcsource /app/cmd/validator/validator /usr/local/bin/validator
 COPY ./create-prysm-validator-wallet.sh /usr/local/bin
 
 # Use an unprivileged user.
@@ -52,7 +51,7 @@ FROM prysmaticlabs/prysm-slasher:${DOCKER_TAG} as slsource
 FROM beacon as slasher
 
 USER root
-COPY --from=slsource /app/slasher/slasher /usr/local/bin/slasher
+COPY --from=slsource /app/cmd/slasher/slasher /usr/local/bin/slasher
 
 # Use an unprivileged user.
 USER ${USER}:${USER}
