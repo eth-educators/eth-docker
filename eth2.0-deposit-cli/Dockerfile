@@ -15,7 +15,6 @@ RUN adduser \
     "${USER}"
 
 RUN mkdir -p /var/lib/depcli && chown ${USER}:${USER} /var/lib/depcli
-RUN mkdir -p /var/lib/depcli-data && chown ${USER}:${USER} /var/lib/depcli-data
 
 WORKDIR /var/lib/depcli
 USER ${USER}
