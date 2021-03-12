@@ -37,6 +37,8 @@ services:
       - ${ETH1_FALLBACK_NODE1}
       - --fallback-web3provider
       - ${ETH1_FALLBACK_NODE2}
+      - --eth1-header-req-limit
+      - "150"
       - --p2p-tcp-port
       - ${PRYSM_PORT}
       - --p2p-udp-port

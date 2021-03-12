@@ -35,6 +35,8 @@ services:
       - ${LH_PEER_COUNT}
       - --eth1-endpoints
       - ${ETH1_NODE}
+      - --eth1-blocks-per-log-query
+      - "150"
       - --debug-level=${LOG_LEVEL}
   validator:
     restart: "${RESTART}"
