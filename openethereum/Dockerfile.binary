@@ -21,8 +21,6 @@ RUN mkdir -p /var/lib/openethereum && chown openethereum:openethereum /var/lib/o
 # Use an unprivileged user.
 USER openethereum
 
-EXPOSE 8080 8545 8180
-
 WORKDIR /var/lib/openethereum
 
-ENTRYPOINT ["openethereum", "--base-path=/var/lib/openethereum"]
+ENTRYPOINT ["openethereum"]
