@@ -1,4 +1,4 @@
-FROM alpine:edge AS builder
+FROM alpine:3.13.2 AS builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
@@ -22,7 +22,7 @@ RUN apk update && apk add --no-cache \
 WORKDIR /
 RUN bash -c "git clone https://github.com/openethereum/openethereum.git && cd openethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && cargo build --release --features final --target x86_64-alpine-linux-musl --verbose && strip target/x86_64-alpine-linux-musl/release/openethereum"
 
-FROM alpine:edge
+FROM alpine:3.13.2
 
 # show backtraces
 ENV RUST_BACKTRACE 1
@@ -54,10 +54,8 @@ RUN mkdir -p /var/lib/openethereum && chown ${USER}:${USER} /var/lib/openethereu
 # Use an unprivileged user.
 USER ${USER}:${USER}
 
-EXPOSE 8080 8545 8180
-
 WORKDIR /var/lib/openethereum
 
 COPY --chown=openethereum:openethereum --from=builder /openethereum/target/x86_64-alpine-linux-musl/release/openethereum /usr/local/bin
 
-ENTRYPOINT ["openethereum", "--base-path=/var/lib/openethereum"]
+ENTRYPOINT ["openethereum"]
