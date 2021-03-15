@@ -46,7 +46,7 @@ done
 echo
 while true; do
   if [ $import -ne 0 ]; then
-    prompt="Please enter the 'New wallet password' you chose above : "
+    prompt="Please enter your wallet password - note this is *not* the validator keystore password: "
   else
     prompt="Please choose a wallet password, which you will then also provide during Web UI Wallet Creation: "
   fi
