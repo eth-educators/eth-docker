@@ -24,7 +24,7 @@ services:
     entrypoint:
       - dotnet
       - /nethermind/Nethermind.Runner.dll
-      - --Init.BaseDbPath
+      - --datadir
       - /var/lib/nethermind
       - --Init.WebSocketsEnabled
       - "true"
@@ -47,6 +47,9 @@ services:
       - --config
       - ${ETH1_NETWORK}
       - --Pruning.Enabled
+      - "true"
+      - --Pruning.CacheMb
+      - "2048"
   beacon:
     depends_on:
       - eth1
