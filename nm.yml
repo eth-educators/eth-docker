@@ -49,7 +49,7 @@ services:
       - --Pruning.Enabled
       - "true"
       - --Pruning.CacheMb
-      - "2048"
+      - "4096"
   beacon:
     depends_on:
       - eth1
