@@ -1,5 +1,5 @@
 # Partially from Nethermind github
-FROM mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
