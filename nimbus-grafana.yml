@@ -25,8 +25,23 @@ services:
       - beacon
       - node-exporter
   node-exporter:
-    restart: "${RESTART}"
-    image: prom/node-exporter
+    image: quay.io/prometheus/node-exporter:latest
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.textfile.directory=/etc/node-exporter/'
+      - '--collector.filesystem.ignored-mount-points=${NODE_EXPORTER_IGNORE_MOUNT_REGEX}'
+      - '--no-collector.ipvs'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+      - /etc/hostname:/etc/nodename:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/TZ:ro
     expose:
       - 9100/tcp
   grafana:

@@ -47,6 +47,13 @@ ARG lighthouse_validator_monitor_url='https://raw.githubusercontent.com/sigp/lig
 ARG lighthouse_validator_monitor_file='/etc/grafana/provisioning/dashboards/lighthouse_validator_monitor.json'
 RUN wget -qcO - $lighthouse_validator_monitor_url | jq '.title = "lighthouse_validator_monitor"' >$lighthouse_validator_monitor_file
 
+# lighthouse_yoldark34
+ARG lighthouse_yoldark34_url='https://raw.githubusercontent.com/Yoldark34/lighthouse-staking-dashboard/main/Yoldark_ETH_staking_dashboard.json'
+ARG lighthouse_yoldark34_file='/etc/grafana/provisioning/dashboards/lighthouse_yoldark34.json'
+RUN wget -qcO - $lighthouse_yoldark34_url | jq '.title = "lighthouse_yoldark34"' | jq '.uid = "t2yHaa3Zz3lou"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$lighthouse_yoldark34_file
+
+
+
 #  teku_overview
 ARG teku_overview_url='https://grafana.com/api/dashboards/12199/revisions/1/download'
 ARG teku_overview_file='/etc/grafana/provisioning/dashboards/teku_overview.json'
@@ -61,6 +68,9 @@ RUN wget -qcO - $nimbus_dashboard_url | jq '.title = "nimbus_dashboard"' >$nimbu
 ARG geth_dashboard_url='https://gist.githubusercontent.com/karalabe/e7ca79abdec54755ceae09c08bd090cd/raw/3a400ab90f9402f2233280afd086cb9d6aac2111/dashboard.json'
 ARG geth_dashboard_file='/etc/grafana/provisioning/dashboards/geth_dashboard.json'
 RUN wget -qcO - $geth_dashboard_url | jq '.title = "geth_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$geth_dashboard_file
+
+# node dashboard
+ADD node-exporter_dashboard.json /etc/grafana/provisioning/dashboards/
 
 RUN tree /etc/grafana/provisioning/
 
