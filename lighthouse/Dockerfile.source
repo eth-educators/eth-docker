@@ -45,4 +45,3 @@ USER ${USER}:${USER}
 # For voluntary exit
 ENV KEYSTORE=nonesuch
 
-ENTRYPOINT lighthouse
