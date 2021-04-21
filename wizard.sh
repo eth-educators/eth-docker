@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# Log everything
-exec 2> ~/eth2-docker.log  # send stderr from to a log file
-exec 1>&2                      # send stdout to the same log file
-set -ex                         # tell sh to display commands before execution
-
 # Don't run as root
 if [[ $EUID -eq 0 ]]; then
    echo "Do not run as root." 
    exit 1
 fi
 
+# Don't run from another directory
+if ! [[ -f "wizard.sh" ]]; then
+   echo "Please run from eth2-docker root dir." 
+   exit 1
+fi
 
 # Create ENV file if needed
 ENV_FILE=.env 
@@ -34,8 +34,6 @@ fi
 # LOCAL_UID
 
 # Guess LOCAL_UID
-LOCAL_UID_GUESS=$(grep LOCAL_UID $ENV_FILE | cut -d "=" -f2 |  sed -e 's/ //g')
-
 LOCAL_UID=$(whiptail --title "Configure LOCAL_UID" --inputbox "What is your LOCAL_UID?" 10 60 $LOCAL_UID_GUESS 3>&1 1>&2 2>&3)
 
 # Ask the user
@@ -70,6 +68,21 @@ if [ $exitstatus != 0 ]; then exit 0 ; fi
 
 if [ $ETH1_CLIENT = "NONE" ]; then
 	unset ETH1_CLIENT
+    ETH1_NODE=$(whiptail --title "Configure Custom ETH1_NODE" --inputbox "What is the URL for your Custom ETH1_NODE?" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
+    # Ask the user
+    exitstatus=$?
+    if [ $exitstatus = 0 ]; then
+        echo "your ETH1_NODE is:" $ETH1_NODE
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+
+    # Update The Value in env.
+    if ! grep -qF "ETH1_NODE" $ENV_FILE 2>/dev/null ; then
+        echo "ETH1_NODE=${ETH1_NODE}" >> $ENV_FILE
+    fi
+    sed -i "s~^\(ETH1_NODE\s*=\s*\).*$~\1${ETH1_NODE}~" $ENV_FILE
 fi
 
 
@@ -137,15 +150,15 @@ sed -i "s/^\(COMPOSE_FILE\s*=\s*\).*$/\1${COMPOSE_FILE}/" $ENV_FILE
 ETH2_NETWORK=$(whiptail --title "Select Network" --radiolist \
 "What network?" 15 60 4 \
 "mainnet" "Production" OFF \
-"pyrmont" "Testnet" ON 3>&1 1>&2 2>&3)
+"prater" "Testnet" ON 3>&1 1>&2 2>&3)
 
 # Update The Value in env.
 if [ $ETH2_NETWORK = "mainnet" ]; then
     sed -i "s/^\(NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
     sed -i "s/^\(ETH1_NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
     sed -i "s/^GETH1_NETWORK/# GETH1_NETWORK/" $ENV_FILE
-elif [ $ETH2_NETWORK = "pyrmont" ]; then
-    sed -i "s/^\(NETWORK\s*=\s*\).*$/\1pyrmont/" $ENV_FILE
+elif [ $ETH2_NETWORK = "prater" ]; then
+    sed -i "s/^\(NETWORK\s*=\s*\).*$/\1prater/" $ENV_FILE
     sed -i "s/^\(ETH1_NETWORK\s*=\s*\).*$/\1goerli/" $ENV_FILE
     sed -i "s/^# GETH1_NETWORK/GETH1_NETWORK/" $ENV_FILE
 else
