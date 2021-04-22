@@ -47,8 +47,8 @@
               "type": "query"
             }
           ],
-          "executionErrorState": "alerting",
-          "for": "0m",
+          "executionErrorState": "keep_state",
+          "for": "5m",
           "frequency": "60s",
           "handler": 1,
           "message": "Disk Space Alert",
@@ -175,7 +175,7 @@
             {
               "evaluator": {
                 "params": [
-                  70
+                  90
                 ],
                 "type": "gt"
               },
@@ -196,8 +196,8 @@
               "type": "query"
             }
           ],
-          "executionErrorState": "alerting",
-          "for": "0m",
+          "executionErrorState": "keep_state",
+          "for": "5m",
           "frequency": "60s",
           "handler": 1,
           "message": "CPU Usage Alert",
@@ -346,8 +346,8 @@
               "type": "query"
             }
           ],
-          "executionErrorState": "alerting",
-          "for": "0m",
+          "executionErrorState": "keep_state",
+          "for": "5m",
           "frequency": "60s",
           "handler": 1,
           "name": "Memory Usage alert",
