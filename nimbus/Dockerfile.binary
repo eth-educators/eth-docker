@@ -23,4 +23,4 @@ RUN cp /home/user/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_bea
 # Use an unprivileged user.
 USER user
 
-ENTRYPOINT ['nimbus_beacon_node']
+ENTRYPOINT ["nimbus_beacon_node"]
