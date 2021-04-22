@@ -106,7 +106,7 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "100.0 - 100 * ((node_filesystem_avail_bytes / 1000 / 1000 ) / (node_filesystem_size_bytes  / 1024 / 1024))",
+            "expr": "100 - (node_filesystem_avail_bytes/node_filesystem_size_bytes * 100)",
             "format": "time_series",
             "interval": "",
             "intervalFactor": 2,
