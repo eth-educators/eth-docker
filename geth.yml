@@ -44,9 +44,6 @@ services:
       - --ws.api
       - eth,net
       - --${ETH1_NETWORK}
-  beacon:
-    depends_on:
-      - eth1
   eth2:
     depends_on:
       - eth1

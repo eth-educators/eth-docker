@@ -64,8 +64,13 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
-    ports: 
-      - ${GRAFANA_PORT}:${GRAFANA_PORT}/tcp
+    expose: 
+      - ${GRAFANA_PORT}/tcp
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.entrypoints=web,websecure
+      - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
+      - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
   eth2:
     depends_on:
       - grafana

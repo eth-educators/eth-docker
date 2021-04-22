@@ -43,9 +43,6 @@ services:
       - ${LOG_LEVEL}
       - --snapshot-peers
       - "250"
-  beacon:
-    depends_on:
-      - eth1
   eth2:
     depends_on:
       - eth1
