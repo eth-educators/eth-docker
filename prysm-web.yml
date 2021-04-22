@@ -4,8 +4,8 @@ services:
     expose:
       - 3500/tcp
   validator:
-    ports:
-      - ${PRYSM_WEB_PORT}:${PRYSM_WEB_PORT}/tcp
+    expose:
+      - ${PRYSM_WEB_PORT}/tcp
     entrypoint:
       - validator
       - --datadir
@@ -30,3 +30,8 @@ services:
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prysm.entrypoints=web,websecure
+      - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
+      - traefik.http.services.prysm.loadbalancer.server.port=${PRYSM_WEB_PORT}

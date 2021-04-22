@@ -50,9 +50,6 @@ services:
       - "true"
       - --Pruning.CacheMb
       - "4096"
-  beacon:
-    depends_on:
-      - eth1
   eth2:
     depends_on:
       - eth1

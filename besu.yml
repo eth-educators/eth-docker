@@ -47,9 +47,6 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${ETH1_NETWORK}
-  beacon:
-    depends_on:
-      - eth1
   eth2:
     depends_on:
       - eth1
