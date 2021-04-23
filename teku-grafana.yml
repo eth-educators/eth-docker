@@ -8,6 +8,7 @@ services:
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
+      - ${TEKU_RAPID_SYNC}
   prometheus:
     restart: "${RESTART}"
     build:

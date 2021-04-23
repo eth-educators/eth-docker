@@ -25,7 +25,6 @@ services:
       - /opt/besu/bin/besu
       - --data-path
       - /var/lib/besu
-      - --pruning-enabled
       - --p2p-port
       -  ${ETH1_PORT}
       - --rpc-http-enabled
@@ -47,6 +46,10 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${ETH1_NETWORK}
+      - --pruning-enabled
+# This is going to be the new hawtness but should only be used for testing right now,
+# it is not stable on mainnet. When using this, disable --pruning-enabled.
+#     - --Xdata-storage-format=BONSAI
   eth2:
     depends_on:
       - eth1
