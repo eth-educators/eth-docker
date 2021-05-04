@@ -29,7 +29,7 @@ services:
       - 0.0.0.0
       - --http.vhosts=eth1,localhost
       - --http.api
-      - eth,net
+      - eth,net,web3
       - --datadir
       - /var/lib/goethereum
       - --port
