@@ -14,16 +14,20 @@ RUN bash -c "git clone https://github.com/prysmaticlabs/prysm.git && cd prysm &&
 # Pull all binaries into a second stage deploy debian container
 FROM debian:buster-slim as beacon
 
-ARG USER
-ARG UID
+ARG USER=prysmbeacon
+ARG UID=10002
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates \
-  wget \
-  w3m \
-  xdg-utils \
+  ca-certificates curl bash \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+        apt-get update; \
+        apt-get install -y gosu; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -35,21 +39,36 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-# Copy executable
-COPY --from=builder /go/src/prysm/bazel-bin/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/validator/validator_/validator /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/slasher/slasher_/slasher /usr/local/bin/
-
-COPY ./create-prysm-validator-wallet.sh /usr/local/bin
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
-# Use an unprivileged user.
-USER ${USER}:${USER}
+# Copy executable
+COPY --from=builder /go/src/prysm/bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/cmd/validator/validator_/validator /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/cmd/slasher/slasher_/slasher /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
-#EXPOSE 4000 13000 12000/udp
-ENTRYPOINT ["beacon-chain", "--datadir", "/var/lib/prysm", "--http-web3provider", "http://geth:8545", "--rpc-host", "0.0.0.0"]
+ENTRYPOINT ["docker-entrypoint.sh","beacon-chain"]
 
 FROM beacon as validator
+
+ARG USER=prysmvalidator
+ARG UID=10000
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
+
+COPY ./validator-import.sh /usr/local/bin/
+
 FROM beacon as slasher
 

@@ -31,27 +31,6 @@ if ! [[ -f "$ENV_FILE" ]]; then
     cp $ENV_TEMPLATE $ENV_FILE
 fi
 
-# LOCAL_UID
-
-# Guess LOCAL_UID
-LOCAL_UID=$(whiptail --title "Configure LOCAL_UID" --inputbox "What is your LOCAL_UID?" 10 60 $LOCAL_UID_GUESS 3>&1 1>&2 2>&3)
-
-# Ask the user
-exitstatus=$?
-if [ $exitstatus = 0 ]; then
-	echo "your LOCAL_UID is:" $LOCAL_UID
-else
-	echo "You chose Cancel."
-    exit 0
-fi
-
-# Update The Value in env.
-if ! grep -qF "LOCAL_UID" $ENV_FILE 2>/dev/null ; then
-    echo "LOCAL_UID=${LOCAL_UID}" >> $ENV_FILE
-fi
-echo $LOCAL_UID
-sed -i "s/^\(LOCAL_UID\s*=\s*\).*$/\1${LOCAL_UID}/" $ENV_FILE
-
 # ETH1 Client
 
 ETH1_CLIENT=$(whiptail --title "Select Client" --radiolist \

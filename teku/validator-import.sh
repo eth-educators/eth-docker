@@ -1,15 +1,18 @@
 #!/bin/bash
-# Copy the validator keys in and prompt for password. There's no check that the password is right.
+set -Eeuo pipefail
 
-cp /var/lib/teku/validator_keys/keystore-*.json /var/lib/teku/validator-keys/
-
-if [ $? -ne 0 ]; then
-  echo "Unable to copy keys from .eth2/validator_keys, please verify they are there."
-  exit 1
+# Copy keys, then restart script without root
+if [ "$(id -u)" = '0' ]; then
+  cp /validator_keys/keystore-*.json /var/lib/teku/validator-keys/
+  chown teku:teku /var/lib/teku/validator-keys/*
+  chmod 600 /var/lib/teku/validator-keys/*
+  echo "Copied validator key(s) from .eth2/validator_keys"
+  echo
+  exec gosu teku "$BASH_SOURCE" "$@"
 fi
 
-echo "Copied validator key(s) from .eth2/validator_keys"
-echo
+# Prompt for password. There's no check that the password is right.
+
 echo "Storing the validator key password(s) in plain text will allow the validator to start automatically without user input."
 echo
 while true; do
@@ -67,7 +70,9 @@ else
   done
 fi
 
+chmod 600 /var/lib/teku/validator-passwords/*
+
 echo
 echo "Validator key password(s) have been stored."
-echo "Please note: The eth2-docker project currently does not verify that your validator key password(s) are correct. If you got one or more wrong, just run this routine again."
+echo "Please note: This tool currently does not verify that the validator key password(s) are correct. If password(s) don't match, just run this routine again."
 echo

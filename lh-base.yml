@@ -2,16 +2,13 @@ version: "3.4"
 services:
   beacon:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./lighthouse
       dockerfile: ${LH_DOCKERFILE}
       args:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - USER=${LH_USER}
-        - UID=${LOCAL_UID}
         - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse
+    image: lighthouse:local
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
     ports:
@@ -20,6 +17,7 @@ services:
     expose:
       - 5052/tcp
     entrypoint: 
+      - docker-entrypoint.sh
       - lighthouse
       - bn
       - --disable-upnp
@@ -41,21 +39,13 @@ services:
       - --debug-level=${LOG_LEVEL}
   validator:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./lighthouse
-      dockerfile: ${LH_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - USER=${LH_USER}
-        - UID=${LOCAL_UID}
-        - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse
+    image: lighthouse:local
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
     entrypoint:
+      - docker-entrypoint.sh
       - lighthouse
-      - validator
+      - vc
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
@@ -69,21 +59,12 @@ services:
       - beacon
   validator-import:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: lighthouse
-    build:
-      context: ./lighthouse
-      dockerfile: ${LH_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - USER=${LH_USER}
-        - UID=${LOCAL_UID}
-        - DOCKER_TAG=${LH_DOCKER_TAG}
+    image: lighthouse:local
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
     entrypoint:
-      - query-lh-validator-passwords.sh
+      - validator-import.sh
       - lighthouse
       - account
       - validator
@@ -91,26 +72,18 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --directory
-      - /var/lib/lighthouse/validator_keys
+      - /val_keys
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  validator-voluntary-exit:
+  validator-exit:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: lighthouse
-    build:
-      context: ./lighthouse
-      dockerfile: ${LH_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - USER=${LH_USER}
-        - UID=${LOCAL_UID}
-        - DOCKER_TAG=${LH_DOCKER_TAG}
+    image: lighthouse:local
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/lighthouse/validator_keys
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
     entrypoint:
+      - validator-exit.sh
       - lighthouse
       - account
       - validator
@@ -127,16 +100,8 @@ services:
       - beacon
   validator-account:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: lighthouse
-    build:
-      context: ./lighthouse
-      dockerfile: ${LH_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - USER=${LH_USER}
-        - UID=${LOCAL_UID}
-        - DOCKER_TAG=${LH_DOCKER_TAG}
+    image: lighthouse:local
+    user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}:/interchange
@@ -149,43 +114,6 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  deposit-cli:
-    restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./eth2.0-deposit-cli
-      args:
-        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-        - USER=${DEPCLI_USER}
-        - UID=${LOCAL_UID}
-    image: eth2.0-deposit-cli
-    volumes:
-      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
-    entrypoint:
-      - python3
-      - /app/eth2deposit/deposit.py
-      - new-mnemonic
-      - --chain
-      - ${NETWORK}
-  deposit-cli-add-recover:
-    restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./eth2.0-deposit-cli
-      args:
-        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-        - USER=${DEPCLI_USER}
-        - UID=${LOCAL_UID}
-    image: eth2.0-deposit-cli
-    volumes:
-      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
-      - ${DEPCLI_LOCALDIR}/seed_check:/app/seed_check
-    entrypoint:
-      - python3
-      - /app/eth2deposit/deposit.py
-      - existing-mnemonic
-      - --chain
-      - ${NETWORK}
   eth2:
     image: tianon/true
     restart: "no"
