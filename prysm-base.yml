@@ -4,18 +4,15 @@ x-build: &prysm-build
   dockerfile: ${PRYSM_DOCKERFILE}
   args:
     - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
-    - USER=${PRYSM_USER}
-    - UID=${LOCAL_UID}
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
 
 services:
   beacon:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       target: beacon
       <<: *prysm-build
-    image: prysm-beacon
+    image: prysm-beacon:local
     volumes:
       - prysmbeacon-data:/var/lib/prysm
     ports:
@@ -24,6 +21,7 @@ services:
     expose:
       - 4000
     entrypoint:
+      - docker-entrypoint.sh
       - beacon-chain
       - --datadir
       - /var/lib/prysm/
@@ -51,14 +49,14 @@ services:
       - --accept-terms-of-use
   validator:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       target: validator
       <<: *prysm-build
-    image: prysm-validator
+    image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
     entrypoint:
+      - docker-entrypoint.sh
       - validator
       - --datadir
       - /var/lib/prysm
@@ -79,11 +77,8 @@ services:
       - beacon
   validator-account-list:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      target: validator
-      <<: *prysm-build
-    image: prysm-validator
+    user: prysmvalidator
+    image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
     entrypoint:
@@ -102,15 +97,11 @@ services:
       - /var/lib/prysm/password.txt
   validator-import:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: prysm-validator
-    build:
-      target: validator
-      <<: *prysm-build
+    image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/prysm/validator_keys
-    entrypoint: create-prysm-validator-wallet.sh
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+    entrypoint: validator-import.sh
     command:
       - validator
       - --verbosity
@@ -122,15 +113,12 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --keys-dir
-      - /var/lib/prysm/validator_keys
+      - /val_keys
       - --${NETWORK}
-  validator-voluntary-exit:
+  validator-exit:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: prysm-validator
-    build:
-      target: validator
-      <<: *prysm-build
+    user: prysmvalidator
+    image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
     entrypoint:
@@ -150,43 +138,6 @@ services:
       - --${NETWORK}
     depends_on:
       - beacon
-  deposit-cli:
-    restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./eth2.0-deposit-cli
-      args:
-        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-        - USER=${DEPCLI_USER}
-        - UID=${LOCAL_UID}
-    image: eth2.0-deposit-cli
-    volumes:
-      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
-    entrypoint:
-      - python3
-      - /app/eth2deposit/deposit.py
-      - new-mnemonic
-      - --chain
-      - ${NETWORK}
-  deposit-cli-add-recover:
-    restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./eth2.0-deposit-cli
-      args:
-        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-        - USER=${DEPCLI_USER}
-        - UID=${LOCAL_UID}
-    image: eth2.0-deposit-cli
-    volumes:
-      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
-      - ${DEPCLI_LOCALDIR}/seed_check:/app/seed_check
-    entrypoint:
-      - python3
-      - /app/eth2deposit/deposit.py
-      - existing-mnemonic
-      - --chain
-      - ${NETWORK}
   eth2:
     image: tianon/true
     restart: "no"

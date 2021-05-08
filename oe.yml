@@ -2,16 +2,13 @@ version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./openethereum
       dockerfile: ${OE_DOCKERFILE}
       args:
         - BUILD_TARGET=${OE_SRC_BUILD_TARGET} 
-        - USER=${OE_USER}
-        - UID=${LOCAL_UID}
         - DOCKER_TAG=${OE_DOCKER_TAG}
-    image: openethereum
+    image: openethereum:local
     stop_grace_period: 3m
     volumes:
       - oe-eth1-data:/var/lib/openethereum
@@ -22,15 +19,16 @@ services:
       - ${ETH1_RPC_PORT}/tcp
       - ${ETH1_WS_PORT}/tcp
     entrypoint:
+      - docker-entrypoint.sh
       - openethereum
       - --no-ipc
       - --no-secretstore
       - --base-path=/var/lib/openethereum
       - --jsonrpc-interface=all
-      - --jsonrpc-apis=net,eth
+      - --jsonrpc-apis=safe
       - --jsonrpc-hosts=all
       - --ws-interface=all
-      - --ws-apis=net,eth
+      - --ws-apis=safe
       - --ws-hosts=all
       - --ws-origins=all
       - --ws-port=${ETH1_WS_PORT}
@@ -43,6 +41,8 @@ services:
       - ${LOG_LEVEL}
       - --snapshot-peers
       - "250"
+      - --cache-size
+      - "4096"
   eth2:
     depends_on:
       - eth1

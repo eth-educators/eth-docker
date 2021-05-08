@@ -2,20 +2,24 @@ ARG DOCKER_TAG
 
 FROM hyperledger/besu:${DOCKER_TAG}
 
-#Next two are unused but included to avoid warnings
+# Unused but included to avoid warnings
 ARG BUILD_TARGET
-ARG USER
 
-ARG UID
+ARG UID=10001
 
 USER root
 
-RUN usermod -u "${UID}" besu
+RUN groupmod -g "${UID}" besu && usermod -u "${UID}" -g "${UID}" besu
+
+RUN set -eux; \
+        apt-get update; \
+        apt-get install -y gosu ca-certificates; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
 
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/besu && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
-# Use an unprivileged user.
-USER besu
-
-ENTRYPOINT /opt/besu/bin/besu
+ENTRYPOINT ["docker-entrypoint.sh","/opt/besu/bin/besu"]

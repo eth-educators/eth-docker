@@ -1,5 +1,15 @@
 #!/bin/bash
-# This will be passed arguments that start the validator
+set -Eeuo pipefail
+
+# Copy keys, then restart script without root
+if [ "$(id -u)" = '0' ]; then
+  mkdir /val_keys
+  cp /validator_keys/* /val_keys/
+  chown prysmvalidator:prysmvalidator /val_keys/*
+  exec gosu prysmvalidator "$BASH_SOURCE" "$@"
+fi
+
+
 while true; do
   read -rp "Will you import keys via the Web UI? (y/n) " yn
   case $yn in
@@ -21,10 +31,7 @@ echo
 
 if [ $import -ne 0 ]; then
   echo
-
-  if ! "$@"; then
-    exit 1
-  fi
+  "$@"
   echo
 fi
 
@@ -63,4 +70,6 @@ done
 
 echo
 echo "$password1" >/var/lib/prysm/password.txt
+chmod 600 /var/lib/prysm/password.txt
 echo "Wallet password has been stored."
+

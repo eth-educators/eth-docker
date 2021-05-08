@@ -2,7 +2,6 @@ version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     stop_grace_period: 3m
     build:
       context: ./nethermind
@@ -10,9 +9,7 @@ services:
       args:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET} 
         - DOCKER_TAG=${NM_DOCKER_TAG}
-        - USER=${NM_USER}
-        - UID=${LOCAL_UID}
-    image: nethermind
+    image: nethermind:local
     volumes:
       - nm-eth1-data:/var/lib/nethermind
     ports:
@@ -22,6 +19,7 @@ services:
       - ${ETH1_RPC_PORT}/tcp
       - ${ETH1_WS_PORT}/tcp
     entrypoint:
+      - docker-entrypoint.sh
       - dotnet
       - /nethermind/Nethermind.Runner.dll
       - --datadir
@@ -35,7 +33,7 @@ services:
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
-      - "net,eth"
+      - "Eth,Net,Web3"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port

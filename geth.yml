@@ -2,18 +2,15 @@ version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./geth
       dockerfile: ${GETH_DOCKERFILE}
       args:
         - BUILD_TARGET=${GETH_SRC_BUILD_TARGET} 
-        - USER=${GETH_USER}
-        - UID=${LOCAL_UID}
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_signal: SIGINT
     stop_grace_period: 3m
-    image: geth
+    image: geth:local
     volumes:
       - geth-eth1-data:/var/lib/goethereum
     ports:
@@ -23,13 +20,14 @@ services:
       - ${ETH1_RPC_PORT}/tcp
       - ${ETH1_WS_PORT}/tcp
     entrypoint:
+      - docker-entrypoint.sh
       - geth
       - --http
       - --http.addr
       - 0.0.0.0
       - --http.vhosts=eth1,localhost
       - --http.api
-      - eth,net
+      - eth,net,web3
       - --datadir
       - /var/lib/goethereum
       - --port
@@ -42,7 +40,7 @@ services:
       - --ws.port
       - ${ETH1_WS_PORT}
       - --ws.api
-      - eth,net
+      - eth,net,web3
       - --${ETH1_NETWORK}
   eth2:
     depends_on:

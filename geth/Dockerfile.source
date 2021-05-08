@@ -1,14 +1,23 @@
 # Build Geth in a stock Go build container
-FROM golang:alpine as builder
+FROM golang:1.16-alpine as builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
 ARG BUILD_TARGET
-ARG USER
-ARG UID
 
-RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git ca-certificates bash
+RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash
+
+WORKDIR /src
+RUN bash -c "git clone https://github.com/ethereum/go-ethereum.git && cd go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make geth"
+
+# Pull all binaries into a second stage deploy container
+FROM alpine:latest
+
+ARG USER=geth
+ARG UID=10001
+
+RUN apk add --no-cache ca-certificates su-exec bash
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -18,31 +27,11 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN go get -d github.com/ethereum/go-ethereum 
-RUN bash -c "cd $GOPATH/src/github.com/ethereum/go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && GO111MODULE=on go install -ldflags='-linkmode external -extldflags -static' ./cmd/geth"
-RUN ldd $GOPATH/bin/geth 2>&1 | grep -q "Not a valid dynamic program"
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 
-# Pull all binaries into a second stage deploy scratch container
-FROM scratch
+# Copy executable
+COPY --from=builder /src/go-ethereum/build/bin/geth /usr/local/bin/
 
-ARG USER
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
-# Import the user and group files from the builder.
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
-# Be polite - also make sure this exists and won't be created by an attacker
-COPY --from=builder /sbin/nologin /sbin/nologin
-# Copy static executable
-COPY --from=builder /go/bin/geth /usr/local/bin/
-# Copy trusted root CAs
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-# Copy data mount point with permissions
-COPY --from=builder --chown=${USER} /var/lib/goethereum /var/lib/goethereum
-
-# Use an unprivileged user.
-USER ${USER}:${USER}
-
-#EXPOSE 8545 30303 30303/udp
-ENTRYPOINT ["geth", "--nousb", "--http", "--http.addr", "0.0.0.0", "--http.vhosts", "*", "--http.api", "eth,net", "--ipcdisable", "--datadir", "/var/lib/goethereum"]
-CMD ["--goerli"]
+ENTRYPOINT ["docker-entrypoint.sh","geth"]

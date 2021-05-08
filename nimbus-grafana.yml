@@ -30,7 +30,7 @@ services:
       - '--path.rootfs=/host'
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
-      - '--collector.textfile.directory=/etc/node-exporter/'
+#      - '--collector.textfile.directory=/etc/node-exporter/'
       - '--collector.filesystem.ignored-mount-points=${NODE_EXPORTER_IGNORE_MOUNT_REGEX}'
       - '--no-collector.ipvs'
     pid: host

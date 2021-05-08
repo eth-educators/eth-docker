@@ -2,23 +2,20 @@ version: "3.4"
 services:
   beacon:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     build:
       context: ./nimbus
       args:
         - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NIM_DOCKER_TAG}
-        - USER=${NIM_USER}
-        - UID=${LOCAL_UID}
-        - METRICS=${NIM_METRICS}
       dockerfile: ${NIM_DOCKERFILE}
-    image: nimbus
+    image: nimbus:local
     volumes:
       - nimbus-data:/var/lib/nimbus
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
     entrypoint:
+      - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
@@ -34,90 +31,33 @@ services:
       - --enr-auto-update=true
   validator-import:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: nimbus
-    build:
-      context: ./nimbus
-      args:
-        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${NIM_DOCKER_TAG}
-        - USER=${NIM_USER}
-        - UID=${LOCAL_UID}
-        - METRICS=${NIM_METRICS}
-      dockerfile: ${NIM_DOCKERFILE}
+    image: nimbus:local
     volumes:
       - nimbus-data:/var/lib/nimbus
-      - ${DEPCLI_LOCALDIR}/validator_keys:/var/lib/nimbus/validator_keys
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
     entrypoint:
+      - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
-      - --log-file=/var/lib/nimbus/beacon_node.log
       - --network=${NETWORK}
       - deposits
       - import
-      - /var/lib/nimbus/validator_keys
-  validator-voluntary-exit:
+      - /val_keys
+  validator-exit:
     restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    image: nimbus
-    build:
-      context: ./nimbus
-      args:
-        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${NIM_DOCKER_TAG}
-        - USER=${NIM_USER}
-        - UID=${LOCAL_UID}
-        - METRICS=${NIM_METRICS}
-      dockerfile: ${NIM_DOCKERFILE}
+    user: user
+    image: nimbus:local
     volumes:
       - nimbus-data:/var/lib/nimbus
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
-      - --log-file=/var/lib/nimbus/beacon_node.log
       - --network=${NETWORK}
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit
       - --rpc-url=http://beacon:9190
       - --validator=
-  deposit-cli:
-    restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./eth2.0-deposit-cli
-      args:
-        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-        - USER=${DEPCLI_USER}
-        - UID=${LOCAL_UID}
-    image: eth2.0-deposit-cli
-    volumes:
-      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
-    entrypoint:
-      - python3
-      - /app/eth2deposit/deposit.py
-      - new-mnemonic
-      - --chain
-      - ${NETWORK}
-  deposit-cli-add-recover:
-    restart: "no"
-    user: ${LOCAL_UID}:${LOCAL_UID}
-    build:
-      context: ./eth2.0-deposit-cli
-      args:
-        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-        - USER=${DEPCLI_USER}
-        - UID=${LOCAL_UID}
-    image: eth2.0-deposit-cli
-    volumes:
-      - ${DEPCLI_LOCALDIR}/validator_keys:/app/validator_keys
-      - ${DEPCLI_LOCALDIR}/seed_check:/app/seed_check
-    entrypoint:
-      - python3
-      - /app/eth2deposit/deposit.py
-      - existing-mnemonic
-      - --chain
-      - ${NETWORK}
   eth2:
     image: tianon/true
     restart: "no"
