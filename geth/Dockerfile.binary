@@ -5,8 +5,11 @@ FROM ethereum/client-go:${DOCKER_TAG}
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
 
-ARG USER
-ARG UID
+ARG USER=geth
+ARG UID=10001
+
+# So we can switch to non-root user if started as root
+RUN apk add --no-cache su-exec ca-certificates bash
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -18,9 +21,6 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 
-# Use an unprivileged user.
-USER ${USER}:${USER}
+COPY ./docker-entrypoint.sh /usr/local/bin
 
-#EXPOSE 8545 30303 30303/udp
-ENTRYPOINT ["geth", "--nousb", "--http", "--http.addr", "0.0.0.0", "--http.vhosts", "*", "--http.api", "eth,net", "--ipcdisable", "--datadir", "/var/lib/goethereum"]
-CMD ["--goerli"]
+ENTRYPOINT ["docker-entrypoint.sh","geth"]

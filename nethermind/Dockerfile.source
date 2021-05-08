@@ -8,15 +8,21 @@ ARG BUILD_TARGET
 WORKDIR /
 
 RUN apt-get update -y && apt-get install -y git
-RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git submodule update --init src/Dirichlet src/int256 src/rocksdb-sharp && \
+RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git submodule update --init src/Dirichlet src/int256 src/rocksdb-sharp src/Math.Gmp.Native && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out" 
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
 
-RUN apt-get update && apt-get -y install libsnappy-dev libc6-dev libc6
+RUN apt-get update && apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates
+RUN set -eux; \
+	apt-get update; \
+        apt-get install -y gosu; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
 
-ARG USER
-ARG UID
+ARG USER=nethermind
+ARG UID=10001
 
 RUN adduser \
     --disabled-password \
@@ -33,7 +39,6 @@ COPY --from=build /nethermind/out .
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
 
-# Use an unprivileged user.
-USER ${USER}:${USER}
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["./Nethermind.Runner"]
+ENTRYPOINT ["docker-entrypoint.sh","./Nethermind.Runner"]

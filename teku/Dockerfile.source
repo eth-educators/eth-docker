@@ -14,13 +14,20 @@ RUN bash -c "git clone https://github.com/PegaSysEng/teku.git && cd teku && git 
 # Pull all binaries into a second stage deploy debian container
 FROM openjdk:15-slim-buster
 
-ARG USER
-ARG UID
+ARG USER=teku
+ARG UID=10002
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+        apt-get update; \
+        apt-get install -y gosu; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -36,9 +43,8 @@ RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-pa
 
 # Copy executable
 COPY --from=builder /usr/src/teku/build/install/teku/. /opt/teku/
-COPY ./copy-teku-validator-keys.sh /usr/local/bin
+# Script to query and store validator key passwords
+COPY ./validator-import.sh /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
-# Use an unprivileged user.
-USER ${USER}:${USER}
-
-ENTRYPOINT /opt/teku/bin/teku
+ENTRYPOINT ["docker-entrypoint.sh","/opt/teku/bin/teku"]

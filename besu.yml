@@ -2,7 +2,6 @@ version: "3.4"
 services:
   eth1:
     restart: "${RESTART}"
-    user: ${LOCAL_UID}:${LOCAL_UID}
     stop_grace_period: 3m
     build:
       context: ./besu
@@ -10,9 +9,7 @@ services:
       args:
         - BUILD_TARGET=${BESU_SRC_BUILD_TARGET} 
         - DOCKER_TAG=${BESU_DOCKER_TAG}
-        - USER=${BESU_USER}
-        - UID=${LOCAL_UID}
-    image: besu
+    image: besu:local
     volumes:
       - besu-eth1-data:/var/lib/besu
     ports:
@@ -22,6 +19,7 @@ services:
       - ${ETH1_RPC_PORT}/tcp
       - ${ETH1_WS_PORT}/tcp
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/besu/bin/besu
       - --data-path
       - /var/lib/besu
@@ -29,14 +27,14 @@ services:
       -  ${ETH1_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
-      - "net,eth"
+      - "eth,net,web3"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
       - ${ETH1_RPC_PORT}
       - --rpc-ws-enabled
       - --rpc-ws-api
-      - "net,eth"
+      - "eth,net,web3"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
