@@ -25,7 +25,7 @@ services:
       - --http
       - --http.addr
       - 0.0.0.0
-      - --http.vhosts=eth1,localhost
+      - --http.vhosts=*
       - --http.api
       - eth,net,web3
       - --datadir
