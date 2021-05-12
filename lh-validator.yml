@@ -1,42 +1,5 @@
 version: "3.4"
 services:
-  beacon:
-    restart: "${RESTART}"
-    build:
-      context: ./lighthouse
-      dockerfile: ${LH_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse:local
-    volumes:
-      - lhbeacon-data:/var/lib/lighthouse
-    ports:
-      - ${LH_PORT}:${LH_PORT}/tcp
-      - ${LH_PORT}:${LH_PORT}/udp
-    expose:
-      - 5052/tcp
-    entrypoint: 
-      - docker-entrypoint.sh
-      - lighthouse
-      - bn
-      - --disable-upnp
-      - --datadir
-      - /var/lib/lighthouse
-      - --http
-      - --http-address
-      - 0.0.0.0
-      - --network
-      - ${NETWORK}
-      - --port
-      - ${LH_PORT}
-      - --target-peers
-      - ${LH_PEER_COUNT}
-      - --eth1-endpoints
-      - ${ETH1_NODE}
-      - --eth1-blocks-per-log-query
-      - "150"
-      - --debug-level=${LOG_LEVEL}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
@@ -55,8 +18,6 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-    depends_on:
-      - beacon
   validator-import:
     restart: "no"
     image: lighthouse:local
@@ -89,15 +50,13 @@ services:
       - validator
       - exit
       - --beacon-node
-      - http://beacon:5052 
+      - ${BN_NODE}
       - --datadir
       - /var/lib/lighthouse
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --keystore
-    depends_on:
-      - beacon
   validator-account:
     restart: "no"
     image: lighthouse:local
@@ -118,8 +77,6 @@ services:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
       - validator
 volumes:
-  lhbeacon-data:
   lhvalidator-data:

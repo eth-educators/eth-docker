@@ -1,0 +1,51 @@
+version: "3.4"
+services:
+  validator:
+    restart: "${RESTART}"
+    build:
+      context: ./teku
+      args:
+        - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${TEKU_DOCKER_TAG}
+      dockerfile: ${TEKU_DOCKERFILE}
+    image: teku:local
+    volumes:
+      - teku-data:/var/lib/teku
+    environment:
+      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g
+    entrypoint:
+      - docker-entrypoint.sh
+      - /opt/teku/bin/teku
+      - validator-client
+      - --beacon-node-api-endpoint=${BN_NODE}
+      - --data-path=/var/lib/teku
+      - --log-destination=CONSOLE
+      - --network=${NETWORK}
+      - --validators-keystore-locking-enabled=true
+      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validators-graffiti=${GRAFFITI}
+  validator-import:
+    restart: "no"
+    image: teku:local
+    volumes:
+      - teku-data:/var/lib/teku
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+    entrypoint: validator-import.sh
+  validator-exit:
+    restart: "no"
+    image: teku:local
+    user: teku
+    volumes:
+      - teku-data:/var/lib/teku
+    entrypoint:
+      - /opt/teku/bin/teku 
+      - voluntary-exit
+      - --beacon-node-api-endpoint=${BN_NODE}
+      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+  eth2:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - validator 
+volumes:
+  teku-data:

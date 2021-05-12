@@ -1,4 +1,4 @@
-.env
+.env*
 docker-compose.yml
 .eth2/*
 !.eth2/README.md
