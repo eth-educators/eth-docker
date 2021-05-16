@@ -27,7 +27,7 @@ services:
       - 0.0.0.0
       - --http.vhosts=*
       - --http.api
-      - eth,net,web3
+      - web3,eth,net
       - --datadir
       - /var/lib/goethereum
       - --port
@@ -40,7 +40,7 @@ services:
       - --ws.port
       - ${ETH1_WS_PORT}
       - --ws.api
-      - eth,net,web3
+      - web3,eth,net
       - --${ETH1_NETWORK}
   eth2:
     depends_on:

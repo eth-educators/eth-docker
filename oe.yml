@@ -25,10 +25,10 @@ services:
       - --no-secretstore
       - --base-path=/var/lib/openethereum
       - --jsonrpc-interface=all
-      - --jsonrpc-apis=safe
+      - --jsonrpc-apis=web3,eth,pubsub,net
       - --jsonrpc-hosts=all
       - --ws-interface=all
-      - --ws-apis=safe
+      - --ws-apis=web3,eth,pubsub,net
       - --ws-hosts=all
       - --ws-origins=all
       - --ws-port=${ETH1_WS_PORT}
