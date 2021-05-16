@@ -33,7 +33,7 @@ services:
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
-      - "Eth,Net,Web3"
+      - "Web3,Eth,Subscribe,Net"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port

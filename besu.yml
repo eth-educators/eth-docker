@@ -27,14 +27,14 @@ services:
       -  ${ETH1_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
-      - "eth,net,web3"
+      - "web3,eth,net"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
       - ${ETH1_RPC_PORT}
       - --rpc-ws-enabled
       - --rpc-ws-api
-      - "eth,net,web3"
+      - "web3,eth,net"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
