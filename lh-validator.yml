@@ -4,7 +4,7 @@ services:
     restart: "${RESTART}"
     image: lighthouse:local
     volumes:
-      - lhvalidator-data:/var/lib/lighthouse
+      - /data/eth/mainnet/validator:/var/lib/lighthouse
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse
@@ -22,7 +22,7 @@ services:
     restart: "no"
     image: lighthouse:local
     volumes:
-      - lhvalidator-data:/var/lib/lighthouse
+      - /data/eth/mainnet/validator:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
     entrypoint:
       - validator-import.sh

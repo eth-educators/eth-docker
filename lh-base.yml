@@ -10,12 +10,14 @@ services:
         - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse:local
     volumes:
-      - lhbeacon-data:/var/lib/lighthouse
+      - /data/eth/${NETWORK}/beacon:/var/lib/lighthouse
     ports:
       - ${LH_PORT}:${LH_PORT}/tcp
       - ${LH_PORT}:${LH_PORT}/udp
+      - 5054:5054
     expose:
       - 5052/tcp
+      - 5054/tcp
     entrypoint: 
       - docker-entrypoint.sh
       - lighthouse
@@ -26,6 +28,8 @@ services:
       - --http
       - --http-address
       - 0.0.0.0
+      - --http-port
+      - '5052'
       - --network
       - ${NETWORK}
       - --port
@@ -37,11 +41,17 @@ services:
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
+      - --metrics-port
+      - '5054'
+      - --validator-monitor-auto
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
     volumes:
-      - lhvalidator-data:/var/lib/lighthouse
+      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse
