@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
       context: ./teku
@@ -16,13 +16,17 @@ services:
     ports:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
+    networks:
+      default:
+        aliases:
+          - beacon
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${ETH1_NODE}
+      - --eth1-endpoints=${ETH1_NODE}${EC_NODE}
       - --p2p-port=${TEKU_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --validators-keystore-locking-enabled=true
@@ -48,12 +52,12 @@ services:
     entrypoint:
       - /opt/teku/bin/teku 
       - voluntary-exit
-      - --beacon-node-api-endpoint=http://beacon:5051
+      - --beacon-node-api-endpoint=http://consensus:5051
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
 volumes:
   teku-data:

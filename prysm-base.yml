@@ -7,12 +7,12 @@ x-build: &prysm-build
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
 
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
-      target: beacon
+      target: consensus
       <<: *prysm-build
-    image: prysm-beacon:local
+    image: prysm-consensus:local
     volumes:
       - prysmbeacon-data:/var/lib/prysm
     ports:
@@ -20,6 +20,10 @@ services:
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     expose:
       - 4000
+    networks:
+      default:
+        aliases:
+          - beacon
     entrypoint:
       - docker-entrypoint.sh
       - beacon-chain
@@ -30,11 +34,11 @@ services:
       - --grpc-gateway-host
       - 0.0.0.0
       - --http-web3provider
-      - ${ETH1_NODE}
+      - ${ETH1_NODE}${EC_NODE}
       - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE1}
+      - ${ETH1_FALLBACK_NODE1}${EC_FALLBACK_NODE1}
       - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE2}
+      - ${ETH1_FALLBACK_NODE2}${EC_FALLBACK_NODE2}
       - --eth1-header-req-limit
       - "150"
       - --p2p-tcp-port
@@ -63,7 +67,7 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - beacon:4000
+      - consensus:4000
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
@@ -74,7 +78,7 @@ services:
       - --wallet-password-file
       - /var/lib/prysm/password.txt
     depends_on:
-      - beacon
+      - consensus
   validator-account-list:
     restart: "no"
     user: prysmvalidator
@@ -132,17 +136,17 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - beacon:4000
+      - consensus:4000
       - --wallet-password-file
       - /var/lib/prysm/password.txt
       - --${NETWORK}
     depends_on:
-      - beacon
-  eth2:
+      - consensus
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
       - validator
 volumes:
   prysmbeacon-data:

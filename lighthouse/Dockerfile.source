@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-ARG USER=lhbeacon
+ARG USER=lhconsensus
 ARG UID=10002
 
 # See https://stackoverflow.com/a/55757473/12429735RUN

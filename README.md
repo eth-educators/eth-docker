@@ -1,14 +1,14 @@
-# eth2-docker: Docker automation for Ethereum 2.0 clients.
+# eth-docker: Docker automation for Ethereum consensus and execution clients.
 
-eth2-docker, a docker automation project for [Ethereum 2.0](https://ethereum.org/en/eth2/) clients. 
+eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/eth2/) consensus and execution clients. 
 
 ### Getting Started
 
-Please see the [official documentation](https://eth2-docker.net). 
+Please see the [official documentation](https://eth-docker.net). 
 
 ## License
 
-[MIT License (MIT)](https://github.com/eth2-educators/eth2-docker/blob/master/LICENSE)
+[MIT License (MIT)](https://github.com/eth2-educators/eth-docker/blob/master/LICENSE)
 
 # Tip Jar
 
@@ -19,4 +19,4 @@ danb.eth: 0xBe5Bd61fd37444290913Eff8f5dfF8C4D0d7A093 (NFTs welcome)
 
 # Version
 
-This is eth2-docker v1.1.0
+This is eth-docker v1.2.0

@@ -1,12 +1,12 @@
 ARG DOCKER_TAG
-FROM prysmaticlabs/prysm-beacon-chain:${DOCKER_TAG} as bnsource
+FROM prysmaticlabs/prysm-beacon-chain:${DOCKER_TAG} as ccsource
 
-FROM debian:buster-slim as beacon
+FROM debian:buster-slim as consensus
 
 #Included here to avoid build-time complaints
 ARG BUILD_TARGET
 
-ARG USER=prysmbeacon
+ARG USER=prysmconsensus
 ARG UID=10002
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,14 +34,14 @@ RUN adduser \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
-COPY --from=bnsource /app/cmd/beacon-chain/beacon-chain /usr/local/bin/
+COPY --from=ccsource /app/cmd/beacon-chain/beacon-chain /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh","beacon-chain"]
 
 FROM prysmaticlabs/prysm-validator:${DOCKER_TAG} as vcsource
 
-FROM beacon as validator
+FROM consensus as validator
 
 ARG USER=prysmvalidator
 ARG UID=10000
@@ -64,6 +64,6 @@ COPY ./validator-import.sh /usr/local/bin/
 
 FROM prysmaticlabs/prysm-slasher:${DOCKER_TAG} as slsource
 
-FROM beacon as slasher
+FROM consensus as slasher
 
 COPY --from=slsource /app/cmd/slasher/slasher /usr/local/bin/

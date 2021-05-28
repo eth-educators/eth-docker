@@ -13,12 +13,24 @@ update() {
  #   echo ""
 }
 
+upgrade() {
+  update
+}
+
 start() {
-    cmd up -d eth2
+    cmd up -d eth
+}
+
+up() {
+    start
 }
 
 stop() {
     cmd down --remove-orphans
+}
+
+down() {
+    stop
 }
 
 restart() {
@@ -30,11 +42,9 @@ logs() {
     cmd logs "$@"
 }
 
-query_eth2_client() {
-   # ETH2 Client
-
-    ETH2_CLIENT=$(whiptail --notags --title "Select eth2 client" --menu \
-    "What eth2 client do you want to run?" 15 60 7 \
+query_consensus_client() {
+    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+    "Which consensus client do you want to run?" 15 60 7 \
     "teku-base.yml" "Teku" \
     "lh-base.yml" "Lighthouse" \
     "prysm-base.yml" "Prysm" \
@@ -46,17 +56,14 @@ query_eth2_client() {
     exitstatus=$?
     if [ $exitstatus != 0 ]; then exit 0 ; fi
 
-    echo "Your eth2 client file is:" $ETH2_CLIENT
+    echo "Your consensus client file is:" $CONSENSUS_CLIENT
 }
 
-query_eth1_client() {
-    # ETH1 Client
-
-    ETH1_CLIENT=$(whiptail --notags --title "Select eth1 client" --menu \
-    "Which eth1 client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
+query_execution_client() {
+    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+    "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
     "NONE" "Custom" \
     "geth.yml" "Geth" \
-    "oe.yml" "OpenEthereum" \
     "nm.yml" "Nethermind" \
     "besu.yml" "Besu" 3>&1 1>&2 2>&3)
 
@@ -64,30 +71,30 @@ query_eth1_client() {
     exitstatus=$?
     if [ $exitstatus != 0 ]; then exit 0 ; fi
 
-    if [ $ETH1_CLIENT = "NONE" ]; then
-        unset ETH1_CLIENT
-        ETH1_NODE=$(whiptail --title "Configure custom eth1 node" --inputbox "What is the URL for your custom eth1 node? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
+    if [ $EXECUTION_CLIENT = "NONE" ]; then
+        unset EXECUTION_CLIENT
+        EC_NODE=$(whiptail --title "Configure custom execution client node" --inputbox "What is the URL for your custom execution client node? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
         # Ask the user
         exitstatus=$?
         if [ $exitstatus = 0 ]; then
-            echo "your ETH1_NODE is:" $ETH1_NODE
+            echo "your EC_NODE is:" $EC_NODE
         else
             echo "You chose Cancel."
             exit 0
         fi
     else
-        echo "Your eth1 client file is:" $ETH1_CLIENT
-        if [ "$ETH2_CLIENT" == "nimbus-base.yml" ]; then
-            ETH1_NODE="ws://eth1:8546"
+        echo "Your execution client file is:" $EXECUTION_CLIENT
+        if [ "$CONSENSUS_CLIENT" == "nimbus-base.yml" ]; then
+            EC_NODE="ws://execution:8546"
         else
-            ETH1_NODE="http://eth1:8545"
-        fi         
+            EC_NODE="http://execution:8545"
+        fi 
     fi
     # Update The Value in env.
-    if ! grep -qF "ETH1_NODE" $ENV_FILE 2>/dev/null ; then
-        echo "ETH1_NODE=${ETH1_NODE}" >> $ENV_FILE
+    if ! grep -qF "EC_NODE" $ENV_FILE 2>/dev/null ; then
+        echo "EC_NODE=${EC_NODE}" >> $ENV_FILE
     fi
-    sed -i "s~^\(ETH1_NODE\s*=\s*\).*$~\1${ETH1_NODE}~" $ENV_FILE
+    sed -i "s~^\(EC_NODE\s*=\s*\).*$~\1${EC_NODE}~" $ENV_FILE
 }
 
 query_grafana() {
@@ -100,18 +107,18 @@ query_grafana() {
 
     # Which Grafana should be used
     if [ $GRAFANA = "yes" ]; then
-        GRAFANA_CLIENT=$(echo $(echo $ETH2_CLIENT | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
+        GRAFANA_CLIENT=$(echo $(echo $CONSENSUS_CLIENT | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
     else
         unset GRAFANA_CLIENT
     fi
 }
 
 query_infura_beacon() {
-    BN_NODE=$(whiptail --title "Configure Infura beacon node" --inputbox "What is the URL for your Infura beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    CC_NODE=$(whiptail --title "Configure Infura beacon node" --inputbox "What is the URL for your Infura beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
     # Ask the user
     exitstatus=$?
     if [ $exitstatus = 0 ]; then
-        echo "your Infura beacon is:" $BN_NODE
+        echo "your Infura beacon is:" $CC_NODE
     else
         echo "You chose Cancel."
         exit 0
@@ -127,7 +134,7 @@ config () {
 
     # Don't run from another directory
     if ! [[ -f "ethd" ]]; then
-        echo "Please run this from the eth2-docker directory." 
+        echo "Please run this from the eth-docker directory." 
         exit 1
     fi
 
@@ -150,27 +157,27 @@ config () {
         cp $ENV_TEMPLATE $ENV_FILE
     fi
 
-    query_eth2_client
+    query_consensus_client
 
-    if [[ "$ETH2_CLIENT" != "teku-validator.yml" && "$ETH2_CLIENT" != "lh-validator.yml" ]]; then
-        BN_NODE="http://beacon:5052"
+    if [[ "$CONSENSUS_CLIENT" != "teku-validator.yml" && "$CONSENSUS_CLIENT" != "lh-validator.yml" ]]; then
+        CC_NODE="http://consensus:5052"
 
-        query_eth1_client
+        query_execution_client
         query_grafana
     else
-        unset ETH1_CLIENT
+        unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
 
         query_infura_beacon
     fi
 
     # Update The Value in env.
-    if ! grep -qF "BN_NODE" $ENV_FILE 2>/dev/null ; then
-        echo "BN_NODE=${BN_NODE}" >> $ENV_FILE
+    if ! grep -qF "CC_NODE" $ENV_FILE 2>/dev/null ; then
+        echo "CC_NODE=${CC_NODE}" >> $ENV_FILE
     fi
-    sed -i "s~^\(BN_NODE\s*=\s*\).*$~\1${BN_NODE}~" $ENV_FILE
+    sed -i "s~^\(CC_NODE\s*=\s*\).*$~\1${CC_NODE}~" $ENV_FILE
 
-    if [[ "$ETH2_CLIENT" == "teku-base.yml" ]]; then
+    if [[ "$CONSENSUS_CLIENT" == "teku-base.yml" ]]; then
         # Use rapid sync
         if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with Infura beacon?" 10 60) then
             RAPIDSYNC=yes
@@ -180,26 +187,26 @@ config () {
   
         if [ $RAPIDSYNC = "yes" ]; then
             query_infura_beacon
-            BN_NODE="$BN_NODE/eth/v1/debug/beacon/states/finalized"
+            CC_NODE="$CC_NODE/eth/v1/debug/beacon/states/finalized"
         else
-            BN_NODE=""
+            CC_NODE=""
         fi
     else
-        BN_NODE=""
+        CC_NODE=""
     fi
 
     # Update The Value in env.
     if ! grep -qF "TEKU_RAPID_SYNC" $ENV_FILE 2>/dev/null ; then
-        echo "TEKU_RAPID_SYNC=${BN_NODE}" >> $ENV_FILE
+        echo "TEKU_RAPID_SYNC=${CC_NODE}" >> $ENV_FILE
     fi
-    sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\).*$~\1${BN_NODE}~" $ENV_FILE
+    sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\).*$~\1${CC_NODE}~" $ENV_FILE
 
     # COMPOSE_FILE
 
     # Guess COMPOSE_FILE
-    COMPOSE_FILE_GUESS=$ETH2_CLIENT
-    if [ ${ETH1_CLIENT+x} ]; then
-        COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$ETH1_CLIENT"
+    COMPOSE_FILE_GUESS=$CONSENSUS_CLIENT
+    if [ ${EXECUTION_CLIENT+x} ]; then
+        COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$EXECUTION_CLIENT"
     fi
     if [ ${GRAFANA_CLIENT+x} ]; then
         COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$GRAFANA_CLIENT"
@@ -226,22 +233,22 @@ config () {
     fi
     sed -i "s/^\(COMPOSE_FILE\s*=\s*\).*$/\1${COMPOSE_FILE}/" $ENV_FILE
 
-    if [[ "$ETH2_CLIENT" != "teku-validator.yml" && "$ETH2_CLIENT" != "lh-validator.yml" ]]; then
+    if [[ "$CONSENSUS_CLIENT" != "teku-validator.yml" && "$CONSENSUS_CLIENT" != "lh-validator.yml" ]]; then
         # Mainnet or Testnet network
 
-        ETH2_NETWORK=$(whiptail --notags --title "Select Network" --menu \
+        NETWORK=$(whiptail --notags --title "Select Network" --menu \
         "Which network do you want to run on?" 15 60 3 \
         "prater" "Prater Testnet" \
         "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
 
         # Update The Value in env.
-        if [ $ETH2_NETWORK = "mainnet" ]; then
+        if [ $NETWORK = "mainnet" ]; then
             sed -i "s/^\(NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
-            sed -i "s/^\(ETH1_NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
+            sed -i "s/^\(EC_NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
             echo "You chose to run on Ethereum mainnet"
-        elif [ $ETH2_NETWORK = "prater" ]; then
+        elif [ $NETWORK = "prater" ]; then
             sed -i "s/^\(NETWORK\s*=\s*\).*$/\1prater/" $ENV_FILE
-            sed -i "s/^\(ETH1_NETWORK\s*=\s*\).*$/\1goerli/" $ENV_FILE
+            sed -i "s/^\(EC_NETWORK\s*=\s*\).*$/\1goerli/" $ENV_FILE
             echo "You chose to run on Prater testnet"
         else
             echo "You chose Cancel."
@@ -277,8 +284,8 @@ printhelp() {
     echo ""
     echo "The logs subcommand can be appended by flags and specify the container/s. example: "
     echo ""
-    echo "  $me logs -f --tail 500 eth1"
-    echo "    shows logs only for eth1 service"
+    echo "  $me logs -f --tail 500 ec"
+    echo "    shows logs only for ec service"
     echo ""
     echo ""
     echo "Be sure to run the config command as a non-root user, and all other commands"

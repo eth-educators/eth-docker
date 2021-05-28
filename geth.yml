@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  eth1:
+  execution:
     restart: "${RESTART}"
     build:
       context: ./geth
@@ -14,11 +14,15 @@ services:
     volumes:
       - geth-eth1-data:/var/lib/goethereum
     ports:
-      - ${ETH1_PORT}:${ETH1_PORT}/tcp
-      - ${ETH1_PORT}:${ETH1_PORT}/udp
+      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
+      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}/tcp
+      - ${ETH1_RPC_PORT}${EC_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}${EC_WS_PORT}/tcp
+    networks:
+      default:
+        aliases:
+          - eth1
     entrypoint:
       - docker-entrypoint.sh
       - geth
@@ -31,19 +35,19 @@ services:
       - --datadir
       - /var/lib/goethereum
       - --port
-      - ${ETH1_PORT}
+      - ${ETH1_PORT}${EC_P2P_PORT}
       - --http.port
-      - ${ETH1_RPC_PORT}
+      - ${ETH1_RPC_PORT}${EC_RPC_PORT}
       - --ws
       - --ws.addr
       - 0.0.0.0
       - --ws.port
-      - ${ETH1_WS_PORT}
+      - ${ETH1_WS_PORT}${EC_WS_PORT}
       - --ws.api
       - web3,eth,net
-      - --${ETH1_NETWORK}
-  eth2:
+      - --${ETH1_NETWORK}${EC_NETWORK}
+  eth:
     depends_on:
-      - eth1
+      - execution
 volumes:
   geth-eth1-data:

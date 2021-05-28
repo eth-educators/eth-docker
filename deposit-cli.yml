@@ -3,12 +3,12 @@ services:
   deposit-cli-new:
     restart: "no"
     build:
-      context: ./eth2.0-deposit-cli
+      context: ./eth-deposit-cli
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-    image: eth2.0-deposit-cli:local
+    image: eth-deposit-cli:local
     volumes:
-      - ${DEPCLI_LOCALDIR}:/app/.eth2/
+      - ${DEPCLI_LOCALDIR}:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3
@@ -18,9 +18,9 @@ services:
       - ${NETWORK}
   deposit-cli-existing:
     restart: "no"
-    image: eth2.0-deposit-cli:local
+    image: eth-deposit-cli:local
     volumes:
-      - ${DEPCLI_LOCALDIR}:/app/.eth2/
+      - ${DEPCLI_LOCALDIR}:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3

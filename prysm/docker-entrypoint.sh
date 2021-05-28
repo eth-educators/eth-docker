@@ -5,16 +5,16 @@ set -Eeuo pipefail
 # If started as root, chown the `--datadir` and run prysm as prysmbeacon or prysmvalidator, depending 
 if [ "$(id -u)" = '0' ]; then
   if [[ "$1" =~ ^(beacon-chain|slasher)$ ]]; then
-    chown -R prysmbeacon:prysmbeacon /var/lib/prysm
+    chown -R prysmconsensus:prysmconsensus /var/lib/prysm
     if [[ "$@" =~ --prater ]]; then
       GENESIS=/var/lib/prysm/genesis.ssz
       if [ ! -f "$GENESIS" ]; then
         echo "Fetching genesis file for Prater testnet"
-        gosu prysmbeacon curl -o "$GENESIS" https://prysmaticlabs.com/uploads/prater-genesis.ssz
+        gosu prysmconsensus curl -o "$GENESIS" https://prysmaticlabs.com/uploads/prater-genesis.ssz
       fi
-      exec gosu prysmbeacon "$BASH_SOURCE" "$@" "--genesis-state=$GENESIS"
+      exec gosu prysmconsensus "$BASH_SOURCE" "$@" "--genesis-state=$GENESIS"
     else
-      exec gosu prysmbeacon "$BASH_SOURCE" "$@"
+      exec gosu prysmconsensus "$BASH_SOURCE" "$@"
     fi
   elif [ "$1" = 'validator' ]; then
     chown -R prysmvalidator:prysmvalidator /var/lib/prysm
