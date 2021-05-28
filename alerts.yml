@@ -18,7 +18,7 @@ services:
     depends_on:
       - prometheus
     
-  eth2:
+  eth:
     depends_on:
       - alertmanager
 

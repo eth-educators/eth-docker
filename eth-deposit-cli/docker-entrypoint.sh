@@ -38,9 +38,9 @@ done
 
 su-exec depcli "${ARGS[@]}"
 
-mkdir -p /app/.eth2/"$folder"
-cp -p /app/validator_keys/* /app/.eth2/"$folder"/
+mkdir -p /app/.eth/"$folder"
+cp -p /app/validator_keys/* /app/.eth/"$folder"/
 
-chown -R "$uid":"$uid" /app/.eth2/"$folder"
+chown -R "$uid":"$uid" /app/.eth/"$folder"
 
-echo "The generated files have been copied to ./.eth2/$folder/"
+echo "The generated files have been copied to ./.eth/$folder/"

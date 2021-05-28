@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
       context: ./lighthouse
@@ -16,6 +16,10 @@ services:
       - ${LH_PORT}:${LH_PORT}/udp
     expose:
       - 5052/tcp
+    networks:
+      default:
+        aliases:
+          - beacon
     entrypoint: 
       - docker-entrypoint.sh
       - lighthouse
@@ -33,7 +37,7 @@ services:
       - --target-peers
       - ${LH_PEER_COUNT}
       - --eth1-endpoints
-      - ${ETH1_NODE}
+      - ${ETH1_NODE}${EC_NODE}
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
@@ -49,14 +53,14 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${BN_NODE}
+      - ${BN_NODE}${CC_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
     depends_on:
-      - beacon
+      - consensus
   validator-import:
     restart: "no"
     image: lighthouse:local
@@ -89,7 +93,7 @@ services:
       - validator
       - exit
       - --beacon-node
-      - http://beacon:5052 
+      - http://consensus:5052 
       - --datadir
       - /var/lib/lighthouse
       - --network
@@ -97,7 +101,7 @@ services:
       - --debug-level=${LOG_LEVEL}
       - --keystore
     depends_on:
-      - beacon
+      - consensus
   validator-account:
     restart: "no"
     image: lighthouse:local
@@ -114,11 +118,11 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
       - validator
 volumes:
   lhbeacon-data:

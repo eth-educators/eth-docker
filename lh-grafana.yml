@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     expose:
       - 5054/tcp
     command:
@@ -30,7 +30,7 @@ services:
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
-      - beacon
+      - consensus
       - validator
       - node-exporter
   node-exporter:
@@ -71,7 +71,7 @@ services:
       - traefik.http.routers.grafana.entrypoints=web,websecure
       - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
       - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
-  eth2:
+  eth:
     depends_on:
       - grafana
 volumes:

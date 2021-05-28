@@ -1,0 +1,19 @@
+# To be used in conjunction with oe.yml, nm.yml, besu.yml or geth.yml
+version: "3.4"
+services:
+  ec:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ec.service=ec
+      - traefik.http.routers.ec.entrypoints=websecure
+      - traefik.http.routers.ec.rule=Host(`${ETH1_HOST}${EC_HOST}.${DOMAIN}`)
+      - traefik.http.services.ec.loadbalancer.server.port=${ETH1_RPC_PORT}${EC_RPC_PORT}
+      - traefik.http.routers.ecws.service=ecws
+      - traefik.http.routers.ecws.entrypoints=websecure
+      - traefik.http.routers.ecws.rule=Host(`${ETH1_WS_HOST}${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.services.eth1ws.loadbalancer.server.port=${ETH1_WS_PORT}${EC_WS_PORT}
+    depends_on:
+      - traefik
+
+  eth:
+    image: tianon/true

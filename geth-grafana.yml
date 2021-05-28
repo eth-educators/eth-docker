@@ -2,10 +2,10 @@
 # and requires geth to be in the same "stack" as prometheus and grafana
 version: "3.4"
 services:
-  eth1:
+  execution:
     expose:
       - 6060/tcp
-    command: --metrics --metrics.expensive --pprof --pprof.addr=0.0.0.0 ${GETH1_NETWORK}
+    command: --metrics --metrics.expensive --pprof --pprof.addr=0.0.0.0 --${EC_NETWORK}
   prometheus:
     depends_on:
-      - eth1
+      - execution

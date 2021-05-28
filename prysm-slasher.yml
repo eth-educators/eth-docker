@@ -20,7 +20,7 @@ services:
       - --datadir
       - /var/lib/prysm
       - --beacon-rpc-provider
-      - beacon:4000
+      - consensus:4000
       - --monitoring-host
       - 0.0.0.0
       - --verbosity
@@ -28,8 +28,8 @@ services:
       - --${NETWORK}
       - --accept-terms-of-use
     depends_on:
-      - beacon
-  eth2:
+      - consensus
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:

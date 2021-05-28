@@ -12,6 +12,7 @@ RUN apk update && apk add --no-cache \
   build-base \
   cargo \
   cmake \
+  clang \
   eudev-dev \
   linux-headers \
   perl \

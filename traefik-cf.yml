@@ -39,7 +39,7 @@ services:
       - ZONE=${DOMAIN}
       - SUBDOMAIN=${DDNS_SUBDOMAIN}
       - PROXIED=${DDNS_PROXY}
-  eth2:
+  eth:
     depends_on:
       - traefik
 volumes:

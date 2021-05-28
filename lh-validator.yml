@@ -12,7 +12,7 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${BN_NODE}
+      - ${BN_NODE}${CC_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --network
@@ -50,7 +50,7 @@ services:
       - validator
       - exit
       - --beacon-node
-      - ${BN_NODE}
+      - ${BN_NODE}${CC_NODE}
       - --datadir
       - /var/lib/lighthouse
       - --network
@@ -73,7 +73,7 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:

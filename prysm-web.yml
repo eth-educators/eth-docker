@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     expose:
       - 3500/tcp
   validator:
@@ -13,7 +13,7 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - beacon:4000
+      - consensus:4000
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
@@ -26,7 +26,7 @@ services:
       - --grpc-gateway-port
       - ${PRYSM_WEB_PORT}
       - --beacon-rpc-gateway-provider
-      - beacon:3500
+      - consensus:3500
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt

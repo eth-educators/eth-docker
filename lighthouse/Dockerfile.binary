@@ -5,7 +5,7 @@ FROM sigp/lighthouse:${DOCKER_TAG}
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
 
-ARG USER=lhbeacon
+ARG USER=lhconsensus
 ARG UID=10002
 
 # See https://stackoverflow.com/a/55757473/12429735RUN

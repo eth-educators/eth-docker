@@ -32,7 +32,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/letsencrypt 
       - ~/.aws:/root/.aws:ro
-  eth2:
+  eth:
     depends_on:
       - traefik
 volumes:

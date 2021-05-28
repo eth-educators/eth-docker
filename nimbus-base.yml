@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
       context: ./nimbus
@@ -14,6 +14,10 @@ services:
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
+    networks:
+      default:
+        aliases:
+          - beacon
     entrypoint:
       - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
@@ -23,7 +27,7 @@ services:
       - --udp-port=${NIM_PORT}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
-      - --web3-url=${ETH1_NODE}
+      - --web3-url=${ETH1_NODE}${EC_NODE}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rpc
@@ -56,12 +60,12 @@ services:
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit
-      - --rpc-url=http://beacon:9190
+      - --rpc-url=http://consensus:9190
       - --validator=
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
 volumes:
   nimbus-data:
