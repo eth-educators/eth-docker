@@ -59,6 +59,30 @@ query_consensus_client() {
     echo "Your consensus client file is:" $CONSENSUS_CLIENT
 }
 
+query_custom_execution_client() {
+        EC_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
+        # Ask the user
+        exitstatus=$?
+        if [ $exitstatus = 0 ]; then
+            echo "your custom execution client is:" $EC_CUSTOM_NODE
+        else
+            echo "You chose Cancel."
+            exit 0
+        fi
+}
+
+query_fallback_execution_client() {
+        EC_FALLBACK_NODE=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
+        # Ask the user
+        exitstatus=$?
+        if [ $exitstatus = 0 ]; then
+            echo "your fallback execution client is:" $EC_FALLBACK_NODE
+        else
+            echo "You chose Cancel."
+            exit 0
+        fi
+}
+
 query_execution_client() {
     EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
     "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
@@ -71,17 +95,10 @@ query_execution_client() {
     exitstatus=$?
     if [ $exitstatus != 0 ]; then exit 0 ; fi
 
-    if [ $EXECUTION_CLIENT = "NONE" ]; then
+    if [ "$EXECUTION_CLIENT" = "NONE" ]; then
         unset EXECUTION_CLIENT
-        EC_NODE=$(whiptail --title "Configure custom execution client node" --inputbox "What is the URL for your custom execution client node? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
-        # Ask the user
-        exitstatus=$?
-        if [ $exitstatus = 0 ]; then
-            echo "your EC_NODE is:" $EC_NODE
-        else
-            echo "You chose Cancel."
-            exit 0
-        fi
+        query_custom_execution_client
+        EC_NODE=$EC_CUSTOM_NODE
     else
         echo "Your execution client file is:" $EXECUTION_CLIENT
         if [ "$CONSENSUS_CLIENT" == "nimbus-base.yml" ]; then
@@ -89,6 +106,25 @@ query_execution_client() {
         else
             EC_NODE="http://execution:8545"
         fi 
+
+        if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
+            EC_FALLBACK=yes
+        else
+            EC_FALLBACK=no
+        fi
+
+        if [ $EC_FALLBACK = "yes" ]; then
+            query_fallback_execution_client
+            if [ "$CONSENSUS_CLIENT" == "prysm-base.yml" ]; then
+                # Update The Value in env.
+                if ! grep -qF "EC_FALLBACK_NODE1" $ENV_FILE 2>/dev/null ; then
+                    echo "EC_FALLBACK_NODE1=${EC_FALLBACK_NODE}" >> $ENV_FILE
+                fi
+                sed -i "s~^\(EC_FALLBACK_NODE1\s*=\s*\).*$~\1${EC_FALLBACK_NODE}~" $ENV_FILE
+            else
+                EC_NODE="$EC_NODE"",""$EC_FALLBACK_NODE"
+            fi
+        fi
     fi
     # Update The Value in env.
     if ! grep -qF "EC_NODE" $ENV_FILE 2>/dev/null ; then
