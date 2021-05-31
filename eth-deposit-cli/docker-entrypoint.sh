@@ -29,7 +29,7 @@ for var in "$@"; do
     continue
   fi
   if [ "$foundf" = '1' ]; then
-    foundf=1
+    foundf=0
     folder="$var"
     continue
   fi
