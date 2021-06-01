@@ -12,7 +12,7 @@ USER root
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
 RUN apk --no-cache add shadow && groupmod -g "${UID}" openethereum && usermod -u "${UID}" -g "${UID}" openethereum
 # So we can switch to non-root user if started as root
-RUN apk add --no-cache su-exec ca-certificates bash
+RUN apk add --no-cache su-exec ca-certificates bash tzdata
 
 RUN cp /home/openethereum/openethereum /usr/local/bin/
 

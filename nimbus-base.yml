@@ -11,6 +11,8 @@ services:
     image: nimbus:local
     volumes:
       - nimbus-data:/var/lib/nimbus
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
@@ -39,6 +41,8 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
@@ -53,6 +57,8 @@ services:
     image: nimbus:local
     volumes:
       - nimbus-data:/var/lib/nimbus
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus

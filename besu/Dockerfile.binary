@@ -13,7 +13,7 @@ RUN groupmod -g "${UID}" besu && usermod -u "${UID}" -g "${UID}" besu
 
 RUN set -eux; \
         apt-get update; \
-        apt-get install -y gosu ca-certificates; \
+        apt-get install -y gosu ca-certificates tzdata; \
         rm -rf /var/lib/apt/lists/*; \
 # verify that the binary works
         gosu nobody true

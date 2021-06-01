@@ -19,10 +19,12 @@ services:
     restart: "${RESTART}"
     build:
       context: ./prometheus
-    image: prometheus
+    image: prometheus:local
     volumes:
       - prom-data:/prometheus
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
     expose:
@@ -57,11 +59,13 @@ services:
     restart: "${RESTART}"
     build:
       context: ./grafana
-    image: grafana
+    image: grafana:local
     environment:
       - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
     volumes:
       - grafana-data:/var/lib/grafana
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
     expose: 

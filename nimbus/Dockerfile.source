@@ -20,7 +20,7 @@ ARG USER=user
 ARG UID=10002
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates bash \
+  ca-certificates bash tzdata \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
