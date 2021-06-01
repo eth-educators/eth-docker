@@ -13,6 +13,8 @@ services:
     image: geth:local
     volumes:
       - geth-eth1-data:/var/lib/goethereum
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
       - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp

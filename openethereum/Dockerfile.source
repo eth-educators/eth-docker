@@ -38,7 +38,8 @@ RUN apk update && apk add --no-cache \
   libgcc \
   su-exec \
   bash \
-  ca-certificates
+  ca-certificates \
+  tzdata
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \

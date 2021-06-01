@@ -13,6 +13,8 @@ services:
     user: erigon
     volumes:
       - erigon-ec-data:/var/lib/erigon
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
@@ -31,6 +33,10 @@ services:
   execution:
     restart: "${RESTART}"
     image: erigon:local
+    user: erigon
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - ${EC_RPC_PORT}/tcp
     depends_on:
