@@ -10,6 +10,7 @@ services:
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 3m
     image: erigon:local
+    user: erigon
     volumes:
       - erigon-ec-data:/var/lib/erigon
     ports:
