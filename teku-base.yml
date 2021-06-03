@@ -9,6 +9,7 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
+    stop_grace_period: 1m
     volumes:
       - teku-data:/var/lib/teku
       - /etc/timezone:/etc/timezone:ro

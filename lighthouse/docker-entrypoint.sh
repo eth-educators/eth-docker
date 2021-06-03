@@ -11,11 +11,7 @@ if [ "$(id -u)" = '0' ]; then
     chown -R lhvalidator:lhvalidator /var/lib/lighthouse
     exec gosu lhvalidator "$BASH_SOURCE" "$@"
   else
-    echo "Could not determine whether beacon or validator client."
-    echo "This is a bug, please report it at https://github.com/eth2-educators/eth2-docker/,"
-    echo "and thank you."
-    echo "Failed to match on" $2
-    exit
+    echo "Could not determine whether consensus or validator client, running as-is."
   fi
 fi
 
