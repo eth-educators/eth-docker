@@ -1,0 +1,31 @@
+# Send client stats to beaconcha.in service
+version: "3.4"
+services:
+  consensus:
+    expose:
+      - 8080/tcp
+    command:
+      - --monitoring-host
+      - 0.0.0.0
+  validator:
+    expose:
+      - 8081/tcp
+    command:
+      - --monitoring-host
+      - 0.0.0.0
+  client-stats:
+    image: prysm-consensus:local
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - client-stats 
+      - --validator-metrics-url
+      - http://validator:8081/metrics
+      - --beacon-node-metrics-url
+      - http://consensus:8080/metrics
+      - --clientstats-api-url
+      - https://beaconcha.in/api/v1/stats/${BEACON_STATS_API}
+  eth:
+    depends_on:
+      - client-stats
