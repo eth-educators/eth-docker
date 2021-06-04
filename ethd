@@ -70,12 +70,16 @@ envmigrate() {
     if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
         sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
     fi
+    # Special-case GRAFFITI
+    if grep -qF "GRAFFITI" .env.source 2>/dev/null ; then
+        sed -i "s~^\(GRAFFITI\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
+    fi
     source .env.source 2>/dev/null || true
     rm .env.source
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         if [ -n "${!var+set}" ]; then
-            sed -i "s~^\(${var}\s*=\s*\).*$~\1""${!var}""~" .env
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" .env
         fi
     done
     # Migrate from older-style naming
