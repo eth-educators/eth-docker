@@ -19,4 +19,4 @@ danb.eth: 0xBe5Bd61fd37444290913Eff8f5dfF8C4D0d7A093 (NFTs welcome)
 
 # Version
 
-This is eth-docker v1.2.2
+This is eth-docker v1.2.3

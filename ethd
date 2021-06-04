@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 cmd() {
     docker-compose "$@"
@@ -11,12 +12,10 @@ update() {
       git branch -u origin/main main
       git remote set-head origin -a
     fi
+    git pull
     cmd build --pull
- #   cmd pull
-
- #   echo ""
- #   echo "Errors showing denied pull access for validator utility functions are normal"
- #   echo ""
+    cmd pull 2>/dev/null || true
+    envmigrate
 }
 
 upgrade() {
@@ -46,6 +45,53 @@ restart() {
 
 logs() {
     cmd logs "$@"
+}
+
+envmigrate() {
+    if [ ! -f ./.env ]; then
+        return
+    fi
+    ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
+             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
+             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
+             EC_HOST EC_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
+             EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
+             PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
+             RESTART LOG_LEVEL )
+    OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \
+             ETH1_WS_HOST BN_NODE ETH1_PORT ETH1_RPC_PORT ETH1_WS_PORT )
+    NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
+             EC_WS_HOST CC_NODE EC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
+
+    cp .env .env.bak
+    cp default.env .env
+    cp .env.bak .env.source
+    # Special-case TEKU_RAPID_SYNC
+    if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
+        sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
+    fi
+    source .env.source 2>/dev/null || true
+    rm .env.source
+    # Migrate over user settings
+    for var in "${ALL_VARS[@]}"; do
+        if [ -n "${!var+set}" ]; then
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1""${!var}""~" .env
+        fi
+    done
+    # Migrate from older-style naming
+    for index in "${!OLD_VARS[@]}"; do
+        if [ -n "${!OLD_VARS[index]+set}" ]; then
+            sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" .env
+        fi 
+    done
+    #special case http://eth1 and http://beacon
+    sed -i "s/http:\/\/eth1/http:\/\/execution/g" .env
+    sed -i "s/http:\/\/beacon/http:\/\/consensus/g" .env
+
+    echo "Your .env configuration settings have been migrated to a fresh copy. You can \
+find the original contents in .env.bak."
+    echo "NB: If you made changes to the source or binary build targets, these have NOT \
+been migrated, please recreate these changes yourself."
 }
 
 query_consensus_client() {
