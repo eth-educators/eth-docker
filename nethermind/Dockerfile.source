@@ -9,7 +9,7 @@ WORKDIR /
 
 RUN apt-get update -y && apt-get install -y git
 RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git submodule update --init src/Dirichlet src/int256 src/rocksdb-sharp src/Math.Gmp.Native && \
-    dotnet publish src/Nethermind/Nethermind.Runner -c release -o out" 
+    dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
 

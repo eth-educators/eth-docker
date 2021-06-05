@@ -7,7 +7,7 @@ services:
       context: ./nethermind
       dockerfile: ${NM_DOCKERFILE}
       args:
-        - BUILD_TARGET=${NM_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local
     volumes:

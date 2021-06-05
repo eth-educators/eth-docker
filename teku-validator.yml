@@ -44,7 +44,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
-      - /opt/teku/bin/teku 
+      - /opt/teku/bin/teku
       - voluntary-exit
       - --beacon-node-api-endpoint=${BN_NODE}${CC_NODE}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
@@ -52,6 +52,6 @@ services:
     image: tianon/true
     restart: "no"
     depends_on:
-      - validator 
+      - validator
 volumes:
   teku-data:

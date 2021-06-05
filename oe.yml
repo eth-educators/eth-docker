@@ -6,7 +6,7 @@ services:
       context: ./openethereum
       dockerfile: ${OE_DOCKERFILE}
       args:
-        - BUILD_TARGET=${OE_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${OE_SRC_BUILD_TARGET}
         - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum:local
     stop_grace_period: 3m

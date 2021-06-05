@@ -90,7 +90,7 @@ services:
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     expose:
-      - 9745/tcp 
+      - 9745/tcp
   grafana:
     restart: "${RESTART}"
     build:

@@ -19,7 +19,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
-      - client-stats 
+      - client-stats
       - --validator-metrics-url
       - http://validator:8081/metrics
       - --beacon-node-metrics-url

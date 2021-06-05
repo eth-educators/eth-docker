@@ -6,7 +6,7 @@ services:
       context: ./geth
       dockerfile: ${GETH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${GETH_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${GETH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_signal: SIGINT
     stop_grace_period: 3m

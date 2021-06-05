@@ -6,7 +6,7 @@ services:
       context: ./erigon
       dockerfile: ${ERIGON_DOCKERFILE}
       args:
-        - BUILD_TARGET=${ERIGON_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${ERIGON_SRC_BUILD_TARGET}
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 3m
     image: erigon:local
@@ -21,7 +21,7 @@ services:
     expose:
       - 9090/tcp
     entrypoint:
-      - erigon 
+      - erigon
       - --private.api.addr
       - 0.0.0.0:9090
       - --datadir

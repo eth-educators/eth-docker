@@ -25,7 +25,7 @@ for var in "$@"; do
       echo "error: Passed user ID is not a number, ignoring"
       continue
     fi
-    uid="$var" 
+    uid="$var"
     continue
   fi
   if [ "$foundf" = '1' ]; then
