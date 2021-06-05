@@ -12,9 +12,9 @@ update() {
       git branch -u origin/main main
       git remote set-head origin -a
     fi
-    git pull
+#    git pull
     cmd build --pull
-    cmd pull 2>/dev/null || true
+#    cmd pull 2>/dev/null || true
     envmigrate
 }
 
