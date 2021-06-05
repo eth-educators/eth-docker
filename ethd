@@ -12,9 +12,16 @@ update() {
       git branch -u origin/main main
       git remote set-head origin -a
     fi
-#    git pull
+    if [ $EUID -eq 0 ]; then
+      sudo -u $OWNER git pull
+    else
+      git pull
+    fi
     cmd build --pull
-#    cmd pull 2>/dev/null || true
+    exec 3>&2
+    exec 2> /dev/null
+    cmd pull || true
+    exec 2>&3
     envmigrate
 }
 
@@ -63,9 +70,19 @@ envmigrate() {
     NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
              EC_WS_HOST CC_NODE EC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
 
-    cp .env .env.bak
-    cp default.env .env
-    cp .env.bak .env.source
+    if [ $EUID -eq 0 ]; then
+      # Previous version of this tool when run as root may have created a root-owned .env.bak
+      rm .env.bak
+      sudo -u $OWNER bash <<"EOF"
+      cp .env .env.bak
+      cp default.env .env
+      cp .env.bak .env.source
+EOF
+    else
+      cp .env .env.bak
+      cp default.env .env
+      cp .env.bak .env.source
+    fi
     # Special-case TEKU_RAPID_SYNC
     if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
         sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
@@ -88,7 +105,7 @@ envmigrate() {
             sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" .env
         fi 
     done
-    #special case http://eth1 and http://beacon
+    # Special-case http://eth1 and http://beacon
     sed -i "s/http:\/\/eth1/http:\/\/execution/g" .env
     sed -i "s/http:\/\/beacon/http:\/\/consensus/g" .env
 
@@ -217,6 +234,26 @@ query_infura_beacon() {
     fi
 }
 
+query_graffiti() {
+    GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? (up to 32 characters)" 10 37 "eth-docker" 3>&1 1>&2 2>&3)
+    # Ask the user
+    exitstatus=$?
+    if [ $exitstatus = 0 ]; then
+        echo "your Graffiti is:" $GRAFFITI
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+set_value_in_env() {
+    # Assumes that "var" has been set to the name of the variable to be changed
+    if ! grep -qF "${var}" $ENV_FILE 2>/dev/null ; then
+        echo "${var}=${!var}" >> $ENV_FILE
+    fi
+    sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" $ENV_FILE
+}
+
 config () {
     # Don't run as root
     if [[ $EUID -eq 0 ]]; then
@@ -254,14 +291,19 @@ config () {
     if [[ "$CONSENSUS_CLIENT" != "teku-validator.yml" && "$CONSENSUS_CLIENT" != "lh-validator.yml" ]]; then
         CC_NODE="http://consensus:5052"
 
+        query_graffiti
         query_execution_client
         query_grafana
     else
         unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
 
+        query_graffiti
         query_infura_beacon
     fi
+
+    var=GRAFFITI
+    set_value_in_env
 
     # Update The Value in env.
     if ! grep -qF "CC_NODE" $ENV_FILE 2>/dev/null ; then
@@ -359,25 +401,25 @@ printhelp() {
     echo ""
     echo "subcommands:"
     echo "  config "
-    echo "     configures the tool with your choice of clients"
+    echo "     configures eth-docker with your choice of Ethereum clients"
     echo "  update "
-    echo "     updates all client versions, but notably does not update this tool itself"
+    echo "     updates all client versions and eth-docker itself"
     echo "  start"
-    echo "     starts the node software"
+    echo "     starts the Ethereum node software"
     echo "  stop"
-    echo "     stops the node software"
+    echo "     stops the Ethereum node software"
     echo "  restart"
-    echo "     restarts the node software, a combination of stop and start"
+    echo "     restarts the Ethereum node software, a combination of stop and start"
     echo "  logs"
     echo "     shows logs"
     echo "  cmd <command>"
-    echo "     executes arbitrary docker-compose command. use "help" help to list them"
+    echo "     executes arbitrary docker-compose command. use \"cmd help\" to list them"
     echo ""
     echo ""
-    echo "The logs subcommand can be appended by flags and specify the container/s. example: "
+    echo "The logs subcommand can be appended by flags and specify the container(s). example: "
     echo ""
-    echo "  $me logs -f --tail 500 ec"
-    echo "    shows logs only for ec service"
+    echo "  $me logs -f --tail 500 execution"
+    echo "    shows logs only for execution service"
     echo ""
     echo ""
     echo "Be sure to run the config command as a non-root user, and all other commands"
@@ -390,7 +432,10 @@ if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
 fi
 
+# Use this to make sure root doesn't end up owning files
+OWNER=$(stat -c '%U' ./ethd) 
+
 command=${1}
 shift
 
-${command} $@
+${command} "$@"
