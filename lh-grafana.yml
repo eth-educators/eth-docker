@@ -68,7 +68,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
-    expose: 
+    expose:
       - ${GRAFANA_PORT}/tcp
     labels:
       - traefik.enable=true

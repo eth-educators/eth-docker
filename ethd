@@ -103,7 +103,7 @@ EOF
     for index in "${!OLD_VARS[@]}"; do
         if [ -n "${!OLD_VARS[index]+set}" ]; then
             sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" .env
-        fi 
+        fi
     done
     # Special-case http://eth1 and http://beacon
     sed -i "s/http:\/\/eth1/http:\/\/execution/g" .env
@@ -178,7 +178,7 @@ query_execution_client() {
             EC_NODE="ws://execution:8546"
         else
             EC_NODE="http://execution:8545"
-        fi 
+        fi
 
         if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
             EC_FALLBACK=yes
@@ -257,18 +257,18 @@ set_value_in_env() {
 config () {
     # Don't run as root
     if [[ $EUID -eq 0 ]]; then
-        echo "Please run this as a non-root user." 
+        echo "Please run this as a non-root user."
         exit 1
     fi
 
     # Don't run from another directory
     if ! [[ -f "ethd" ]]; then
-        echo "Please run this from the eth-docker directory." 
+        echo "Please run this from the eth-docker directory."
         exit 1
     fi
 
     # Create ENV file if needed
-    ENV_FILE=.env 
+    ENV_FILE=.env
 
     if ! [[ -f "$ENV_FILE" ]]; then
         ENV_FILE_GUESS="$(eval realpath default.env)"
@@ -318,7 +318,7 @@ config () {
         else
             RAPIDSYNC=no
         fi
-  
+
         if [ $RAPIDSYNC = "yes" ]; then
             query_infura_beacon
             CC_NODE="$CC_NODE/eth/v1/debug/beacon/states/finalized"
@@ -347,7 +347,7 @@ config () {
     fi
 
     if ! (whiptail --title "Does COMPOSE_FILE look good?" --yesno "$COMPOSE_FILE_GUESS" 10 60) then
-        COMPOSE_FILE=$(whiptail --title "Configure COMPOSE_FILE" --inputbox "What is your COMPOSE_FILE?" 10 60 $COMPOSE_FILE_GUESS 3>&1 1>&2 2>&3)	
+        COMPOSE_FILE=$(whiptail --title "Configure COMPOSE_FILE" --inputbox "What is your COMPOSE_FILE?" 10 60 $COMPOSE_FILE_GUESS 3>&1 1>&2 2>&3)
     else
         COMPOSE_FILE=${COMPOSE_FILE_GUESS}
     fi
@@ -433,7 +433,7 @@ if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
 fi
 
 # Use this to make sure root doesn't end up owning files
-OWNER=$(stat -c '%U' ./ethd) 
+OWNER=$(stat -c '%U' ./ethd)
 
 command=${1}
 shift

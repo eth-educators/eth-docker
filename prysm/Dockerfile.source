@@ -72,4 +72,3 @@ RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700
 COPY ./validator-import.sh /usr/local/bin/
 
 FROM consensus as slasher
-
