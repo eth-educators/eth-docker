@@ -17,7 +17,7 @@ services:
       - 9093:9093/tcp
     depends_on:
       - prometheus
-    
+
   eth:
     depends_on:
       - alertmanager

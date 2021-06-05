@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # allow the container to be started with `--user`
-# If started as root, chown the `--datadir` and run prysm as prysmbeacon or prysmvalidator, depending 
+# If started as root, chown the `--datadir` and run prysm as prysmbeacon or prysmvalidator, depending
 if [ "$(id -u)" = '0' ]; then
   if [[ "$1" =~ ^(beacon-chain|slasher)$ ]]; then
     chown -R prysmconsensus:prysmconsensus /var/lib/prysm

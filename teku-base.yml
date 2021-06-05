@@ -57,7 +57,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
-      - /opt/teku/bin/teku 
+      - /opt/teku/bin/teku
       - voluntary-exit
       - --beacon-node-api-endpoint=http://consensus:5051
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords

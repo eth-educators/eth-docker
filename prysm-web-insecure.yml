@@ -1,5 +1,5 @@
 version: "3.4"
 services:
   validator:
-    ports: 
+    ports:
       - ${PRYSM_WEB_PORT}:${PRYSM_WEB_PORT}/tcp

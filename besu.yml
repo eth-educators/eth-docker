@@ -7,7 +7,7 @@ services:
       context: ./besu
       dockerfile: ${BESU_DOCKERFILE}
       args:
-        - BUILD_TARGET=${BESU_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local
     volumes:

@@ -72,4 +72,3 @@ echo
 echo "$password1" >/var/lib/prysm/password.txt
 chmod 600 /var/lib/prysm/password.txt
 echo "Wallet password has been stored."
-

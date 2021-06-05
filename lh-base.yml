@@ -22,7 +22,7 @@ services:
       default:
         aliases:
           - beacon
-    entrypoint: 
+    entrypoint:
       - docker-entrypoint.sh
       - lighthouse
       - bn
@@ -101,7 +101,7 @@ services:
       - validator
       - exit
       - --beacon-node
-      - http://consensus:5052 
+      - http://consensus:5052
       - --datadir
       - /var/lib/lighthouse
       - --network
