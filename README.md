@@ -6,6 +6,12 @@ eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/e
 
 Please see the [official documentation](https://eth-docker.net).
 
+For a quick testnet start, you can install prerequisites and configure eth-docker, as a non-root user:
+
+* `sudo apt install -y docker docker-compose git && sudo systemctl enable --now docker`
+* `cd ~ && git clone https://github.com/eth2-educators/eth-docker.git && cd eth-docker`
+* `./ethd config`
+
 ## License
 
 [MIT License (MIT)](https://github.com/eth2-educators/eth-docker/blob/master/LICENSE)
@@ -19,4 +25,4 @@ If we've helped you out, in-person or by creating this project, a tip will be ve
 
 # Version
 
-This is eth-docker v1.2.5
+This is eth-docker v1.2.5.1

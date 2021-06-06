@@ -41,12 +41,32 @@ up() {
     start
 }
 
+run() {
+    start
+}
+
 stop() {
     cmd down --remove-orphans
 }
 
 down() {
     stop
+}
+
+terminate() {
+    while true; do
+        read -rp "WARNING - this action will destroy all data stores for this Ethereum node. Do you wish to continue? (No/Yes) " yn
+        case $yn in
+            [Yy]es ) break;;
+            * ) echo "Aborting, no changes made"; exit 1;;
+        esac
+    done
+
+    down
+    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .)))
+    echo ""
+    echo "All containers stopped and all volumes deleted"
+    echo ""
 }
 
 restart() {
@@ -363,9 +383,11 @@ printhelp() {
     echo "     shows logs"
     echo "  cmd <command>"
     echo "     executes arbitrary docker-compose command. use \"cmd help\" to list them"
+    echo "  terminate"
+    echo "     stops the Ethereum node software and destroys all data stores"
     echo ""
     echo ""
-    echo "The logs subcommand can be appended by flags and specify the container(s). example: "
+    echo "The logs subcommand can be appended by flags and specify the container\(s\). example: "
     echo ""
     echo "  $me logs -f --tail 500 execution"
     echo "    shows logs only for execution service"
