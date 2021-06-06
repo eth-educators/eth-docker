@@ -30,6 +30,8 @@ services:
       - ${EC_P2P_PORT}
       - --chain
       - ${EC_NETWORK}
+      - --storage-mode
+      - r
   execution:
     restart: "${RESTART}"
     image: erigon:local

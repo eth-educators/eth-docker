@@ -1,8 +1,9 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
+set -uo pipefail
 
 cmd() {
-    docker-compose "$@"
+    docker-compose "${@}"
 }
 
 update() {
@@ -12,16 +13,19 @@ update() {
       git branch -u origin/main main
       git remote set-head origin -a
     fi
-    if [ $EUID -eq 0 ]; then
-      sudo -u $OWNER git pull
+    if [ "${EUID}" -eq 0 ]; then
+      sudo -u "${OWNER}" git pull
     else
       git pull
     fi
     cmd build --pull
-    exec 3>&2
+    exec 3>&1
+    exec 4>&2
+    exec 1> /dev/null
     exec 2> /dev/null
     cmd pull || true
-    exec 2>&3
+    exec 1>&3
+    exec 2>&4
     envmigrate
 }
 
@@ -51,11 +55,11 @@ restart() {
 }
 
 logs() {
-    cmd logs "$@"
+    cmd logs "${@}"
 }
 
 envmigrate() {
-    if [ ! -f ./.env ]; then
+    if [ ! -f "./${ENV_FILE}" ]; then
         return
     fi
     ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
@@ -70,24 +74,24 @@ envmigrate() {
     NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
              EC_WS_HOST CC_NODE EC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
 
-    if [ $EUID -eq 0 ]; then
+    if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
-      rm .env.bak
-      sudo -u $OWNER bash <<"EOF"
-      cp .env .env.bak
-      cp default.env .env
-      cp .env.bak .env.source
-EOF
+      if [ -f ./env.bak ]; then
+          rm .env.bak
+      fi
+      sudo -u "${OWNER}" cp "${ENV_FILE}" .env.bak
+      sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
+      sudo -u "${OWNER}" cp .env.bak .env.source
     else
-      cp .env .env.bak
-      cp default.env .env
+      cp "${ENV_FILE}" .env.bak
+      cp default.env "${ENV_FILE}"
       cp .env.bak .env.source
     fi
-    # Special-case TEKU_RAPID_SYNC
+    # TEKU_RAPID_SYNC has whitespace
     if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
         sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
     fi
-    # Special-case GRAFFITI
+    # In case GRAFFITI has whitespace
     if grep -qF "GRAFFITI" .env.source 2>/dev/null ; then
         sed -i "s~^\(GRAFFITI\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
     fi
@@ -96,20 +100,20 @@ EOF
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         if [ -n "${!var+set}" ]; then
-            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" .env
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
         fi
     done
     # Migrate from older-style naming
     for index in "${!OLD_VARS[@]}"; do
         if [ -n "${!OLD_VARS[index]+set}" ]; then
-            sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" .env
+            sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" "${ENV_FILE}"
         fi
     done
-    # Special-case http://eth1 and http://beacon
-    sed -i "s/http:\/\/eth1/http:\/\/execution/g" .env
-    sed -i "s/http:\/\/beacon/http:\/\/consensus/g" .env
+    # Migrate http://eth1 and http://beacon
+    sed -i "s/http:\/\/eth1/http:\/\/execution/g" "${ENV_FILE}"
+    sed -i "s/http:\/\/beacon/http:\/\/consensus/g" "${ENV_FILE}"
 
-    echo "Your .env configuration settings have been migrated to a fresh copy. You can \
+    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in .env.bak."
     echo "NB: If you made changes to the source or binary build targets, these have NOT \
 been migrated, please recreate these changes yourself."
@@ -125,18 +129,20 @@ query_consensus_client() {
     "teku-validator.yml" "Teku validator client with Infura beacon" \
     "lh-validator.yml" "Lighthouse validator client with Infura beacon" 3>&1 1>&2 2>&3)
 
-    # Ask the user
     exitstatus=$?
-    if [ $exitstatus != 0 ]; then exit 0 ; fi
-
-    echo "Your consensus client file is:" $CONSENSUS_CLIENT
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
 }
 
 query_custom_execution_client() {
-        EC_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
-        # Ask the user
+        EC_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${EC_NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
+
         exitstatus=$?
-        if [ $exitstatus = 0 ]; then
+        if [ $exitstatus -eq 0 ]; then
             echo "your custom execution client is:" $EC_CUSTOM_NODE
         else
             echo "You chose Cancel."
@@ -145,11 +151,11 @@ query_custom_execution_client() {
 }
 
 query_fallback_execution_client() {
-        EC_FALLBACK_NODE=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
-        # Ask the user
+        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+
         exitstatus=$?
-        if [ $exitstatus = 0 ]; then
-            echo "your fallback execution client is:" $EC_FALLBACK_NODE
+        if [ $exitstatus -eq 0 ]; then
+            echo "your fallback execution client is:" "${EC_FALLBACK_NODE1}"
         else
             echo "You chose Cancel."
             exit 0
@@ -164,70 +170,51 @@ query_execution_client() {
     "nm.yml" "Nethermind" \
     "besu.yml" "Besu" 3>&1 1>&2 2>&3)
 
-    # Ask the user
     exitstatus=$?
-    if [ $exitstatus != 0 ]; then exit 0 ; fi
+    if [ $exitstatus -ne 0 ]; then
+        echo "You chose Cancel."
+        exit 0
+    fi
 
-    if [ "$EXECUTION_CLIENT" = "NONE" ]; then
+    if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
         unset EXECUTION_CLIENT
         query_custom_execution_client
-        EC_NODE=$EC_CUSTOM_NODE
+        EC_NODE="${EC_CUSTOM_NODE}"
+        EC_FALLBACK_NODE1="${EC_NODE}"
+        EC_FALLBACK_NODE2="${EC_NODE}"
     else
-        echo "Your execution client file is:" $EXECUTION_CLIENT
+        echo "Your execution client file is:" "${EXECUTION_CLIENT}"
         if [ "$CONSENSUS_CLIENT" == "nimbus-base.yml" ]; then
             EC_NODE="ws://execution:8546"
         else
             EC_NODE="http://execution:8545"
         fi
+        EC_FALLBACK_NODE1="${EC_NODE}"
+        EC_FALLBACK_NODE2="${EC_NODE}"
 
         if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
-            EC_FALLBACK=yes
-        else
-            EC_FALLBACK=no
-        fi
-
-        if [ $EC_FALLBACK = "yes" ]; then
             query_fallback_execution_client
-            if [ "$CONSENSUS_CLIENT" == "prysm-base.yml" ]; then
-                # Update The Value in env.
-                if ! grep -qF "EC_FALLBACK_NODE1" $ENV_FILE 2>/dev/null ; then
-                    echo "EC_FALLBACK_NODE1=${EC_FALLBACK_NODE}" >> $ENV_FILE
-                fi
-                sed -i "s~^\(EC_FALLBACK_NODE1\s*=\s*\).*$~\1${EC_FALLBACK_NODE}~" $ENV_FILE
-            else
-                EC_NODE="$EC_NODE"",""$EC_FALLBACK_NODE"
+            if [ "${CONSENSUS_CLIENT}" != "prysm-base.yml" ]; then
+                EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
             fi
         fi
     fi
-    # Update The Value in env.
-    if ! grep -qF "EC_NODE" $ENV_FILE 2>/dev/null ; then
-        echo "EC_NODE=${EC_NODE}" >> $ENV_FILE
-    fi
-    sed -i "s~^\(EC_NODE\s*=\s*\).*$~\1${EC_NODE}~" $ENV_FILE
 }
 
 query_grafana() {
-    # Use Grafana
     if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
-        GRAFANA=yes
-    else
-        GRAFANA=no
-    fi
-
-    # Which Grafana should be used
-    if [ $GRAFANA = "yes" ]; then
-        GRAFANA_CLIENT=$(echo $(echo $CONSENSUS_CLIENT | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
+        GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
     else
         unset GRAFANA_CLIENT
     fi
 }
 
 query_infura_beacon() {
-    CC_NODE=$(whiptail --title "Configure Infura beacon node" --inputbox "What is the URL for your Infura beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
-    # Ask the user
+    INFURA_BEACON=$(whiptail --title "Configure Infura beacon node" --inputbox "What is the URL for your Infura beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+
     exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-        echo "your Infura beacon is:" $CC_NODE
+    if [ $exitstatus -eq 0 ]; then
+        echo "your Infura beacon is:" "${INFURA_BEACON}"
     else
         echo "You chose Cancel."
         exit 0
@@ -236,10 +223,10 @@ query_infura_beacon() {
 
 query_graffiti() {
     GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? (up to 32 characters)" 10 37 "eth-docker" 3>&1 1>&2 2>&3)
-    # Ask the user
+
     exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-        echo "your Graffiti is:" $GRAFFITI
+    if [ $exitstatus -eq 0 ]; then
+        echo "your Graffiti is:" "${GRAFFITI}"
     else
         echo "You chose Cancel."
         exit 0
@@ -248,48 +235,57 @@ query_graffiti() {
 
 set_value_in_env() {
     # Assumes that "var" has been set to the name of the variable to be changed
-    if ! grep -qF "${var}" $ENV_FILE 2>/dev/null ; then
-        echo "${var}=${!var}" >> $ENV_FILE
+    if [ "${!var+x}" ]; then
+        if ! grep -qF "${var}" "${ENV_FILE}" 2>/dev/null ; then
+            echo "${var}=${!var}" >> "${ENV_FILE}"
+        else
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+        fi
     fi
-    sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" $ENV_FILE
 }
 
 config () {
-    # Don't run as root
-    if [[ $EUID -eq 0 ]]; then
-        echo "Please run this as a non-root user."
-        exit 1
-    fi
-
-    # Don't run from another directory
-    if ! [[ -f "ethd" ]]; then
-        echo "Please run this from the eth-docker directory."
-        exit 1
-    fi
-
     # Create ENV file if needed
-    ENV_FILE=.env
-
-    if ! [[ -f "$ENV_FILE" ]]; then
+    if ! [[ -f "${ENV_FILE}" ]]; then
         ENV_FILE_GUESS="$(eval realpath default.env)"
-        ENV_TEMPLATE=$(whiptail --title "Configure ENV_FILE" --inputbox "No $ENV_FILE file found, press enter to use the default, or choose a backup" 10 60 $ENV_FILE_GUESS 3>&1 1>&2 2>&3)
+        ENV_TEMPLATE=$(whiptail --title "Configure ENV_FILE" --inputbox "No ${ENV_FILE} file found, press enter to use the default, or choose a backup" 10 60 "${ENV_FILE_GUESS}" 3>&1 1>&2 2>&3)
 
-        # Ask the user
         exitstatus=$?
-        if [ $exitstatus = 0 ]; then
-            echo "your ENV_TEMPLATE is:" $ENV_FILE
+        if [ $exitstatus -eq 0 ]; then
+            echo "your configuration file template is:" "${ENV_TEMPLATE}"
         else
             echo "You chose Cancel."
         fi
 
-        # Update The Value in env.
-        cp $ENV_TEMPLATE $ENV_FILE
+        if [ "${EUID}" -eq 0 ]; then
+          sudo -u "${OWNER}" cp "${ENV_TEMPLATE}" "${ENV_FILE}"
+        else
+          cp "${ENV_TEMPLATE}" "${ENV_FILE}"
+        fi
     fi
 
     query_consensus_client
 
-    if [[ "$CONSENSUS_CLIENT" != "teku-validator.yml" && "$CONSENSUS_CLIENT" != "lh-validator.yml" ]]; then
+    if [[ "${CONSENSUS_CLIENT}" != "teku-validator.yml" && "${CONSENSUS_CLIENT}" != "lh-validator.yml" ]]; then
         CC_NODE="http://consensus:5052"
+
+        # Mainnet or Testnet network
+
+        NETWORK=$(whiptail --notags --title "Select Network" --menu \
+        "Which network do you want to run on?" 15 60 3 \
+        "prater" "Prater Testnet" \
+        "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
+
+        if [ "${NETWORK}" = "mainnet" ]; then
+            EC_NETWORK=mainnet
+            echo "You chose to run on Ethereum mainnet"
+        elif [ "${NETWORK}" = "prater" ]; then
+            EC_NETWORK=goerli
+            echo "You chose to run on Prater testnet"
+        else
+            echo "You chose Cancel."
+            exit 0
+        fi
 
         query_graffiti
         query_execution_client
@@ -300,100 +296,53 @@ config () {
 
         query_graffiti
         query_infura_beacon
+        CC_NODE="${INFURA_BEACON}"
     fi
+
+    if [[ "${CONSENSUS_CLIENT}" == "teku-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with Infura beacon?" 10 60) then
+            query_infura_beacon
+            TEKU_RAPID_SYNC="${INFURA_BEACON}/eth/v1/debug/beacon/states/finalized"
+        else
+            TEKU_RAPID_SYNC=""
+        fi
+    else
+       TEKU_RAPID_SYNC=""
+    fi
+
+    COMPOSE_FILE="${CONSENSUS_CLIENT}"
+    if [ "${EXECUTION_CLIENT+x}" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+    fi
+    if [ "${GRAFANA_CLIENT+x}" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
+    fi
+
+    echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
 
     var=GRAFFITI
     set_value_in_env
-
-    # Update The Value in env.
-    if ! grep -qF "CC_NODE" $ENV_FILE 2>/dev/null ; then
-        echo "CC_NODE=${CC_NODE}" >> $ENV_FILE
-    fi
-    sed -i "s~^\(CC_NODE\s*=\s*\).*$~\1${CC_NODE}~" $ENV_FILE
-
-    if [[ "$CONSENSUS_CLIENT" == "teku-base.yml" ]]; then
-        # Use rapid sync
-        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with Infura beacon?" 10 60) then
-            RAPIDSYNC=yes
-        else
-            RAPIDSYNC=no
-        fi
-
-        if [ $RAPIDSYNC = "yes" ]; then
-            query_infura_beacon
-            CC_NODE="$CC_NODE/eth/v1/debug/beacon/states/finalized"
-        else
-            CC_NODE=""
-        fi
-    else
-        CC_NODE=""
-    fi
-
-    # Update The Value in env.
-    if ! grep -qF "TEKU_RAPID_SYNC" $ENV_FILE 2>/dev/null ; then
-        echo "TEKU_RAPID_SYNC=${CC_NODE}" >> $ENV_FILE
-    fi
-    sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\).*$~\1${CC_NODE}~" $ENV_FILE
-
-    # COMPOSE_FILE
-
-    # Guess COMPOSE_FILE
-    COMPOSE_FILE_GUESS=$CONSENSUS_CLIENT
-    if [ ${EXECUTION_CLIENT+x} ]; then
-        COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$EXECUTION_CLIENT"
-    fi
-    if [ ${GRAFANA_CLIENT+x} ]; then
-        COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$GRAFANA_CLIENT"
-    fi
-
-    if ! (whiptail --title "Does COMPOSE_FILE look good?" --yesno "$COMPOSE_FILE_GUESS" 10 60) then
-        COMPOSE_FILE=$(whiptail --title "Configure COMPOSE_FILE" --inputbox "What is your COMPOSE_FILE?" 10 60 $COMPOSE_FILE_GUESS 3>&1 1>&2 2>&3)
-    else
-        COMPOSE_FILE=${COMPOSE_FILE_GUESS}
-    fi
-
-    # Ask the user
-    exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-        echo "Your COMPOSE_FILE is:" $COMPOSE_FILE
-    else
-        echo "You chose Cancel."
-        exit 0
-    fi
-
-    # Update The Value in env.
-    if ! grep -qF "COMPOSE_FILE" $ENV_FILE 2>/dev/null ; then
-        echo "COMPOSE_FILE=${COMPOSE_FILE}" >> $ENV_FILE
-    fi
-    sed -i "s/^\(COMPOSE_FILE\s*=\s*\).*$/\1${COMPOSE_FILE}/" $ENV_FILE
-
-    if [[ "$CONSENSUS_CLIENT" != "teku-validator.yml" && "$CONSENSUS_CLIENT" != "lh-validator.yml" ]]; then
-        # Mainnet or Testnet network
-
-        NETWORK=$(whiptail --notags --title "Select Network" --menu \
-        "Which network do you want to run on?" 15 60 3 \
-        "prater" "Prater Testnet" \
-        "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
-
-        # Update The Value in env.
-        if [ $NETWORK = "mainnet" ]; then
-            sed -i "s/^\(NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
-            sed -i "s/^\(EC_NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
-            echo "You chose to run on Ethereum mainnet"
-        elif [ $NETWORK = "prater" ]; then
-            sed -i "s/^\(NETWORK\s*=\s*\).*$/\1prater/" $ENV_FILE
-            sed -i "s/^\(EC_NETWORK\s*=\s*\).*$/\1goerli/" $ENV_FILE
-            echo "You chose to run on Prater testnet"
-        else
-            echo "You chose Cancel."
-            exit 0
-        fi
-    fi
+    var=CC_NODE
+    set_value_in_env
+    var=TEKU_RAPID_SYNC
+    set_value_in_env
+    var=COMPOSE_FILE
+    set_value_in_env
+    var=EC_NODE
+    set_value_in_env
+    var=EC_FALLBACK_NODE1
+    set_value_in_env
+    var=EC_FALLBACK_NODE2
+    set_value_in_env
+    var=NETWORK
+    set_value_in_env
+    var=EC_NETWORK
+    set_value_in_env
 }
 
 printhelp() {
-    me=$(basename $BASH_SOURCE)
-    echo "usage: $me [help|-h|--help] <subcommand>"
+    me=$(basename "${BASH_SOURCE}")
+    echo "usage: ${me} [help|-h|--help] <subcommand>"
     echo ""
     echo "optional arguments:"
     echo "  help | -h | --help"
@@ -428,14 +377,26 @@ printhelp() {
     exit 0
 }
 
-if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
+if [[ "${#}" -eq 0 || "${1}" == "help" || "${1}" == "-h" || "${1}" == "--help" ]]; then
     printhelp
 fi
 
 # Use this to make sure root doesn't end up owning files
-OWNER=$(stat -c '%U' ./ethd)
+OWNER=$(stat -c '%U' .)
 
-command=${1}
+if ! [ -f "ethd" ]; then
+    echo "Please run this from the eth-docker directory."
+    exit 1
+fi
+
+if [ "${OWNER}" == "root" ]; then
+    echo "Please install eth-docker as a non-root user."
+    exit 1
+fi
+
+ENV_FILE=.env
+
+command="${1}"
 shift
 
-${command} "$@"
+"${command}" "${@}"
