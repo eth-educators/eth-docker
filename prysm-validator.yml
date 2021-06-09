@@ -7,49 +7,6 @@ x-build: &prysm-build
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
 
 services:
-  consensus:
-    restart: "${RESTART}"
-    build:
-      target: consensus
-      <<: *prysm-build
-    image: prysm-consensus:local
-    stop_grace_period: 1m
-    volumes:
-      - prysmbeacon-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
-    expose:
-      - 4000
-    entrypoint:
-      - docker-entrypoint.sh
-      - beacon-chain
-      - --datadir
-      - /var/lib/prysm/
-      - --rpc-host
-      - 0.0.0.0
-      - --grpc-gateway-host
-      - 0.0.0.0
-      - --http-web3provider
-      - ${ETH1_NODE}${EC_NODE}
-      - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE1}${EC_FALLBACK_NODE1}
-      - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE2}${EC_FALLBACK_NODE2}
-      - --eth1-header-req-limit
-      - "150"
-      - --p2p-tcp-port
-      - ${PRYSM_PORT}
-      - --p2p-udp-port
-      - ${PRYSM_UDP_PORT}
-      - --p2p-max-peers
-      - ${PRYSM_PEER_COUNT}
-      - --verbosity
-      - ${LOG_LEVEL}
-      - --${NETWORK}
-      - --accept-terms-of-use
   validator:
     restart: "${RESTART}"
     build:
@@ -61,25 +18,24 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
-      - docker-entrypoint.sh
       - validator
       - --datadir
       - /var/lib/prysm
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - consensus:4000
+      - ${CC_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}
+      - --tls-cert
+      - /etc/ssl/certs/ca-certificates.crt
       - --accept-terms-of-use
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
-    depends_on:
-      - consensus
   validator-account-list:
     restart: "no"
     user: prysmvalidator
@@ -143,18 +99,16 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - consensus:4000
+      - ${CC_NODE}
       - --wallet-password-file
       - /var/lib/prysm/password.txt
       - --${NETWORK}
-    depends_on:
-      - consensus
+      - --tls-cert
+      - /etc/ssl/certs/ca-certificates.crt
   eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - consensus
       - validator
 volumes:
-  prysmbeacon-data:
   prysmvalidator-data:

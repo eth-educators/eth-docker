@@ -19,10 +19,6 @@ services:
     ports:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
-    networks:
-      default:
-        aliases:
-          - beacon
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku

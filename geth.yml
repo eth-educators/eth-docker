@@ -8,7 +8,6 @@ services:
       args:
         - BUILD_TARGET=${GETH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${GETH_DOCKER_TAG}
-    stop_signal: SIGINT
     stop_grace_period: 3m
     image: geth:local
     volumes:
