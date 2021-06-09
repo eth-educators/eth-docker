@@ -9,6 +9,7 @@ services:
         - DOCKER_TAG=${NIM_DOCKER_TAG}
       dockerfile: ${NIM_DOCKERFILE}
     image: nimbus:local
+    stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/timezone:/etc/timezone:ro
@@ -16,10 +17,6 @@ services:
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
-    networks:
-      default:
-        aliases:
-          - beacon
     entrypoint:
       - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node

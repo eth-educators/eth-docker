@@ -1,0 +1,53 @@
+version: "3.4"
+services:
+  consensus:
+    restart: "${RESTART}"
+    build:
+      context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
+    image: lighthouse:local
+    stop_grace_period: 1m
+    volumes:
+      - lhconsensus-data:/var/lib/lighthouse
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${LH_PORT}:${LH_PORT}/tcp
+      - ${LH_PORT}:${LH_PORT}/udp
+    expose:
+      - 5052/tcp
+    entrypoint:
+      - lighthouse
+      - bn
+      - --disable-upnp
+      - --datadir
+      - /var/lib/lighthouse
+      - --http
+      - --http-address
+      - 0.0.0.0
+      - --network
+      - ${NETWORK}
+      - --port
+      - ${LH_PORT}
+      - --target-peers
+      - ${LH_PEER_COUNT}
+      - --eth1-endpoints
+      - ${EC_NODE}
+      - --eth1-blocks-per-log-query
+      - "150"
+      - --debug-level=${LOG_LEVEL}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cc.entrypoints=websecure
+      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.services.cc.loadbalancer.server.port=5052
+  eth:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - consensus
+volumes:
+  lhconsensus-data:

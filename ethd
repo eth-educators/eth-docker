@@ -8,15 +8,15 @@ cmd() {
 
 update() {
     if git branch | grep -q master; then
-      git branch -m master main
-      git fetch origin
-      git branch -u origin/main main
-      git remote set-head origin -a
+        git branch -m master main
+        git fetch origin
+        git branch -u origin/main main
+        git remote set-head origin -a
     fi
     if [ "${EUID}" -eq 0 ]; then
-      sudo -u "${OWNER}" git pull
+        sudo -u "${OWNER}" git pull
     else
-      git pull
+        git pull
     fi
     cmd build --pull
     exec 3>&1
@@ -27,6 +27,99 @@ update() {
     exec 1>&3
     exec 2>&4
     envmigrate
+}
+
+prune-geth() {
+    if [ ! -f "./.env" ]; then
+        echo "eth-docker has not yet been configured, aborting."
+        exit 1
+    fi
+
+    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' .env 2>/dev/null ; then
+        echo "You do not appear to be using Geth, aborting."
+        exit 1
+    fi
+
+    if [ $(df -P /var/lib/docker/volumes | awk '/[0-9]%/{print $(NF-2)}') -lt 52428400 ]; then
+        echo "You do not have enough free disk space, make sure this reads at least 50G free (Avail):"
+        df -h /var/lib/docker/volumes
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+
+    rpc_line=$(grep '^EC_RPC_PORT=' .env)
+    regex='^EC_RPC_PORT=([0-9]+)'
+    if [[ ! "${rpc_line}" =~ ${regex} ]]; then
+        echo "Unable to determine EC_RCP_PORT, aborting."
+        exit 1
+    else
+        rpc_port="${BASH_REMATCH[1]}"
+    fi
+
+    sync_status=$(cmd exec execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+    exitstatus=$?
+    if [ $exitstatus -ne 0 ]; then
+        echo "Geth is not running, aborting."
+        exit 1
+    fi
+
+    if [[ ! "${sync_status}" =~ "false" ]]; then
+        echo "Geth is not done syncing yet. Sync status:"
+        echo "${sync_status}"
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+
+    node_logs=$(cmd logs --no-color --tail 1000 execution)
+    if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
+        echo "Geth has not finished generating a state snapshot yet, aborting."
+        exit 1
+    fi
+
+    regex='\[([0-9][0-9]-[0-9][0-9])\|([0-9][0-9]:[0-9][0-9]):[0-9.]*\][[:space:]]*Generated state'
+    if [[ "${node_logs}" =~ $regex ]]; then
+        snap_time=$(date -d "1970-${BASH_REMATCH[1]} ${BASH_REMATCH[2]}" +"%s")
+        now_time=$(date +"%s")
+        if [ $(($snap_time+2100)) -gt $now_time ]; then
+            echo "Please wait 35 minutes after snapshot generation finished. Aborting."
+            exit 1
+        fi
+    fi
+
+    while true; do
+        read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
+        case $yn in
+            [Yy]es ) break;;
+            * ) echo "Aborting, no changes made"; exit 1;;
+        esac
+    done
+
+    echo ""
+    echo "Stopping Geth"
+    echo ""
+    cmd stop execution && cmd rm -f execution
+    echo ""
+    echo "Starting prune"
+    echo ""
+    cmd run --rm -d execution snapshot prune-state
+    regex='[^[:space:]]*execution_run[^[:space:]]*'
+    if [[ $(docker ps) =~ $regex ]]; then
+        echo ""
+        echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 ${BASH_REMATCH[0]}'"
+    else
+       echo ""
+       echo "Prune is running, but this program was unable to determine the container name. All running containers:"
+       docker ps
+    fi
+    echo ""
+    echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting database\". During \
+the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
+    echo ""
+    echo "When prune is done, which takes 4-5 hours, start Geth again with 'sudo ./ethd start'."
+    echo "NB: 'sudo' can be left off these commands if your user is part of the 'docker' group."
+    echo ""
 }
 
 upgrade() {
@@ -140,14 +233,15 @@ been migrated, please recreate these changes yourself."
 }
 
 query_consensus_client() {
-    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 15 60 7 \
-    "teku-base.yml" "Teku" \
-    "lh-base.yml" "Lighthouse" \
-    "prysm-base.yml" "Prysm" \
-    "nimbus-base.yml" "Nimbus" \
-    "teku-validator.yml" "Teku validator client with Infura beacon" \
-    "lh-validator.yml" "Lighthouse validator client with Infura beacon" 3>&1 1>&2 2>&3)
+    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
+    "Which consensus/validator client do you want to run?" 16 65 8 \
+    "teku-base.yml" "Teku (Java) - consensus and validator client" \
+    "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
+    "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
+    "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+    "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
+    "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
+    "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
@@ -186,9 +280,9 @@ query_execution_client() {
     EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
     "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
     "NONE" "Custom" \
-    "geth.yml" "Geth" \
-    "nm.yml" "Nethermind" \
-    "besu.yml" "Besu" 3>&1 1>&2 2>&3)
+    "geth.yml" "Geth (Go)" \
+    "nm.yml" "Nethermind (.NET)" \
+    "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
@@ -200,23 +294,21 @@ query_execution_client() {
         unset EXECUTION_CLIENT
         query_custom_execution_client
         EC_NODE="${EC_CUSTOM_NODE}"
-        EC_FALLBACK_NODE1="${EC_NODE}"
-        EC_FALLBACK_NODE2="${EC_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-        if [ "$CONSENSUS_CLIENT" == "nimbus-base.yml" ]; then
+        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
             EC_NODE="ws://execution:8546"
         else
             EC_NODE="http://execution:8545"
         fi
-        EC_FALLBACK_NODE1="${EC_NODE}"
-        EC_FALLBACK_NODE2="${EC_NODE}"
+    fi
+    EC_FALLBACK_NODE1="${EC_NODE}"
+    EC_FALLBACK_NODE2="${EC_NODE}"
 
-        if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
-            query_fallback_execution_client
-            if [ "${CONSENSUS_CLIENT}" != "prysm-base.yml" ]; then
-                EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
-            fi
+    if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
+        query_fallback_execution_client
+        if [ "${CONSENSUS_CLIENT}" != "prysm-base.yml" ]; then
+            EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
         fi
     fi
 }
@@ -229,12 +321,12 @@ query_grafana() {
     fi
 }
 
-query_infura_beacon() {
-    INFURA_BEACON=$(whiptail --title "Configure Infura beacon node" --inputbox "What is the URL for your Infura beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+query_remote_beacon() {
+    REMOTE_BEACON=$(whiptail --title "Configure remote beacon node" --inputbox "What is the URL for your remote beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
-        echo "your Infura beacon is:" "${INFURA_BEACON}"
+        echo "your remote beacon is:" "${REMOTE_BEACON}"
     else
         echo "You chose Cancel."
         exit 0
@@ -286,7 +378,7 @@ config () {
 
     query_consensus_client
 
-    if [[ "${CONSENSUS_CLIENT}" != "teku-validator.yml" && "${CONSENSUS_CLIENT}" != "lh-validator.yml" ]]; then
+    if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
         CC_NODE="http://consensus:5052"
 
         # Mainnet or Testnet network
@@ -296,10 +388,10 @@ config () {
         "prater" "Prater Testnet" \
         "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
 
-        if [ "${NETWORK}" = "mainnet" ]; then
+        if [ "${NETWORK}" == "mainnet" ]; then
             EC_NETWORK=mainnet
             echo "You chose to run on Ethereum mainnet"
-        elif [ "${NETWORK}" = "prater" ]; then
+        elif [ "${NETWORK}" == "prater" ]; then
             EC_NETWORK=goerli
             echo "You chose to run on Prater testnet"
         else
@@ -315,14 +407,14 @@ config () {
         unset GRAFANA_CLIENT
 
         query_graffiti
-        query_infura_beacon
-        CC_NODE="${INFURA_BEACON}"
+        query_remote_beacon
+        CC_NODE="${REMOTE_BEACON}"
     fi
 
     if [[ "${CONSENSUS_CLIENT}" == "teku-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with Infura beacon?" 10 60) then
-            query_infura_beacon
-            TEKU_RAPID_SYNC="--initial-state ${INFURA_BEACON}/eth/v1/debug/beacon/states/finalized"
+        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote beacon, e.g. Infura?" 10 60) then
+            query_remote_beacon
+            TEKU_RAPID_SYNC="--initial-state ${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
         else
             TEKU_RAPID_SYNC=""
         fi
@@ -382,19 +474,21 @@ printhelp() {
     echo "  logs"
     echo "     shows logs"
     echo "  cmd <command>"
-    echo "     executes arbitrary docker-compose command. use \"cmd help\" to list them"
+    echo "     executes an arbitrary docker-compose command. Use \"cmd help\" to list them"
     echo "  terminate"
     echo "     stops the Ethereum node software and destroys all data stores"
+    echo "  prune-geth"
+    echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
     echo ""
     echo ""
-    echo "The logs subcommand can be appended by flags and specify the container\(s\). example: "
+    echo "The logs subcommand can be appended by flags and specify the container(s). example: "
     echo ""
     echo "  $me logs -f --tail 500 execution"
     echo "    shows logs only for execution service"
     echo ""
     echo ""
     echo "Be sure to run the config command as a non-root user, and all other commands"
-    echo "either with sudo, or as a user who is part of the docker group"
+    echo "either with sudo, or as a user who is part of the \"docker\" group"
     echo ""
     exit 0
 }

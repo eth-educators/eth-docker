@@ -9,6 +9,7 @@ services:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse:local
+    stop_grace_period: 1m
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
       - /etc/timezone:/etc/timezone:ro
@@ -18,10 +19,6 @@ services:
       - ${LH_PORT}:${LH_PORT}/udp
     expose:
       - 5052/tcp
-    networks:
-      default:
-        aliases:
-          - beacon
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse
