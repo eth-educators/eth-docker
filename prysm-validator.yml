@@ -13,6 +13,7 @@ services:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local
+    user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/timezone:/etc/timezone:ro
@@ -38,8 +39,8 @@ services:
       - /var/lib/prysm/password.txt
   validator-account-list:
     restart: "no"
-    user: prysmvalidator
     image: prysm-validator:local
+    user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/timezone:/etc/timezone:ro
@@ -61,6 +62,7 @@ services:
   validator-import:
     restart: "no"
     image: prysm-validator:local
+    user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
@@ -82,8 +84,8 @@ services:
       - --${NETWORK}
   validator-exit:
     restart: "no"
-    user: prysmvalidator
     image: prysm-validator:local
+    user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/timezone:/etc/timezone:ro
