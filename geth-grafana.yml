@@ -5,7 +5,7 @@ services:
   execution:
     expose:
       - 6060/tcp
-    command: --metrics --metrics.expensive --pprof --pprof.addr=0.0.0.0 --${EC_NETWORK}
+    command: --metrics --metrics.expensive --pprof --pprof.addr=0.0.0.0
   prometheus:
     depends_on:
       - execution

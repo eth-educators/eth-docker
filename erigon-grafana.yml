@@ -1,0 +1,12 @@
+# Not standalone, relies on one of the client-grafana.yml files,
+# and requires erigon to be in the same "stack" as prometheus and grafana
+version: "3.4"
+services:
+  erigon:
+    expose:
+      - 6060/tcp
+    #command: --metrics --metrics.addr=0.0.0.0 --metrics.expensive --pprof --pprof.addr=0.0.0.0 pprof.port=6061
+    command: --metrics --metrics.addr=0.0.0.0 --metrics.expensive
+  prometheus:
+    depends_on:
+      - erigon
