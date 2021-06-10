@@ -1,5 +1,4 @@
-# Fallback file in case there's a build issue: At least there's
-# node-exporter
+# Just node-exporter for execution client only setups
 global:
   scrape_interval:     15s
   evaluation_interval: 15s
