@@ -1,0 +1,7 @@
+# Send client stats to beaconcha.in service
+version: "3.4"
+services:
+  validator:
+    command:
+      - --monitoring-endpoint
+      - https://beaconcha.in/api/v1/stats/${BEACON_STATS_API}
