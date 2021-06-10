@@ -1,5 +1,5 @@
 # Build Teku in a stock debian container
-FROM openjdk:15-jdk-slim-buster as builder
+FROM openjdk:16-jdk-slim-buster as builder
 
 # This is here to avoid build-time complaints
 ARG DOCKER_TAG
@@ -12,7 +12,7 @@ WORKDIR /usr/src
 RUN bash -c "git clone https://github.com/PegaSysEng/teku.git && cd teku && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
 
 # Pull all binaries into a second stage deploy debian container
-FROM openjdk:15-slim-buster
+FROM openjdk:16-slim-buster
 
 ARG USER=teku
 ARG UID=10002
