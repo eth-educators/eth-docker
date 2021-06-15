@@ -11,7 +11,7 @@ services:
       - traefik.http.routers.ecws.service=ecws
       - traefik.http.routers.ecws.entrypoints=websecure
       - traefik.http.routers.ecws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
-      - traefik.http.services.eth1ws.loadbalancer.server.port=${EC_WS_PORT}
+      - traefik.http.services.ecws.loadbalancer.server.port=${EC_WS_PORT}
     depends_on:
       - traefik
 
