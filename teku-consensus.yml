@@ -15,7 +15,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g
+      - JAVA_OPTS=-XX:SoftMaxHeapSize=1g
     ports:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
