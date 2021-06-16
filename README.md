@@ -25,4 +25,4 @@ If we've helped you out, in-person or by creating this project, a tip will be ve
 
 # Version
 
-This is eth-docker v1.3.3.1
+This is eth-docker v1.3.3.2
