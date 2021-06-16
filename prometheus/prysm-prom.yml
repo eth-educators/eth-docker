@@ -26,10 +26,10 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['validator:8081']
-  - job_name: 'beacon node'
+  - job_name: 'consensus node'
     scrape_interval: 5s
     static_configs:
-      - targets: ['beacon:8080']
+      - targets: ['consensus:8080']
   - job_name: 'slasher'
     static_configs:
       - targets: ['slasher:8082']

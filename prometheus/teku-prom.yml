@@ -22,4 +22,4 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     static_configs:
-    - targets: ["beacon:8008"]
+    - targets: ["consensus:8008"]

@@ -13,11 +13,11 @@ alerting:
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
   - "alert_rules.yml"
-# A scrape configuration containing beacon node and node exporter
+# A scrape configuration containing consensus node and node exporter
 scrape_configs:
   - job_name: 'nodes'
     static_configs:
-      - targets: ['beacon:5054']
+      - targets: ['consensus:5054']
   - job_name: 'validator'
     static_configs:
       - targets: ['validator:5064']
