@@ -1,0 +1,50 @@
+version: "3.4"
+services:
+  execution:
+    restart: "${RESTART}"
+    build:
+      context: ./geth
+      dockerfile: Dockerfile.heco
+      args:
+        - BUILD_TARGET=${GETH_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${GETH_DOCKER_TAG}
+    stop_grace_period: 3m
+    image: heco:local
+    volumes:
+      - heco-ec-data:/var/lib/goethereum
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
+    expose:
+      - ${EC_RPC_PORT}/tcp
+      - ${EC_WS_PORT}/tcp
+    entrypoint:
+      - geth
+      - --http
+      - --http.addr
+      - 0.0.0.0
+      - --http.vhosts=*
+      - --http.api
+      - web3,eth,net
+      - --datadir
+      - /var/lib/goethereum
+      - --port
+      - ${EC_P2P_PORT}
+      - --http.port
+      - ${EC_RPC_PORT}
+      - --ws
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - ${EC_WS_PORT}
+      - --ws.api
+      - web3,eth,net
+      - --config
+      - /var/lib/goethereum/config.toml
+  eth:
+    depends_on:
+      - execution
+volumes:
+  heco-ec-data:
