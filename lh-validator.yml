@@ -4,12 +4,9 @@ services:
     restart: "${RESTART}"
     image: lighthouse:local
     volumes:
-      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
-      # - lhvalidator-data:/var/lib/lighthouse
+      - lhvalidator-data:/var/lib/lighthouse
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 5064:5064
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse
@@ -23,16 +20,11 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-      - --metrics
-      - --metrics-address
-      - 0.0.0.0
-      - --metrics-port
-      - '5064'
   validator-import:
     restart: "no"
     image: lighthouse:local
     volumes:
-      - /data/eth/mainnet/validator:/var/lib/lighthouse
+      - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
