@@ -1,0 +1,45 @@
+version: "3.4"
+services:
+  consensus:
+    ports:
+      - ${CC_METRICS_PORT}:${CC_METRICS_PORT}
+    expose:
+      - ${CC_HTTP_PORT}/tcp
+      - ${CC_METRICS_PORT}/tcp
+    command:
+      - --http-port
+      - ${CC_HTTP_PORT}
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
+      - --metrics-port
+      - ${CC_METRICS_PORT}
+      - --validator-monitor-auto
+    volumes:
+      - /data/eth/${NETWORK}/consensus:/var/lib/lighthouse
+  validator:
+    ports:
+      - ${VALIDATOR_METRICS_PORT}:${VALIDATOR_METRICS_PORT}
+    expose:
+      - ${VALIDATOR_METRICS_PORT}/tcp
+    command:
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
+      - --metrics-port
+      - ${VALIDATOR_METRICS_PORT}
+    volumes:
+      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
+    depends_on:
+      - consensus
+  validator-import:
+    volumes:
+      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
+  validator-exit:
+    volumes:
+      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
+    depends_on:
+      - consensus
+  validator-account:
+    volumes:
+      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
