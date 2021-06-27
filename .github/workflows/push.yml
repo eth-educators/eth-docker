@@ -14,7 +14,3 @@ jobs:
         run: |
           pip install pre-commit
           pre-commit run --all-files
-      - name: Test ethd
-        run: |
-          cp default.env .env
-          ./ethd up
