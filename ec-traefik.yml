@@ -1,0 +1,19 @@
+# To be used in conjunction with erigon.yml, nm.yml, besu.yml or geth.yml
+version: "3.4"
+services:
+  execution:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ec.service=ec
+      - traefik.http.routers.ec.entrypoints=websecure
+      - traefik.http.routers.ec.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.services.ec.loadbalancer.server.port=${EC_RPC_PORT}
+      - traefik.http.routers.ecws.service=ecws
+      - traefik.http.routers.ecws.entrypoints=websecure
+      - traefik.http.routers.ecws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.services.ecws.loadbalancer.server.port=${EC_WS_PORT}
+    depends_on:
+      - traefik
+
+  eth:
+    image: tianon/true

@@ -5,6 +5,7 @@ COPY ./prysm-prom.yml /etc/prometheus
 COPY ./nimbus-prom.yml /etc/prometheus
 COPY ./teku-prom.yml /etc/prometheus
 COPY ./geth-prom.yml /etc/prometheus
+COPY ./erigon-prom.yml /etc/prometheus
 COPY ./none.yml /etc/prometheus
 COPY ./choose-config.sh /usr/local/bin/choose-config.sh
 

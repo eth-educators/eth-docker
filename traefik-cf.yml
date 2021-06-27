@@ -21,14 +21,16 @@ services:
       - --entrypoints.websecure.http.tls.domains[0].main=${DOMAIN}
       - --entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAIN}
     ports:
-      - ${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp    
-      - ${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp    
+      - ${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
+      - ${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
       - CLOUDFLARE_EMAIL=${CF_EMAIL}
       - CLOUDFLARE_DNS_API_TOKEN=${CF_API_TOKEN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - certs:/letsencrypt 
+      - certs:/letsencrypt
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - cf-ddns
   cf-ddns:
@@ -39,7 +41,10 @@ services:
       - ZONE=${DOMAIN}
       - SUBDOMAIN=${DDNS_SUBDOMAIN}
       - PROXIED=${DDNS_PROXY}
-  eth2:
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  eth:
     depends_on:
       - traefik
 volumes:

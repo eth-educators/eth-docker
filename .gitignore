@@ -1,7 +1,7 @@
 .env*
 docker-compose.yml
-.eth2/*
-!.eth2/README.md
-!.eth2/validator_keys/.empty
+.eth/*
+!.eth/README.md
+!.eth/validator_keys/.empty
 *.swp
 alertmanager/config.yml

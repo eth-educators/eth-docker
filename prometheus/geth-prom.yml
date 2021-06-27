@@ -3,4 +3,4 @@
     scheme: http
     static_configs:
     - targets:
-      - eth1:6060
+      - execution:6060

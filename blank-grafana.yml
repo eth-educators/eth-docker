@@ -1,0 +1,66 @@
+version: "3.4"
+services:
+  prometheus:
+    restart: "${RESTART}"
+    build:
+      context: ./prometheus
+    image: prometheus:local
+    volumes:
+      - prom-data:/prometheus
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - CLIENT=${COMPOSE_FILE}
+    expose:
+      - 9090/tcp
+    entrypoint: choose-config.sh
+    command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+    depends_on:
+      - node-exporter
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+#      - '--collector.textfile.directory=/etc/node-exporter/'
+      - '--collector.filesystem.ignored-mount-points=${NODE_EXPORTER_IGNORE_MOUNT_REGEX}'
+      - '--no-collector.ipvs'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+      - /etc/hostname:/etc/nodename:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/TZ:ro
+    expose:
+      - 9100/tcp
+  grafana:
+    restart: "${RESTART}"
+    build:
+      context: ./grafana
+    image: grafana:local
+    environment:
+      - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - prometheus
+    expose:
+      - ${GRAFANA_PORT}/tcp
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.entrypoints=web,websecure
+      - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
+      - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
+  eth:
+    depends_on:
+      - grafana
+volumes:
+  grafana-data:
+  prom-data:

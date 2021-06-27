@@ -1,0 +1,64 @@
+version: "3.4"
+services:
+  erigon:
+    restart: "${RESTART}"
+    build:
+      context: ./erigon
+      dockerfile: ${ERIGON_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${ERIGON_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${ERIGON_DOCKER_TAG}
+    stop_grace_period: 5m
+    image: erigon:local
+    user: erigon
+    volumes:
+      - erigon-ec-data:/var/lib/erigon
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
+    expose:
+      - 9090/tcp
+    entrypoint:
+      - erigon
+      - --private.api.addr
+      - 0.0.0.0:9090
+      - --datadir
+      - /var/lib/erigon
+      - --port
+      - ${EC_P2P_PORT}
+      - --chain
+      - ${EC_NETWORK}
+      - --storage-mode
+      - r
+  execution:
+    restart: "${RESTART}"
+    image: erigon:local
+    user: erigon
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - ${EC_RPC_PORT}/tcp
+    depends_on:
+      - erigon
+    entrypoint:
+      - rpcdaemon
+      - --private.api.addr
+      - erigon:9090
+      - --http.addr
+      - 0.0.0.0
+      - --http.vhosts=*
+      - --http.corsdomain=*
+      - --http.api
+      - web3,eth,net
+      - --http.port
+      - ${EC_RPC_PORT}
+      - --ws
+  eth:
+    depends_on:
+      - erigon
+      - execution
+volumes:
+  erigon-ec-data:

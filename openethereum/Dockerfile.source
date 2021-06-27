@@ -12,6 +12,7 @@ RUN apk update && apk add --no-cache \
   build-base \
   cargo \
   cmake \
+  clang \
   eudev-dev \
   linux-headers \
   perl \
@@ -37,7 +38,8 @@ RUN apk update && apk add --no-cache \
   libgcc \
   su-exec \
   bash \
-  ca-certificates
+  ca-certificates \
+  tzdata
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \

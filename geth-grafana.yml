@@ -1,11 +1,11 @@
-# Not standalone, relies on one of the client-grafana.yml files,
-# and requires geth to be in the same "stack" as prometheus and grafana
+# Not standalone, relies on one of the {client}-grafana.yml files or
+# blank-grafana.yml
 version: "3.4"
 services:
-  eth1:
+  execution:
     expose:
       - 6060/tcp
-    command: --metrics --metrics.expensive --pprof --pprof.addr=0.0.0.0 ${GETH1_NETWORK}
+    command: --metrics --metrics.expensive --pprof --pprof.addr=0.0.0.0
   prometheus:
     depends_on:
-      - eth1
+      - execution

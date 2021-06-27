@@ -8,4 +8,5 @@ RUN apk add --no-cache \
     && pip3 install --upgrade pip \
     && pip3 install \
         awscli \
+	tzdata \
     && rm -rf /var/cache/apk/*

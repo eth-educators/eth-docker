@@ -1,22 +1,28 @@
-# eth2-docker: Docker automation for Ethereum 2.0 clients.
+# eth-docker: Docker automation for Ethereum consensus and execution clients.
 
-eth2-docker, a docker automation project for [Ethereum 2.0](https://ethereum.org/en/eth2/) clients. 
+eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/eth2/) consensus and execution clients.
 
 ### Getting Started
 
-Please see the [official documentation](https://eth2-docker.net). 
+Please see the [official documentation](https://eth-docker.net).
+
+For a quick testnet start, you can install prerequisites and configure eth-docker, as a non-root user:
+
+* `sudo apt install -y docker docker-compose git && sudo systemctl enable --now docker`
+* `cd ~ && git clone https://github.com/eth2-educators/eth-docker.git && cd eth-docker`
+* `./ethd config`
 
 ## License
 
-[MIT License (MIT)](https://github.com/eth2-educators/eth2-docker/blob/master/LICENSE)
+[MIT License (MIT)](https://github.com/eth2-educators/eth-docker/blob/master/LICENSE)
 
 # Tip Jar
 
 If we've helped you out, in-person or by creating this project, a tip will be very welcome.
 
-Yorick Ethereum: 0xDccf8451070a86183eE70D330C4c43b686E9CF86  
-danb.eth: 0xBe5Bd61fd37444290913Eff8f5dfF8C4D0d7A093 (NFTs welcome)
+* yorickdowne.eth: 0xDccf8451070a86183eE70D330C4c43b686E9CF86
+* danb.eth: 0xBe5Bd61fd37444290913Eff8f5dfF8C4D0d7A093 (NFTs welcome)
 
 # Version
 
-This is eth2-docker v1.1.0
+This is eth-docker v1.3.3.2

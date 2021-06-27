@@ -2,16 +2,19 @@ name: docker-compose-actions-workflow
 
 on:
   push:
-    branches: [ master, dev ]
   pull_request:
-    branches: [ master, dev ]
+    branches: [ main, dev ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Test default.env
+      - name: Lint sources
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files
+      - name: Test ethd
         run: |
           cp default.env .env
-          docker-compose up -d eth2
+          ./ethd up

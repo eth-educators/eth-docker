@@ -1,23 +1,29 @@
 version: "3.4"
 services:
-  eth1:
+  execution:
     restart: "${RESTART}"
     build:
       context: ./openethereum
       dockerfile: ${OE_DOCKERFILE}
       args:
-        - BUILD_TARGET=${OE_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${OE_SRC_BUILD_TARGET}
         - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum:local
     stop_grace_period: 3m
     volumes:
       - oe-eth1-data:/var/lib/openethereum
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${ETH1_PORT}:${ETH1_PORT}/tcp
-      - ${ETH1_PORT}:${ETH1_PORT}/udp
+      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
+      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}/tcp
+      - ${ETH1_RPC_PORT}${EC_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}${EC_WS_PORT}/tcp
+    networks:
+      default:
+        aliases:
+          - eth1
     entrypoint:
       - docker-entrypoint.sh
       - openethereum
@@ -31,20 +37,22 @@ services:
       - --ws-apis=web3,eth,pubsub,net
       - --ws-hosts=all
       - --ws-origins=all
-      - --ws-port=${ETH1_WS_PORT}
-      - --chain=${ETH1_NETWORK}
+      - --ws-port=${ETH1_WS_PORT}${EC_WS_PORT}
+      - --chain=${ETH1_NETWORK}${EC_NETWORK}
+      - --reseal-on-txs
+      - none
       - --port
-      - ${ETH1_PORT}
+      - ${ETH1_PORT}${EC_P2P_PORT}
       - --jsonrpc-port
-      - ${ETH1_RPC_PORT}
+      - ${ETH1_RPC_PORT}${EC_RPC_PORT}
       - --logging
       - ${LOG_LEVEL}
       - --snapshot-peers
       - "250"
       - --cache-size
       - "4096"
-  eth2:
+  eth:
     depends_on:
-      - eth1
+      - execution
 volumes:
   oe-eth1-data:

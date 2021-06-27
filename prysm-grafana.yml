@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     expose:
       - 8080/tcp
     command:
@@ -16,10 +16,12 @@ services:
     restart: "${RESTART}"
     build:
       context: ./prometheus
-    image: prometheus
+    image: prometheus:local
     volumes:
       - prom-data:/prometheus
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
     expose:
@@ -27,7 +29,7 @@ services:
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
-      - beacon
+      - consensus
       - validator
       - node-exporter
       - blackbox-exporter
@@ -58,6 +60,8 @@ services:
     image: prom/blackbox-exporter:master
     volumes:
       - ./prometheus/blackbox.yml:/config/blackbox.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 9115/tcp
     command:
@@ -67,6 +71,8 @@ services:
     image: quay.io/prometheuscommunity/json-exporter
     volumes:
       - ./prometheus/json.yml:/config/json.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 7979/tcp
     command:
@@ -75,22 +81,27 @@ services:
   cryptowat-exporter:
     restart: "${RESTART}"
     image: nbarrientos/cryptowat_exporter
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     environment:
       - CRYPTOWAT_EXCHANGES=kraken
       - CRYPTOWAT_PAIRS=ethusd,ethchf
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     expose:
-      - 9745/tcp 
+      - 9745/tcp
   grafana:
     restart: "${RESTART}"
     build:
       context: ./grafana
-    image: grafana
+    image: grafana:local
     environment:
       - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
     volumes:
       - grafana-data:/var/lib/grafana
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
     expose:
@@ -100,7 +111,7 @@ services:
       - traefik.http.routers.grafana.entrypoints=web,websecure
       - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
       - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
-  eth2:
+  eth:
     depends_on:
       - grafana
 volumes:

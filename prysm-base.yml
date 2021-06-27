@@ -7,14 +7,17 @@ x-build: &prysm-build
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
 
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
-      target: beacon
+      target: consensus
       <<: *prysm-build
-    image: prysm-beacon:local
+    image: prysm-consensus:local
+    stop_grace_period: 1m
     volumes:
       - prysmbeacon-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
@@ -30,11 +33,11 @@ services:
       - --grpc-gateway-host
       - 0.0.0.0
       - --http-web3provider
-      - ${ETH1_NODE}
+      - ${ETH1_NODE}${EC_NODE}
       - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE1}
+      - ${ETH1_FALLBACK_NODE1}${EC_FALLBACK_NODE1}
       - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE2}
+      - ${ETH1_FALLBACK_NODE2}${EC_FALLBACK_NODE2}
       - --eth1-header-req-limit
       - "150"
       - --p2p-tcp-port
@@ -55,6 +58,8 @@ services:
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - docker-entrypoint.sh
       - validator
@@ -63,7 +68,7 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - beacon:4000
+      - consensus:4000
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
@@ -74,13 +79,15 @@ services:
       - --wallet-password-file
       - /var/lib/prysm/password.txt
     depends_on:
-      - beacon
+      - consensus
   validator-account-list:
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator
       - --datadir
@@ -101,6 +108,8 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
     command:
       - validator
@@ -121,6 +130,8 @@ services:
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator
       - --verbosity
@@ -132,17 +143,17 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - beacon:4000
+      - consensus:4000
       - --wallet-password-file
       - /var/lib/prysm/password.txt
       - --${NETWORK}
     depends_on:
-      - beacon
-  eth2:
+      - consensus
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
       - validator
 volumes:
   prysmbeacon-data:

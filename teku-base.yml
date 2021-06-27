@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
       context: ./teku
@@ -9,10 +9,13 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
+    stop_grace_period: 1m
     volumes:
       - teku-data:/var/lib/teku
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     environment:
-      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g
+      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
     ports:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
@@ -22,7 +25,7 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${ETH1_NODE}
+      - --eth1-endpoints=${ETH1_NODE}${EC_NODE}
       - --p2p-port=${TEKU_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --validators-keystore-locking-enabled=true
@@ -38,6 +41,8 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
   validator-exit:
     restart: "no"
@@ -45,15 +50,17 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
-      - /opt/teku/bin/teku 
+      - /opt/teku/bin/teku
       - voluntary-exit
-      - --beacon-node-api-endpoint=http://beacon:5051
+      - --beacon-node-api-endpoint=http://consensus:5051
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
 volumes:
   teku-data:

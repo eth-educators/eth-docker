@@ -23,16 +23,18 @@ services:
       - --entrypoints.websecure.http.tls.domains[0].main=${DOMAIN}
       - --entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAIN}
     ports:
-      - ${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp    
-      - ${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp    
+      - ${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
+      - ${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
       - AWS_PROFILE=${AWS_PROFILE}
       - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - certs:/letsencrypt 
+      - certs:/letsencrypt
       - ~/.aws:/root/.aws:ro
-  eth2:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  eth:
     depends_on:
       - traefik
 volumes:

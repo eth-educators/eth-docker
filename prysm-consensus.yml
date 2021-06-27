@@ -1,0 +1,90 @@
+version: "3.4"
+x-build: &prysm-build
+  context: ./prysm
+  dockerfile: ${PRYSM_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+
+services:
+  consensus:
+    restart: "${RESTART}"
+    build:
+      target: consensus
+      <<: *prysm-build
+    image: prysm-consensus:local
+    stop_grace_period: 1m
+    volumes:
+      - prysmconsensus-data:/var/lib/prysm
+      - certs:/letsencrypt
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
+      - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - 4000:4000/tcp
+    expose:
+      - 4000
+    entrypoint:
+      - docker-entrypoint.sh
+      - beacon-chain
+      - --datadir
+      - /var/lib/prysm/
+      - --rpc-host
+      - 0.0.0.0
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --http-web3provider
+      - ${EC_NODE}
+      - --fallback-web3provider
+      - ${EC_FALLBACK_NODE1}
+      - --fallback-web3provider
+      - ${EC_FALLBACK_NODE2}
+      - --eth1-header-req-limit
+      - "150"
+      - --p2p-tcp-port
+      - ${PRYSM_PORT}
+      - --p2p-udp-port
+      - ${PRYSM_UDP_PORT}
+      - --p2p-max-peers
+      - ${PRYSM_PEER_COUNT}
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --${NETWORK}
+      - --accept-terms-of-use
+      - --tls-cert
+      - /letsencrypt/certs/certs/${DOMAIN}.crt
+      - --tls-key
+      - /letsencrypt/certs/private/${DOMAIN}.key
+    depends_on:
+      - traefik
+      - traefik-certs-dumper
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cc.entrypoints=websecure
+      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.services.cc.loadbalancer.server.port=4000
+      - traefik.http.services.cc.loadbalancer.server.scheme=https
+  traefik-certs-dumper:
+    image: ldez/traefik-certs-dumper:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add jq docker
+        adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/bin/false" --no-create-home --uid 10002 cert
+        while ! [ -e /letsencrypt/acme.json ] || ! [ `jq ".[] | .Certificates | length" /letsencrypt/acme.json` != 0 ]; do
+          sleep 1
+        done
+        traefik-certs-dumper file --version v2 --watch --source /letsencrypt/acme.json --dest /letsencrypt/certs --post-hook "/usr/bin/cert-change.sh"
+    volumes:
+      - certs:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./prysm/cert-change.sh:/usr/bin/cert-change.sh
+  eth:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - consensus
+      - traefik-certs-dumper
+volumes:
+  prysmconsensus-data:

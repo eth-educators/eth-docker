@@ -25,11 +25,11 @@ for var in "$@"; do
       echo "error: Passed user ID is not a number, ignoring"
       continue
     fi
-    uid="$var" 
+    uid="$var"
     continue
   fi
   if [ "$foundf" = '1' ]; then
-    foundf=1
+    foundf=0
     folder="$var"
     continue
   fi
@@ -38,9 +38,9 @@ done
 
 su-exec depcli "${ARGS[@]}"
 
-mkdir -p /app/.eth2/"$folder"
-cp -p /app/validator_keys/* /app/.eth2/"$folder"/
+mkdir -p /app/.eth/"$folder"
+cp -p /app/validator_keys/* /app/.eth/"$folder"/
 
-chown -R "$uid":"$uid" /app/.eth2/"$folder"
+chown -R "$uid":"$uid" /app/.eth/"$folder"
 
-echo "The generated files have been copied to ./.eth2/$folder/"
+echo "The generated files have been copied to ./.eth/$folder/"

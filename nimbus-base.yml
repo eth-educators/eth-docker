@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  beacon:
+  consensus:
     restart: "${RESTART}"
     build:
       context: ./nimbus
@@ -9,8 +9,11 @@ services:
         - DOCKER_TAG=${NIM_DOCKER_TAG}
       dockerfile: ${NIM_DOCKERFILE}
     image: nimbus:local
+    stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
@@ -23,11 +26,11 @@ services:
       - --udp-port=${NIM_PORT}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
-      - --web3-url=${ETH1_NODE}
+      - --web3-url=${ETH1_NODE}${EC_NODE}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rpc
-      - --rpc-address=0.0.0.0 
+      - --rpc-address=0.0.0.0
       - --enr-auto-update=true
   validator-import:
     restart: "no"
@@ -35,6 +38,8 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
@@ -49,6 +54,8 @@ services:
     image: nimbus:local
     volumes:
       - nimbus-data:/var/lib/nimbus
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
@@ -56,12 +63,12 @@ services:
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit
-      - --rpc-url=http://beacon:9190
+      - --rpc-url=http://consensus:9190
       - --validator=
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:
-      - beacon
+      - consensus
 volumes:
   nimbus-data:

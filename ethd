@@ -1,24 +1,165 @@
 #!/bin/bash
+#set -euo pipefail
+set -uo pipefail
 
 cmd() {
-    docker-compose "$@"
+    docker-compose "${@}"
 }
 
 update() {
+    if git branch | grep -q master; then
+        git branch -m master main
+        git fetch origin
+        git branch -u origin/main main
+        git remote set-head origin -a
+    fi
+    if [ "${EUID}" -eq 0 ]; then
+        sudo -u "${OWNER}" git pull
+    else
+        git pull
+    fi
     cmd build --pull
- #   cmd pull
+    exec 3>&1
+    exec 4>&2
+    exec 1> /dev/null
+    exec 2> /dev/null
+    cmd pull || true
+    exec 1>&3
+    exec 2>&4
+    envmigrate
+}
 
- #   echo ""
- #   echo "Errors showing denied pull access for validator utility functions are normal"
- #   echo ""
+prune-geth() {
+    if [ ! -f "./.env" ]; then
+        echo "eth-docker has not yet been configured, aborting."
+        exit 1
+    fi
+
+    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' .env 2>/dev/null ; then
+        echo "You do not appear to be using Geth, aborting."
+        exit 1
+    fi
+
+    if [ $(df -P /var/lib/docker/volumes | awk '/[0-9]%/{print $(NF-2)}') -lt 52428400 ]; then
+        echo "You do not have enough free disk space, make sure this reads at least 50G free (Avail):"
+        df -h /var/lib/docker/volumes
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+
+    rpc_line=$(grep '^EC_RPC_PORT=' .env)
+    regex='^EC_RPC_PORT=([0-9]+)'
+    if [[ ! "${rpc_line}" =~ ${regex} ]]; then
+        echo "Unable to determine EC_RCP_PORT, aborting."
+        exit 1
+    else
+        rpc_port="${BASH_REMATCH[1]}"
+    fi
+
+    sync_status=$(cmd exec execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+    exitstatus=$?
+    if [ $exitstatus -ne 0 ]; then
+        echo "Geth is not running, aborting."
+        exit 1
+    fi
+
+    if [[ ! "${sync_status}" =~ "false" ]]; then
+        echo "Geth is not done syncing yet. Sync status:"
+        echo "${sync_status}"
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+
+    node_logs=$(cmd logs --no-color --tail 1000 execution)
+    if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
+        echo "Geth has not finished generating a state snapshot yet, aborting."
+        exit 1
+    fi
+
+    regex='\[([0-9][0-9]-[0-9][0-9])\|([0-9][0-9]:[0-9][0-9]):[0-9.]*\][[:space:]]*Generated state'
+    if [[ "${node_logs}" =~ $regex ]]; then
+        snap_time=$(date -d "1970-${BASH_REMATCH[1]} ${BASH_REMATCH[2]}" +"%s")
+        now_time=$(date +"%s")
+        if [ $(($snap_time+2100)) -gt $now_time ]; then
+            echo "Please wait 35 minutes after snapshot generation finished. Aborting."
+            exit 1
+        fi
+    fi
+
+    while true; do
+        read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
+        case $yn in
+            [Yy]es ) break;;
+            * ) echo "Aborting, no changes made"; exit 1;;
+        esac
+    done
+
+    echo ""
+    echo "Stopping Geth"
+    echo ""
+    cmd stop execution && cmd rm -f execution
+    echo ""
+    echo "Starting prune"
+    echo ""
+    cmd run --rm -d execution snapshot prune-state
+    regex='[^[:space:]]*execution_run[^[:space:]]*'
+    if [[ $(docker ps) =~ $regex ]]; then
+        echo ""
+        echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 ${BASH_REMATCH[0]}'"
+    else
+       echo ""
+       echo "Prune is running, but this program was unable to determine the container name. All running containers:"
+       docker ps
+    fi
+    echo ""
+    echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting database\". During \
+the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
+    echo ""
+    echo "When prune is done, which takes 4-5 hours, start Geth again with 'sudo ./ethd start'."
+    echo "NB: 'sudo' can be left off these commands if your user is part of the 'docker' group."
+    echo ""
+}
+
+upgrade() {
+  update
 }
 
 start() {
-    cmd up -d eth2
+    cmd up -d eth
+}
+
+up() {
+    start
+}
+
+run() {
+    start
 }
 
 stop() {
     cmd down --remove-orphans
+}
+
+down() {
+    stop
+}
+
+terminate() {
+    while true; do
+        read -rp "WARNING - this action will destroy all data stores for this Ethereum node. Do you wish to continue? (No/Yes) " yn
+        case $yn in
+            [Yy]es ) break;;
+            * ) echo "Aborting, no changes made"; exit 1;;
+        esac
+    done
+
+    down
+    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .)))
+    echo ""
+    echo "All containers stopped and all volumes deleted"
+    echo ""
 }
 
 restart() {
@@ -27,232 +168,293 @@ restart() {
 }
 
 logs() {
-    cmd logs "$@"
+    cmd logs "${@}"
 }
 
-query_eth2_client() {
-   # ETH2 Client
+envmigrate() {
+    if [ ! -f "./${ENV_FILE}" ]; then
+        return
+    fi
+    ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
+             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
+             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
+             EC_HOST EC_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
+             EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
+             PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
+             RESTART LOG_LEVEL )
+    OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \
+             ETH1_WS_HOST BN_NODE ETH1_PORT ETH1_RPC_PORT ETH1_WS_PORT )
+    NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
+             EC_WS_HOST CC_NODE EC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
 
-    ETH2_CLIENT=$(whiptail --notags --title "Select eth2 client" --menu \
-    "What eth2 client do you want to run?" 15 60 7 \
-    "teku-base.yml" "Teku" \
-    "lh-base.yml" "Lighthouse" \
-    "prysm-base.yml" "Prysm" \
-    "nimbus-base.yml" "Nimbus" \
-    "teku-validator.yml" "Teku validator client with Infura beacon" \
-    "lh-validator.yml" "Lighthouse validator client with Infura beacon" 3>&1 1>&2 2>&3)
+    if [ "${EUID}" -eq 0 ]; then
+      # Previous version of this tool when run as root may have created a root-owned .env.bak
+      if [ -f ./env.bak ]; then
+          rm .env.bak
+      fi
+      sudo -u "${OWNER}" cp "${ENV_FILE}" .env.bak
+      sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
+      sudo -u "${OWNER}" cp .env.bak .env.source
+    else
+      cp "${ENV_FILE}" .env.bak
+      cp default.env "${ENV_FILE}"
+      cp .env.bak .env.source
+    fi
+    # TEKU_RAPID_SYNC has whitespace
+    if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
+        sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
+    fi
+    # In case GRAFFITI has whitespace
+    if grep -qF "GRAFFITI" .env.source 2>/dev/null ; then
+        sed -i "s~^\(GRAFFITI\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
+    fi
+    source .env.source 2>/dev/null || true
+    rm .env.source
+    # Migrate over user settings
+    for var in "${ALL_VARS[@]}"; do
+        if [ -n "${!var+set}" ]; then
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+        fi
+    done
+    # Migrate from older-style naming
+    for index in "${!OLD_VARS[@]}"; do
+        if [ -n "${!OLD_VARS[index]+set}" ]; then
+            sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" "${ENV_FILE}"
+        fi
+    done
+    # Migrate http://eth1 and http://beacon
+    sed -i "s/http:\/\/eth1/http:\/\/execution/g" "${ENV_FILE}"
+    sed -i "s/http:\/\/beacon/http:\/\/consensus/g" "${ENV_FILE}"
 
-    # Ask the user
-    exitstatus=$?
-    if [ $exitstatus != 0 ]; then exit 0 ; fi
-
-    echo "Your eth2 client file is:" $ETH2_CLIENT
+    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
+find the original contents in .env.bak."
+    echo "NB: If you made changes to the source or binary build targets, these have NOT \
+been migrated, please recreate these changes yourself."
 }
 
-query_eth1_client() {
-    # ETH1 Client
+query_consensus_client() {
+    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
+    "Which consensus/validator client do you want to run?" 16 65 8 \
+    "teku-base.yml" "Teku (Java) - consensus and validator client" \
+    "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
+    "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
+    "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+    "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
+    "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
+    "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)
 
-    ETH1_CLIENT=$(whiptail --notags --title "Select eth1 client" --menu \
-    "Which eth1 client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
-    "NONE" "Custom" \
-    "geth.yml" "Geth" \
-    "oe.yml" "OpenEthereum" \
-    "nm.yml" "Nethermind" \
-    "besu.yml" "Besu" 3>&1 1>&2 2>&3)
-
-    # Ask the user
     exitstatus=$?
-    if [ $exitstatus != 0 ]; then exit 0 ; fi
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
 
-    if [ $ETH1_CLIENT = "NONE" ]; then
-        unset ETH1_CLIENT
-        ETH1_NODE=$(whiptail --title "Configure custom eth1 node" --inputbox "What is the URL for your custom eth1 node? (right-click to paste)" 10 60 https://goerli.infura.io/v3/... 3>&1 1>&2 2>&3)
-        # Ask the user
+query_custom_execution_client() {
+        EC_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${EC_NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
+
         exitstatus=$?
-        if [ $exitstatus = 0 ]; then
-            echo "your ETH1_NODE is:" $ETH1_NODE
+        if [ $exitstatus -eq 0 ]; then
+            echo "your custom execution client is:" $EC_CUSTOM_NODE
         else
             echo "You chose Cancel."
             exit 0
         fi
-    else
-        echo "Your eth1 client file is:" $ETH1_CLIENT
-        if [ "$ETH2_CLIENT" == "nimbus-base.yml" ]; then
-            ETH1_NODE="ws://eth1:8546"
+}
+
+query_fallback_execution_client() {
+        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            echo "your fallback execution client is:" "${EC_FALLBACK_NODE1}"
         else
-            ETH1_NODE="http://eth1:8545"
-        fi         
+            echo "You chose Cancel."
+            exit 0
+        fi
+}
+
+query_execution_client() {
+    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+    "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
+    "NONE" "Custom" \
+    "geth.yml" "Geth (Go)" \
+    "nm.yml" "Nethermind (.NET)" \
+    "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
+
+    exitstatus=$?
+    if [ $exitstatus -ne 0 ]; then
+        echo "You chose Cancel."
+        exit 0
     fi
-    # Update The Value in env.
-    if ! grep -qF "ETH1_NODE" $ENV_FILE 2>/dev/null ; then
-        echo "ETH1_NODE=${ETH1_NODE}" >> $ENV_FILE
+
+    if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
+        unset EXECUTION_CLIENT
+        query_custom_execution_client
+        EC_NODE="${EC_CUSTOM_NODE}"
+    else
+        echo "Your execution client file is:" "${EXECUTION_CLIENT}"
+        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
+            EC_NODE="ws://execution:8546"
+        else
+            EC_NODE="http://execution:8545"
+        fi
     fi
-    sed -i "s~^\(ETH1_NODE\s*=\s*\).*$~\1${ETH1_NODE}~" $ENV_FILE
+    EC_FALLBACK_NODE1="${EC_NODE}"
+    EC_FALLBACK_NODE2="${EC_NODE}"
+
+    if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
+        query_fallback_execution_client
+        if [ "${CONSENSUS_CLIENT}" != "prysm-base.yml" ]; then
+            EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
+        fi
+    fi
 }
 
 query_grafana() {
-    # Use Grafana
     if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
-        GRAFANA=yes
-    else
-        GRAFANA=no
-    fi
-
-    # Which Grafana should be used
-    if [ $GRAFANA = "yes" ]; then
-        GRAFANA_CLIENT=$(echo $(echo $ETH2_CLIENT | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
+        GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
     else
         unset GRAFANA_CLIENT
     fi
 }
 
-query_infura_beacon() {
-    BN_NODE=$(whiptail --title "Configure Infura beacon node" --inputbox "What is the URL for your Infura beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
-    # Ask the user
+query_remote_beacon() {
+    REMOTE_BEACON=$(whiptail --title "Configure remote beacon node" --inputbox "What is the URL for your remote beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+
     exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-        echo "your Infura beacon is:" $BN_NODE
+    if [ $exitstatus -eq 0 ]; then
+        echo "your remote beacon is:" "${REMOTE_BEACON}"
     else
         echo "You chose Cancel."
         exit 0
+    fi
+}
+
+query_graffiti() {
+    GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? (up to 32 characters)" 10 37 "eth-docker" 3>&1 1>&2 2>&3)
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "your Graffiti is:" "${GRAFFITI}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+set_value_in_env() {
+    # Assumes that "var" has been set to the name of the variable to be changed
+    if [ "${!var+x}" ]; then
+        if ! grep -qF "${var}" "${ENV_FILE}" 2>/dev/null ; then
+            echo "${var}=${!var}" >> "${ENV_FILE}"
+        else
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+        fi
     fi
 }
 
 config () {
-    # Don't run as root
-    if [[ $EUID -eq 0 ]]; then
-        echo "Please run this as a non-root user." 
-        exit 1
-    fi
-
-    # Don't run from another directory
-    if ! [[ -f "ethd" ]]; then
-        echo "Please run this from the eth2-docker directory." 
-        exit 1
-    fi
-
     # Create ENV file if needed
-    ENV_FILE=.env 
-
-    if ! [[ -f "$ENV_FILE" ]]; then
+    if ! [[ -f "${ENV_FILE}" ]]; then
         ENV_FILE_GUESS="$(eval realpath default.env)"
-        ENV_TEMPLATE=$(whiptail --title "Configure ENV_FILE" --inputbox "No $ENV_FILE file found, press enter to use the default, or choose a backup" 10 60 $ENV_FILE_GUESS 3>&1 1>&2 2>&3)
+        ENV_TEMPLATE=$(whiptail --title "Configure ENV_FILE" --inputbox "No ${ENV_FILE} file found, press enter to use the default, or choose a backup" 10 60 "${ENV_FILE_GUESS}" 3>&1 1>&2 2>&3)
 
-        # Ask the user
         exitstatus=$?
-        if [ $exitstatus = 0 ]; then
-            echo "your ENV_TEMPLATE is:" $ENV_FILE
+        if [ $exitstatus -eq 0 ]; then
+            echo "your configuration file template is:" "${ENV_TEMPLATE}"
         else
             echo "You chose Cancel."
         fi
 
-        # Update The Value in env.
-        cp $ENV_TEMPLATE $ENV_FILE
-    fi
-
-    query_eth2_client
-
-    if [[ "$ETH2_CLIENT" != "teku-validator.yml" && "$ETH2_CLIENT" != "lh-validator.yml" ]]; then
-        BN_NODE="http://beacon:5052"
-
-        query_eth1_client
-        query_grafana
-    else
-        unset ETH1_CLIENT
-        unset GRAFANA_CLIENT
-
-        query_infura_beacon
-    fi
-
-    # Update The Value in env.
-    if ! grep -qF "BN_NODE" $ENV_FILE 2>/dev/null ; then
-        echo "BN_NODE=${BN_NODE}" >> $ENV_FILE
-    fi
-    sed -i "s~^\(BN_NODE\s*=\s*\).*$~\1${BN_NODE}~" $ENV_FILE
-
-    if [[ "$ETH2_CLIENT" == "teku-base.yml" ]]; then
-        # Use rapid sync
-        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with Infura beacon?" 10 60) then
-            RAPIDSYNC=yes
+        if [ "${EUID}" -eq 0 ]; then
+          sudo -u "${OWNER}" cp "${ENV_TEMPLATE}" "${ENV_FILE}"
         else
-            RAPIDSYNC=no
+          cp "${ENV_TEMPLATE}" "${ENV_FILE}"
         fi
-  
-        if [ $RAPIDSYNC = "yes" ]; then
-            query_infura_beacon
-            BN_NODE="$BN_NODE/eth/v1/debug/beacon/states/finalized"
-        else
-            BN_NODE=""
-        fi
-    else
-        BN_NODE=""
     fi
 
-    # Update The Value in env.
-    if ! grep -qF "TEKU_RAPID_SYNC" $ENV_FILE 2>/dev/null ; then
-        echo "TEKU_RAPID_SYNC=${BN_NODE}" >> $ENV_FILE
-    fi
-    sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\).*$~\1${BN_NODE}~" $ENV_FILE
+    query_consensus_client
 
-    # COMPOSE_FILE
+    if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
+        CC_NODE="http://consensus:5052"
 
-    # Guess COMPOSE_FILE
-    COMPOSE_FILE_GUESS=$ETH2_CLIENT
-    if [ ${ETH1_CLIENT+x} ]; then
-        COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$ETH1_CLIENT"
-    fi
-    if [ ${GRAFANA_CLIENT+x} ]; then
-        COMPOSE_FILE_GUESS="$COMPOSE_FILE_GUESS:$GRAFANA_CLIENT"
-    fi
-
-    if ! (whiptail --title "Does COMPOSE_FILE look good?" --yesno "$COMPOSE_FILE_GUESS" 10 60) then
-        COMPOSE_FILE=$(whiptail --title "Configure COMPOSE_FILE" --inputbox "What is your COMPOSE_FILE?" 10 60 $COMPOSE_FILE_GUESS 3>&1 1>&2 2>&3)	
-    else
-        COMPOSE_FILE=${COMPOSE_FILE_GUESS}
-    fi
-
-    # Ask the user
-    exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-        echo "Your COMPOSE_FILE is:" $COMPOSE_FILE
-    else
-        echo "You chose Cancel."
-        exit 0
-    fi
-
-    # Update The Value in env.
-    if ! grep -qF "COMPOSE_FILE" $ENV_FILE 2>/dev/null ; then
-        echo "COMPOSE_FILE=${COMPOSE_FILE}" >> $ENV_FILE
-    fi
-    sed -i "s/^\(COMPOSE_FILE\s*=\s*\).*$/\1${COMPOSE_FILE}/" $ENV_FILE
-
-    if [[ "$ETH2_CLIENT" != "teku-validator.yml" && "$ETH2_CLIENT" != "lh-validator.yml" ]]; then
         # Mainnet or Testnet network
 
-        ETH2_NETWORK=$(whiptail --notags --title "Select Network" --menu \
+        NETWORK=$(whiptail --notags --title "Select Network" --menu \
         "Which network do you want to run on?" 15 60 3 \
         "prater" "Prater Testnet" \
         "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
 
-        # Update The Value in env.
-        if [ $ETH2_NETWORK = "mainnet" ]; then
-            sed -i "s/^\(NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
-            sed -i "s/^\(ETH1_NETWORK\s*=\s*\).*$/\1mainnet/" $ENV_FILE
+        if [ "${NETWORK}" == "mainnet" ]; then
+            EC_NETWORK=mainnet
             echo "You chose to run on Ethereum mainnet"
-        elif [ $ETH2_NETWORK = "prater" ]; then
-            sed -i "s/^\(NETWORK\s*=\s*\).*$/\1prater/" $ENV_FILE
-            sed -i "s/^\(ETH1_NETWORK\s*=\s*\).*$/\1goerli/" $ENV_FILE
+        elif [ "${NETWORK}" == "prater" ]; then
+            EC_NETWORK=goerli
             echo "You chose to run on Prater testnet"
         else
             echo "You chose Cancel."
             exit 0
         fi
+
+        query_graffiti
+        query_execution_client
+        query_grafana
+    else
+        unset EXECUTION_CLIENT
+        unset GRAFANA_CLIENT
+
+        query_graffiti
+        query_remote_beacon
+        CC_NODE="${REMOTE_BEACON}"
     fi
+
+    if [[ "${CONSENSUS_CLIENT}" == "teku-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote beacon, e.g. Infura?" 10 60) then
+            query_remote_beacon
+            TEKU_RAPID_SYNC="--initial-state ${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
+        else
+            TEKU_RAPID_SYNC=""
+        fi
+    else
+       TEKU_RAPID_SYNC=""
+    fi
+
+    COMPOSE_FILE="${CONSENSUS_CLIENT}"
+    if [ "${EXECUTION_CLIENT+x}" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+    fi
+    if [ "${GRAFANA_CLIENT+x}" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
+    fi
+
+    echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
+
+    var=GRAFFITI
+    set_value_in_env
+    var=CC_NODE
+    set_value_in_env
+    var=TEKU_RAPID_SYNC
+    set_value_in_env
+    var=COMPOSE_FILE
+    set_value_in_env
+    var=EC_NODE
+    set_value_in_env
+    var=EC_FALLBACK_NODE1
+    set_value_in_env
+    var=EC_FALLBACK_NODE2
+    set_value_in_env
+    var=NETWORK
+    set_value_in_env
+    var=EC_NETWORK
+    set_value_in_env
 }
 
 printhelp() {
-    me=$(basename $BASH_SOURCE)
-    echo "usage: $me [help|-h|--help] <subcommand>"
+    me=$(basename "${BASH_SOURCE}")
+    echo "usage: ${me} [help|-h|--help] <subcommand>"
     echo ""
     echo "optional arguments:"
     echo "  help | -h | --help"
@@ -260,38 +462,57 @@ printhelp() {
     echo ""
     echo "subcommands:"
     echo "  config "
-    echo "     configures the tool with your choice of clients"
+    echo "     configures eth-docker with your choice of Ethereum clients"
     echo "  update "
-    echo "     updates all client versions, but notably does not update this tool itself"
+    echo "     updates all client versions and eth-docker itself"
     echo "  start"
-    echo "     starts the node software"
+    echo "     starts the Ethereum node software"
     echo "  stop"
-    echo "     stops the node software"
+    echo "     stops the Ethereum node software"
     echo "  restart"
-    echo "     restarts the node software, a combination of stop and start"
+    echo "     restarts the Ethereum node software, a combination of stop and start"
     echo "  logs"
     echo "     shows logs"
     echo "  cmd <command>"
-    echo "     executes arbitrary docker-compose command. use "help" help to list them"
+    echo "     executes an arbitrary docker-compose command. Use \"cmd help\" to list them"
+    echo "  terminate"
+    echo "     stops the Ethereum node software and destroys all data stores"
+    echo "  prune-geth"
+    echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
     echo ""
     echo ""
-    echo "The logs subcommand can be appended by flags and specify the container/s. example: "
+    echo "The logs subcommand can be appended by flags and specify the container(s). example: "
     echo ""
-    echo "  $me logs -f --tail 500 eth1"
-    echo "    shows logs only for eth1 service"
+    echo "  $me logs -f --tail 500 execution"
+    echo "    shows logs only for execution service"
     echo ""
     echo ""
     echo "Be sure to run the config command as a non-root user, and all other commands"
-    echo "either with sudo, or as a user who is part of the docker group"
+    echo "either with sudo, or as a user who is part of the \"docker\" group"
     echo ""
     exit 0
 }
 
-if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
+if [[ "${#}" -eq 0 || "${1}" == "help" || "${1}" == "-h" || "${1}" == "--help" ]]; then
     printhelp
 fi
 
-command=${1}
+# Use this to make sure root doesn't end up owning files
+OWNER=$(stat -c '%U' .)
+
+if ! [ -f "ethd" ]; then
+    echo "Please run this from the eth-docker directory."
+    exit 1
+fi
+
+if [ "${OWNER}" == "root" ]; then
+    echo "Please install eth-docker as a non-root user."
+    exit 1
+fi
+
+ENV_FILE=.env
+
+command="${1}"
 shift
 
-${command} $@
+"${command}" "${@}"

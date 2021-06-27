@@ -9,16 +9,16 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y cmake libtinfo5 libgmp-dev npm && npm install -g @bazel/bazelisk && bazel version
 
 WORKDIR /go/src
-RUN bash -c "git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //beacon-chain:beacon-chain && bazel build --config=release //validator:validator && bazel build --config=release //slasher:slasher"
+RUN bash -c "git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //beacon-chain:beacon-chain && bazel build --config=release //validator:validator && bazel build --config=release //slasher:slasher && bazel build --config=release //cmd/client-stats:client-stats"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:buster-slim as beacon
+FROM debian:buster-slim as consensus
 
-ARG USER=prysmbeacon
+ARG USER=prysmconsensus
 ARG UID=10002
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates curl bash \
+  ca-certificates curl bash tzdata \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -46,11 +46,12 @@ RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700
 COPY --from=builder /go/src/prysm/bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
 COPY --from=builder /go/src/prysm/bazel-bin/cmd/validator/validator_/validator /usr/local/bin/
 COPY --from=builder /go/src/prysm/bazel-bin/cmd/slasher/slasher_/slasher /usr/local/bin/
+COPY --from=builder /go/src/prysm/bazel-bin/cmd/client-stats/client-stats_/client-stats /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh","beacon-chain"]
 
-FROM beacon as validator
+FROM consensus as validator
 
 ARG USER=prysmvalidator
 ARG UID=10000
@@ -70,5 +71,4 @@ RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700
 
 COPY ./validator-import.sh /usr/local/bin/
 
-FROM beacon as slasher
-
+FROM consensus as slasher

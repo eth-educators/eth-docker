@@ -4,7 +4,10 @@ services:
     restart: "${RESTART}"
     image: lighthouse:local
     volumes:
-      - /data/eth/mainnet/validator:/var/lib/lighthouse
+      - /data/eth/${NETWORK}/validator:/var/lib/lighthouse
+      # - lhvalidator-data:/var/lib/lighthouse
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 5064:5064
     entrypoint:
@@ -14,7 +17,7 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${BN_NODE}
+      - ${BN_NODE}${CC_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --network
@@ -31,6 +34,8 @@ services:
     volumes:
       - /data/eth/mainnet/validator:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
       - lighthouse
@@ -50,6 +55,8 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-exit.sh
       - lighthouse
@@ -57,7 +64,7 @@ services:
       - validator
       - exit
       - --beacon-node
-      - ${BN_NODE}
+      - ${BN_NODE}${CC_NODE}
       - --datadir
       - /var/lib/lighthouse
       - --network
@@ -71,6 +78,8 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}:/interchange
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse
       - account
@@ -80,7 +89,7 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  eth2:
+  eth:
     image: tianon/true
     restart: "no"
     depends_on:

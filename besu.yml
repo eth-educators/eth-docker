@@ -1,55 +1,61 @@
 version: "3.4"
 services:
-  eth1:
+  execution:
     restart: "${RESTART}"
     stop_grace_period: 3m
     build:
       context: ./besu
       dockerfile: ${BESU_DOCKERFILE}
       args:
-        - BUILD_TARGET=${BESU_SRC_BUILD_TARGET} 
+        - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local
     volumes:
       - besu-eth1-data:/var/lib/besu
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${ETH1_PORT}:${ETH1_PORT}/tcp
-      - ${ETH1_PORT}:${ETH1_PORT}/udp
+      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
+      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}/tcp
+      - ${ETH1_RPC_PORT}${EC_RPC_PORT}/tcp
+      - ${ETH1_WS_PORT}${EC_WS_PORT}/tcp
+    networks:
+      default:
+        aliases:
+          - eth1
     entrypoint:
       - docker-entrypoint.sh
       - /opt/besu/bin/besu
       - --data-path
       - /var/lib/besu
       - --p2p-port
-      -  ${ETH1_PORT}
+      -  ${ETH1_PORT}${EC_P2P_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
       - "web3,eth,net"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
-      - ${ETH1_RPC_PORT}
+      - ${ETH1_RPC_PORT}${EC_RPC_PORT}
       - --rpc-ws-enabled
       - --rpc-ws-api
       - "web3,eth,net"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
-      - ${ETH1_WS_PORT}
-      - --host-allowlist=eth1,localhost
+      - ${ETH1_WS_PORT}${EC_WS_PORT}
+      - --host-allowlist=*
       - --logging
       - ${LOG_LEVEL}
       - --network
-      - ${ETH1_NETWORK}
+      - ${ETH1_NETWORK}${EC_NETWORK}
       - --pruning-enabled
 # This is going to be the new hawtness but should only be used for testing right now,
 # it is not stable on mainnet. When using this, disable --pruning-enabled.
 #     - --Xdata-storage-format=BONSAI
-  eth2:
+  eth:
     depends_on:
-      - eth1
+      - execution
 volumes:
   besu-eth1-data:

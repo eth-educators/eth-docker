@@ -1,0 +1,116 @@
+version: "3.4"
+x-build: &prysm-build
+  context: ./prysm
+  dockerfile: ${PRYSM_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+
+services:
+  validator:
+    restart: "${RESTART}"
+    build:
+      target: validator
+      <<: *prysm-build
+    image: prysm-validator:local
+    user: prysmvalidator
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - validator
+      - --datadir
+      - /var/lib/prysm
+      - --wallet-dir
+      - /var/lib/prysm/
+      - --beacon-rpc-provider
+      - ${CC_NODE}
+      - --graffiti
+      - ${GRAFFITI}
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --${NETWORK}
+      - --tls-cert
+      - /etc/ssl/certs/ca-certificates.crt
+      - --accept-terms-of-use
+      # If you chose not to store the wallet password during import, comment out the two following lines
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
+  validator-account-list:
+    restart: "no"
+    image: prysm-validator:local
+    user: prysmvalidator
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - validator
+      - --datadir
+      - /var/lib/prysm
+      - --verbosity
+      - ${LOG_LEVEL}
+      - accounts
+      - list
+      - --wallet-dir
+      - /var/lib/prysm/
+      - --${NETWORK}
+      # If you chose not to store the wallet password during import, comment out the two following lines
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
+  validator-import:
+    restart: "no"
+    image: prysm-validator:local
+    user: root
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: validator-import.sh
+    command:
+      - validator
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --datadir
+      - /var/lib/prysm
+      - accounts
+      - import
+      - --wallet-dir
+      - /var/lib/prysm/
+      - --keys-dir
+      - /val_keys
+      - --${NETWORK}
+  validator-exit:
+    restart: "no"
+    image: prysm-validator:local
+    user: prysmvalidator
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - validator
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --datadir
+      - /var/lib/prysm
+      - accounts
+      - voluntary-exit
+      - --wallet-dir
+      - /var/lib/prysm/
+      - --beacon-rpc-provider
+      - ${CC_NODE}
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
+      - --${NETWORK}
+      - --tls-cert
+      - /etc/ssl/certs/ca-certificates.crt
+  eth:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - validator
+volumes:
+  prysmvalidator-data:

@@ -1,0 +1,38 @@
+# Build Erigon in a stock Go build container
+FROM golang:1.16-alpine as builder
+
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
+
+ARG BUILD_TARGET
+
+RUN apk update && apk add --no-cache make gcc g++ musl-dev linux-headers git bash
+
+WORKDIR /src
+RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon && make rpcdaemon"
+
+# Pull all binaries into a second stage deploy container
+FROM alpine:latest
+
+ARG USER=erigon
+ARG UID=10001
+
+RUN apk add --no-cache libgcc libstdc++ ca-certificates tzdata
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/erigon && chown ${USER}:${USER} /var/lib/erigon
+
+# Copy executable
+COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/
+COPY --from=builder /src/erigon/build/bin/rpcdaemon /usr/local/bin/
+
+USER ${USER}
+
+ENTRYPOINT ["erigon"]
