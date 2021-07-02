@@ -9,6 +9,7 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
+    user: root
     stop_grace_period: 1m
     volumes:
       - tekuconsensus-data:/var/lib/teku
@@ -20,6 +21,7 @@ services:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
