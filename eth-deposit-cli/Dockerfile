@@ -7,7 +7,7 @@ RUN mkdir -p /src
 WORKDIR /src
 RUN bash -c "git clone https://github.com/ethereum/eth2.0-deposit-cli.git && cd eth2.0-deposit-cli && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}"
 
-FROM python:3.7-alpine
+FROM python:3.9-alpine
 
 ARG USER=depcli
 ARG UID=1000
