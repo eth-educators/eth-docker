@@ -1,0 +1,91 @@
+version: "3.4"
+
+services:
+  heimdall:
+    image: "maticnetwork/heimdall:${HEIMDALL_TAG}"
+    command: >
+      bash -c "
+        if [ ! -f \"/root/.heimdalld/config/config.toml\" ]
+        then
+          heimdalld init --home /root/.heimdalld --chain-id ${HEIMDALL_CHAIN_ID} \
+          && if [ ${BOR_MODE} == \"archive\" ]
+          then
+            wget -O /root/snapshot/heimsnap.tgz ${HEIMDALL_ARCHIVE_NODE_SNAPSHOT_FILE}
+          else
+            wget -O /root/snapshot/heimsnap.tgz ${HEIMDALL_FULL_NODE_SNAPSHOT_FILE}
+          fi
+          tar -xzvf /root/snapshot/heimsnap.tgz -C /root/.heimdalld/data/
+          rm /root/snapshot/heimsnap.tgz
+        fi \
+        && wget -O /root/.heimdalld/config/genesis.json ${HEIMDALL_GENESIS_URL} -P /root/.heimdalld/config \
+        && sed -i '/seeds =/c\seeds = \"${HEIMDALL_SEEDS}\"' /root/.heimdalld/config/config.toml \
+        && sed -i '/26657/c\laddr = \"tcp://0.0.0.0:26657\"' /root/.heimdalld/config/config.toml \
+        && sed -i '/bor_rpc_url/c\bor_rpc_url = \"${HEIMDALL_BOR_RPC_URL}\"' /root/.heimdalld/config/heimdall-config.toml \
+        && sed -i '/eth_rpc_url/c\eth_rpc_url = \"${HEIMDALL_ETH_RPC_URL}\"' /root/.heimdalld/config/heimdall-config.toml \
+        && wget -O /root/scripts/heimdall-startup.sh ${HEIMDALL_START} \
+        && cd /root/scripts && sh ./heimdall-startup.sh && sleep infinity
+      "
+    volumes:
+      - heimdall-scripts:/root/scripts
+      - heimdall-snapshot:/root/snapshot
+      - heimdall-logs:/root/logs/
+      - heimdall-data:/root/.heimdalld
+    expose:
+      - "1317/tcp"
+      - "26657/tcp"
+    ports:
+      - "26656:26656"
+
+  bor:
+    image: "maticnetwork/bor:${BOR_TAG}"
+    command: >
+      sh -c "
+        cd /root \
+        && wget -O setup.sh ${BOR_SETUP} \
+        && wget -O genesis.json ${BOR_GENESIS} \
+        && wget -O static-nodes.json ${BOR_STATIC_FILE} \
+        && sh setup.sh \
+        && if [ ! -f \"start.sh\" ]
+        then
+          if [ ${BOR_MODE} == \"archive\" ]
+          then
+            wget -O /root/snapshot/borsnap.tgz ${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}
+          else
+            wget -O /root/snapshot/borsnap.tgz ${BOR_FULL_NODE_SNAPSHOT_FILE}
+          fi
+          tar -xzvf /root/snapshot/borsnap.tgz -C /root/.bor/data/bor/chaindata
+          rm /root/snapshot/borsnap.tgz
+        fi \
+        && wget -O start.sh ${BOR_START} \
+        && sed -i '/datadir/ a --bootnodes \"${BOR_BOOTNODES}\" \\\' start.sh \
+        && sed -i '/datadir/ a --bor.heimdall http://heimdall:1317 \\\' start.sh \
+        && if [ ${BOR_MODE} == \"archive\" ]
+          then
+            sed -i '/datadir/ a --gcmode \"archive\" \\\' start.sh
+          fi \
+        && sed -i '/^  --txpool.nolocals/d' start.sh \
+        && sed -i '/^  --txpool.lifetime/d' start.sh \
+        && sed -i '/^  --txpool.globalslots/d' start.sh \
+        && sed -i '/datadir/ a --txpool.globalslots \"100000\" \\\' start.sh \
+        && sed -i '/datadir/ a --txpool.locals ${TX_LOCAL_ADDR} \\\' start.sh \
+        && sed -i '/datadir/ a --port ${BOR_P2P_PORT} \\\' start.sh \
+        && sed -i '/datadir/ a --ws --ws.port 8546 --ws.addr 0.0.0.0 --ws.origins \"*\" \\\' start.sh \
+        && sh start.sh
+      "
+    volumes:
+      - bor-snapshot:/root/snapshot
+      - bor-data:/root/.bor
+    expose:
+      - "8545/tcp"
+      - "8546/tcp"
+    ports:
+      - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/tcp
+      - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/udp
+
+volumes:
+  bor-snapshot:
+  bor-data:
+  heimdall-scripts:
+  heimdall-snapshot:
+  heimdall-logs:
+  heimdall-data:

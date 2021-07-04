@@ -1,0 +1,14 @@
+# To be used in conjunction with bor.yml
+version: "3.4"
+services:
+  bor:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.bor.service=bor
+      - traefik.http.routers.bor.entrypoints=websecure
+      - traefik.http.routers.bor.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.services.bor.loadbalancer.server.port=8545
+      - traefik.http.routers.borws.service=borws
+      - traefik.http.routers.borws.entrypoints=websecure
+      - traefik.http.routers.borws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.services.borws.loadbalancer.server.port=8546
