@@ -82,6 +82,11 @@ services:
       - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/tcp
       - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/udp
 
+  eth:
+    depends_on:
+      - heimdall
+      - bor
+
 volumes:
   bor-snapshot:
   bor-data:

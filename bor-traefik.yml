@@ -12,3 +12,6 @@ services:
       - traefik.http.routers.borws.entrypoints=websecure
       - traefik.http.routers.borws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
       - traefik.http.services.borws.loadbalancer.server.port=8546
+
+  eth:
+    image: tianon/true
