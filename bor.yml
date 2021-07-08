@@ -40,7 +40,7 @@ services:
     image: "maticnetwork/bor:${BOR_TAG}"
     command: >
       sh -c "
-        cd /root \
+        cd /root/scripts \
         && wget -O setup.sh ${BOR_SETUP} \
         && wget -O genesis.json ${BOR_GENESIS} \
         && wget -O static-nodes.json ${BOR_STATIC_FILE} \
@@ -75,6 +75,7 @@ services:
     volumes:
       - bor-snapshot:/root/snapshot
       - bor-data:/root/.bor
+      - bor-scripts:/root/scripts
     expose:
       - "8545/tcp"
       - "8546/tcp"
@@ -90,6 +91,7 @@ services:
 volumes:
   bor-snapshot:
   bor-data:
+  bor-scripts:
   heimdall-scripts:
   heimdall-snapshot:
   heimdall-logs:

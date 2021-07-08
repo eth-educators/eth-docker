@@ -1,7 +1,7 @@
 # To be used in conjunction with heco.yml
 version: "3.4"
 services:
-  execution:
+  heco:
     labels:
       - traefik.enable=true
       - traefik.http.routers.heco.service=heco

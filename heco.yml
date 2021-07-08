@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  execution:
+  heco:
     restart: "${RESTART}"
     build:
       context: ./geth
@@ -26,6 +26,6 @@ services:
       #- --ws.origins="*"
   eth:
     depends_on:
-      - execution
+      - heco
 volumes:
   heco-ec-data:
