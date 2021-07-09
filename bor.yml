@@ -7,13 +7,8 @@ services:
       bash -c "
         if [ ! -f \"/root/.heimdalld/config/config.toml\" ]
         then
-          heimdalld init --home /root/.heimdalld --chain-id ${HEIMDALL_CHAIN_ID} \
-          && if [ ${BOR_MODE} == \"archive\" ]
-          then
-            wget -O /root/snapshot/heimsnap.tgz ${HEIMDALL_ARCHIVE_NODE_SNAPSHOT_FILE}
-          else
-            wget -O /root/snapshot/heimsnap.tgz ${HEIMDALL_FULL_NODE_SNAPSHOT_FILE}
-          fi
+          heimdalld init --home /root/.heimdalld --chain-id ${HEIMDALL_CHAIN_ID}
+          wget -O /root/snapshot/heimsnap.tgz ${HEIMDALL_SNAPSHOT_FILE}
           tar -xzvf /root/snapshot/heimsnap.tgz -C /root/.heimdalld/data/
           rm /root/snapshot/heimsnap.tgz
         fi \
@@ -43,7 +38,6 @@ services:
         cd /root/scripts \
         && wget -O setup.sh ${BOR_SETUP} \
         && wget -O genesis.json ${BOR_GENESIS} \
-        && wget -O static-nodes.json ${BOR_STATIC_FILE} \
         && sh setup.sh \
         && if [ ! -f \"start.sh\" ]
         then
@@ -66,6 +60,9 @@ services:
         && sed -i '/^  --txpool.nolocals/d' start.sh \
         && sed -i '/^  --txpool.lifetime/d' start.sh \
         && sed -i '/^  --txpool.globalslots/d' start.sh \
+        && sed -i '/^  --txpool.accountslots/d' start.sh \
+        && sed -i '/datadir/ a --txpool.accountslots \"128\" \\\' start.sh \
+        && sed -i '/datadir/ a --rpc.txfeecap \"0\" \\\' start.sh \
         && sed -i '/datadir/ a --txpool.globalslots \"100000\" \\\' start.sh \
         && sed -i '/datadir/ a --txpool.locals ${TX_LOCAL_ADDR} \\\' start.sh \
         && sed -i '/datadir/ a --port ${BOR_P2P_PORT} \\\' start.sh \
