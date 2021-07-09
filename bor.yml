@@ -3,6 +3,7 @@ version: "3.4"
 services:
   heimdall:
     image: "maticnetwork/heimdall:${HEIMDALL_TAG}"
+    stop_grace_period: 3m
     command: >
       bash -c "
         if [ ! -f \"/root/.heimdalld/config/config.toml\" ]
@@ -33,6 +34,7 @@ services:
 
   bor:
     image: "maticnetwork/bor:${BOR_TAG}"
+    stop_grace_period: 3m
     command: >
       sh -c "
         cd /root/scripts \
