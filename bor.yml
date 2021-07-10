@@ -94,7 +94,6 @@ services:
         --txpool.accountqueue 64 \
         --txpool.globalqueue 131072 \
         --maxpeers 200 \
-        --ipcdisable \
         --http --http.addr \"0.0.0.0\" --http.vhosts \"*\" \
         --http.api \"eth,net,web3,txpool,bor\" \
         --http.port 8545
