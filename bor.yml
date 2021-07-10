@@ -53,8 +53,8 @@ services:
       - heimdall-data:/root/.heimdalld
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "1317:1317/tcp"
+    expose:
+      - "1317/tcp"
     command:
       - heimdalld
       - rest-server
