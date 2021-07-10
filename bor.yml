@@ -103,7 +103,8 @@ services:
         --maxpeers 200 \
         --http --http.addr \"0.0.0.0\" --http.vhosts \"*\" \
         --http.api \"eth,net,web3,txpool,bor\" \
-        --http.port 8545
+        --http.port 8545 \
+        --networkid 137
       "
     volumes:
       - bor-data:/root/.bor
