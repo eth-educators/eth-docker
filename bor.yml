@@ -4,6 +4,9 @@ services:
   rabbitmq:
     image: rabbitmq:3-alpine
     restart: unless-stopped
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - "5672/tcp"
 
@@ -33,6 +36,8 @@ services:
       "
     volumes:
       - heimdall-data:/root/.heimdalld
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - "26657/tcp"
     ports:
@@ -46,6 +51,8 @@ services:
       - heimdalld
     volumes:
       - heimdall-data:/root/.heimdalld
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "1317:1317/tcp"
     command:
@@ -100,6 +107,8 @@ services:
       "
     volumes:
       - bor-data:/root/.bor
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - "8545/tcp"
       - "8546/tcp"
