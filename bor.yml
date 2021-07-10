@@ -69,13 +69,13 @@ services:
     command: >
       sh -c "
         set -x \
+        && cd /root/ \
+        && wget -O setup.sh ${BOR_SETUP} \
+        && sed -i '/^cp .\/static-nodes.json/d' setup.sh \
+        && wget -O genesis.json ${BOR_GENESIS} \
+        && sh setup.sh \
         && if [ ! -f \"/root/.bor/setupdone\" ]
         then
-          cd /root/
-          wget -O setup.sh ${BOR_SETUP}
-          sed -i '/^cp .\/static-nodes.json/d' setup.sh
-          wget -O genesis.json ${BOR_GENESIS}
-          sh setup.sh
           mkdir -p /root/.bor/snapshot
           if [ ${BOR_MODE} == \"archive\" ]
           then
