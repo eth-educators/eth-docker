@@ -3,4 +3,4 @@ version: "3.4"
 networks:
   default:
     external:
-      name: eth-docker_default
+      name: eth-main_default

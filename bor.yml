@@ -1,39 +1,63 @@
 version: "3.4"
 
 services:
-  heimdall:
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    restart: unless-stopped
+    expose:
+      - "5672/tcp"
+
+  heimdalld:
     image: "maticnetwork/heimdall:${HEIMDALL_TAG}"
-#    stop_grace_period: 3m
+    restart: unless-stopped
+    stop_grace_period: 1m
+    depends_on:
+      - rabbitmq
     command: >
       bash -c "
         if [ ! -f \"/root/.heimdalld/config/config.toml\" ]
         then
           heimdalld init --home /root/.heimdalld --chain-id ${HEIMDALL_CHAIN_ID}
-          wget -O /root/snapshot/heimsnap.tgz ${HEIMDALL_SNAPSHOT_FILE}
-          tar -xzvf /root/snapshot/heimsnap.tgz -C /root/.heimdalld/data/
-          rm /root/snapshot/heimsnap.tgz
+          mkdir -p /root/.heimdalld/snapshot
+          wget -O /root/.heimdalld/snapshot/heimsnap.tgz ${HEIMDALL_SNAPSHOT_FILE}
+          tar -xzvf /root/.heimdalld/snapshot/heimsnap.tgz -C /root/.heimdalld/data/
+          rm /root/.heimdalld/snapshot/heimsnap.tgz
         fi \
         && wget -O /root/.heimdalld/config/genesis.json ${HEIMDALL_GENESIS_URL} -P /root/.heimdalld/config \
         && sed -i '/seeds =/c\seeds = \"${HEIMDALL_SEEDS}\"' /root/.heimdalld/config/config.toml \
         && sed -i '/26657/c\laddr = \"tcp://0.0.0.0:26657\"' /root/.heimdalld/config/config.toml \
         && sed -i '/bor_rpc_url/c\bor_rpc_url = \"${HEIMDALL_BOR_RPC_URL}\"' /root/.heimdalld/config/heimdall-config.toml \
         && sed -i '/eth_rpc_url/c\eth_rpc_url = \"${HEIMDALL_ETH_RPC_URL}\"' /root/.heimdalld/config/heimdall-config.toml \
-        && wget -O /root/scripts/heimdall-startup.sh ${HEIMDALL_START} \
-        && cd /root/scripts && sh ./heimdall-startup.sh && sleep infinity
+        && sed -i '/amqp_url/c\amqp_url = \"amqp://guest:guest@rabbitmq:5672\"' /root/.heimdalld/config/heimdall-config.toml \
+        && exec heimdalld start
       "
     volumes:
-      - heimdall-scripts:/root/scripts
-      - heimdall-snapshot:/root/snapshot
-      - heimdall-logs:/root/logs/
       - heimdall-data:/root/.heimdalld
     expose:
-      - "1317/tcp"
       - "26657/tcp"
     ports:
       - "26656:26656"
 
+  heimdallr:
+    image: "maticnetwork/heimdall:${HEIMDALL_TAG}"
+    restart: unless-stopped
+    stop_grace_period: 1m
+    depends_on:
+      - heimdalld
+    volumes:
+      - heimdall-data:/root/.heimdalld
+    ports:
+      - "1317:1317/tcp"
+    command:
+      - heimdalld
+      - rest-server
+      - --chain-id=137
+      - --laddr=tcp://0.0.0.0:1317
+      - --node=tcp://heimdalld:26657
+
   bor:
     image: "maticnetwork/bor:${BOR_TAG}"
+    restart: unless-stopped
     stop_grace_period: 3m
     command: >
       sh -c "
@@ -86,12 +110,9 @@ services:
 
   eth:
     depends_on:
-      - heimdall
+      - heimdallr
       - bor
 
 volumes:
   bor-data:
-  heimdall-scripts:
-  heimdall-snapshot:
-  heimdall-logs:
   heimdall-data:
