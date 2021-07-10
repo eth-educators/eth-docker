@@ -89,7 +89,7 @@ services:
         fi \
         && exec bor --datadir /root/.bor/data \
         --gcmode ${BOR_MODE} \
-        --ws --ws.port 8546 --ws.addr 0.0.0.0 --ws.origins \"*\" \
+        --ws --ws.port ${BOR_WS_PORT} --ws.addr 0.0.0.0 --ws.origins \"*\" \
         --port ${BOR_P2P_PORT} \
         --txpool.locals ${TX_LOCAL_ADDR} \
         --txpool.globalslots \"100000\" \
@@ -103,16 +103,16 @@ services:
         --maxpeers 200 \
         --http --http.addr \"0.0.0.0\" --http.vhosts \"*\" \
         --http.api \"eth,net,web3,txpool,bor\" \
-        --http.port 8545 \
-        --networkid 137
+        --http.port ${BOR_RPC_PORT} \
+        --networkid ${BOR_CHAIN_ID}
       "
     volumes:
       - bor-data:/root/.bor
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
-      - "8545/tcp"
-      - "8546/tcp"
+      - "${BOR_RPC_PORT}/tcp"
+      - "${BOR_WS_PORT}/tcp"
     ports:
       - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/tcp
       - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/udp
