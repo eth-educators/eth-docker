@@ -265,7 +265,11 @@ query_custom_execution_client() {
 }
 
 query_fallback_execution_client() {
-        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
+            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EC_NETWORK}.infura.io/ws/v3/..." 3>&1 1>&2 2>&3)
+        else
+            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+        fi
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -307,14 +311,14 @@ query_execution_client() {
 
     if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
         query_fallback_execution_client
-        if [ "${CONSENSUS_CLIENT}" != "prysm-base.yml" ]; then
+        if [[ "${CONSENSUS_CLIENT}" != "prysm-base.yml" && "${CONSENSUS_CLIENT}" != "nimbus-base.yml" ]]; then
             EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
         fi
     fi
 }
 
 query_grafana() {
-    if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
+    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Grafana dashboards?" 10 60) then
         GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
     else
         unset GRAFANA_CLIENT
