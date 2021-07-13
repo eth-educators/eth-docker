@@ -6,7 +6,7 @@ if [ "$(id -u)" = '0' ]; then
   cp /validator_keys/keystore-*.json /var/lib/teku/validator-keys/
   chown teku:teku /var/lib/teku/validator-keys/*
   chmod 600 /var/lib/teku/validator-keys/*
-  echo "Copied validator key(s) from .eth2/validator_keys"
+  echo "Copied validator key(s) from .eth/validator_keys"
   echo
   exec gosu teku "$BASH_SOURCE" "$@"
 fi
