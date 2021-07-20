@@ -31,6 +31,7 @@ services:
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}
+      - --enable-doppelganger
       - --tls-cert
       - /etc/ssl/certs/ca-certificates.crt
       - --accept-terms-of-use
