@@ -418,7 +418,7 @@ config () {
     if [[ "${CONSENSUS_CLIENT}" == "teku-base.yml" ]]; then
         if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote beacon, e.g. Infura?" 10 60) then
             query_remote_beacon
-            TEKU_RAPID_SYNC="--initial-state ${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
+            TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
         else
             TEKU_RAPID_SYNC=""
         fi
