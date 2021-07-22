@@ -26,7 +26,7 @@ update() {
     cmd pull || true
     exec 1>&3
     exec 2>&4
-    envmigrate
+    "$BASH_SOURCE" envmigrate
 }
 
 prune-geth() {
