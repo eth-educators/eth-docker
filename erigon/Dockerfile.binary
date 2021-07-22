@@ -1,0 +1,18 @@
+ARG DOCKER_TAG
+
+FROM thorax/erigon:${DOCKER_TAG}
+
+# Unused, this is here to avoid build time complaints
+ARG BUILD_TARGET
+
+ARG UID=10001
+
+USER root
+
+RUN apk --no-cache add shadow && groupmod -g "${UID}" erigon && usermod -u "${UID}" -g "${UID}" erigon
+
+RUN mkdir -p /var/lib/erigoni && chown -R erigon:erigon /var/lib/erigoni
+
+USER erigon
+
+ENTRYPOINT ["erigon"]

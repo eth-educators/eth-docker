@@ -27,7 +27,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/erigon && chown ${USER}:${USER} /var/lib/erigon
+RUN mkdir -p /var/lib/erigoni && chown ${USER}:${USER} /var/lib/erigoni
 
 # Copy executable
 COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/
