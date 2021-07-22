@@ -18,6 +18,7 @@ update() {
     else
         git pull
     fi
+    "$BASH_SOURCE" envmigrate
     cmd build --pull
     exec 3>&1
     exec 4>&2
@@ -26,16 +27,29 @@ update() {
     cmd pull || true
     exec 1>&3
     exec 2>&4
-    "$BASH_SOURCE" envmigrate
+    echo
+    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
+find the original contents in ${ENV_FILE}.bak."
+    echo "NB: If you made changes to the source or binary build targets, these have NOT \
+been migrated, please recreate these changes yourself."
+    echo
+    cmp -s "${ENV_FILE}" "${ENV_FILE}".bak
+    if [ $? -ne 0 ]; then
+        echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
+        echo
+        diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
+    else
+        echo "No changes made to ${ENV_FILE} during migration"
+    fi
 }
 
 prune-geth() {
-    if [ ! -f "./.env" ]; then
+    if [ ! -f "./${ENV_FILE}" ]; then
         echo "eth-docker has not yet been configured, aborting."
         exit 1
     fi
 
-    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' .env 2>/dev/null ; then
+    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Geth, aborting."
         exit 1
     fi
@@ -48,10 +62,10 @@ prune-geth() {
         exit 1
     fi
 
-    rpc_line=$(grep '^EC_RPC_PORT=' .env)
+    rpc_line=$(grep '^EC_RPC_PORT=' "${ENV_FILE}")
     regex='^EC_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
-        echo "Unable to determine EC_RCP_PORT, aborting."
+        echo "Unable to determine EC_RPC_PORT, aborting."
         exit 1
     else
         rpc_port="${BASH_REMATCH[1]}"
@@ -189,16 +203,16 @@ envmigrate() {
 
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
-      if [ -f ./env.bak ]; then
-          rm .env.bak
+      if [ -f ./"${ENV_FILE}".bak ]; then
+          rm "${ENV_FILE}".bak
       fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" .env.bak
+      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".bak
       sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-      sudo -u "${OWNER}" cp .env.bak .env.source
+      sudo -u "${OWNER}" cp "${ENV_FILE}".bak .env.source
     else
-      cp "${ENV_FILE}" .env.bak
+      cp "${ENV_FILE}" "${ENV_FILE}".bak
       cp default.env "${ENV_FILE}"
-      cp .env.bak .env.source
+      cp "${ENV_FILE}".bak .env.source
     fi
     # TEKU_RAPID_SYNC has whitespace
     if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
@@ -225,11 +239,6 @@ envmigrate() {
     # Migrate http://eth1 and http://beacon
     sed -i "s/http:\/\/eth1/http:\/\/execution/g" "${ENV_FILE}"
     sed -i "s/http:\/\/beacon/http:\/\/consensus/g" "${ENV_FILE}"
-
-    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
-find the original contents in .env.bak."
-    echo "NB: If you made changes to the source or binary build targets, these have NOT \
-been migrated, please recreate these changes yourself."
 }
 
 query_consensus_client() {
