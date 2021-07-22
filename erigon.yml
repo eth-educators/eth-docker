@@ -12,7 +12,7 @@ services:
     image: erigon:local
     user: erigon
     volumes:
-      - erigon-ec-data:/var/lib/erigon
+      - erigon-ec-data:/var/lib/erigoni
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -25,13 +25,13 @@ services:
       - --private.api.addr
       - 0.0.0.0:9090
       - --datadir
-      - /var/lib/erigon
+      - /var/lib/erigoni
       - --port
       - ${EC_P2P_PORT}
       - --chain
       - ${EC_NETWORK}
-      - --storage-mode
-      - r
+      - --prune
+      - htc
   execution:
     restart: "${RESTART}"
     image: erigon:local
