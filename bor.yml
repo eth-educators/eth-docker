@@ -62,6 +62,16 @@ services:
       - --laddr=tcp://0.0.0.0:1317
       - --node=tcp://heimdalld:26657
 
+  prune-bor:
+    image: "maticnetwork/bor:${BOR_TAG}"
+    restart: "no"
+    stop_grace_period: 3m
+    volumes:
+      - bor-data:/root/.bor
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    command: bor --datadir /root/.bor/data snapshot prune-state
+
   bor:
     image: "maticnetwork/bor:${BOR_TAG}"
     restart: unless-stopped
