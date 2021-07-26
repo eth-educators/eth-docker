@@ -120,10 +120,8 @@ services:
       - /var/lib/prysm
       - accounts
       - import
-      - --wallet-dir
-      - /var/lib/prysm/
-      - --keys-dir
-      - /val_keys
+      - --wallet-dir=/var/lib/prysm
+      - --keys-dir=/val_keys
       - --${NETWORK}
   validator-exit:
     restart: "no"
