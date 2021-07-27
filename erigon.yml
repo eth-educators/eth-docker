@@ -12,7 +12,7 @@ services:
     image: erigon:local
     user: erigon
     volumes:
-      - erigon-ec-data:/var/lib/erigoni
+      - erigon-ec-data:/var/lib/erigon
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -25,9 +25,11 @@ services:
       - --private.api.addr
       - 0.0.0.0:9090
       - --datadir
-      - /var/lib/erigoni
+      - /var/lib/erigon
       - --port
       - ${EC_P2P_PORT}
+      - --nat
+      - any
       - --chain
       - ${EC_NETWORK}
       - --prune
