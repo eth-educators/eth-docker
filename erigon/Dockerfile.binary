@@ -11,7 +11,7 @@ USER root
 
 RUN apk --no-cache add shadow && groupmod -g "${UID}" erigon && usermod -u "${UID}" -g "${UID}" erigon
 
-RUN mkdir -p /var/lib/erigoni && chown -R erigon:erigon /var/lib/erigoni
+RUN mkdir -p /var/lib/erigon && chown -R erigon:erigon /var/lib/erigon
 
 USER erigon
 
