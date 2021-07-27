@@ -54,12 +54,10 @@ services:
       - ${LOG_LEVEL}
       - accounts
       - list
-      - --wallet-dir
-      - /var/lib/prysm/
+      - --wallet-dir=/var/lib/prysm/
       - --${NETWORK}
-      # If you chose not to store the wallet password during import, comment out the two following lines
-      - --wallet-password-file
-      - /var/lib/prysm/password.txt
+      # If you chose not to store the wallet password during import, comment out the following line
+      - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
     restart: "no"
     image: prysm-validator:local
@@ -78,10 +76,8 @@ services:
       - /var/lib/prysm
       - accounts
       - import
-      - --wallet-dir
-      - /var/lib/prysm/
-      - --keys-dir
-      - /val_keys
+      - --wallet-dir=/var/lib/prysm/
+      - --keys-dir=/val_keys
       - --${NETWORK}
   validator-exit:
     restart: "no"
@@ -99,15 +95,11 @@ services:
       - /var/lib/prysm
       - accounts
       - voluntary-exit
-      - --wallet-dir
-      - /var/lib/prysm/
-      - --beacon-rpc-provider
-      - ${CC_NODE}
-      - --wallet-password-file
-      - /var/lib/prysm/password.txt
+      - --wallet-dir=/var/lib/prysm/
+      - --beacon-rpc-provider=${CC_NODE}
+      - --wallet-password-file=/var/lib/prysm/password.txt
       - --${NETWORK}
-      - --tls-cert
-      - /etc/ssl/certs/ca-certificates.crt
+      - --tls-cert=/etc/ssl/certs/ca-certificates.crt
   eth:
     image: tianon/true
     restart: "no"
