@@ -26,7 +26,12 @@ update() {
     cmd pull || true
     exec 1>&3
     exec 2>&4
-    envmigrate
+    regex='COMPOSE_FILE=.*bor\.yml.*'
+    if [[ $(cat ${ENV_FILE}) =~ $regex ]]; then
+        echo "Running bor, ${ENV_FILE} left untouched"
+    else
+        envmigrate
+    fi
 }
 
 prune-geth() {
@@ -189,16 +194,16 @@ envmigrate() {
 
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
-      if [ -f ./env.bak ]; then
-          rm .env.bak
+      if [ -f ./${ENV_FILE}.bak ]; then
+          rm ${ENV_FILE}.bak
       fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" .env.bak
+      sudo -u "${OWNER}" cp "${ENV_FILE}" ${ENV_FILE}.bak
       sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-      sudo -u "${OWNER}" cp .env.bak .env.source
+      sudo -u "${OWNER}" cp ${ENV_FILE}.bak .env.source
     else
-      cp "${ENV_FILE}" .env.bak
+      cp "${ENV_FILE}" ${ENV_FILE}.bak
       cp default.env "${ENV_FILE}"
-      cp .env.bak .env.source
+      cp ${ENV_FILE}.bak .env.source
     fi
     # TEKU_RAPID_SYNC has whitespace
     if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
