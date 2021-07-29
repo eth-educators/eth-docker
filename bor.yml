@@ -126,8 +126,19 @@ services:
     ports:
       - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/tcp
       - ${BOR_P2P_PORT}:${BOR_P2P_PORT}/udp
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.bor.service=bor
+      - traefik.http.routers.bor.entrypoints=websecure
+      - traefik.http.routers.bor.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.services.bor.loadbalancer.server.port=${BOR_RPC_PORT}
+      - traefik.http.routers.borws.service=borws
+      - traefik.http.routers.borws.entrypoints=websecure
+      - traefik.http.routers.borws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.services.borws.loadbalancer.server.port=${BOR_WS_PORT}
 
   eth:
+    image: tianon/true
     depends_on:
       - heimdallr
       - bor
