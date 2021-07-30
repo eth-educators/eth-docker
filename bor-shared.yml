@@ -5,5 +5,3 @@ services:
     ports:
       - ${BOR_RPC_PORT}:${BOR_RPC_PORT}/tcp
       - ${BOR_WS_PORT}:${BOR_WS_PORT}/tcp
-  eth:
-    image: tianon/true

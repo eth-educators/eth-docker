@@ -1,4 +1,4 @@
-# Build Geth in a stock Go build container
+# Build Opera in a stock Go build container
 FROM golang:1.16-alpine as builder
 
 # Unused, this is here to avoid build time complaints
