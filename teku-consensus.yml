@@ -9,6 +9,7 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
+    user: root
     stop_grace_period: 1m
     volumes:
       - tekuconsensus-data:/var/lib/teku
@@ -20,11 +21,13 @@ services:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
       - --eth1-endpoints=${EC_NODE}
+      - --eth1-deposit-contract-max-request-size=150
       - --p2p-port=${TEKU_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --logging=${LOG_LEVEL}

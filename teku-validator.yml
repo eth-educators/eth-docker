@@ -13,8 +13,6 @@ services:
       - teku-data:/var/lib/teku
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    environment:
-      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku

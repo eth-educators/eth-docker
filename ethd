@@ -31,16 +31,30 @@ update() {
         echo "Running bor, ${ENV_FILE} left untouched"
     else
         envmigrate
+        echo
+        echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
+find the original contents in ${ENV_FILE}.bak."
+        echo "NB: If you made changes to the source or binary build targets, these have NOT \
+been migrated, please recreate these changes yourself."
+        echo
+        cmp -s "${ENV_FILE}" "${ENV_FILE}".bak
+        if [ $? -ne 0 ]; then
+            echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
+            echo
+            diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
+        else
+            echo "No changes made to ${ENV_FILE} during migration"
+        fi
     fi
 }
 
 prune-geth() {
-    if [ ! -f "./.env" ]; then
+    if [ ! -f "./${ENV_FILE}" ]; then
         echo "eth-docker has not yet been configured, aborting."
         exit 1
     fi
 
-    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' .env 2>/dev/null ; then
+    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Geth, aborting."
         exit 1
     fi
@@ -53,10 +67,10 @@ prune-geth() {
         exit 1
     fi
 
-    rpc_line=$(grep '^EC_RPC_PORT=' .env)
+    rpc_line=$(grep '^EC_RPC_PORT=' "${ENV_FILE}")
     regex='^EC_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
-        echo "Unable to determine EC_RCP_PORT, aborting."
+        echo "Unable to determine EC_RPC_PORT, aborting."
         exit 1
     else
         rpc_port="${BASH_REMATCH[1]}"
@@ -183,8 +197,8 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
              PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
              CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
-             EC_HOST EC_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
-             EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
+             EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
+             BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
              PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
              RESTART LOG_LEVEL )
     OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \
@@ -194,16 +208,16 @@ envmigrate() {
 
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
-      if [ -f ./${ENV_FILE}.bak ]; then
-          rm ${ENV_FILE}.bak
+      if [ -f ./"${ENV_FILE}".bak ]; then
+          rm "${ENV_FILE}".bak
       fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" ${ENV_FILE}.bak
+      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".bak
       sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-      sudo -u "${OWNER}" cp ${ENV_FILE}.bak .env.source
+      sudo -u "${OWNER}" cp "${ENV_FILE}".bak .env.source
     else
-      cp "${ENV_FILE}" ${ENV_FILE}.bak
+      cp "${ENV_FILE}" "${ENV_FILE}".bak
       cp default.env "${ENV_FILE}"
-      cp ${ENV_FILE}.bak .env.source
+      cp "${ENV_FILE}".bak .env.source
     fi
     # TEKU_RAPID_SYNC has whitespace
     if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
@@ -230,11 +244,6 @@ envmigrate() {
     # Migrate http://eth1 and http://beacon
     sed -i "s/http:\/\/eth1/http:\/\/execution/g" "${ENV_FILE}"
     sed -i "s/http:\/\/beacon/http:\/\/consensus/g" "${ENV_FILE}"
-
-    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
-find the original contents in .env.bak."
-    echo "NB: If you made changes to the source or binary build targets, these have NOT \
-been migrated, please recreate these changes yourself."
 }
 
 query_consensus_client() {
@@ -270,7 +279,11 @@ query_custom_execution_client() {
 }
 
 query_fallback_execution_client() {
-        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
+            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EC_NETWORK}.infura.io/ws/v3/..." 3>&1 1>&2 2>&3)
+        else
+            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+        fi
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -312,14 +325,14 @@ query_execution_client() {
 
     if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
         query_fallback_execution_client
-        if [ "${CONSENSUS_CLIENT}" != "prysm-base.yml" ]; then
+        if [[ "${CONSENSUS_CLIENT}" != "prysm-base.yml" && "${CONSENSUS_CLIENT}" != "nimbus-base.yml" ]]; then
             EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
         fi
     fi
 }
 
 query_grafana() {
-    if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
+    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Grafana dashboards?" 10 60) then
         GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
     else
         unset GRAFANA_CLIENT
@@ -419,7 +432,7 @@ config () {
     if [[ "${CONSENSUS_CLIENT}" == "teku-base.yml" ]]; then
         if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote beacon, e.g. Infura?" 10 60) then
             query_remote_beacon
-            TEKU_RAPID_SYNC="--initial-state ${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
+            TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
         else
             TEKU_RAPID_SYNC=""
         fi
