@@ -117,16 +117,9 @@ prune-geth() {
     echo ""
     echo "Starting prune"
     echo ""
-    cmd run --rm -d execution snapshot prune-state
-    regex='[^[:space:]]*execution_run[^[:space:]]*'
-    if [[ $(docker ps) =~ $regex ]]; then
-        echo ""
-        echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 ${BASH_REMATCH[0]}'"
-    else
-       echo ""
-       echo "Prune is running, but this program was unable to determine the container name. All running containers:"
-       docker ps
-    fi
+    cmd run --rm --name geth_prune -d execution snapshot prune-state
+    echo ""
+    echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 geth_prune'"
     echo ""
     echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting database\". During \
 the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
