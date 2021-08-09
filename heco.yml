@@ -29,10 +29,16 @@ services:
       - traefik.http.routers.heco.service=heco
       - traefik.http.routers.heco.entrypoints=websecure
       - traefik.http.routers.heco.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.hecolb.service=heco
+      - traefik.http.routers.hecolb.entrypoints=websecure
+      - traefik.http.routers.hecolb.rule=Host(`${EC_LB}.${DOMAIN}`)
       - traefik.http.services.heco.loadbalancer.server.port=8545
       - traefik.http.routers.hecows.service=hecows
       - traefik.http.routers.hecows.entrypoints=websecure
       - traefik.http.routers.hecows.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.hecowslb.service=hecows
+      - traefik.http.routers.hecowslb.entrypoints=websecure
+      - traefik.http.routers.hecowslb.rule=Host(`${EC_WS_LB}.${DOMAIN}`)
       - traefik.http.services.hecows.loadbalancer.server.port=8546
 
   eth:

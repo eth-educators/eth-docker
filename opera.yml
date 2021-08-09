@@ -25,10 +25,16 @@ services:
       - traefik.http.routers.opera.service=opera
       - traefik.http.routers.opera.entrypoints=websecure
       - traefik.http.routers.opera.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.operalb.service=opera
+      - traefik.http.routers.operalb.entrypoints=websecure
+      - traefik.http.routers.operalb.rule=Host(`${EC_LB}.${DOMAIN}`)
       - traefik.http.services.opera.loadbalancer.server.port=${EC_RPC_PORT}
       - traefik.http.routers.operaws.service=operaws
       - traefik.http.routers.operaws.entrypoints=websecure
       - traefik.http.routers.operaws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.operawslb.service=operaws
+      - traefik.http.routers.operawslb.entrypoints=websecure
+      - traefik.http.routers.operawslb.rule=Host(`${EC_WS_LB}.${DOMAIN}`)
       - traefik.http.services.operaws.loadbalancer.server.port=${EC_WS_PORT}
     entrypoint:
       - docker-entrypoint.sh
