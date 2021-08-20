@@ -15,11 +15,11 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
-      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}${EC_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}${EC_WS_PORT}/tcp
+      - ${EC_RPC_PORT}/tcp
+      - ${EC_WS_PORT}/tcp
     networks:
       default:
         aliases:
@@ -30,26 +30,26 @@ services:
       - --data-path
       - /var/lib/besu
       - --p2p-port
-      -  ${ETH1_PORT}${EC_P2P_PORT}
+      - ${EC_P2P_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
       - "web3,eth,net"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
-      - ${ETH1_RPC_PORT}${EC_RPC_PORT}
+      - ${EC_RPC_PORT}
       - --rpc-ws-enabled
       - --rpc-ws-api
       - "web3,eth,net"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
-      - ${ETH1_WS_PORT}${EC_WS_PORT}
+      - ${EC_WS_PORT}
       - --host-allowlist=*
       - --logging
       - ${LOG_LEVEL}
       - --network
-      - ${ETH1_NETWORK}${EC_NETWORK}
+      - ${EC_NETWORK}
       - --pruning-enabled
 # This is going to be the new hawtness but should only be used for testing right now,
 # it is not stable on mainnet. When using this, disable --pruning-enabled.

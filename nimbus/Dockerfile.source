@@ -1,5 +1,5 @@
 # Build Nimbus in a stock debian container
-FROM debian:buster-slim as builder
+FROM debian:bullseye-slim as builder
 
 # Included here to avoid build-time complaints
 ARG DOCKER_TAG
@@ -14,7 +14,7 @@ RUN bash -c "git clone https://github.com/status-im/nim-beacon-chain && cd nim-b
 	make -j$(nproc) LOG_LEVEL="TRACE" NIMFLAGS="-d:chronicles_sinks=textlines -d:chronicles_colors=none" PARTIAL_STATIC_LINKING=1 QUICK_AND_DIRTY_COMPILER=1 nimbus_beacon_node"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 ARG USER=user
 ARG UID=10002
