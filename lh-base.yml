@@ -36,7 +36,7 @@ services:
       - --target-peers
       - ${LH_PEER_COUNT}
       - --eth1-endpoints
-      - ${ETH1_NODE}${EC_NODE}
+      - ${EC_NODE}
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
@@ -54,7 +54,7 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${BN_NODE}${CC_NODE}
+      - ${CC_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --network

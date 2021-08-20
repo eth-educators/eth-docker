@@ -33,11 +33,11 @@ services:
       - --grpc-gateway-host
       - 0.0.0.0
       - --http-web3provider
-      - ${ETH1_NODE}${EC_NODE}
+      - ${EC_NODE}
       - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE1}${EC_FALLBACK_NODE1}
+      - ${EC_FALLBACK_NODE1}
       - --fallback-web3provider
-      - ${ETH1_FALLBACK_NODE2}${EC_FALLBACK_NODE2}
+      - ${EC_FALLBACK_NODE2}
       - --eth1-header-req-limit
       - "150"
       - --p2p-tcp-port

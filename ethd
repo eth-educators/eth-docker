@@ -117,16 +117,9 @@ prune-geth() {
     echo ""
     echo "Starting prune"
     echo ""
-    cmd run --rm -d execution snapshot prune-state
-    regex='[^[:space:]]*execution_run[^[:space:]]*'
-    if [[ $(docker ps) =~ $regex ]]; then
-        echo ""
-        echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 ${BASH_REMATCH[0]}'"
-    else
-       echo ""
-       echo "Prune is running, but this program was unable to determine the container name. All running containers:"
-       docker ps
-    fi
+    cmd run --rm --name geth_prune -d execution snapshot prune-state
+    echo ""
+    echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 geth_prune'"
     echo ""
     echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting database\". During \
 the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
@@ -195,7 +188,7 @@ envmigrate() {
              EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
              BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
              PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
-             RESTART LOG_LEVEL )
+             RESTART LOG_LEVEL GETH_CACHE ERIGON_PRUNE )
     OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \
              ETH1_WS_HOST BN_NODE ETH1_PORT ETH1_RPC_PORT ETH1_WS_PORT )
     NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
@@ -242,15 +235,23 @@ envmigrate() {
 }
 
 query_consensus_client() {
-    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
-    "Which consensus/validator client do you want to run?" 16 65 8 \
-    "teku-base.yml" "Teku (Java) - consensus and validator client" \
-    "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
-    "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
-    "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
-    "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
-    "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
-    "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)
+    if uname -a | grep -q aarch64; then
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
+      "Which consensus/validator client do you want to run?" 16 65 8 \
+      "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
+      "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+      "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" 3>&1 1>&2 2>&3)
+    else
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
+      "Which consensus/validator client do you want to run?" 16 65 8 \
+      "teku-base.yml" "Teku (Java) - consensus and validator client" \
+      "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
+      "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
+      "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+      "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
+      "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
+      "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)
+    fi
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
@@ -290,12 +291,19 @@ query_fallback_execution_client() {
 }
 
 query_execution_client() {
-    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-    "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
-    "NONE" "Custom" \
-    "geth.yml" "Geth (Go)" \
-    "nm.yml" "Nethermind (.NET)" \
-    "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
+    if uname -a | grep -q aarch64; then
+      EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+      "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
+      "NONE" "Custom" \
+      "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
+    else
+      EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+      "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
+      "NONE" "Custom" \
+      "geth.yml" "Geth (Go)" \
+      "nm.yml" "Nethermind (.NET)" \
+      "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
+    fi
 
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
