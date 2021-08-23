@@ -13,15 +13,11 @@ services:
     volumes:
       - nm-eth1-data:/var/lib/nethermind
     ports:
-      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
-      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}${EC_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}${EC_WS_PORT}/tcp
-    networks:
-      default:
-        aliases:
-          - eth1
+      - ${EC_RPC_PORT}/tcp
+      - ${EC_WS_PORT}/tcp
     entrypoint:
       - docker-entrypoint.sh
       - dotnet
@@ -31,9 +27,9 @@ services:
       - --Init.WebSocketsEnabled
       - "true"
       - --Network.DiscoveryPort
-      -  ${ETH1_PORT}${EC_P2P_PORT}
+      - ${EC_P2P_PORT}
       - --Network.P2PPort
-      -  ${ETH1_PORT}${EC_P2P_PORT}
+      - ${EC_P2P_PORT}
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
@@ -41,13 +37,13 @@ services:
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
-      - ${ETH1_RPC_PORT}${EC_RPC_PORT}
+      - ${EC_RPC_PORT}
       - --JsonRpc.WebSocketsPort
-      - ${ETH1_WS_PORT}${EC_WS_PORT}
+      - ${EC_WS_PORT}
       - --Sync.FastSync
       - "true"
       - --config
-      - ${ETH1_NETWORK}${EC_NETWORK}
+      - ${EC_NETWORK}
       - --Pruning.Enabled
       - "true"
       - --Pruning.CacheMb

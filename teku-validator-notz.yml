@@ -11,8 +11,6 @@ services:
     image: teku:local
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku
@@ -24,15 +22,12 @@ services:
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
-      - --validators-early-attestations-enabled=false
   validator-import:
     restart: "no"
     image: teku:local
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
   validator-exit:
     restart: "no"
@@ -40,8 +35,6 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /opt/teku/bin/teku
       - voluntary-exit

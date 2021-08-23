@@ -26,7 +26,9 @@ services:
       - --udp-port=${NIM_PORT}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
-      - --web3-url=${ETH1_NODE}${EC_NODE}
+      - --web3-url=${EC_NODE}
+      - --web3-url=${EC_FALLBACK_NODE1}
+      - --web3-url=${EC_FALLBACK_NODE2}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rpc

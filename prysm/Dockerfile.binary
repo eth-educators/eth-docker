@@ -1,7 +1,7 @@
 ARG DOCKER_TAG
 FROM prysmaticlabs/prysm-beacon-chain:${DOCKER_TAG} as ccsource
 
-FROM debian:buster-slim as consensus
+FROM debian:bullseye-slim as consensus
 
 #Included here to avoid build-time complaints
 ARG BUILD_TARGET

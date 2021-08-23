@@ -1,0 +1,57 @@
+FROM node:16-alpine as build
+
+# Here only to avoid build-time errors
+ARG DOCKER_TAG
+
+ARG BUILD_TARGET
+
+RUN apk update && apk add --no-cache git g++ make python3 bash && rm -rf /var/cache/apk/*
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+WORKDIR /usr/app
+
+RUN bash -c "git clone https://github.com/ChainSafe/lodestar.git && cd lodestar && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && yarn install --non-interactive --frozen-lockfile && node ./scripts/getGitData /usr/app/lodestar/.git-data.json && rm -r .git"
+
+FROM node:16-alpine
+
+RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec && rm -rf /var/cache/apk/*
+
+WORKDIR /usr/app
+COPY --from=build /usr/app/lodestar .
+ENV DOCKER_LODESTAR_GIT_DATA_FILEPATH /usr/app/.git-data.json
+
+# Scripts that handle permissions
+COPY ./validator-import.sh /usr/local/bin/
+
+ARG USER=lsconsensus
+ARG UID=10002
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/lodestar/consensus && chown ${USER}:${USER} /var/lib/lodestar/consensus && chmod 700 /var/lib/lodestar/consensus
+
+ARG USER=lsvalidator
+ARG UID=10000
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/lodestar/validators && chown ${USER}:${USER} /var/lib/lodestar/validators && chmod 700 /var/lib/lodestar/validators
+
+ENTRYPOINT ["node", "--max-old-space-size=8192", "/usr/app/packages/cli/bin/lodestar"]

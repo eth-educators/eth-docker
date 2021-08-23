@@ -28,23 +28,28 @@ services:
       - /var/lib/erigon
       - --port
       - ${EC_P2P_PORT}
+      - --nat
+      - any
       - --chain
       - ${EC_NETWORK}
-      - --storage-mode
-      - r
+      - --prune=${ERIGON_PRUNE}
   execution:
     restart: "${RESTART}"
     image: erigon:local
     user: erigon
     volumes:
+      - erigon-ec-data:/var/lib/erigon
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - ${EC_RPC_PORT}/tcp
     depends_on:
       - erigon
+    pid: service:erigon # Use erigon's PID namespace. It's required to open Erigon's DB from another process (RPCDaemon local-mode)
     entrypoint:
       - rpcdaemon
+      - --datadir
+      - /var/lib/erigon
       - --private.api.addr
       - erigon:9090
       - --http.addr
@@ -58,7 +63,6 @@ services:
       - --ws
   eth:
     depends_on:
-      - erigon
       - execution
 volumes:
   erigon-ec-data:

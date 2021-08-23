@@ -9,12 +9,9 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
-    user: root
     stop_grace_period: 1m
     volumes:
-      - tekuconsensus-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+      - teku-data:/var/lib/teku
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
     ports:
@@ -30,19 +27,35 @@ services:
       - --eth1-deposit-contract-max-request-size=150
       - --p2p-port=${TEKU_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
+      - --validators-keystore-locking-enabled=true
+      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validators-graffiti=${GRAFFITI}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
     command: ${TEKU_RAPID_SYNC}
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
-      - traefik.http.services.cc.loadbalancer.server.port=5051
+  validator-import:
+    restart: "no"
+    image: teku:local
+    volumes:
+      - teku-data:/var/lib/teku
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+    entrypoint: validator-import.sh
+  validator-exit:
+    restart: "no"
+    image: teku:local
+    user: teku
+    volumes:
+      - teku-data:/var/lib/teku
+    entrypoint:
+      - /opt/teku/bin/teku
+      - voluntary-exit
+      - --beacon-node-api-endpoint=http://consensus:5051
+      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
   eth:
     image: tianon/true
     restart: "no"
     depends_on:
       - consensus
 volumes:
-  tekuconsensus-data:
+  teku-data:
