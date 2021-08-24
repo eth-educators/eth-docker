@@ -25,7 +25,7 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${ETH1_NODE}${EC_NODE}
+      - --eth1-endpoints=${EC_NODE}
       - --eth1-deposit-contract-max-request-size=150
       - --p2p-port=${TEKU_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}

@@ -15,15 +15,11 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/tcp
-      - ${ETH1_PORT}${EC_P2P_PORT}:${ETH1_PORT}${EC_P2P_PORT}/udp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
     expose:
-      - ${ETH1_RPC_PORT}${EC_RPC_PORT}/tcp
-      - ${ETH1_WS_PORT}${EC_WS_PORT}/tcp
-    networks:
-      default:
-        aliases:
-          - eth1
+      - ${EC_RPC_PORT}/tcp
+      - ${EC_WS_PORT}/tcp
     entrypoint:
       - docker-entrypoint.sh
       - openethereum
@@ -37,14 +33,14 @@ services:
       - --ws-apis=web3,eth,pubsub,net
       - --ws-hosts=all
       - --ws-origins=all
-      - --ws-port=${ETH1_WS_PORT}${EC_WS_PORT}
-      - --chain=${ETH1_NETWORK}${EC_NETWORK}
+      - --ws-port=${EC_WS_PORT}
+      - --chain=${EC_NETWORK}
       - --reseal-on-txs
       - none
       - --port
-      - ${ETH1_PORT}${EC_P2P_PORT}
+      - ${EC_P2P_PORT}
       - --jsonrpc-port
-      - ${ETH1_RPC_PORT}${EC_RPC_PORT}
+      - ${EC_RPC_PORT}
       - --logging
       - ${LOG_LEVEL}
       - --snapshot-peers

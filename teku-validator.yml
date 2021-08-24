@@ -17,13 +17,14 @@ services:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - validator-client
-      - --beacon-node-api-endpoint=${BN_NODE}${CC_NODE}
+      - --beacon-node-api-endpoint=${CC_NODE}
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
+      - --validators-early-attestations-enabled=false
   validator-import:
     restart: "no"
     image: teku:local
@@ -44,7 +45,7 @@ services:
     entrypoint:
       - /opt/teku/bin/teku
       - voluntary-exit
-      - --beacon-node-api-endpoint=${BN_NODE}${CC_NODE}
+      - --beacon-node-api-endpoint=${CC_NODE}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
   eth:
     image: tianon/true

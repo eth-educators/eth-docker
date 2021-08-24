@@ -14,7 +14,8 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${BN_NODE}${CC_NODE}
+      - ${CC_NODE}
+      - --enable-doppelganger-protection
       - --graffiti
       - ${GRAFFITI}
       - --network
@@ -56,7 +57,7 @@ services:
       - validator
       - exit
       - --beacon-node
-      - ${BN_NODE}${CC_NODE}
+      - ${CC_NODE}
       - --datadir
       - /var/lib/lighthouse
       - --network
