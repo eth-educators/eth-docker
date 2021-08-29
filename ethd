@@ -18,7 +18,6 @@ update() {
     else
         git pull
     fi
-    "$BASH_SOURCE" envmigrate
     cmd build --pull
     exec 3>&1
     exec 4>&2
@@ -27,19 +26,25 @@ update() {
     cmd pull || true
     exec 1>&3
     exec 2>&4
-    echo
-    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
-find the original contents in ${ENV_FILE}.bak."
-    echo "NB: If you made changes to the source or binary build targets, these have NOT \
-been migrated, please recreate these changes yourself."
-    echo
-    cmp -s "${ENV_FILE}" "${ENV_FILE}".bak
-    if [ $? -ne 0 ]; then
-        echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
-        echo
-        diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
+    regex='COMPOSE_FILE=.*bor\.yml.*'
+    if [[ $(cat ${ENV_FILE}) =~ $regex ]]; then
+        echo "Running bor, ${ENV_FILE} left untouched"
     else
-        echo "No changes made to ${ENV_FILE} during migration"
+        envmigrate
+        echo
+        echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
+find the original contents in ${ENV_FILE}.bak."
+        echo "NB: If you made changes to the source or binary build targets, these have NOT \
+been migrated, please recreate these changes yourself."
+        echo
+        cmp -s "${ENV_FILE}" "${ENV_FILE}".bak
+        if [ $? -ne 0 ]; then
+            echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
+            echo
+            diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
+        else
+            echo "No changes made to ${ENV_FILE} during migration"
+        fi
     fi
 }
 
@@ -185,8 +190,9 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
              PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
              CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
-             EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
-             BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
+             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB DDNS_SUBDOMAIN DDNS_PROXY \
+             TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API BEACON_STATS_MACHINE EC_P2P_PORT
+             LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
              PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
              RESTART LOG_LEVEL GETH_CACHE ERIGON_PRUNE )
     OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \

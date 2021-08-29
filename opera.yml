@@ -1,0 +1,69 @@
+version: "3.4"
+services:
+  opera:
+    restart: "${RESTART}"
+    build:
+      context: ./opera
+      dockerfile: ${OPERA_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${OPERA_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${OPERA_DOCKER_TAG}
+    stop_grace_period: 3m
+    image: opera:local
+    volumes:
+      - opera-ec-data:/var/lib/opera
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
+      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
+    expose:
+      - ${EC_RPC_PORT}/tcp
+      - ${EC_WS_PORT}/tcp
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.opera.service=opera
+      - traefik.http.routers.opera.entrypoints=websecure
+      - traefik.http.routers.opera.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.operalb.service=opera
+      - traefik.http.routers.operalb.entrypoints=websecure
+      - traefik.http.routers.operalb.rule=Host(`${EC_LB}.${DOMAIN}`)
+      - traefik.http.services.opera.loadbalancer.server.port=${EC_RPC_PORT}
+      - traefik.http.routers.operaws.service=operaws
+      - traefik.http.routers.operaws.entrypoints=websecure
+      - traefik.http.routers.operaws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.operawslb.service=operaws
+      - traefik.http.routers.operawslb.entrypoints=websecure
+      - traefik.http.routers.operawslb.rule=Host(`${EC_WS_LB}.${DOMAIN}`)
+      - traefik.http.services.operaws.loadbalancer.server.port=${EC_WS_PORT}
+    entrypoint:
+      - docker-entrypoint.sh
+      - opera
+      - --nousb
+      - --http
+      - --http.addr
+      - 0.0.0.0
+      - --http.vhosts=*
+      - --http.api
+      - web3,eth,net
+      - --datadir
+      - /var/lib/opera
+      - --port
+      - ${EC_P2P_PORT}
+      - --http.port
+      - ${EC_RPC_PORT}
+      - --ws
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - ${EC_WS_PORT}
+      - --ws.api
+      - web3,eth,net
+      - --genesis
+      - /var/lib/opera/mainnet.g
+  eth:
+    image: tianon/true
+    depends_on:
+      - opera
+volumes:
+  opera-ec-data:
