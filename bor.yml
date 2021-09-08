@@ -98,6 +98,7 @@ services:
           touch /root/.bor/setupdone
         fi
         exec bor --datadir /root/.bor/data \
+        --cache ${BOR_CACHE} \
         --gcmode ${BOR_MODE} \
         --ws --ws.port ${BOR_WS_PORT} --ws.addr 0.0.0.0 --ws.origins "*" \
         --port ${BOR_P2P_PORT} \
@@ -110,7 +111,7 @@ services:
         --syncmode "full" \
         --txpool.accountqueue 64 \
         --txpool.globalqueue 131072 \
-        --maxpeers 200 \
+        --maxpeers 150 \
         --http --http.addr "0.0.0.0" --http.vhosts "*" \
         --http.api "eth,net,web3,txpool,bor" \
         --http.port ${BOR_RPC_PORT} \

@@ -39,7 +39,6 @@ services:
     entrypoint:
       - docker-entrypoint.sh
       - opera
-      - --nousb
       - --http
       - --http.addr
       - 0.0.0.0
