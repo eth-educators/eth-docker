@@ -11,7 +11,12 @@ services:
       - "5672/tcp"
 
   heimdalld:
-    image: "maticnetwork/heimdall:${HEIMDALL_TAG}"
+    build:
+      context: ./polygon
+      dockerfile: Dockerfile.heimdall
+      args:
+        - DOCKER_TAG=${HEIMDALL_TAG}
+    image: heimdall:local
     restart: unless-stopped
     stop_grace_period: 1m
     depends_on:
@@ -43,7 +48,7 @@ services:
       - "26656:26656"
 
   heimdallr:
-    image: "maticnetwork/heimdall:${HEIMDALL_TAG}"
+    image: heimdall:local
     restart: unless-stopped
     stop_grace_period: 1m
     depends_on:
