@@ -1,0 +1,15 @@
+ARG DOCKER_TAG
+
+FROM maticnetwork/heimdall:${DOCKER_TAG} as source
+
+FROM debian:bullseye-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates bash tzdata wget
+
+RUN mkdir -p /root/heimdall && mkdir -p /root/.heimdalld
+
+WORKDIR /root/heimdall
+
+COPY --from=source /go/bin/* /usr/local/bin/
+
+CMD [ "/bin/sh", "-c", "# (nop)" ]
