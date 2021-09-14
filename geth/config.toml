@@ -1,6 +1,6 @@
 [Eth]
 SyncMode = "fast"
-DiscoveryURLs = []
+EthDiscoveryURLs = []
 TrieCleanCacheRejournal= 300000000000
 
 [Eth.Miner]
