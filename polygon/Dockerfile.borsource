@@ -1,0 +1,37 @@
+# Build Bor in a stock Go build container
+FROM golang:1.16-alpine as builder
+
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
+
+ARG BUILD_TARGET
+
+RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash
+
+WORKDIR /src
+RUN bash -c "git clone https://github.com/maticnetwork/bor.git && cd bor && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make bor-all"
+
+# Pull all binaries into a second stage deploy container
+FROM alpine:latest
+
+ARG USER=bor
+ARG UID=10001
+
+RUN apk add --no-cache ca-certificates bash tzdata
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/bor && chown ${USER}:${USER} /var/lib/bor
+RUN mkdir -p /root/.bor
+
+# Copy executable
+COPY --from=builder /src/bor/build/bin/bor /usr/local/bin/
+COPY --from=builder /src/bor/build/bin/bootnode /usr/local/bin/
+
+ENTRYPOINT ["bor"]

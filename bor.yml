@@ -78,6 +78,12 @@ services:
 
   bor:
     image: "maticnetwork/bor:${BOR_TAG}"
+#    image: bor.local
+#    build:
+#      context: ./polygon
+#      dockerfile: Dockerfile.borsource
+#      args:
+#        - BUILD_TARGET=${BOR_SRC_TAG}
     restart: unless-stopped
     stop_grace_period: 3m
     entrypoint: [ "/bin/sh", "-c" ]
