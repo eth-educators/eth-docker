@@ -21,6 +21,7 @@ services:
     expose:
       - 9090/tcp
     entrypoint:
+      - docker-entrypoint.sh
       - erigon
       - --private.api.addr
       - 0.0.0.0:9090
@@ -32,7 +33,7 @@ services:
       - any
       - --chain
       - ${EC_NETWORK}
-      - --prune=${ERIGON_PRUNE}
+      - --prune=hrtc
   execution:
     restart: "${RESTART}"
     image: erigon:local

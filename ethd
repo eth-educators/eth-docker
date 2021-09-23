@@ -323,6 +323,7 @@ query_execution_client() {
       "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
       "NONE" "Custom" \
       "geth.yml" "Geth (Go)" \
+      "erigon.yml" "Erigon (Go)" \
       "nm.yml" "Nethermind (.NET)" \
       "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
     fi
@@ -359,6 +360,9 @@ query_execution_client() {
 query_grafana() {
     if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Grafana dashboards?" 10 60) then
         GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
+        if [[ ${EXECUTION_CLIENT} == "geth.yml" || ${EXECUTION_CLIENT} == "erigon.yml" ]]; then
+          GRAFANA_CLIENT=${GRAFANA_CLIENT}:$(echo $(echo "${EXECUTION_CLIENT}" | cut -d '.' -f1)-grafana.yml)
+        fi
     else
         unset GRAFANA_CLIENT
     fi
