@@ -18,7 +18,7 @@ update() {
     else
         git pull
     fi
-    "$BASH_SOURCE" envmigrate
+    "$BASH_SOURCE" envmigrate $@
     cmd build --pull
     exec 3>&1
     exec 4>&2
@@ -30,8 +30,16 @@ update() {
     echo
     echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${ENV_FILE}.bak."
-    echo "NB: If you made changes to the source or binary build targets, these have NOT \
+    keeptargets=0
+    for var in "$@"; do
+      if [ "$var" = "--keep-targets" ]; then
+        keeptargets=1
+      fi
+    done
+    if [ $keeptargets = "0" ]; then
+      echo "NB: If you made changes to the source or binary build targets, these have NOT \
 been migrated, please recreate these changes yourself."
+    fi
     echo
     cmp -s "${ENV_FILE}" "${ENV_FILE}".bak
     if [ $? -ne 0 ]; then
@@ -189,11 +197,24 @@ envmigrate() {
              BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
              PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
              RESTART LOG_LEVEL GETH_CACHE ERIGON_PRUNE )
+    TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
+                TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
+                PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
+                OE_SRC_BUILD_TARGET OE_DOCKER_TAG OE_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
+                GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
+                BESU_DOCKER_TAG BESU_DOCKERFILE DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
+                NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \
              ETH1_WS_HOST BN_NODE ETH1_PORT ETH1_RPC_PORT ETH1_WS_PORT )
     NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
              EC_WS_HOST CC_NODE EC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
 
+    keeptargets=0
+    for var in "$@"; do
+      if [ "$var" = "--keep-targets" ]; then
+        keeptargets=1
+      fi
+    done
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
       if [ -f ./"${ENV_FILE}".bak ]; then
@@ -207,22 +228,22 @@ envmigrate() {
       cp default.env "${ENV_FILE}"
       cp "${ENV_FILE}".bak .env.source
     fi
-    # TEKU_RAPID_SYNC has whitespace
-    if grep -qF "TEKU_RAPID_SYNC" .env.source 2>/dev/null ; then
-        sed -i "s~^\(TEKU_RAPID_SYNC\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
-    fi
-    # In case GRAFFITI has whitespace
-    if grep -qF "GRAFFITI" .env.source 2>/dev/null ; then
-        sed -i "s~^\(GRAFFITI\s*=\s*\)\(.*\)$~\1\"\2\"~" .env.source
-    fi
-    source .env.source 2>/dev/null || true
-    rm .env.source
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
-        if [ -n "${!var+set}" ]; then
-            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        if [ -n "${value+set}" ]; then
+            sed -i "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
+    if [ $keeptargets = "1" ]; then
+      # Migrate over build targets
+      for var in "${TARGET_VARS[@]}"; do
+          value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+          if [ -n "${value+set}" ]; then
+              sed -i "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+          fi
+      done
+    fi
     # Migrate from older-style naming
     for index in "${!OLD_VARS[@]}"; do
         if [ -n "${!OLD_VARS[index]+set}" ]; then
@@ -232,6 +253,7 @@ envmigrate() {
     # Migrate http://eth1 and http://beacon
     sed -i "s/http:\/\/eth1/http:\/\/execution/g" "${ENV_FILE}"
     sed -i "s/http:\/\/beacon/http:\/\/consensus/g" "${ENV_FILE}"
+    rm .env.source
 }
 
 query_consensus_client() {
@@ -301,6 +323,7 @@ query_execution_client() {
       "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
       "NONE" "Custom" \
       "geth.yml" "Geth (Go)" \
+      "erigon.yml" "Erigon (Go)" \
       "nm.yml" "Nethermind (.NET)" \
       "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
     fi
@@ -337,6 +360,9 @@ query_execution_client() {
 query_grafana() {
     if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Grafana dashboards?" 10 60) then
         GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
+        if [[ ${EXECUTION_CLIENT} == "geth.yml" || ${EXECUTION_CLIENT} == "erigon.yml" ]]; then
+          GRAFANA_CLIENT=${GRAFANA_CLIENT}:$(echo $(echo "${EXECUTION_CLIENT}" | cut -d '.' -f1)-grafana.yml)
+        fi
     else
         unset GRAFANA_CLIENT
     fi
@@ -484,7 +510,7 @@ printhelp() {
     echo "subcommands:"
     echo "  config "
     echo "     configures eth-docker with your choice of Ethereum clients"
-    echo "  update "
+    echo "  update [--keep-targets] "
     echo "     updates all client versions and eth-docker itself"
     echo "  start"
     echo "     starts the Ethereum node software"
