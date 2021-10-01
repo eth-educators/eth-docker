@@ -5,3 +5,4 @@ docker-compose.yml
 !.eth/validator_keys/.empty
 *.swp
 alertmanager/config.yml
+ext-network.yml

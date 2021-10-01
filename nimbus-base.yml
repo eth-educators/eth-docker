@@ -17,6 +17,10 @@ services:
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
     entrypoint:
       - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
