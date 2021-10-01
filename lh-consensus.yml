@@ -20,6 +20,10 @@ services:
       - ${LH_PORT}:${LH_PORT}/udp
     expose:
       - 5052/tcp
+    networks:
+      default:
+        aliases:
+          - eth2
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse

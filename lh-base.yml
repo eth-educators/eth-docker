@@ -19,6 +19,10 @@ services:
       - ${LH_PORT}:${LH_PORT}/udp
     expose:
       - 5052/tcp
+    networks:
+      default:
+        aliases:
+          - eth2
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse
@@ -40,6 +44,7 @@ services:
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
+    command: ${LH_RAPID_SYNC}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local

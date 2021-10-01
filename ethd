@@ -193,7 +193,7 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
              PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
              CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
-             EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC CC_NODE BEACON_STATS_API \
+             EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC LH_RAPID_SYNC CC_NODE BEACON_STATS_API \
              BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
              PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
              RESTART LOG_LEVEL GETH_CACHE ERIGON_PRUNE )
@@ -268,8 +268,8 @@ query_consensus_client() {
       "Which consensus/validator client do you want to run?" 16 65 8 \
       "teku-base.yml" "Teku (Java) - consensus and validator client" \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
-      "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+      "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
       "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
       "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
       "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)

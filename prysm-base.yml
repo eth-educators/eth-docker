@@ -23,6 +23,10 @@ services:
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     expose:
       - 4000
+    networks:
+      default:
+        aliases:
+          - eth2
     entrypoint:
       - docker-entrypoint.sh
       - beacon-chain
