@@ -20,6 +20,10 @@ services:
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
     expose:
       - 9090/tcp
+    networks:
+      default:
+        aliases:
+          - eth1
     entrypoint:
       - docker-entrypoint.sh
       - erigon
