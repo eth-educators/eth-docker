@@ -1,3 +1,4 @@
+# Version without timezone, for use with Amazon Linux 2 and similar
 version: "3.4"
 services:
   consensus:

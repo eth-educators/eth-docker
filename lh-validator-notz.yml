@@ -1,0 +1,84 @@
+# Version without timezone, for use with Amazon Linux 2 and similar
+version: "3.4"
+services:
+  validator:
+    restart: "${RESTART}"
+    image: lighthouse:local
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+    entrypoint:
+      - docker-entrypoint.sh
+      - lighthouse
+      - vc
+      - --datadir
+      - /var/lib/lighthouse
+      - --beacon-nodes
+      - ${CC_NODE}
+      - --enable-doppelganger-protection
+      - --graffiti
+      - ${GRAFFITI}
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
+  validator-import:
+    restart: "no"
+    image: lighthouse:local
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+    entrypoint:
+      - validator-import.sh
+      - lighthouse
+      - account
+      - validator
+      - import
+      - --datadir
+      - /var/lib/lighthouse
+      - --directory
+      - /val_keys
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
+  validator-exit:
+    restart: "no"
+    image: lighthouse:local
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+    entrypoint:
+      - validator-exit.sh
+      - lighthouse
+      - account
+      - validator
+      - exit
+      - --beacon-node
+      - ${CC_NODE}
+      - --datadir
+      - /var/lib/lighthouse
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
+      - --keystore
+  validator-account:
+    restart: "no"
+    image: lighthouse:local
+    user: lhvalidator
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ${DEPCLI_LOCALDIR}:/interchange
+    entrypoint:
+      - lighthouse
+      - account
+      - validator
+      - --datadir
+      - /var/lib/lighthouse
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
+  eth:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - validator
+volumes:
+  lhvalidator-data:
