@@ -1,3 +1,4 @@
+# Version without timezone, for use with Amazon Linux 2 and similar
 version: "3.4"
 services:
   consensus:
@@ -17,6 +18,10 @@ services:
     ports:
       - ${TEKU_PORT}:${TEKU_PORT}/tcp
       - ${TEKU_PORT}:${TEKU_PORT}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku

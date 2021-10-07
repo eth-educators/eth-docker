@@ -61,9 +61,3 @@ RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700
 
 COPY --from=vcsource /app/cmd/validator/validator /usr/local/bin/
 COPY ./validator-import.sh /usr/local/bin/
-
-FROM prysmaticlabs/prysm-slasher:${DOCKER_TAG} as slsource
-
-FROM consensus as slasher
-
-COPY --from=slsource /app/cmd/slasher/slasher /usr/local/bin/

@@ -1,5 +1,5 @@
-# Build Teku in a stock debian container
-FROM openjdk:15-jdk-slim-buster as builder
+# Build Besu in a stock debian container
+FROM eclipse-temurin:17-jdk-focal as builder
 
 # This is here to avoid build-time complaints
 ARG DOCKER_TAG
@@ -12,7 +12,7 @@ WORKDIR /usr/src
 RUN bash -c "git clone --recursive https://github.com/hyperledger/besu.git && cd besu && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
 
 # Pull all binaries into a second stage deploy debian container
-FROM openjdk:15-slim-buster
+FROM eclipse-temurin:17-focal
 
 ARG USER=besu
 ARG UID=10001
