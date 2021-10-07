@@ -26,6 +26,10 @@ services:
       - 4000:4000/tcp
     expose:
       - 4000
+    networks:
+      default:
+        aliases:
+          - eth2
     entrypoint:
       - docker-entrypoint.sh
       - beacon-chain

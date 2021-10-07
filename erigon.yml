@@ -20,7 +20,12 @@ services:
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
     expose:
       - 9090/tcp
+    networks:
+      default:
+        aliases:
+          - eth1
     entrypoint:
+      - docker-entrypoint.sh
       - erigon
       - --private.api.addr
       - 0.0.0.0:9090
@@ -32,7 +37,7 @@ services:
       - any
       - --chain
       - ${EC_NETWORK}
-      - --prune=${ERIGON_PRUNE}
+      - --prune=hrtc
   execution:
     restart: "${RESTART}"
     image: erigon:local

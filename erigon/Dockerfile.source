@@ -17,7 +17,7 @@ FROM alpine:latest
 ARG USER=erigon
 ARG UID=10001
 
-RUN apk add --no-cache libgcc libstdc++ ca-certificates tzdata
+RUN apk add --no-cache libgcc libstdc++ bash ca-certificates tzdata
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -32,7 +32,8 @@ RUN mkdir -p /var/lib/erigon && chown ${USER}:${USER} /var/lib/erigon
 # Copy executable
 COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/
 COPY --from=builder /src/erigon/build/bin/rpcdaemon /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
 
-ENTRYPOINT ["erigon"]
+ENTRYPOINT ["docker-entrypoint.sh", "erigon"]

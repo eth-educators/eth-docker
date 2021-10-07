@@ -3,3 +3,4 @@ services:
   consensus:
     command:
       - --slasher
+      - --slasher-broadcast

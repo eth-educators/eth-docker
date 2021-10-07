@@ -1,3 +1,4 @@
+# Version without timezone, for use with Amazon Linux 2 and similar
 version: "3.4"
 services:
   consensus:
@@ -12,8 +13,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     ports:
       - ${LH_PORT}:${LH_PORT}/tcp
       - ${LH_PORT}:${LH_PORT}/udp
@@ -50,8 +49,6 @@ services:
     image: lighthouse:local
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - docker-entrypoint.sh
       - lighthouse
@@ -74,8 +71,6 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
       - lighthouse
@@ -95,8 +90,6 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-exit.sh
       - lighthouse
@@ -120,8 +113,6 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}:/interchange
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse
       - account
