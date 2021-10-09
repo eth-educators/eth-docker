@@ -2,9 +2,7 @@
 version: "3.4"
 services:
   consensus:
-    command:
-      - --monitoring-endpoint
-      - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}
+    command: --monitoring-endpoint=https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE} ${LH_RAPID_SYNC}
   validator:
     command:
       - --monitoring-endpoint
