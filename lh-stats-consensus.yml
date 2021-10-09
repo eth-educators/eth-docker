@@ -4,4 +4,4 @@ services:
   consensus:
     command:
       - --monitoring-endpoint
-      - https://beaconcha.in/api/v1/stats/${BEACON_STATS_API}
+      - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}
