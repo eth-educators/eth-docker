@@ -45,6 +45,7 @@ services:
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
+    command: ${LH_RAPID_SYNC}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc

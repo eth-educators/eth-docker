@@ -18,4 +18,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker v1.5.5
+This is eth-docker v1.5.8
