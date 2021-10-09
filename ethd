@@ -79,7 +79,7 @@ prune-geth() {
         rpc_port="${BASH_REMATCH[1]}"
     fi
 
-    sync_status=$(cmd exec execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+    sync_status=$(cmd exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
         echo "Geth is not running, aborting."
