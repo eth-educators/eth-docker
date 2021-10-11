@@ -1,5 +1,12 @@
 # Version without timezone, for use with Amazon Linux 2 and similar
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   validator:
     restart: "${RESTART}"
@@ -12,6 +19,7 @@ services:
     image: teku:local
     volumes:
       - teku-data:/var/lib/teku
+    <<: *logging
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku

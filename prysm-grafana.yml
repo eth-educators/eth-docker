@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   consensus:
     expose:
@@ -28,6 +35,7 @@ services:
       - 9090/tcp
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+    <<: *logging
     depends_on:
       - consensus
       - validator
@@ -55,6 +63,7 @@ services:
       - /etc/timezone:/etc/TZ:ro
     expose:
       - 9100/tcp
+    <<: *logging
   blackbox-exporter:
     restart: "${RESTART}"
     image: prom/blackbox-exporter:master
@@ -64,6 +73,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 9115/tcp
+    <<: *logging
     command:
       - --config.file=/config/blackbox.yml
   json-exporter:
@@ -75,6 +85,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 7979/tcp
+    <<: *logging
     command:
       - --config.file
       - /config/json.yml
@@ -91,6 +102,7 @@ services:
       - TZ=Europe/Zurich
     expose:
       - 9745/tcp
+    <<: *logging
   grafana:
     restart: "${RESTART}"
     build:
@@ -106,6 +118,7 @@ services:
       - prometheus
     expose:
       - ${GRAFANA_PORT}/tcp
+    <<: *logging
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana.entrypoints=web,websecure
