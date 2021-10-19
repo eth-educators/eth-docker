@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   validator:
     restart: "${RESTART}"
@@ -13,6 +20,7 @@ services:
       - teku-data:/var/lib/teku
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    <<: *logging
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku

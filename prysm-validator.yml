@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 x-build: &prysm-build
   context: ./prysm
   dockerfile: ${PRYSM_DOCKERFILE}
@@ -18,6 +25,7 @@ services:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    <<: *logging
     entrypoint:
       - validator
       - --datadir

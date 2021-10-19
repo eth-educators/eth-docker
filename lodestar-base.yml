@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   consensus:
     restart: "${RESTART}"
@@ -20,10 +27,11 @@ services:
       - ${LS_PORT}:${LS_PORT}/udp
     expose:
       - 9596/tcp
+    <<: *logging
     entrypoint:
       - node
-      - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - --max-old-space-size=6144
+      - /usr/app/node_modules/.bin/lodestar
       - beacon
       - --rootDir
       - /var/lib/lodestar/consensus
@@ -37,6 +45,8 @@ services:
       - "/ip4/0.0.0.0/tcp/${LS_PORT}"
       - --eth1.providerUrl
       - ${EC_NODE}
+      - --weakSubjectivitySyncLatest
+      - ${LS_RAPID_SYNC}
       - --logLevel
       - ${LOG_LEVEL}
       - --network
@@ -55,6 +65,7 @@ services:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    <<: *logging
     entrypoint:
       - node
       - --max-old-space-size=8192

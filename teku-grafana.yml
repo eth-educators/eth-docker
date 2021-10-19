@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   consensus:
     expose:
@@ -23,6 +30,7 @@ services:
       - CLIENT=${COMPOSE_FILE}
     expose:
       - 9090/tcp
+    <<: *logging
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     depends_on:
@@ -48,6 +56,7 @@ services:
       - /etc/timezone:/etc/TZ:ro
     expose:
       - 9100/tcp
+    <<: *logging
   grafana:
     restart: "${RESTART}"
     build:
@@ -63,6 +72,7 @@ services:
       - prometheus
     expose:
       - ${GRAFANA_PORT}/tcp
+    <<: *logging
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana.entrypoints=web,websecure

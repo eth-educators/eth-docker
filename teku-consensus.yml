@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   consensus:
     restart: "${RESTART}"
@@ -24,6 +31,7 @@ services:
       default:
         aliases:
           - eth2
+    <<: *logging
     entrypoint:
       - docker-entrypoint.sh
       - /opt/teku/bin/teku
