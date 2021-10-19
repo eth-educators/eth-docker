@@ -1,23 +1,21 @@
-# Build Geth in a stock Go build container
-FROM golang:1.16-alpine as builder
+# Build Heco Geth in a stock Go build container
+FROM golang:1.17-bullseye as builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
 ARG BUILD_TARGET
 
-RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash
-
 WORKDIR /src
-RUN bash -c "git clone https://github.com/HuobiGroup/huobi-eco-chain.git && cd huobi-eco-chain && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && go get gopkg.in/natefinch/lumberjack.v2 && make geth"
+RUN bash -c "git clone https://github.com/HuobiGroup/huobi-eco-chain.git && cd huobi-eco-chain && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && go run build/ci.go install ./cmd/geth"
 
 # Pull all binaries into a second stage deploy container
-FROM alpine:latest
+FROM debian:bullseye-slim
 
 ARG USER=geth
 ARG UID=10001
 
-RUN apk add --no-cache ca-certificates su-exec bash tzdata
+RUN apt-get update && apt-get install ca-certificates tzdata
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
