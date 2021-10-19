@@ -41,4 +41,4 @@ RUN adduser \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/lodestar/validators && chown ${USER}:${USER} /var/lib/lodestar/validators && chmod 700 /var/lib/lodestar/validators
 
-ENTRYPOINT ["node", "--max-old-space-size=8192", "/usr/app/packages/cli/bin/lodestar"]
+ENTRYPOINT ["node", "--max-old-space-size=6144", "/usr/app/node_modules/.bin/lodestar"]

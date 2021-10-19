@@ -1,4 +1,11 @@
 version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   traefik:
     image: traefik:latest
@@ -31,6 +38,7 @@ services:
       - certs:/letsencrypt
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    <<: *logging
     depends_on:
       - cf-ddns
   cf-ddns:
@@ -44,6 +52,7 @@ services:
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    <<: *logging
   eth:
     depends_on:
       - traefik
