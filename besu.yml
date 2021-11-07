@@ -46,6 +46,7 @@ services:
       - 0.0.0.0
       - --rpc-http-port
       - ${EC_RPC_PORT}
+      - --rpc-http-cors-origins=*
       - --rpc-ws-enabled
       - --rpc-ws-api
       - "web3,eth,net"
