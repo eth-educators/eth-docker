@@ -15,8 +15,8 @@ for var in "$@"; do
 done
 
 
-FREE_DISK=$(df -P /var/lib/docker/volumes | awk '/[0-9]%/{print $(NF-2)}')
-TOTAL_DISK=$(df -P /var/lib/docker/volumes | awk '/[0-9]%/{print $(NF-4)}')
+FREE_DISK=$(df -P /var/lib/docker/ | awk '/[0-9]%/{print $(NF-2)}')
+TOTAL_DISK=$(df -P /var/lib/docker/ | awk '/[0-9]%/{print $(NF-4)}')
 PERCENT_FREE=$(echo "percent = ($FREE_DISK / $TOTAL_DISK) * 100; scale = 0; percent / 1" | bc -l)
 FREE_DISK_GB=$(echo "$FREE_DISK / 1024 / 1024" | bc)
 
