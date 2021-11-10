@@ -59,10 +59,7 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${EC_NETWORK}
-      - --pruning-enabled
-# This is going to be the new hawtness but should only be used for testing right now.
-# When using this, disable --pruning-enabled.
-#     - --Xdata-storage-format=BONSAI
+      - --Xdata-storage-format=BONSAI
   eth:
     depends_on:
       - execution
