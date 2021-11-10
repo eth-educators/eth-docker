@@ -294,7 +294,9 @@ query_consensus_client() {
       "Which consensus/validator client do you want to run?" 16 65 8 \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
-      "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" 3>&1 1>&2 2>&3)
+      "teku-base.yml" "Teku (Java) - consensus and validator client" \
+      "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
+      "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
       "Which consensus/validator client do you want to run?" 16 65 8 \
