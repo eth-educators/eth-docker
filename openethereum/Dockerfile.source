@@ -36,8 +36,6 @@ RUN apk update && apk add --no-cache \
   libstdc++ \
   eudev-libs \
   libgcc \
-  su-exec \
-  bash \
   ca-certificates \
   tzdata
 
@@ -57,6 +55,7 @@ RUN mkdir -p /var/lib/openethereum && chown ${USER}:${USER} /var/lib/openethereu
 WORKDIR /var/lib/openethereum
 
 COPY --chown=openethereum:openethereum --from=builder /openethereum/target/x86_64-alpine-linux-musl/release/openethereum /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["docker-entrypoint.sh","openethereum"]
+USER ${USER}
+
+ENTRYPOINT ["openethereum"]

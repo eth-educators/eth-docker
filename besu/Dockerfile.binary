@@ -20,6 +20,7 @@ RUN set -eux; \
 
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/besu && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu
-COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["docker-entrypoint.sh","/opt/besu/bin/besu"]
+USER besu
+
+ENTRYPOINT ["/opt/besu/bin/besu"]

@@ -236,10 +236,6 @@ envmigrate() {
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
                 BESU_DOCKER_TAG BESU_DOCKERFILE DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-    OLD_VARS=( ETH1_NODE ETH1_FALLBACK_NODE1 ETH1_FALLBACK_NODE2 ETH1_NETWORK ETH1_HOST \
-             ETH1_WS_HOST BN_NODE ETH1_PORT ETH1_RPC_PORT ETH1_WS_PORT )
-    NEW_VARS=( EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK EC_HOST \
-             EC_WS_HOST CC_NODE EC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
 
     keeptargets=0
     for var in "$@"; do
@@ -276,15 +272,6 @@ envmigrate() {
           fi
       done
     fi
-    # Migrate from older-style naming
-    for index in "${!OLD_VARS[@]}"; do
-        if [ -n "${!OLD_VARS[index]+set}" ]; then
-            sed -i "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${!OLD_VARS[index]}~" "${ENV_FILE}"
-        fi
-    done
-    # Migrate http://eth1 and http://beacon
-    sed -i "s/http:\/\/eth1/http:\/\/execution/g" "${ENV_FILE}"
-    sed -i "s/http:\/\/beacon/http:\/\/consensus/g" "${ENV_FILE}"
     rm .env.source
 }
 

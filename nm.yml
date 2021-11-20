@@ -17,6 +17,7 @@ services:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local
+    user: nethermind
     volumes:
       - nm-eth1-data:/var/lib/nethermind
     ports:
@@ -31,7 +32,6 @@ services:
           - eth1
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - dotnet
       - /nethermind/Nethermind.Runner.dll
       - --datadir
