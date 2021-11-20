@@ -10,13 +10,13 @@ services:
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
+    user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - lighthouse
       - vc
       - --datadir
@@ -32,6 +32,7 @@ services:
   validator-import:
     restart: "no"
     image: lighthouse:local
+    user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
@@ -53,6 +54,7 @@ services:
   validator-exit:
     restart: "no"
     image: lighthouse:local
+    user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys

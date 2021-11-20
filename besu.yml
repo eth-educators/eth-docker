@@ -17,6 +17,7 @@ services:
         - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local
+    user: besu
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/timezone:/etc/timezone:ro
@@ -33,7 +34,6 @@ services:
           - eth1
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - /opt/besu/bin/besu
       - --data-path
       - /var/lib/besu

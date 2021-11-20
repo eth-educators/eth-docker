@@ -16,7 +16,7 @@ services:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse:local
-    user: root
+    user: lhconsensus
     stop_grace_period: 1m
     volumes:
       - lhconsensus-data:/var/lib/lighthouse
@@ -33,7 +33,6 @@ services:
           - eth2
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - lighthouse
       - bn
       - --disable-upnp

@@ -11,16 +11,15 @@ USER root
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
 RUN apk --no-cache add shadow && groupmod -g "${UID}" openethereum && usermod -u "${UID}" -g "${UID}" openethereum
-# So we can switch to non-root user if started as root
-RUN apk add --no-cache su-exec ca-certificates bash tzdata
+RUN apk add --no-cache ca-certificates tzdata
 
 RUN cp /home/openethereum/openethereum /usr/local/bin/
 
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/openethereum && chown openethereum:openethereum /var/lib/openethereum && chmod 700 /var/lib/openethereum
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
-
 WORKDIR /var/lib/openethereum
 
-ENTRYPOINT ["docker-entrypoint.sh","openethereum"]
+USER ${USER}
+
+ENTRYPOINT ["openethereum"]

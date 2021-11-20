@@ -17,6 +17,7 @@ services:
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_grace_period: 3m
     image: geth:local
+    user: geth
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/timezone:/etc/timezone:ro
@@ -33,7 +34,6 @@ services:
           - eth1
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - geth
       - --http
       - --http.addr

@@ -16,13 +16,13 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
+    user: teku
     volumes:
       - teku-data:/var/lib/teku
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - validator-client
       - --beacon-node-api-endpoint=${CC_NODE}
@@ -36,6 +36,7 @@ services:
   validator-import:
     restart: "no"
     image: teku:local
+    user: root
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys

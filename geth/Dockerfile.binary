@@ -8,8 +8,7 @@ ARG BUILD_TARGET
 ARG USER=geth
 ARG UID=10001
 
-# So we can switch to non-root user if started as root
-RUN apk add --no-cache su-exec ca-certificates bash tzdata
+RUN apk add --no-cache ca-certificates tzdata
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -21,6 +20,6 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 
-COPY ./docker-entrypoint.sh /usr/local/bin
+USER ${USER}
 
-ENTRYPOINT ["docker-entrypoint.sh","geth"]
+ENTRYPOINT ["geth"]
