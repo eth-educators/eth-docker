@@ -41,7 +41,7 @@ services:
       - ${EC_P2P_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
-      - "web3,eth,net"
+      - "WEB3,ETH,NET"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
@@ -49,7 +49,7 @@ services:
       - --rpc-http-cors-origins=*
       - --rpc-ws-enabled
       - --rpc-ws-api
-      - "web3,eth,net"
+      - "WEB3,ETH,NET"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
