@@ -20,14 +20,13 @@ RUN adduser \
 
 RUN set -eux; \
 	apt-get update; \
-	apt-get install -y gosu ca-certificates; \
-	rm -rf /var/lib/apt/lists/*; \
-# verify that the binary works
-	gosu nobody true
+	apt-get install -y ca-certificates; \
+	rm -rf /var/lib/apt/lists/*
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["docker-entrypoint.sh","dotnet","/nethermind/Nethermind.Runner.dll"]
+USER ${USER}
+
+ENTRYPOINT ["dotnet","/nethermind/Nethermind.Runner.dll"]

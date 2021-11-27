@@ -49,12 +49,15 @@ COPY --from=builder /go/src/prysm/bazel-bin/cmd/slasher/slasher_/slasher /usr/lo
 COPY --from=builder /go/src/prysm/bazel-bin/cmd/client-stats/client-stats_/client-stats /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["docker-entrypoint.sh","beacon-chain"]
+USER ${USER}
+
+ENTRYPOINT ["beacon-chain"]
 
 FROM consensus as validator
 
 ARG USER=prysmvalidator
 ARG UID=10000
+USER root
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -70,3 +73,5 @@ RUN adduser \
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
 COPY ./validator-import.sh /usr/local/bin/
+
+USER ${USER}

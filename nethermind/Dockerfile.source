@@ -1,5 +1,5 @@
 # Partially from Nethermind github
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
@@ -11,15 +11,9 @@ RUN apt-get update -y && apt-get install -y git
 RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git submodule update --init src/Dirichlet src/int256 src/rocksdb-sharp src/Math.Gmp.Native && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
 
-RUN apt-get update && apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates
-RUN set -eux; \
-	apt-get update; \
-        apt-get install -y gosu; \
-        rm -rf /var/lib/apt/lists/*; \
-# verify that the binary works
-        gosu nobody true
+RUN apt-get update && apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 ARG USER=nethermind
 ARG UID=10001
@@ -39,6 +33,6 @@ COPY --from=build /nethermind/out .
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
+USER ${USER}
 
-ENTRYPOINT ["docker-entrypoint.sh","./Nethermind.Runner"]
+ENTRYPOINT ["./Nethermind.Runner"]
