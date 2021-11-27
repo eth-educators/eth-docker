@@ -42,10 +42,11 @@ services:
       - --web3-url=${EC_FALLBACK_NODE1}
       - --web3-url=${EC_FALLBACK_NODE2}
       - --log-level=${LOG_LEVEL}
-      - --rpc
-      - --rpc-address=0.0.0.0
+      - --rest
+      - --rest-address=0.0.0.0
       - --subscribe-all-subnets
       - --enr-auto-update=true
+      - --num-threads=0
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
