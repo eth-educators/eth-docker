@@ -1,0 +1,64 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  consensus:
+    restart: "${RESTART}"
+    build:
+      context: ./nimbus
+      args:
+        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${NIM_DOCKER_TAG}
+      dockerfile: ${NIM_DOCKERFILE}
+    image: nimbus:local
+    user: user
+    stop_grace_period: 1m
+    volumes:
+      - nimbus-consensus-data:/var/lib/nimbus
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${NIM_PORT}:${NIM_PORT}/tcp
+      - ${NIM_PORT}:${NIM_PORT}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
+    <<: *logging
+    entrypoint:
+      - /usr/local/bin/nimbus_beacon_node
+      - --data-dir=/var/lib/nimbus
+      - --non-interactive
+      - --tcp-port=${NIM_PORT}
+      - --udp-port=${NIM_PORT}
+      - --max-peers=${NIM_PEER_COUNT}
+      - --network=${NETWORK}
+      - --web3-url=${EC_NODE}
+      - --web3-url=${EC_FALLBACK_NODE1}
+      - --web3-url=${EC_FALLBACK_NODE2}
+      - --log-level=${LOG_LEVEL}
+      - --rpc
+      - --rpc-address=0.0.0.0
+      - --subscribe-all-subnets
+      - --enr-auto-update=true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cc.service=cc
+      - traefik.http.routers.cc.entrypoints=websecure
+      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cclb.service=cc
+      - traefik.http.routers.cclb.entrypoints=websecure
+      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.services.cc.loadbalancer.server.port=5052
+  eth:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - consensus
+volumes:
+  nimbus-consensus-data:
