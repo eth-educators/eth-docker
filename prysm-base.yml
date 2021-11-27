@@ -20,6 +20,7 @@ services:
       target: consensus
       <<: *prysm-build
     image: prysm-consensus:local
+    user: prysmconsensus
     stop_grace_period: 1m
     volumes:
       - prysmbeacon-data:/var/lib/prysm
@@ -68,13 +69,13 @@ services:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local
+    user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - validator
       - --datadir
       - /var/lib/prysm
@@ -117,6 +118,7 @@ services:
   validator-import:
     restart: "no"
     image: prysm-validator:local
+    user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys

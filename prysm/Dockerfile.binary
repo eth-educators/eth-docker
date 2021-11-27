@@ -37,7 +37,9 @@ RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700
 COPY --from=ccsource /app/cmd/beacon-chain/beacon-chain /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["docker-entrypoint.sh","beacon-chain"]
+USER ${USER}
+
+ENTRYPOINT ["beacon-chain"]
 
 FROM prysmaticlabs/prysm-validator:${DOCKER_TAG} as vcsource
 
@@ -45,6 +47,7 @@ FROM consensus as validator
 
 ARG USER=prysmvalidator
 ARG UID=10000
+USER root
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -61,3 +64,4 @@ RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700
 
 COPY --from=vcsource /app/cmd/validator/validator /usr/local/bin/
 COPY ./validator-import.sh /usr/local/bin/
+USER ${USER}

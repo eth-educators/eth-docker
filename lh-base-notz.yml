@@ -17,6 +17,7 @@ services:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse:local
+    user: lhconsensus
     stop_grace_period: 1m
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
@@ -31,7 +32,6 @@ services:
           - eth2
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - lighthouse
       - bn
       - --disable-upnp
@@ -55,11 +55,11 @@ services:
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
+    user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - lighthouse
       - vc
       - --datadir
@@ -77,6 +77,7 @@ services:
   validator-import:
     restart: "no"
     image: lighthouse:local
+    user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
@@ -96,6 +97,7 @@ services:
   validator-exit:
     restart: "no"
     image: lighthouse:local
+    user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys

@@ -1,0 +1,5 @@
+version: "3.4"
+services:
+  consensus:
+    ports:
+      - 5051:5051/tcp

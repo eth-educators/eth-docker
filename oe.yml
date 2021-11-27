@@ -9,6 +9,7 @@ services:
         - BUILD_TARGET=${OE_SRC_BUILD_TARGET}
         - DOCKER_TAG=${OE_DOCKER_TAG}
     image: openethereum:local
+    user: openethereum
     stop_grace_period: 3m
     volumes:
       - oe-eth1-data:/var/lib/openethereum
@@ -21,7 +22,6 @@ services:
       - ${EC_RPC_PORT}/tcp
       - ${EC_WS_PORT}/tcp
     entrypoint:
-      - docker-entrypoint.sh
       - openethereum
       - --no-ipc
       - --no-secretstore

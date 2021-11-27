@@ -16,6 +16,7 @@ services:
         - DOCKER_TAG=${NIM_DOCKER_TAG}
       dockerfile: ${NIM_DOCKERFILE}
     image: nimbus:local
+    user: user
     stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
@@ -30,7 +31,6 @@ services:
           - eth2
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
@@ -49,6 +49,7 @@ services:
   validator-import:
     restart: "no"
     image: nimbus:local
+    user: root
     volumes:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
@@ -64,8 +65,8 @@ services:
       - /val_keys
   validator-exit:
     restart: "no"
-    user: user
     image: nimbus:local
+    user: user
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/timezone:/etc/timezone:ro
