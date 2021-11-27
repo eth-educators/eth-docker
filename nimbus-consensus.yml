@@ -46,6 +46,7 @@ services:
       - --rest-address=0.0.0.0
       - --subscribe-all-subnets
       - --enr-auto-update=true
+      - --num-threads=0
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
