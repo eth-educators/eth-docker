@@ -34,6 +34,7 @@ services:
       - 4000:4000/tcp
     expose:
       - 4000
+      - 3500
     networks:
       default:
         aliases:
@@ -77,8 +78,8 @@ services:
       - traefik.enable=true
       - traefik.http.routers.cc.entrypoints=websecure
       - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
-      - traefik.http.services.cc.loadbalancer.server.port=4000
-      - traefik.http.services.cc.loadbalancer.server.scheme=https
+      - traefik.http.routers.cc.service=cc
+      - traefik.http.services.cc.loadbalancer.server.port=3500
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:latest
     entrypoint: ["/bin/sh", "-c"]
