@@ -2,9 +2,8 @@ ARG DOCKER_TAG
 
 FROM statusim/nimbus-eth2:${DOCKER_TAG}
 
-# Unused, the next three are here to avoid build time complaints
+# Included here to avoid build-time complaints
 ARG BUILD_TARGET
-ARG METRICS
 
 ARG UID=10002
 

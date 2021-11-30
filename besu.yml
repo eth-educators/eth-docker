@@ -18,6 +18,8 @@ services:
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local
     user: besu
+    environment:
+      - JAVA_OPTS=-Xmx4g
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/timezone:/etc/timezone:ro
