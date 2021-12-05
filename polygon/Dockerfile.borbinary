@@ -1,0 +1,26 @@
+ARG DOCKER_TAG
+
+FROM maticnetwork/bor:${DOCKER_TAG}
+
+# Unused, this is here to avoid build time complaints
+ARG BUILD_TARGET
+
+ARG USER=bor
+ARG UID=10001
+
+RUN apk add --no-cache ca-certificates bash tzdata su-exec
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/bor && chown ${USER}:${USER} /var/lib/bor
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
+USER ${USER}
+
+ENTRYPOINT ["bor"]

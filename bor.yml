@@ -17,29 +17,26 @@ services:
       args:
         - DOCKER_TAG=${HEIMDALL_TAG}
     image: heimdall:local
+    user: root
+    environment:
+      - HEIMDALL_CHAIN_ID=${HEIMDALL_CHAIN_ID}
+      - HEIMDALL_SNAPSHOT_FILE=${HEIMDALL_SNAPSHOT_FILE}
+      - HEIMDALL_GENESIS_URL=${HEIMDALL_GENESIS_URL}
+      - HEIMDALL_SEEDS=${HEIMDALL_SEEDS} 
+      - HEIMDALL_BOR_RPC_URL=${HEIMDALL_BOR_RPC_URL}
+      - HEIMDALL_ETH_RPC_URL=${HEIMDALL_ETH_RPC_URL}
     restart: unless-stopped
     stop_grace_period: 1m
     depends_on:
       - rabbitmq
-    entrypoint: [ "/bin/bash", "-c" ]
-    command:
-      - |
-        if [ ! -f /root/.heimdalld/config/config.toml ]; then
-          heimdalld init --home /root/.heimdalld --chain-id ${HEIMDALL_CHAIN_ID}
-          mkdir -p /root/.heimdalld/snapshot
-          wget -O /root/.heimdalld/snapshot/heimsnap.tgz ${HEIMDALL_SNAPSHOT_FILE}
-          tar -xzvf /root/.heimdalld/snapshot/heimsnap.tgz -C /root/.heimdalld/data/
-          rm /root/.heimdalld/snapshot/heimsnap.tgz
-        fi
-        wget -O /root/.heimdalld/config/genesis.json ${HEIMDALL_GENESIS_URL} -P /root/.heimdalld/config
-        sed -i '/seeds =/c\seeds = "${HEIMDALL_SEEDS}"' /root/.heimdalld/config/config.toml
-        sed -i '/26657/c\laddr = "tcp://0.0.0.0:26657"' /root/.heimdalld/config/config.toml
-        sed -i '/bor_rpc_url/c\bor_rpc_url = "${HEIMDALL_BOR_RPC_URL}"' /root/.heimdalld/config/heimdall-config.toml
-        sed -i '/eth_rpc_url/c\eth_rpc_url = "${HEIMDALL_ETH_RPC_URL}"' /root/.heimdalld/config/heimdall-config.toml
-        sed -i '/amqp_url/c\amqp_url = "amqp://guest:guest@rabbitmq:5672"' /root/.heimdalld/config/heimdall-config.toml
-        exec heimdalld start
+    entrypoint:
+      - docker-entrypoint.sh
+      - heimdalld
+      - --home
+      - /var/lib/heimdall
+      - start
     volumes:
-      - heimdall-data:/root/.heimdalld
+      - heimdall-data:/var/lib/heimdall
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -54,12 +51,13 @@ services:
     depends_on:
       - heimdalld
     volumes:
-      - heimdall-data:/root/.heimdalld
+      - heimdall-data:/var/lib/heimdall
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - "1317/tcp"
-    command:
+    user: heimdall
+    entrypoint:
       - heimdalld
       - rest-server
       - --chain-id=137
@@ -70,65 +68,80 @@ services:
     image: "maticnetwork/bor:${BOR_TAG}"
     restart: "no"
     stop_grace_period: 3m
+    user: bor
     volumes:
-      - bor-data:/root/.bor
+      - bor-data:/var/lib/bor
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    command: bor --datadir /root/.bor/data snapshot prune-state
+    command: bor --datadir /var/lib/bor/data snapshot prune-state
 
   bor:
-    image: "maticnetwork/bor:${BOR_TAG}"
-#    image: bor.local
-#    build:
-#      context: ./polygon
-#      dockerfile: Dockerfile.borsource
-#      args:
-#        - BUILD_TARGET=${BOR_SRC_TAG}
+    image: bor:local
+    build:
+      context: ./polygon
+      dockerfile: ${BOR_DOCKER_FILE}
+      args:
+        - BUILD_TARGET=${BOR_SRC_TAG}
+        - DOCKER_TAG=${BOR_TAG}
     restart: unless-stopped
     stop_grace_period: 3m
-    entrypoint: [ "/bin/sh", "-c" ]
-    command:
-      - |
-        set -x
-        cd /root/
-        wget -O setup.sh ${BOR_SETUP}
-        sed -i '/^cp .\/static-nodes.json/d' setup.sh
-        wget -O genesis.json ${BOR_GENESIS}
-        sh setup.sh
-        if [ ! -f /root/.bor/setupdone ]
-        then
-          mkdir -p /root/.bor/snapshot
-          if [ ${BOR_MODE} == "archive" ]
-          then
-            wget -O /root/.bor/snapshot/borsnap.tgz ${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}
-          else
-            wget -O /root/.bor/snapshot/borsnap.tgz ${BOR_FULL_NODE_SNAPSHOT_FILE}
-          fi
-          tar -xzvf /root/.bor/snapshot/borsnap.tgz -C /root/.bor/data/bor/chaindata
-          rm /root/.bor/snapshot/borsnap.tgz
-          touch /root/.bor/setupdone
-        fi
-        exec bor --datadir /root/.bor/data \
-        --cache ${BOR_CACHE} \
-        --gcmode ${BOR_MODE} \
-        --ws --ws.port ${BOR_WS_PORT} --ws.addr 0.0.0.0 --ws.origins "*" \
-        --port ${BOR_P2P_PORT} \
-        --txpool.locals ${TX_LOCAL_ADDR} \
-        --txpool.globalslots "100000" \
-        --rpc.txfeecap "0" \
-        --txpool.accountslots "256" \
-        --bor.heimdall http://heimdallr:1317 \
-        --bootnodes "${BOR_BOOTNODES}" \
-        --syncmode "full" \
-        --txpool.accountqueue 64 \
-        --txpool.globalqueue 131072 \
-        --maxpeers 150 \
-        --http --http.addr "0.0.0.0" --http.vhosts "*" \
-        --http.api "eth,net,web3,txpool,bor" \
-        --http.port ${BOR_RPC_PORT} \
-        --networkid ${BOR_CHAIN_ID}
+    user: root
+    environment:
+      - BOR_DIR=/var/lib/bor
+      - BOR_SETUP=${BOR_SETUP}
+      - BOR_GENESIS=${BOR_GENESIS}
+      - BOR_ARCHIVE_NODE_SNAPSHOT_FILE=${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}
+      - BOR_FULL_NODE_SNAPSHOT_FILE=${BOR_FULL_NODE_SNAPSHOT_FILE}
+      - BOR_MODE=${BOR_MODE}
+    entrypoint: 
+      - docker-entrypoint.sh
+      - bor
+      - --datadir
+      - /var/lib/bor/data 
+      - --cache
+      - ${BOR_CACHE}
+      - --gcmode
+      - ${BOR_MODE}
+      - --ws
+      - --ws.port
+      - ${BOR_WS_PORT}
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.origins=*
+      - --port
+      - ${BOR_P2P_PORT}
+      - --txpool.locals
+      - ${TX_LOCAL_ADDR}
+      - --txpool.globalslots
+      - "100000"
+      - --rpc.txfeecap
+      - "0" 
+      - --txpool.accountslots
+      - "256" 
+      - --bor.heimdall
+      - http://heimdallr:1317 
+      - --bootnodes
+      - "${BOR_BOOTNODES}" 
+      - --syncmode
+      - "full"
+      - --txpool.accountqueue
+      - "64"
+      - --txpool.globalqueue
+      - "131072"
+      - --maxpeers
+      - "150"
+      - --http
+      - --http.addr
+      - 0.0.0.0
+      - --http.vhosts=*
+      - --http.api
+      - eth,net,web3,txpool,bor
+      - --http.port
+      - ${BOR_RPC_PORT}
+      - --networkid
+      - ${BOR_CHAIN_ID}
     volumes:
-      - bor-data:/root/.bor
+      - bor-data:/var/lib/bor
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:

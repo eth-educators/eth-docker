@@ -4,12 +4,27 @@ FROM maticnetwork/heimdall:${DOCKER_TAG} as source
 
 FROM debian:bullseye-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates bash tzdata wget
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates bash tzdata wget gosu
 
-RUN mkdir -p /root/heimdall && mkdir -p /root/.heimdalld
+ARG USER=heimdall
+ARG UID=10000
 
-WORKDIR /root/heimdall
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/heimdall && chown ${USER}:${USER} /var/lib/heimdall
+COPY ./docker-entrypoint-heimdalld.sh /usr/local/bin/docker-entrypoint.sh
+
+WORKDIR /var/lib/heimdall
 
 COPY --from=source /go/bin/* /usr/local/bin/
+COPY ./docker-entrypoint-heimdalld.sh /usr/local/bin/docker-entrypoint.sh
+
+USER ${USER}
 
 CMD [ "/bin/sh", "-c", "# (nop)" ]
