@@ -17,7 +17,7 @@ FROM alpine:latest
 ARG USER=bor
 ARG UID=10001
 
-RUN apk add --no-cache ca-certificates bash tzdata
+RUN apk add --no-cache ca-certificates bash tzdata su-exec
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -28,10 +28,12 @@ RUN adduser \
     "${USER}"
 
 RUN mkdir -p /var/lib/bor && chown ${USER}:${USER} /var/lib/bor
-RUN mkdir -p /root/.bor
 
 # Copy executable
 COPY --from=builder /src/bor/build/bin/bor /usr/local/bin/
 COPY --from=builder /src/bor/build/bin/bootnode /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
+USER ${USER}
 
 ENTRYPOINT ["bor"]

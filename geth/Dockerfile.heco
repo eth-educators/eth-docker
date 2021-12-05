@@ -15,7 +15,7 @@ FROM debian:bullseye-slim
 ARG USER=geth
 ARG UID=10001
 
-RUN apt-get update && apt-get install ca-certificates tzdata
+RUN apt-get update && apt-get -y install ca-certificates tzdata
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
