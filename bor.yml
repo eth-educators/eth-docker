@@ -59,6 +59,8 @@ services:
     user: heimdall
     entrypoint:
       - heimdalld
+      - --home
+      - /var/lib/heimdall
       - rest-server
       - --chain-id=137
       - --laddr=tcp://0.0.0.0:1317
