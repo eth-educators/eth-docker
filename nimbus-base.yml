@@ -45,6 +45,10 @@ services:
       - --log-level=${LOG_LEVEL}
       - --rpc
       - --rpc-address=0.0.0.0
+      - --rest
+      - --rest-address=0.0.0.0
+      - --rest-port=5052
+      - --num-threads=0
       - --enr-auto-update=true
   validator-import:
     restart: "no"
