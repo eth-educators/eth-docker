@@ -44,6 +44,8 @@ services:
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
+      - --rest-api-interface=0.0.0.0
+      - --rest-api-port=5052
     command: ${TEKU_RAPID_SYNC}
     labels:
       - traefik.enable=true
@@ -53,7 +55,7 @@ services:
       - traefik.http.routers.cclb.service=cc
       - traefik.http.routers.cclb.entrypoints=websecure
       - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
-      - traefik.http.services.cc.loadbalancer.server.port=5051
+      - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:
     image: tianon/true
     restart: "no"

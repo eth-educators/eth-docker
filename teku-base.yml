@@ -47,6 +47,8 @@ services:
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
+      - --rest-api-interface=0.0.0.0
+      - --rest-api-port=5052
     command: ${TEKU_RAPID_SYNC}
   validator-import:
     restart: "no"
@@ -69,7 +71,7 @@ services:
     entrypoint:
       - /opt/teku/bin/teku
       - voluntary-exit
-      - --beacon-node-api-endpoint=http://consensus:5051
+      - --beacon-node-api-endpoint=http://consensus:5052
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
   eth:
     image: tianon/true
