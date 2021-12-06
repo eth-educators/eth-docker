@@ -26,7 +26,7 @@ services:
       - ${LS_PORT}:${LS_PORT}/tcp
       - ${LS_PORT}:${LS_PORT}/udp
     expose:
-      - 9596/tcp
+      - 5052/tcp
     <<: *logging
     entrypoint:
       - node
@@ -39,6 +39,8 @@ services:
       - "true"
       - --api.rest.host
       - 0.0.0.0
+      - --api.rest.port
+      - "5052"
       - --network.discv5.bindAddr
       - "/ip4/0.0.0.0/udp/${LS_PORT}"
       - --network.localMultiaddrs
@@ -74,7 +76,7 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - http://consensus:9596
+      - http://consensus:5052
       - --graffiti
       - ${GRAFFITI}
       - --logLevel
@@ -122,7 +124,7 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - http://consensus:9596
+      - http://consensus:5052
       -  --logLevel
       - ${LOG_LEVEL}
       - --network
