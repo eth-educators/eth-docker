@@ -3,7 +3,9 @@ services:
   validator:
     expose:
       - ${PRYSM_WEB_PORT}/tcp
+    user: root
     entrypoint:
+      - docker-entrypoint.sh
       - validator
       - --datadir
       - /var/lib/prysm
