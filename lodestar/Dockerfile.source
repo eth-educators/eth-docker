@@ -1,4 +1,4 @@
-FROM node:14-alpine3.14 as build
+FROM node:16-alpine as build
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
@@ -12,7 +12,7 @@ WORKDIR /usr/app
 
 RUN bash -c "git clone https://github.com/ChainSafe/lodestar.git && cd lodestar && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && yarn install --non-interactive --frozen-lockfile && yarn build && cd packages && npm install && npm install ./cli"
 
-FROM node:14-alpine3.14
+FROM node:16-alpine
 
 RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec && rm -rf /var/cache/apk/*
 

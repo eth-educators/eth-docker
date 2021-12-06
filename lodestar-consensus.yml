@@ -1,0 +1,71 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  consensus:
+    restart: "${RESTART}"
+    build:
+      context: ./lodestar
+      dockerfile: ${LS_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${LS_DOCKER_TAG}
+    image: lodestar:local
+    user: lsconsensus
+    stop_grace_period: 1m
+    volumes:
+      - lsconsensus-data:/var/lib/lodestar/consensus
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${LS_PORT}:${LS_PORT}/tcp
+      - ${LS_PORT}:${LS_PORT}/udp
+    expose:
+      - 5052/tcp
+    <<: *logging
+    entrypoint:
+      - node
+      - --max-old-space-size=6144
+      - /usr/app/node_modules/.bin/lodestar
+      - beacon
+      - --rootDir
+      - /var/lib/lodestar/consensus
+      - --api.rest.enabled
+      - "true"
+      - --api.rest.host
+      - 0.0.0.0
+      - --api.rest.port
+      - "5052"
+      - --network.discv5.bindAddr
+      - "/ip4/0.0.0.0/udp/${LS_PORT}"
+      - --network.localMultiaddrs
+      - "/ip4/0.0.0.0/tcp/${LS_PORT}"
+      - --eth1.providerUrl
+      - ${EC_NODE}
+      - --weakSubjectivitySyncLatest
+      - ${LS_RAPID_SYNC}
+      - --logLevel
+      - ${LOG_LEVEL}
+      - --network
+      - ${NETWORK}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cc.service=cc
+      - traefik.http.routers.cc.entrypoints=websecure
+      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cclb.service=cc
+      - traefik.http.routers.cclb.entrypoints=websecure
+      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.services.cc.loadbalancer.server.port=5052
+  eth:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - consensus
+volumes:
+  lsconsensus-data:
