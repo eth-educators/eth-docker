@@ -40,6 +40,8 @@ services:
       - --http
       - --http-address
       - 0.0.0.0
+      - --http-port
+      - "5052"
       - --network
       - ${NETWORK}
       - --port

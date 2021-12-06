@@ -30,6 +30,7 @@ services:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     expose:
+      - 5052
       - 4000
     networks:
       default:
@@ -45,6 +46,8 @@ services:
       - 0.0.0.0
       - --grpc-gateway-host
       - 0.0.0.0
+      - --grpc-gateway-port
+      - "5052"
       - --http-web3provider
       - ${EC_NODE}
       - --fallback-web3provider

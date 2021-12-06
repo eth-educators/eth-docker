@@ -34,7 +34,7 @@ services:
       - 4000:4000/tcp
     expose:
       - 4000
-      - 3500
+      - 5052
     networks:
       default:
         aliases:
@@ -49,6 +49,8 @@ services:
       - 0.0.0.0
       - --grpc-gateway-host
       - 0.0.0.0
+      - --grpc-gateway-port
+      - "5052"
       - --http-web3provider
       - ${EC_NODE}
       - --fallback-web3provider
@@ -79,7 +81,7 @@ services:
       - traefik.http.routers.cc.entrypoints=websecure
       - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
       - traefik.http.routers.cc.service=cc
-      - traefik.http.services.cc.loadbalancer.server.port=3500
+      - traefik.http.services.cc.loadbalancer.server.port=5052
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:latest
     entrypoint: ["/bin/sh", "-c"]

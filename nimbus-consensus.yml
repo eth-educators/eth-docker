@@ -44,6 +44,7 @@ services:
       - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0
+      - --rest-port=5052
       - --subscribe-all-subnets
       - --enr-auto-update=true
       - --num-threads=0
