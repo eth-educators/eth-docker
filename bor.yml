@@ -142,6 +142,8 @@ services:
       - ${BOR_RPC_PORT}
       - --networkid
       - ${BOR_CHAIN_ID}
+      - --ethstats
+      - ${BOR_NODE_ID}:mainnet@bor-mainnet.vitwit.com:3000
     volumes:
       - bor-data:/var/lib/bor
       - /etc/timezone:/etc/timezone:ro
