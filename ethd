@@ -231,9 +231,9 @@ envmigrate() {
              PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
              CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
              EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB DDNS_SUBDOMAIN DDNS_PROXY \
-             TEKU_RAPID_SYNC LH_RAPID_SYNC LS_RAPID_SYNC CC_NODE BEACON_STATS_API BEACON_STATS_MACHINE EC_P2P_PORT
-             LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT GRAFANA_PORT \
-             PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
+             TEKU_RAPID_SYNC LH_RAPID_SYNC LS_RAPID_SYNC NIMBUS_RAPID_SYNC CC_NODE BEACON_STATS_API \
+	     BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT \
+	     GRAFANA_PORT PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
              RESTART LOG_LEVEL GETH_CACHE ERIGON_PRUNE )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
@@ -492,8 +492,31 @@ config () {
         else
             TEKU_RAPID_SYNC=""
         fi
+    elif [[ "${CONSENSUS_CLIENT}" == "lh-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote beacon, e.g. Infura?" 10 60) then
+            query_remote_beacon
+            LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
+        else
+            LH_RAPID_SYNC=""
+        fi
+    elif [[ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote beacon, e.g. Infura?" 10 60) then
+            query_remote_beacon
+            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
+        else
+            NIMBUS_RAPID_SYNC=""
+        fi
+    elif [[ "${CONSENSUS_CLIENT}" == "lodestar-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote beacon?" 10 60) then
+            LS_RAPID_SYNC="true"
+        else
+            LS_RAPID_SYNC="false"
+        fi
     else
        TEKU_RAPID_SYNC=""
+       LH_RAPID_SYNC=""
+       LS_RAPID_SYNC="false"
+       NIMBUS_RAPID_SYNC=""
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
@@ -511,6 +534,14 @@ config () {
     var=CC_NODE
     set_value_in_env
     var=TEKU_RAPID_SYNC
+    set_value_in_env
+    var=LH_RAPID_SYNC
+    set_value_in_env
+    var=LS_RAPID_SYNC
+    set_value_in_env
+#    var=PRYSM_RAPID_SYNC
+#    set_value_in_env
+    var=NIMBUS_RAPID_SYNC
     set_value_in_env
     var=COMPOSE_FILE
     set_value_in_env
