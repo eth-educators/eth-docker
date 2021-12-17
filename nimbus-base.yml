@@ -50,6 +50,7 @@ services:
       - --rest-port=5052
       - --num-threads=0
       - --enr-auto-update=true
+    command: ${NIMBUS_RAPID_SYNC}
   validator-import:
     restart: "no"
     image: nimbus:local
