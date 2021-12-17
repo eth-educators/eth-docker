@@ -489,8 +489,60 @@ config () {
         if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote beacon, e.g. Infura?" 10 60) then
             query_remote_beacon
             TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
+            LH_RAPID_SYNC=""
+            LS_RAPID_SYNC="false"
+            NIMBUS_RAPID_SYNC=""
+            PRYSM_RAPID_SYNC=""
         else
             TEKU_RAPID_SYNC=""
+            LH_RAPID_SYNC=""
+            LS_RAPID_SYNC="false"
+            NIMBUS_RAPID_SYNC=""
+            PRYSM_RAPID_SYNC=""
+        fi
+    elif [[ "${CONSENSUS_CLIENT}" == "lh-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote beacon, e.g. Infura?" 10 60) then
+            query_remote_beacon
+            LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
+            TEKU_RAPID_SYNC=""
+            LS_RAPID_SYNC="false"
+            NIMBUS_RAPID_SYNC=""
+            PRYSM_RAPID_SYNC=""
+        else
+            LH_RAPID_SYNC=""
+            TEKU_RAPID_SYNC=""
+            LS_RAPID_SYNC="false"
+            NIMBUS_RAPID_SYNC=""
+            PRYSM_RAPID_SYNC=""
+        fi
+#    elif [[ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]]; then
+#        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote beacon, e.g. Infura?" 10 60) then
+#            query_remote_beacon
+#            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
+#            LH_RAPID_SYNC=""
+#            TEKU_RAPID_SYNC=""
+#            LS_RAPID_SYNC="false"
+#            PRYSM_RAPID_SYNC=""
+#        else
+#            NIMBUS_RAPID_SYNC=""
+#            LH_RAPID_SYNC=""
+#            TEKU_RAPID_SYNC=""
+#            LS_RAPID_SYNC="false"
+#            PRYSM_RAPID_SYNC=""
+#        fi
+    elif [[ "${CONSENSUS_CLIENT}" == "lodestar-base.yml" ]]; then
+        if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote beacon?" 10 60) then
+            LS_RAPID_SYNC="true"
+            NIMBUS_RAPID_SYNC=""
+            LH_RAPID_SYNC=""
+            TEKU_RAPID_SYNC=""
+            PRYSM_RAPID_SYNC=""
+        else
+            LS_RAPID_SYNC="false"
+            NIMBUS_RAPID_SYNC=""
+            LH_RAPID_SYNC=""
+            TEKU_RAPID_SYNC=""
+            PRYSM_RAPID_SYNC=""
         fi
     elif [[ "${CONSENSUS_CLIENT}" == "lh-base.yml" ]]; then
         if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote beacon, e.g. Infura?" 10 60) then
@@ -499,13 +551,13 @@ config () {
         else
             LH_RAPID_SYNC=""
         fi
-    elif [[ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote beacon, e.g. Infura?" 10 60) then
-            query_remote_beacon
-            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
-        else
-            NIMBUS_RAPID_SYNC=""
-        fi
+#    elif [[ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]]; then
+#        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote beacon, e.g. Infura?" 10 60) then
+#            query_remote_beacon
+#            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
+#        else
+#            NIMBUS_RAPID_SYNC=""
+#        fi
     elif [[ "${CONSENSUS_CLIENT}" == "lodestar-base.yml" ]]; then
         if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote beacon?" 10 60) then
             LS_RAPID_SYNC="true"
@@ -517,6 +569,7 @@ config () {
        LH_RAPID_SYNC=""
        LS_RAPID_SYNC="false"
        NIMBUS_RAPID_SYNC=""
+       PRYSM_RAPID_SYNC=""
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
@@ -539,10 +592,10 @@ config () {
     set_value_in_env
     var=LS_RAPID_SYNC
     set_value_in_env
-#    var=PRYSM_RAPID_SYNC
-#    set_value_in_env
     var=NIMBUS_RAPID_SYNC
     set_value_in_env
+#    var=PRYSM_RAPID_SYNC
+#    set_value_in_env
     var=COMPOSE_FILE
     set_value_in_env
     var=EC_NODE
