@@ -292,13 +292,15 @@ query_consensus_client() {
       "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
-      "Which consensus/validator client do you want to run?" 16 65 8 \
+      "Which consensus/validator client do you want to run?" 16 65 10 \
       "teku-base.yml" "Teku (Java) - consensus and validator client" \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" \
       "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
       "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
       "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
+      "lodestar-validator.yml" "Lodestar validator client with remote beacon, e.g. Infura" \
       "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)
     fi
 
@@ -543,26 +545,6 @@ config () {
             LH_RAPID_SYNC=""
             TEKU_RAPID_SYNC=""
             PRYSM_RAPID_SYNC=""
-        fi
-    elif [[ "${CONSENSUS_CLIENT}" == "lh-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote beacon, e.g. Infura?" 10 60) then
-            query_remote_beacon
-            LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
-        else
-            LH_RAPID_SYNC=""
-        fi
-#    elif [[ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]]; then
-#        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote beacon, e.g. Infura?" 10 60) then
-#            query_remote_beacon
-#            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
-#        else
-#            NIMBUS_RAPID_SYNC=""
-#        fi
-    elif [[ "${CONSENSUS_CLIENT}" == "lodestar-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote beacon?" 10 60) then
-            LS_RAPID_SYNC="true"
-        else
-            LS_RAPID_SYNC="false"
         fi
     else
        TEKU_RAPID_SYNC=""
