@@ -48,6 +48,7 @@ services:
       - --subscribe-all-subnets
       - --enr-auto-update=true
       - --num-threads=0
+      - --doppelganger-detection=false
     command: ${NIMBUS_RAPID_SYNC}
     labels:
       - traefik.enable=true
