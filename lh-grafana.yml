@@ -10,11 +10,7 @@ services:
   consensus:
     expose:
       - 5054/tcp
-    command:
-      - --metrics
-      - --metrics-address
-      - 0.0.0.0
-      - --validator-monitor-auto
+    command: --metrics --metrics-address 0.0.0.0 --validator-monitor-auto ${LH_RAPID_SYNC}
   validator:
     expose:
       - 5064/tcp
