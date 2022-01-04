@@ -7,10 +7,12 @@ services:
       - traefik.http.routers.ec.service=ec
       - traefik.http.routers.ec.entrypoints=websecure
       - traefik.http.routers.ec.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.ec.tls.certresolver=letsencrypt
       - traefik.http.services.ec.loadbalancer.server.port=${EC_RPC_PORT}
       - traefik.http.routers.ecws.service=ecws
       - traefik.http.routers.ecws.entrypoints=websecure
       - traefik.http.routers.ecws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.ecws.tls.certresolver=letsencrypt
       - traefik.http.services.ecws.loadbalancer.server.port=${EC_WS_PORT}
 
   eth:

@@ -123,6 +123,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.grafana.entrypoints=web,websecure
       - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
+      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
       - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
   eth:
     depends_on:
