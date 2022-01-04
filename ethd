@@ -99,9 +99,9 @@ prune-geth() {
         exit 1
     fi
 
-    if [ $(df -P /var/lib/docker/volumes | awk '/[0-9]%/{print $(NF-2)}') -lt 52428400 ]; then
+    if [ $(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}') -lt 52428400 ]; then
         echo "You do not have enough free disk space, make sure this reads at least 50G free (Avail):"
-        df -h /var/lib/docker/volumes
+        df -h /var/lib/docker
         echo ""
         echo "Aborting."
         exit 1
