@@ -91,7 +91,6 @@ services:
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}
-      - --enable-doppelganger
       - --accept-terms-of-use
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file

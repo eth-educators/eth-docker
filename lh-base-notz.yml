@@ -68,7 +68,6 @@ services:
       - /var/lib/lighthouse
       - --beacon-nodes
       - ${CC_NODE}
-      - --enable-doppelganger-protection
       - --graffiti
       - ${GRAFFITI}
       - --network
