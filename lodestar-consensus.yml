@@ -58,6 +58,7 @@ services:
       - traefik.http.routers.cc.service=cc
       - traefik.http.routers.cc.entrypoints=websecure
       - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cc.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:
     image: tianon/true
