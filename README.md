@@ -18,4 +18,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker v1.6.7
+This is eth-docker v1.6.8
