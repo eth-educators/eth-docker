@@ -10,9 +10,10 @@ services:
   ssv-node:
     restart: "${RESTART}"
     image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
+    user: 12000:12000
     volumes:
       - ./blox-ssv-config.yaml:/config.yaml
-      - ssv-data:/tmp/ssv-db
+      - ssv-data:/tmp
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
