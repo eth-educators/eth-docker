@@ -1,0 +1,5 @@
+version: "3.4"
+services:
+  grafana:
+    ports:
+      - ${GRAFANA_PORT}:${GRAFANA_PORT}/tcp

@@ -18,6 +18,8 @@ services:
         - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse:local
     user: lhvalidator
+    expose:
+      - 5064/tcp
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
     <<: *logging
@@ -33,6 +35,9 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
   validator-import:
     restart: "no"
     image: lighthouse:local
