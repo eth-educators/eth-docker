@@ -382,10 +382,7 @@ query_execution_client() {
 
 query_grafana() {
     if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Grafana dashboards?" 10 60) then
-        GRAFANA_CLIENT=$(echo $(echo "${CONSENSUS_CLIENT}" | cut -d '-' -f1)-grafana.yml:grafana-insecure.yml)
-        if [[ ${EXECUTION_CLIENT} == "geth.yml" || ${EXECUTION_CLIENT} == "erigon.yml" ]]; then
-          GRAFANA_CLIENT=${GRAFANA_CLIENT}:$(echo $(echo "${EXECUTION_CLIENT}" | cut -d '.' -f1)-grafana.yml)
-        fi
+        GRAFANA_CLIENT="grafana.yml:grafana-shared.yml"
     else
         unset GRAFANA_CLIENT
     fi
