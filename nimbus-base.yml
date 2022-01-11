@@ -22,6 +22,8 @@ services:
       - nimbus-data:/var/lib/nimbus
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    expose:
+      - 8008/tcp
     ports:
       - ${NIM_PORT}:${NIM_PORT}/tcp
       - ${NIM_PORT}:${NIM_PORT}/udp
@@ -51,6 +53,9 @@ services:
       - --num-threads=0
       - --enr-auto-update=true
       - --doppelganger-detection=false
+      - --metrics
+      - --metrics-port=8008
+      - --metrics-address=0.0.0.0
     command: ${NIMBUS_RAPID_SYNC}
   validator-import:
     restart: "no"

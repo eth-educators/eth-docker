@@ -1,5 +1,1 @@
-version: "3.4"
-services:
-  validator:
-    ports:
-      - ${PRYSM_WEB_PORT}:${PRYSM_WEB_PORT}/tcp
+prysm-web-shared.yml

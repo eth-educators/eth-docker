@@ -28,6 +28,7 @@ services:
     expose:
       - ${EC_RPC_PORT}/tcp
       - ${EC_WS_PORT}/tcp
+      - 6060/tcp
     networks:
       default:
         aliases:
@@ -55,6 +56,11 @@ services:
       - --ws.api
       - web3,eth,net
       - --${EC_NETWORK}
+      - --metrics
+      - --metrics.expensive
+      - --pprof
+      - --pprof.addr
+      - 0.0.0.0
     command: ${GETH_CACHE}
   eth:
     depends_on:

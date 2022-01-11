@@ -27,13 +27,15 @@ services:
       - certs:/letsencrypt
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    expose:
+      - 8080/tcp
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
       - 4000:4000/tcp
     expose:
-      - 4000
-      - 5052
+      - 4000/tcp
+      - 5052/tcp
     networks:
       default:
         aliases:
@@ -72,6 +74,8 @@ services:
       - /letsencrypt/certs/certs/${DOMAIN}.crt
       - --tls-key
       - /letsencrypt/certs/private/${DOMAIN}.key
+      - --monitoring-host
+      - 0.0.0.0
     depends_on:
       - traefik
       - traefik-certs-dumper

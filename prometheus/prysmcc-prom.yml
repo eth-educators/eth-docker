@@ -22,10 +22,6 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
     - targets: ['prometheus:9090']
-  - job_name: 'validator'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['validator:8081']
   - job_name: 'consensus node'
     scrape_interval: 5s
     static_configs:
