@@ -3,3 +3,6 @@ services:
   grafana:
     ports:
       - ${GRAFANA_PORT}:${GRAFANA_PORT}/tcp
+#  prometheus:
+#    ports:
+#      - 9090:9090/tcp
