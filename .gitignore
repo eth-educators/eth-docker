@@ -6,3 +6,4 @@ docker-compose.yml
 *.swp
 alertmanager/config.yml
 ext-network.yml
+blox-ssv-config.yaml

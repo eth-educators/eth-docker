@@ -27,6 +27,7 @@ services:
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
     expose:
       - 9090/tcp
+      - 6060/tcp
     networks:
       default:
         aliases:
@@ -46,6 +47,10 @@ services:
       - --chain
       - ${EC_NETWORK}
       - --prune=hrtc
+      - --metrics
+      - --metrics.addr
+      - 0.0.0.0
+      - --metrics.expensive
   execution:
     restart: "${RESTART}"
     image: erigon:local

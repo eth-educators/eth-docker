@@ -1,0 +1,20 @@
+db:
+  Path: /tmp/ssv-db
+  Type: badger-db
+p2p:
+  DiscoveryType: discv5
+  TcpPort: 13000
+  UdpPort: 12000
+eth2:
+  BeaconNodeAddr: http://consensus:5052
+  Network: prater
+eth1:
+  ETH1Addr: ws://execution:8546
+  RegistryContractAddr: 0x687fb596F3892904F879118e2113e1EEe8746C2E
+OperatorPrivateKey: YOURPRIVATEKEYHERE
+MetricsAPIPort: 15000
+global:
+  LogFormat: json
+  LogLevelFormat: lowercase
+  LogLevel: info
+

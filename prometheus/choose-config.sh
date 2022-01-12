@@ -5,9 +5,13 @@
 
 case "$CLIENT" in
   *lh-base* ) conffile=lh-prom.yml ;;
+  *lh-consensus* ) conffile=lhcc-prom.yml ;;
   *prysm-base* ) conffile=prysm-prom.yml ;;
+  *prysm-consensus* ) conffile=prysmcc-prom.yml ;;
   *nimbus-base* ) conffile=nimbus-prom.yml ;;
+  *nimbus-consensus* ) conffile=nimbus-prom.yml ;;
   *teku-base* ) conffile=teku-prom.yml ;;
+  *teku-consensus* ) conffile=teku-prom.yml ;;
   * ) conffile=none.yml ;;
 esac
 
@@ -16,6 +20,11 @@ cp /etc/prometheus/$conffile /etc/prometheus/prometheus.yml
 case "$CLIENT" in
   *geth* ) cat /etc/prometheus/geth-prom.yml >> /etc/prometheus/prometheus.yml ;;
   *erigon* ) cat /etc/prometheus/erigon-prom.yml >> /etc/prometheus/prometheus.yml ;;
+  *blox-ssv* ) cat /etc/prometheus/blox-ssv-prom.yml >> /etc/prometheus/prometheus.yml ;;
 esac
 
-"$@" --config.file=/etc/prometheus/prometheus.yml
+case "$CLIENT" in
+  *blox-ssv* ) cat /etc/prometheus/blox-ssv-prom.yml >> /etc/prometheus/prometheus.yml ;;
+esac
+
+exec "$@" --config.file=/etc/prometheus/prometheus.yml
