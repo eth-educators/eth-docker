@@ -1,0 +1,35 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  ssv-node:
+    restart: "${RESTART}"
+    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
+    user: 12000:12000
+    volumes:
+      - ./blox-ssv-config.yaml:/config.yaml
+      - ssv-data:/tmp
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
+      - ${SSV_P2P_PORT_UDP}:${SSV_P2P_PORT_UDP}/udp
+    <<: *logging
+    environment:
+      - CONFIG_PATH=/config.yaml
+      - HOME=/tmp
+    command: make BUILD_PATH=/go/bin/ssvnode start-node
+  eth:
+    depends_on:
+      - ssv-node
+  ssv-generate-keys:
+    restart: "no"
+    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-v0.1.8}
+    command: /go/bin/ssvnode generate-operator-keys
+volumes:
+  ssv-data:

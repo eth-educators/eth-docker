@@ -27,6 +27,7 @@ services:
       - ${LH_PORT}:${LH_PORT}/udp
     expose:
       - 5052/tcp
+      - 5054/tcp
     networks:
       default:
         aliases:
@@ -54,11 +55,17 @@ services:
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
+      - --validator-monitor-auto
     command: ${LH_RAPID_SYNC}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
     user: lhvalidator
+    expose:
+      - 5064/tcp
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/timezone:/etc/timezone:ro
@@ -76,6 +83,9 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
     depends_on:
       - consensus
   validator-import:
