@@ -680,6 +680,10 @@ config () {
     set_value_in_env
     var=EC_NETWORK
     set_value_in_env
+
+    if [ ${__deployment} = "rocket" ]; then
+        update
+    fi
 }
 
 printhelp() {
