@@ -36,6 +36,7 @@ services:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
+      - --status-bar=false
       - --tcp-port=${NIM_PORT}
       - --udp-port=${NIM_PORT}
       - --max-peers=${NIM_PEER_COUNT}
@@ -56,6 +57,7 @@ services:
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
+      - --validator-monitor-auto
     command: ${NIMBUS_RAPID_SYNC}
   validator-import:
     restart: "no"

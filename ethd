@@ -507,7 +507,11 @@ query_grafana() {
 }
 
 query_remote_beacon() {
-    REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote consensus client? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    if [ "${__deployment}" = "rocket" ]; then
+        REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote consensus client? (right-click to paste)" 10 60 "http://eth2:5052" 3>&1 1>&2 2>&3)
+    else
+        REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote consensus client? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    fi
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
@@ -682,6 +686,10 @@ config () {
     set_value_in_env
     var=EC_NETWORK
     set_value_in_env
+
+    if [ ${__deployment} = "rocket" ]; then
+        update
+    fi
 }
 
 printhelp() {
