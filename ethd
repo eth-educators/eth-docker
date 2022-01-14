@@ -234,7 +234,7 @@ envmigrate() {
              TEKU_RAPID_SYNC LH_RAPID_SYNC LS_RAPID_SYNC NIMBUS_RAPID_SYNC CC_NODE BEACON_STATS_API \
 	     BEACON_STATS_MACHINE EC_P2P_PORT LH_PORT PRYSM_PORT PRYSM_UDP_PORT NIM_PORT TEKU_PORT \
 	     GRAFANA_PORT PRYSM_WEB_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT EC_RPC_PORT EC_WS_PORT \
-             RESTART LOG_LEVEL GETH_CACHE ERIGON_PRUNE )
+             RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
                 PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
@@ -281,27 +281,139 @@ envmigrate() {
     rm .env.source
 }
 
+query_network() {
+    # Mainnet or Testnet network
+    NETWORK=$(whiptail --notags --title "Select Network" --menu \
+    "Which network do you want to run on?" 9 60 2 \
+    "prater" "Prater Testnet" \
+    "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
+
+    if [ "${NETWORK}" == "mainnet" ]; then
+        EC_NETWORK=mainnet
+        echo "You chose to run on Ethereum mainnet"
+    elif [ "${NETWORK}" == "prater" ]; then
+        EC_NETWORK=goerli
+        echo "You chose to run on Prater testnet"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+query_deployment() {
+    if uname -a | grep -q aarch64; then
+      __deployment=$(whiptail --notags --title "Select deployment type" --menu \
+      "What kind of deployment do you want to run?" 11 80 4 \
+      "node" "Ethereum node - consensus, execution and validator client" \
+      "rocket" "Validator client only - integrate with RocketPool" \
+      "validator" "Validator client only - integrate with other consensus layer" \
+      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
+    else
+      __deployment=$(whiptail --notags --title "Select deployment type" --menu \
+      "What kind of deployment do you want to run?" 12 80 5 \
+      "node" "Ethereum node - consensus, execution and validator client" \
+      "rocket" "Validator client only - integrate with RocketPool" \
+      "validator" "Validator client only - integrate with other consensus layer" \
+      "blox" "Blox SSV node - consensus, execution and ssv-node" \
+      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
+    fi
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your deployment choice is:" "${__deployment}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+query_validator_client() {
+    if uname -a | grep -q aarch64; then
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
+      "Which validator client do you want to run?" 9 65 2 \
+      "lh-validator.yml" "Lighthouse validator client" \
+      "teku-validator.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+    else
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
+      "Which validator client do you want to run?" 11 65 4 \
+      "teku-validator.yml" "Teku validator client" \
+      "lh-validator.yml" "Lighthouse validator client" \
+      "lodestar-validator.yml" "Lodestar validator client" \
+      "prysm-validator.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
+    fi
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+query_validator_client_rocket() {
+    if uname -a | grep -q aarch64; then
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
+      "Which validator client do you want to run?" 9 65 2 \
+      "lh-validator.yml" "Lighthouse validator client" \
+      "teku-validator.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+    else
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
+      "Which validator client do you want to run?" 9 65 2 \
+      "teku-validator.yml" "Teku validator client" \
+      "lh-validator.yml" "Lighthouse validator client" 3>&1 1>&2 2>&3)
+    fi
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
 query_consensus_client() {
     if uname -a | grep -q aarch64; then
-      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
-      "Which consensus/validator client do you want to run?" 16 65 8 \
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+      "Which consensus client do you want to run?" 10 65 3 \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
-      "teku-base.yml" "Teku (Java) - consensus and validator client" \
-      "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
-      "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" 3>&1 1>&2 2>&3)
+      "teku-base.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
     else
-      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus/validator client" --menu \
-      "Which consensus/validator client do you want to run?" 16 65 10 \
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+      "Which consensus client do you want to run?" 12 65 5 \
       "teku-base.yml" "Teku (Java) - consensus and validator client" \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
       "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" \
-      "prysm-base.yml" "Prysm (Go) - consensus and validator client" \
-      "teku-validator.yml" "Teku validator client with remote beacon, e.g. Infura" \
-      "lh-validator.yml" "Lighthouse validator client with remote beacon, e.g. Infura" \
-      "lodestar-validator.yml" "Lodestar validator client with remote beacon, e.g. Infura" \
-      "prysm-validator.yml" "Prysm validator client with remote Prysm beacon" 3>&1 1>&2 2>&3)
+      "prysm-base.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
+    fi
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+query_consensus_only_client() {
+    if uname -a | grep -q aarch64; then
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+      "Which consensus client do you want to run?" 10 65 3 \
+      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
+      "nimbus-consensus.yml" "Nimbus (Nim) - consensus client" \
+      "teku-consensus.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
+    else
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+      "Which consensus client do you want to run?" 12 65 5 \
+      "teku-consensus.yml" "Teku (Java) - consensus client" \
+      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
+      "nimbus-consensus.yml" "Nimbus (Nim) - consensus client" \
+      "lodestar-consensus.yml" "Lodestar (Javascript) - consensus client" \
+      "prysm-consensus.yml" "Prysm (Go) - consensus client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -344,12 +456,12 @@ query_fallback_execution_client() {
 query_execution_client() {
     if uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
+      "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 9 60 2 \
       "NONE" "Custom" \
       "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 15 60 6 \
+      "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 12 60 5 \
       "NONE" "Custom" \
       "geth.yml" "Geth (Go)" \
       "erigon.yml" "Erigon (Go)" \
@@ -395,11 +507,11 @@ query_grafana() {
 }
 
 query_remote_beacon() {
-    REMOTE_BEACON=$(whiptail --title "Configure remote beacon node" --inputbox "What is the URL for your remote beacon? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote consensus client? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
-        echo "your remote beacon is:" "${REMOTE_BEACON}"
+        echo "your remote consensus client is:" "${REMOTE_BEACON}"
     else
         echo "You chose Cancel."
         exit 0
@@ -416,6 +528,45 @@ query_graffiti() {
         echo "You chose Cancel."
         exit 0
     fi
+}
+
+query_rapid_sync() {
+    # Assume no to start
+    TEKU_RAPID_SYNC=""
+    LH_RAPID_SYNC=""
+    LS_RAPID_SYNC="false"
+    NIMBUS_RAPID_SYNC=""
+    PRYSM_RAPID_SYNC=""
+
+    case "${CONSENSUS_CLIENT}" in
+        "teku-base.yml" | "teku-consensus.yml")
+            if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+                query_remote_beacon
+                TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
+            fi
+            ;;
+        "lh-base.yml" | "lh-consensus.yml")
+            if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+                query_remote_beacon
+                LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
+            fi
+            ;;
+        "nimbus-base.yml" | "nimbus-consensus.yml")
+    #        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+    #            query_remote_beacon
+    #            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
+    #        fi
+            ;;
+        "lodestar-base.yml" | "lodestar-consensus.yml")
+            if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint?" 10 60) then
+                LS_RAPID_SYNC="true"
+            fi
+            ;;
+        "prysm-base.yml" | "prysm-consensus.yml")
+            ;;
+        *)
+            ;;
+    esac
 }
 
 set_value_in_env() {
@@ -449,32 +600,36 @@ config () {
         fi
     fi
 
-    query_consensus_client
+    query_network
+    query_deployment
+    case "${__deployment}" in
+      "node")
+        query_consensus_client
+        ;;
+      "validator")
+        query_validator_client
+        ;;
+      "rocket")
+        query_validator_client_rocket
+        ;;
+      "blox" | "rpc")
+        query_consensus_only_client
+        ;;
+      *)
+        echo "Unknown deployment ${__deployment}, this is a bug."
+        exit 1
+        ;;
+    esac
 
     if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
         CC_NODE="http://consensus:5052"
 
-        # Mainnet or Testnet network
-
-        NETWORK=$(whiptail --notags --title "Select Network" --menu \
-        "Which network do you want to run on?" 15 60 3 \
-        "prater" "Prater Testnet" \
-        "mainnet" "Ethereum Mainnet" 3>&1 1>&2 2>&3)
-
-        if [ "${NETWORK}" == "mainnet" ]; then
-            EC_NETWORK=mainnet
-            echo "You chose to run on Ethereum mainnet"
-        elif [ "${NETWORK}" == "prater" ]; then
-            EC_NETWORK=goerli
-            echo "You chose to run on Prater testnet"
-        else
-            echo "You chose Cancel."
-            exit 0
+        if [ ${__deployment} = "node" ]; then
+          query_graffiti
         fi
-
-        query_graffiti
         query_execution_client
         query_grafana
+        query_rapid_sync
     else
         unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
@@ -484,76 +639,16 @@ config () {
         CC_NODE="${REMOTE_BEACON}"
     fi
 
-    if [[ "${CONSENSUS_CLIENT}" == "teku-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote beacon, e.g. Infura?" 10 60) then
-            query_remote_beacon
-            TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
-            LH_RAPID_SYNC=""
-            LS_RAPID_SYNC="false"
-            NIMBUS_RAPID_SYNC=""
-            PRYSM_RAPID_SYNC=""
-        else
-            TEKU_RAPID_SYNC=""
-            LH_RAPID_SYNC=""
-            LS_RAPID_SYNC="false"
-            NIMBUS_RAPID_SYNC=""
-            PRYSM_RAPID_SYNC=""
-        fi
-    elif [[ "${CONSENSUS_CLIENT}" == "lh-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote beacon, e.g. Infura?" 10 60) then
-            query_remote_beacon
-            LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
-            TEKU_RAPID_SYNC=""
-            LS_RAPID_SYNC="false"
-            NIMBUS_RAPID_SYNC=""
-            PRYSM_RAPID_SYNC=""
-        else
-            LH_RAPID_SYNC=""
-            TEKU_RAPID_SYNC=""
-            LS_RAPID_SYNC="false"
-            NIMBUS_RAPID_SYNC=""
-            PRYSM_RAPID_SYNC=""
-        fi
-#    elif [[ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]]; then
-#        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote beacon, e.g. Infura?" 10 60) then
-#            query_remote_beacon
-#            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
-#            LH_RAPID_SYNC=""
-#            TEKU_RAPID_SYNC=""
-#            LS_RAPID_SYNC="false"
-#            PRYSM_RAPID_SYNC=""
-#        else
-#            NIMBUS_RAPID_SYNC=""
-#            LH_RAPID_SYNC=""
-#            TEKU_RAPID_SYNC=""
-#            LS_RAPID_SYNC="false"
-#            PRYSM_RAPID_SYNC=""
-#        fi
-    elif [[ "${CONSENSUS_CLIENT}" == "lodestar-base.yml" ]]; then
-        if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote beacon?" 10 60) then
-            LS_RAPID_SYNC="true"
-            NIMBUS_RAPID_SYNC=""
-            LH_RAPID_SYNC=""
-            TEKU_RAPID_SYNC=""
-            PRYSM_RAPID_SYNC=""
-        else
-            LS_RAPID_SYNC="false"
-            NIMBUS_RAPID_SYNC=""
-            LH_RAPID_SYNC=""
-            TEKU_RAPID_SYNC=""
-            PRYSM_RAPID_SYNC=""
-        fi
-    else
-       TEKU_RAPID_SYNC=""
-       LH_RAPID_SYNC=""
-       LS_RAPID_SYNC="false"
-       NIMBUS_RAPID_SYNC=""
-       PRYSM_RAPID_SYNC=""
-    fi
-
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
     if [ "${EXECUTION_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+    fi
+    if [ "${__deployment}" = "blox" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv.yml"
+    fi
+    if [ "${__deployment}" = "rocket" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
+        sed -i "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
     fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"

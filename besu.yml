@@ -30,6 +30,7 @@ services:
     expose:
       - ${EC_RPC_PORT}/tcp
       - ${EC_WS_PORT}/tcp
+      - 9545/tcp
     networks:
       default:
         aliases:
@@ -61,6 +62,9 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${EC_NETWORK}
+      - --metrics-enabled
+      - --metrics-host
+      - 0.0.0.0
       - --Xdata-storage-format=BONSAI
   eth:
     depends_on:

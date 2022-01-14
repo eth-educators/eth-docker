@@ -14,8 +14,8 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 ## License
 
-[Apache License V2](https://github.com/eth2-educators/eth-docker/blob/master/LICENSE)
+[Apache License v2](https://github.com/eth2-educators/eth-docker/blob/master/LICENSE)
 
 # Version
 
-This is eth-docker v1.7.0
+This is eth-docker v1.7.2.1

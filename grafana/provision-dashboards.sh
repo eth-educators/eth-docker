@@ -65,6 +65,12 @@ case "$CLIENT" in
     __file='/etc/grafana/provisioning/dashboards/erigon_dashboard.json'
     wget -qcO - $__url | jq '.title = "erigon_dashboard"' | jq '.uid = "YbLNLr6Mz"' >$__file
     ;;&
+  *besu* )
+    # besu_dashboard
+    __url='https://grafana.com/api/dashboards/10273/revisions/5/download'
+    __file='/etc/grafana/provisioning/dashboards/besu_dashboard.json'
+    wget -qcO - $__url | jq '.title = "besu_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
+    ;;&
   *blox-ssv* )
     # Blox SSV Operator Dashboard
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator.json'
