@@ -297,15 +297,17 @@ query_network() {
 query_deployment() {
     if uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-      "What kind of deployment do you want to run?" 10 80 3 \
+      "What kind of deployment do you want to run?" 11 80 4 \
       "node" "Ethereum node - consensus, execution and validator client" \
-      "validator" "Validator client only - integrate with RocketPool or other consensus layer" \
+      "rocket" "Validator client only - integrate with RocketPool" \
+      "validator" "Validator client only - integrate with other consensus layer" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     else
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-      "What kind of deployment do you want to run?" 11 80 4 \
+      "What kind of deployment do you want to run?" 12 80 5 \
       "node" "Ethereum node - consensus, execution and validator client" \
-      "validator" "Validator client only - integrate with RocketPool or other consensus layer" \
+      "rocket" "Validator client only - integrate with RocketPool" \
+      "validator" "Validator client only - integrate with other consensus layer" \
       "blox" "Blox SSV node - consensus, execution and ssv-node" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     fi
@@ -332,6 +334,28 @@ query_validator_client() {
       "lh-validator.yml" "Lighthouse validator client" \
       "lodestar-validator.yml" "Lodestar validator client" \
       "prysm-validator.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
+    fi
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+query_validator_client_rocket() {
+    if uname -a | grep -q aarch64; then
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
+      "Which validator client do you want to run?" 9 65 2 \
+      "lh-validator.yml" "Lighthouse validator client" \
+      "teku-validator.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+    else
+      CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
+      "Which validator client do you want to run?" 9 65 2 \
+      "teku-validator.yml" "Teku validator client" \
+      "lh-validator.yml" "Lighthouse validator client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -579,10 +603,10 @@ config () {
       "validator")
         query_validator_client
         ;;
-      "blox")
-        query_consensus_only_client
+      "rocket")
+        query_validator_client_rocket
         ;;
-      "rpc")
+      "blox" | "rpc")
         query_consensus_only_client
         ;;
       *)
@@ -615,6 +639,10 @@ config () {
     fi
     if [ "${__deployment}" = "blox" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv.yml"
+    fi
+    if [ "${__deployment}" = "rocket" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
+        sed -i "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
     fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
