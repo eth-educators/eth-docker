@@ -20,7 +20,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - lhconsensus-data:/var/lib/lighthouse
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${LH_PORT}:${LH_PORT}/tcp

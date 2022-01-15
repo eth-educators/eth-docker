@@ -14,7 +14,6 @@ services:
     volumes:
       - ./blox-ssv-config.yaml:/config.yaml
       - ssv-data:/tmp
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
