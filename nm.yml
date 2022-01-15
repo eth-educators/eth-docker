@@ -19,13 +19,15 @@ services:
     image: nethermind:local
     user: nethermind
     volumes:
-      - nm-eth1-data:/var/lib/nethermind
+      - nmexecution-data:/var/lib/nethermind
+      - ./${NETWORK}:/configs
+      - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
     expose:
-      - ${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}/tcp
+      - ${EL_RPC_PORT}/tcp
+      - ${EL_WS_PORT}/tcp
     networks:
       default:
         aliases:
@@ -39,29 +41,35 @@ services:
       - --Init.WebSocketsEnabled
       - "true"
       - --Network.DiscoveryPort
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT}
       - --Network.P2PPort
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT}
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
-      - "Web3,Eth,Subscribe,Net"
+      - "Web3,Eth,Subscribe,Net,Consensus,Engine"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT}
       - --JsonRpc.WebSocketsPort
-      - ${EC_WS_PORT}
+      - ${EL_WS_PORT}
       - --Sync.FastSync
       - "true"
       - --config
-      - ${EC_NETWORK}
+      - ${NETWORK}
       - --Pruning.Enabled
       - "true"
       - --Pruning.CacheMb
       - "4096"
+      - --Init.ChainSpecPath
+      - "/configs/nethermind_genesis.json"
+      - --Merge.Enabled
+      - "true"
+      - --Merge.TerminalTotalDifficulty
+      - ${TOTAL_TERMINAL_DIFFICULTY}
   eth:
     depends_on:
       - execution
 volumes:
-  nm-eth1-data:
+  nmexecution-data:

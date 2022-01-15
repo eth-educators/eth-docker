@@ -1,15 +1,25 @@
 ARG DOCKER_TAG
 
-FROM statusim/nimbus-eth2:${DOCKER_TAG}
+#FROM statusim/nimbus-eth2:${DOCKER_TAG}
+FROM parithoshj/nimbus:${DOCKER_TAG}
 
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET
 
+ARG USER=user
 ARG UID=10002
 
 USER root
 
-RUN groupmod -g "${UID}" user && usermod -u "${UID}" -g "${UID}" user
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/usr/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
 
 RUN set -eux; \
         apt-get update; \
@@ -22,7 +32,7 @@ RUN set -eux; \
 RUN mkdir -p /var/lib/nimbus && chown -R user:user /var/lib/nimbus && chmod 700 /var/lib/nimbus
 
 # Copy beacon_node into $PATH
-RUN cp /home/user/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
+RUN cp /home/user/nimbus-eth2/build/beacon_node /usr/local/bin/nimbus_beacon_node
 # Scripts for privilege change and validator import
 COPY ./validator-import.sh /usr/local/bin/
 

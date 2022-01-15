@@ -20,8 +20,8 @@ services:
     stop_grace_period: 1m
     volumes:
       - tekuconsensus-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
     expose:
@@ -38,9 +38,7 @@ services:
       - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
-      - --network=${NETWORK}
-      - --eth1-endpoints=${EC_NODE}
-      - --eth1-deposit-contract-max-request-size=150
+      - --eth1-endpoints=${EL_NODE}
       - --p2p-port=${TEKU_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --logging=${LOG_LEVEL}
@@ -52,13 +50,20 @@ services:
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
-    command: ${TEKU_RAPID_SYNC}
+      - --network=/configs/config.yaml
+      - --initial-state=/configs/genesis.ssz
+      - --data-storage-mode=PRUNE
+      - --Xee-endpoint=${EL_NODE}
+      - --data-storage-non-canonical-blocks-enabled=true
+      - --Xnetwork-merge-total-terminal-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
+      - --Xvalidators-suggested-fee-recipient-address=${COINBASE}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
-      - traefik.http.routers.cc.tls.certresolver=letsencrypt
-      - traefik.http.services.cc.loadbalancer.server.port=5052
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=5052
   eth:
     image: tianon/true
     restart: "no"

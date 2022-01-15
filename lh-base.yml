@@ -19,9 +19,10 @@ services:
     user: lhconsensus
     stop_grace_period: 1m
     volumes:
-      - lhbeacon-data:/var/lib/lighthouse
+      - lhcl-data:/var/lib/lighthouse
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
       - ${LH_PORT}:${LH_PORT}/tcp
       - ${LH_PORT}:${LH_PORT}/udp
@@ -44,22 +45,26 @@ services:
       - 0.0.0.0
       - --http-port
       - "5052"
-      - --network
-      - ${NETWORK}
       - --port
       - ${LH_PORT}
       - --target-peers
       - ${LH_PEER_COUNT}
-      - --eth1-endpoints
-      - ${EC_NODE}
-      - --eth1-blocks-per-log-query
-      - "150"
+      - --execution-endpoints
+      - ${EL_NODE}
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
       - 0.0.0.0
       - --validator-monitor-auto
-    command: ${LH_RAPID_SYNC}
+      - --testnet-dir
+      - /configs
+      - --boot-nodes
+      - ${ENR}
+      - --merge
+      - --http-allow-sync-stalled
+      - --disable-packet-filter
+      - --terminal-total-difficulty-override
+      - ${TOTAL_TERMINAL_DIFFICULTY}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
@@ -160,5 +165,5 @@ services:
       - consensus
       - validator
 volumes:
-  lhbeacon-data:
+  lhconsensus-data:
   lhvalidator-data:

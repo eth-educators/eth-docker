@@ -1,5 +1,6 @@
 ARG DOCKER_TAG
-FROM prysmaticlabs/prysm-beacon-chain:${DOCKER_TAG} as ccsource
+#FROM prysmaticlabs/prysm-beacon-chain:${DOCKER_TAG} as ccsource
+FROM gcr.io/prysmaticlabs/prysm/beacon-chain:${DOCKER_TAG} as ccsource
 
 FROM debian:bullseye-slim as consensus
 
