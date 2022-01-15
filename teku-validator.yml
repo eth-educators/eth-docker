@@ -19,7 +19,6 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
@@ -40,7 +39,6 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
   validator-exit:
@@ -49,7 +47,6 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /opt/teku/bin/teku

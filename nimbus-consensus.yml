@@ -20,7 +20,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - nimbus-consensus-data:/var/lib/nimbus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8008/tcp

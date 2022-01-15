@@ -24,7 +24,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - prysmbeacon-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
@@ -80,7 +79,6 @@ services:
       - 8081/tcp
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
@@ -110,7 +108,6 @@ services:
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator
@@ -131,7 +128,6 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
     command:
@@ -151,7 +147,6 @@ services:
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator

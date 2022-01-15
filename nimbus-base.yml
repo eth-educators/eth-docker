@@ -20,7 +20,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8008/tcp
@@ -66,7 +65,6 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
@@ -82,7 +80,6 @@ services:
     user: user
     volumes:
       - nimbus-data:/var/lib/nimbus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node

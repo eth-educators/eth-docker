@@ -36,7 +36,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/letsencrypt
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     depends_on:
@@ -50,7 +49,6 @@ services:
       - SUBDOMAIN=${DDNS_SUBDOMAIN}
       - PROXIED=${DDNS_PROXY}
     volumes:
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
   eth:

@@ -20,7 +20,6 @@ services:
     user: erigon
     volumes:
       - erigon-ec-data:/var/lib/erigon
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
@@ -57,7 +56,6 @@ services:
     user: erigon
     volumes:
       - erigon-ec-data:/var/lib/erigon
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - ${EC_RPC_PORT}/tcp

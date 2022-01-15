@@ -15,7 +15,6 @@ services:
     volumes:
       - prom-data:/prometheus
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
@@ -46,7 +45,6 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/TZ:ro
     expose:
       - 9100/tcp
     <<: *logging
@@ -55,7 +53,6 @@ services:
     image: prom/blackbox-exporter:master
     volumes:
       - ./prometheus/blackbox.yml:/config/blackbox.yml
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 9115/tcp
@@ -67,7 +64,6 @@ services:
     image: quay.io/prometheuscommunity/json-exporter
     volumes:
       - ./prometheus/json.yml:/config/json.yml
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 7979/tcp
@@ -79,7 +75,6 @@ services:
     restart: "${RESTART}"
     image: nbarrientos/cryptowat_exporter
     volumes:
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       - CRYPTOWAT_EXCHANGES=kraken
@@ -99,7 +94,6 @@ services:
       - CLIENT=${COMPOSE_FILE}
     volumes:
       - grafana-data:/var/lib/grafana
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus

@@ -20,7 +20,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${LS_PORT}:${LS_PORT}/tcp

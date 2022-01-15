@@ -19,7 +19,6 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
@@ -44,7 +43,6 @@ services:
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
@@ -66,7 +64,6 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
@@ -89,7 +86,6 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
