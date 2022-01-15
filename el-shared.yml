@@ -1,0 +1,9 @@
+# To be used in conjunction with oe.yml, nm.yml, besu.yml or geth.yml
+version: "3.4"
+services:
+  execution:
+    ports:
+      - ${EL_RPC_PORT}:${EL_RPC_PORT}/tcp
+      - ${EL_WS_PORT}:${EL_WS_PORT}/tcp
+  eth:
+    image: tianon/true

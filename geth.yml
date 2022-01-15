@@ -7,6 +7,20 @@ x-logging: &logging
       max-file: "3"
 
 services:
+  geth_init:
+    restart: "no"
+    image: geth:local
+    user: geth
+    volumes:
+      - gethexecution-data:/var/lib/goethereum
+      - ./${NETWORK}:/configs
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - geth
+      - --datadir
+      - /var/lib/goethereum
+      - init
+      - /configs/genesis.json
   execution:
     restart: "${RESTART}"
     build:
@@ -19,15 +33,14 @@ services:
     image: geth:local
     user: geth
     volumes:
-      - geth-eth1-data:/var/lib/goethereum
-      - /etc/timezone:/etc/timezone:ro
+      - gethexecution-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
     expose:
-      - ${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}/tcp
+      - ${EL_RPC_PORT}/tcp
+      - ${EL_WS_PORT}/tcp
       - 6060/tcp
     networks:
       default:
@@ -41,29 +54,35 @@ services:
       - 0.0.0.0
       - --http.vhosts=*
       - --http.api
-      - web3,eth,net
+      - web3,eth,net,engine
       - --datadir
       - /var/lib/goethereum
       - --port
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT}
       - --http.port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT}
       - --ws
       - --ws.addr
       - 0.0.0.0
       - --ws.port
-      - ${EC_WS_PORT}
+      - ${EL_WS_PORT}
       - --ws.api
-      - web3,eth,net
-      - --${EC_NETWORK}
+      - web3,eth,net,engine
       - --metrics
       - --metrics.expensive
       - --pprof
       - --pprof.addr
       - 0.0.0.0
+      - --bootnodes
+      - ${ENODE}
+      - --catalyst
+      - --networkid
+      - ${NETWORK_ID}
     command: ${GETH_CACHE}
+    depends_on:
+      - geth_init
   eth:
     depends_on:
       - execution
 volumes:
-  geth-eth1-data:
+  gethexecution-data:

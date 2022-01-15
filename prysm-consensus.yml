@@ -24,18 +24,15 @@ services:
     stop_grace_period: 1m
     volumes:
       - prysmconsensus-data:/var/lib/prysm
-      - certs:/letsencrypt
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    expose:
-      - 8080/tcp
+      - ./${NETWORK}:/configs
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
-      - 4000:4000/tcp
     expose:
       - 4000/tcp
       - 5052/tcp
+      - 8080/tcp
     networks:
       default:
         aliases:
@@ -53,13 +50,7 @@ services:
       - --grpc-gateway-port
       - "5052"
       - --http-web3provider
-      - ${EC_NODE}
-      - --fallback-web3provider
-      - ${EC_FALLBACK_NODE1}
-      - --fallback-web3provider
-      - ${EC_FALLBACK_NODE2}
-      - --eth1-header-req-limit
-      - "150"
+      - ${EL_NODE}
       - --p2p-tcp-port
       - ${PRYSM_PORT}
       - --p2p-udp-port
@@ -68,44 +59,27 @@ services:
       - ${PRYSM_PEER_COUNT}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
-      - --tls-cert
-      - /letsencrypt/certs/certs/${DOMAIN}.crt
-      - --tls-key
-      - /letsencrypt/certs/private/${DOMAIN}.key
       - --monitoring-host
       - 0.0.0.0
-    depends_on:
-      - traefik
-      - traefik-certs-dumper
+      - --genesis-state
+      - /configs/genesis.ssz
+      - --chain-config-file
+      - /configs/config.yaml
+      - --bootstrap-node
+      - ${ENR}
+      - --min-sync-peers=1
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
-      - traefik.http.routers.cc.service=cc
-      - traefik.http.routers.cc.tls.certresolver=letsencrypt
-      - traefik.http.services.cc.loadbalancer.server.port=5052
-  traefik-certs-dumper:
-    image: ldez/traefik-certs-dumper:latest
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        apk add jq docker
-        adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/bin/false" --no-create-home --uid 10002 cert
-        while ! [ -e /letsencrypt/acme.json ] || ! [ `jq ".[] | .Certificates | length" /letsencrypt/acme.json` != 0 ]; do
-          sleep 1
-        done
-        traefik-certs-dumper file --version v2 --watch --source /letsencrypt/acme.json --dest /letsencrypt/certs --post-hook "/usr/bin/cert-change.sh"
-    volumes:
-      - certs:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./prysm/cert-change.sh:/usr/bin/cert-change.sh
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=5052
   eth:
     image: tianon/true
     restart: "no"
     depends_on:
       - consensus
-      - traefik-certs-dumper
 volumes:
   prysmconsensus-data:

@@ -20,8 +20,8 @@ services:
     stop_grace_period: 1m
     volumes:
       - lhconsensus-data:/var/lib/lighthouse
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
       - ${LH_PORT}:${LH_PORT}/tcp
       - ${LH_PORT}:${LH_PORT}/udp
@@ -44,28 +44,37 @@ services:
       - 0.0.0.0
       - --http-port
       - "5052"
-      - --network
-      - ${NETWORK}
       - --port
       - ${LH_PORT}
       - --target-peers
       - ${LH_PEER_COUNT}
+      - --execution-endpoints
+      - ${EL_NODE}
       - --eth1-endpoints
-      - ${EC_NODE}
-      - --eth1-blocks-per-log-query
-      - "150"
+      - ${EL_NODE}
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
       - 0.0.0.0
       - --validator-monitor-auto
-    command: ${LH_RAPID_SYNC}
+      - --testnet-dir
+      - /configs
+      - --boot-nodes
+      - ${ENR}
+      - --merge
+      - --disable-packet-filter
+      - --terminal-total-difficulty-override
+      - ${TOTAL_TERMINAL_DIFFICULTY}
+      - --fee-recipient
+      - ${COINBASE}
+      - --http-allow-sync-stalled
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
-      - traefik.http.routers.cc.tls.certresolver=letsencrypt
-      - traefik.http.services.cc.loadbalancer.server.port=5052
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=5052
   eth:
     image: tianon/true
     restart: "no"

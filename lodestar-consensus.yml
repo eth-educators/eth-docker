@@ -20,8 +20,8 @@ services:
     stop_grace_period: 1m
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
       - ${LS_PORT}:${LS_PORT}/tcp
       - ${LS_PORT}:${LS_PORT}/udp
@@ -46,20 +46,27 @@ services:
       - --network.localMultiaddrs
       - "/ip4/0.0.0.0/tcp/${LS_PORT}"
       - --eth1.providerUrl
-      - ${EC_NODE}
-      - --weakSubjectivitySyncLatest
-      - ${LS_RAPID_SYNC}
+      - ${EL_NODE}
       - --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+      - --paramsFile
+      - /configs/config.yaml
+      - --genesisStateFile
+      - /configs/genesis.ssz
+      - --network.discv5.bootEnrs
+      - ${ENR}
+      - --network.connectToDiscv5Bootnodes
+      - --network.discv5.enabled=true
+      - --eth1.disableEth1DepositDataTracker=true
+      - --eth1.enabled=true
+      - --execution.urls=${EL_NODE}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cc.service=cc
-      - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
-      - traefik.http.routers.cc.tls.certresolver=letsencrypt
-      - traefik.http.services.cc.loadbalancer.server.port=5052
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=5052
   eth:
     image: tianon/true
     restart: "no"

@@ -21,15 +21,15 @@ services:
     environment:
       - JAVA_OPTS=-Xmx4g
     volumes:
-      - besu-eth1-data:/var/lib/besu
-      - /etc/timezone:/etc/timezone:ro
+      - besuexecution-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
     expose:
-      - ${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}/tcp
+      - ${EL_RPC_PORT}/tcp
+      - ${EL_WS_PORT}/tcp
       - 9545/tcp
     networks:
       default:
@@ -41,33 +41,41 @@ services:
       - --data-path
       - /var/lib/besu
       - --p2p-port
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
-      - "WEB3,ETH,NET"
+      - "ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,EXECUTION"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT}
       - --rpc-http-cors-origins=*
       - --rpc-ws-enabled
       - --rpc-ws-api
-      - "WEB3,ETH,NET"
+      - "ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,EXECUTION"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
-      - ${EC_WS_PORT}
+      - ${EL_WS_PORT}
       - --host-allowlist=*
       - --logging
       - ${LOG_LEVEL}
-      - --network
-      - ${EC_NETWORK}
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0
       - --Xdata-storage-format=BONSAI
+      - --genesis-file
+      - "/configs/besu_genesis.json"
+      - --network-id
+      - ${NETWORK_ID}
+      - --bootnodes
+      - ${ENODE}
+      - --Xmerge-support
+      - "true"
+      - --miner-coinbase
+      - ${COINBASE}
   eth:
     depends_on:
       - execution
 volumes:
-  besu-eth1-data:
+  besuexecution-data:
