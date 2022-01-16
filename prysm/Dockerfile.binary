@@ -42,7 +42,8 @@ USER ${USER}
 
 ENTRYPOINT ["beacon-chain"]
 
-FROM prysmaticlabs/prysm-validator:${DOCKER_TAG} as vcsource
+#FROM prysmaticlabs/prysm-validator:${DOCKER_TAG} as vcsource
+FROM gcr.io/prysmaticlabs/prysm/validator:kintsugi-30ed0d as vcsource
 
 FROM consensus as validator
 

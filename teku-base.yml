@@ -20,15 +20,14 @@ services:
     stop_grace_period: 1m
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
     expose:
       - 8008/tcp
     ports:
-      - ${TEKU_PORT}:${TEKU_PORT}/tcp
-      - ${TEKU_PORT}:${TEKU_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     networks:
       default:
         aliases:
@@ -39,9 +38,8 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${EC_NODE}
-      - --eth1-deposit-contract-max-request-size=150
-      - --p2p-port=${TEKU_PORT}
+      - --eth1-endpoints=${EL_NODE}
+      - --p2p-port=${CL_P2P_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
@@ -55,7 +53,9 @@ services:
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
-    command: ${TEKU_RAPID_SYNC}
+      - --Xee-endpoint=${EL_NODE}
+      - --data-storage-non-canonical-blocks-enabled=true
+      - --Xvalidators-suggested-fee-recipient-address=${REWARDS_TO}
   validator-import:
     restart: "no"
     image: teku:local
@@ -63,7 +63,6 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
   validator-exit:
@@ -72,7 +71,6 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /opt/teku/bin/teku

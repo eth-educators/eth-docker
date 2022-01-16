@@ -20,11 +20,11 @@ services:
     stop_grace_period: 1m
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
-      - ${LS_PORT}:${LS_PORT}/tcp
-      - ${LS_PORT}:${LS_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     expose:
       - 5052/tcp
     <<: *logging
@@ -42,25 +42,32 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${LS_PORT}"
+      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${LS_PORT}"
+      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT}"
       - --eth1.providerUrl
-      - ${EC_NODE}
-      - --weakSubjectivitySyncLatest
-      - ${LS_RAPID_SYNC}
+      - ${EL_NODE}
       - --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+      - --paramsFile
+      - /configs/config.yaml
+      - --genesisStateFile
+      - /configs/genesis.ssz
+      - --network.discv5.bootEnrs
+      - ${ENR}
+      - --network.connectToDiscv5Bootnodes
+      - --network.discv5.enabled=true
+      - --eth1.disableEth1DepositDataTracker=true
+      - --eth1.enabled=true
+      - --execution.urls=${EL_NODE}
   validator:
     restart: "${RESTART}"
     image: lodestar:local
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     <<: *logging
     entrypoint:
       - node
@@ -75,8 +82,8 @@ services:
       - ${GRAFFITI}
       - --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+      - --paramsFile
+      - /configs/config.yaml
   validator-import:
     restart: "${RESTART}"
     image: lodestar:local
@@ -84,7 +91,6 @@ services:
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
@@ -98,16 +104,14 @@ services:
       - /var/lib/lodestar/validators
       - --directory
       - /val_keys
-      - --network
-      - ${NETWORK}
   validator-exit:
     restart: "no"
     image: lodestar:local
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     entrypoint:
       - node
       - --max-old-space-size=8192
@@ -121,15 +125,14 @@ services:
       - http://consensus:5052
       -  --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+      - --paramsFile
+      - /configs/config.yaml
   validator-account:
     restart: "no"
     image: lodestar:local
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
@@ -139,8 +142,6 @@ services:
       - validator
       - --rootDir
       - /var/lib/lodestar/validators
-      - --network
-      - ${NETWORK}
   eth:
     image: tianon/true
     restart: "no"

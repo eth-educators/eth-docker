@@ -19,8 +19,8 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     <<: *logging
     entrypoint:
       - node
@@ -30,13 +30,13 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - ${CC_NODE}
+      - ${CL_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+      - --paramsFile
+      - /configs/config.yaml
   validator-import:
     restart: "${RESTART}"
     image: lodestar:local
@@ -44,7 +44,6 @@ services:
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
@@ -58,16 +57,14 @@ services:
       - /var/lib/lodestar/validators
       - --directory
       - /val_keys
-      - --network
-      - ${NETWORK}
   validator-exit:
     restart: "no"
     image: lodestar:local
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     entrypoint:
       - node
       - --max-old-space-size=8192
@@ -78,18 +75,17 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - ${CC_NODE}
+      - ${CL_NODE}
       -  --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+      - --paramsFile
+      - /configs/config.yaml
   validator-account:
     restart: "no"
     image: lodestar:local
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
@@ -99,8 +95,6 @@ services:
       - validator
       - --rootDir
       - /var/lib/lodestar/validators
-      - --network
-      - ${NETWORK}
   eth:
     image: tianon/true
     restart: "no"

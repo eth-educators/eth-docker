@@ -19,7 +19,7 @@ services:
     user: teku
     stop_grace_period: 1m
     volumes:
-      - tekuconsensus-data:/var/lib/teku
+      - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
     environment:
@@ -53,8 +53,7 @@ services:
         #      - --network=/configs/config.yaml
         #- --initial-state=/configs/genesis.ssz
       - --network=${NETWORK}
-      - --initial-state=/configs/genesis.ssz
-      - --data-storage-mode=PRUNE
+        #- --initial-state=/configs/genesis.ssz
       - --Xee-endpoint=${EL_NODE}
       - --data-storage-non-canonical-blocks-enabled=true
         #      - --Xnetwork-merge-total-terminal-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
@@ -72,4 +71,4 @@ services:
     depends_on:
       - consensus
 volumes:
-  tekuconsensus-data:
+  teku-data:

@@ -19,13 +19,12 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
       - /opt/teku/bin/teku
       - validator-client
-      - --beacon-node-api-endpoint=${CC_NODE}
+      - --beacon-node-api-endpoint=${CL_NODE}
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=auto
@@ -40,7 +39,6 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
   validator-exit:
@@ -49,12 +47,11 @@ services:
     user: teku
     volumes:
       - teku-data:/var/lib/teku
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /opt/teku/bin/teku
       - voluntary-exit
-      - --beacon-node-api-endpoint=${CC_NODE}
+      - --beacon-node-api-endpoint=${CL_NODE}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
   eth:
     image: tianon/true

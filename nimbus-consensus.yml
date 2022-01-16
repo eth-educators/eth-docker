@@ -19,7 +19,7 @@ services:
     user: user
     stop_grace_period: 1m
     volumes:
-      - nimbusconsensus-data:/var/lib/nimbus
+      - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
     expose:
@@ -68,4 +68,4 @@ services:
     depends_on:
       - consensus
 volumes:
-  nimbusconsensus-data:
+  nimbus-data:
