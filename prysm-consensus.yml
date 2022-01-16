@@ -27,8 +27,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
     ports:
-      - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     expose:
       - 4000/tcp
       - 5052/tcp
@@ -52,9 +52,9 @@ services:
       - --http-web3provider
       - ${EL_NODE}
       - --p2p-tcp-port
-      - ${PRYSM_PORT}
+      - ${CL_P2P_PORT}
       - --p2p-udp-port
-      - ${PRYSM_UDP_PORT}
+      - ${CL_P2P_PORT}
       - --p2p-max-peers
       - ${PRYSM_PEER_COUNT}
       - --verbosity
