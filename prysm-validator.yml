@@ -23,7 +23,6 @@ services:
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
@@ -33,25 +32,35 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - ${CC_NODE}
+      - ${CL_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --tls-cert
       - /etc/ssl/certs/ca-certificates.crt
       - --accept-terms-of-use
-      # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
+      - --web
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --grpc-gateway-port
+      - ${PRYSM_WEB_PORT}
+      - --kintsugi-testnet
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prysm.service=prysm
+      - traefik.http.routers.prysm.entrypoints=web,websecure
+      - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
+      - traefik.http.routers.prysm.tls.certresolver=letsencrypt
+      - traefik.http.services.prysm.loadbalancer.server.port=${PRYSM_WEB_PORT}
   validator-account-list:
     restart: "no"
     image: prysm-validator:local
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator
@@ -62,8 +71,6 @@ services:
       - accounts
       - list
       - --wallet-dir=/var/lib/prysm/
-      - --${NETWORK}
-      # If you chose not to store the wallet password during import, comment out the following line
       - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
     restart: "no"
@@ -72,7 +79,6 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
     command:
@@ -85,7 +91,6 @@ services:
       - import
       - --wallet-dir=/var/lib/prysm/
       - --keys-dir=/val_keys
-      - --${NETWORK}
   validator-exit:
     restart: "no"
     image: prysm-validator:local
@@ -103,10 +108,10 @@ services:
       - accounts
       - voluntary-exit
       - --wallet-dir=/var/lib/prysm/
-      - --beacon-rpc-provider=${CC_NODE}
+      - --beacon-rpc-provider=${CL_NODE}
       - --wallet-password-file=/var/lib/prysm/password.txt
-      - --${NETWORK}
       - --tls-cert=/etc/ssl/certs/ca-certificates.crt
+      - --kintsugi-testnet
   eth:
     image: tianon/true
     restart: "no"

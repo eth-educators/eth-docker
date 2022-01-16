@@ -23,12 +23,12 @@ services:
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
-      - prysmbeacon-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
+      - prysmconsensus-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
-      - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     expose:
       - 5052/tcp
       - 4000/tcp
@@ -50,25 +50,25 @@ services:
       - --grpc-gateway-port
       - "5052"
       - --http-web3provider
-      - ${EC_NODE}
-      - --fallback-web3provider
-      - ${EC_FALLBACK_NODE1}
-      - --fallback-web3provider
-      - ${EC_FALLBACK_NODE2}
-      - --eth1-header-req-limit
-      - "150"
+      - ${EL_NODE}
       - --p2p-tcp-port
-      - ${PRYSM_PORT}
+      - ${CL_P2P_PORT}
       - --p2p-udp-port
-      - ${PRYSM_UDP_PORT}
+      - ${CL_P2P_PORT}
       - --p2p-max-peers
       - ${PRYSM_PEER_COUNT}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0
+      - --genesis-state
+      - /configs/genesis.ssz
+      - --chain-config-file
+      - /configs/config.yaml
+      - --bootstrap-node
+      - ${ENR}
+      - --min-sync-peers=1
   validator:
     restart: "${RESTART}"
     build:
@@ -80,7 +80,6 @@ services:
       - 8081/tcp
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
@@ -95,22 +94,32 @@ services:
       - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
-      # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
       - --monitoring-host
       - 0.0.0.0
+      - --web
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --grpc-gateway-port
+      - ${PRYSM_WEB_PORT}
+      - --kintsugi-testnet
     depends_on:
       - consensus
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prysm.service=prysm
+      - traefik.http.routers.prysm.entrypoints=web,websecure
+      - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
+      - traefik.http.routers.prysm.tls.certresolver=letsencrypt
+      - traefik.http.services.prysm.loadbalancer.server.port=${PRYSM_WEB_PORT}
   validator-account-list:
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator
@@ -121,8 +130,6 @@ services:
       - accounts
       - list
       - --wallet-dir=/var/lib/prysm/
-      - --${NETWORK}
-      # If you chose not to store the wallet password during import, comment out the following line
       - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
     restart: "no"
@@ -131,7 +138,6 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint: validator-import.sh
     command:
@@ -144,14 +150,12 @@ services:
       - import
       - --wallet-dir=/var/lib/prysm/
       - --keys-dir=/val_keys
-      - --${NETWORK}
   validator-exit:
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator
@@ -164,7 +168,7 @@ services:
       - --wallet-dir=/var/lib/prysm/
       - --beacon-rpc-provider=consensus:4000
       - --wallet-password-file=/var/lib/prysm/password.txt
-      - --${NETWORK}
+      - --kintsugi-testnet
     depends_on:
       - consensus
   eth:
@@ -174,5 +178,5 @@ services:
       - consensus
       - validator
 volumes:
-  prysmbeacon-data:
+  prysmconsensus-data:
   prysmvalidator-data:

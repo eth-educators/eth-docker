@@ -442,9 +442,9 @@ query_execution_client() {
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 12 60 5 \
-      "geth.yml" "Geth (Go)" \
+      "besu.yml" "Besu (Java)" \
       "nm.yml" "Nethermind (.NET)" \
-      "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
+      "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?

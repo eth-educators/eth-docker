@@ -20,13 +20,13 @@ services:
     stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     expose:
       - 8008/tcp
     ports:
-      - ${NIM_PORT}:${NIM_PORT}/tcp
-      - ${NIM_PORT}:${NIM_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     networks:
       default:
         aliases:
@@ -37,13 +37,10 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --status-bar=false
-      - --tcp-port=${NIM_PORT}
-      - --udp-port=${NIM_PORT}
+      - --tcp-port=${CL_P2P_PORT}
+      - --udp-port=${CL_P2P_PORT}
       - --max-peers=${NIM_PEER_COUNT}
-      - --network=${NETWORK}
-      - --web3-url=${EC_NODE}
-      - --web3-url=${EC_FALLBACK_NODE1}
-      - --web3-url=${EC_FALLBACK_NODE2}
+      - --web3-url=${EL_NODE}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rpc
@@ -58,7 +55,9 @@ services:
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
       - --validator-monitor-auto
-    command: ${NIMBUS_RAPID_SYNC}
+      - --network=/configs
+      - --bootstrap-node=${ENR}
+      - --terminal-total-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
   validator-import:
     restart: "no"
     image: nimbus:local
@@ -66,13 +65,11 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
       - deposits
       - import
       - /val_keys
@@ -82,12 +79,10 @@ services:
     user: user
     volumes:
       - nimbus-data:/var/lib/nimbus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit

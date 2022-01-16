@@ -21,8 +21,8 @@ services:
       - 5064/tcp
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     <<: *logging
     entrypoint:
       - lighthouse
@@ -30,15 +30,17 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${CC_NODE}
+      - ${CL_NODE}
       - --graffiti
       - ${GRAFFITI}
-      - --network
-      - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --testnet-dir
+      - /configs
+      - --terminal-total-difficulty-override
+      - ${TOTAL_TERMINAL_DIFFICULTY}
   validator-import:
     restart: "no"
     image: lighthouse:local
@@ -46,7 +48,6 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-import.sh
@@ -58,8 +59,6 @@ services:
       - /var/lib/lighthouse
       - --directory
       - /val_keys
-      - --network
-      - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-exit:
     restart: "no"
@@ -68,7 +67,6 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-exit.sh
@@ -77,12 +75,14 @@ services:
       - validator
       - exit
       - --beacon-node
-      - ${CC_NODE}
+      - ${CL_NODE}
       - --datadir
       - /var/lib/lighthouse
-      - --network
-      - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
+      - --testnet-dir
+      - /configs
+      - --terminal-total-difficulty-override
+      - ${TOTAL_TERMINAL_DIFFICULTY}
       - --keystore
   validator-account:
     restart: "no"
@@ -91,16 +91,14 @@ services:
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}:/interchange
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     entrypoint:
       - lighthouse
       - account
       - validator
       - --datadir
       - /var/lib/lighthouse
-      - --network
-      - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   eth:
     image: tianon/true
