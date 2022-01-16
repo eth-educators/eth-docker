@@ -23,8 +23,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
     ports:
-      - ${LS_PORT}:${LS_PORT}/tcp
-      - ${LS_PORT}:${LS_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     expose:
       - 5052/tcp
     <<: *logging
@@ -42,9 +42,9 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${LS_PORT}"
+      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${LS_PORT}"
+      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT}"
       - --eth1.providerUrl
       - ${EL_NODE}
       - --logLevel

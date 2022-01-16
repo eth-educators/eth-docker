@@ -27,8 +27,8 @@ services:
     expose:
       - 8008/tcp
     ports:
-      - ${TEKU_PORT}:${TEKU_PORT}/tcp
-      - ${TEKU_PORT}:${TEKU_PORT}/udp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
+      - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
     networks:
       default:
         aliases:
@@ -39,7 +39,7 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --eth1-endpoints=${EL_NODE}
-      - --p2p-port=${TEKU_PORT}
+      - --p2p-port=${CL_P2P_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
@@ -50,13 +50,15 @@ services:
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
-      - --network=/configs/config.yaml
+        #      - --network=/configs/config.yaml
+        #- --initial-state=/configs/genesis.ssz
+      - --network=${NETWORK}
       - --initial-state=/configs/genesis.ssz
       - --data-storage-mode=PRUNE
       - --Xee-endpoint=${EL_NODE}
       - --data-storage-non-canonical-blocks-enabled=true
-      - --Xnetwork-merge-total-terminal-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
-      - --Xvalidators-suggested-fee-recipient-address=${COINBASE}
+        #      - --Xnetwork-merge-total-terminal-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
+      - --Xvalidators-suggested-fee-recipient-address=${REWARDS_TO}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

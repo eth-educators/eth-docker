@@ -73,7 +73,7 @@ services:
       - --Xmerge-support
       - "true"
       - --miner-coinbase
-      - ${COINBASE}
+      - ${REWARDS_TO}
   eth:
     depends_on:
       - execution
