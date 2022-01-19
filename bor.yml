@@ -52,7 +52,6 @@ services:
       - heimdalld
     volumes:
       - heimdall-data:/var/lib/heimdall
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - "1317/tcp"
@@ -67,15 +66,19 @@ services:
       - --node=tcp://heimdalld:26657
 
   prune-bor:
-    image: "maticnetwork/bor:${BOR_TAG}"
+    image: bor:local
     restart: "no"
     stop_grace_period: 3m
     user: bor
     volumes:
       - bor-data:/var/lib/bor
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    command: bor --datadir /var/lib/bor/data snapshot prune-state
+    entrypoint:
+      - bor
+      - --datadir
+      - /var/lib/bor/data
+      - snapshot
+      - prune-state
 
   bor:
     image: bor:local
@@ -146,7 +149,6 @@ services:
       - ${BOR_NODE_ID}:mainnet@bor-mainnet.vitwit.com:3000
     volumes:
       - bor-data:/var/lib/bor
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - "${BOR_RPC_PORT}/tcp"
