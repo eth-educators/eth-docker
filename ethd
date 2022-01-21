@@ -452,6 +452,7 @@ query_execution_client() {
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 9 60 2 \
       "NONE" "Custom" \
+      "nm.yml" "Nethermind (.NET)" \
       "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \

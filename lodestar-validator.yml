@@ -68,7 +68,7 @@ services:
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - voluntary-exit
