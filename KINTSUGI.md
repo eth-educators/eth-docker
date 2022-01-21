@@ -12,7 +12,7 @@
   - `git clone https://github.com/eth2-educators/eth-docker.git merge-test && cd merge-test && git fetch origin merge && git checkout merge`
 - Configure the clients you wish to run
   - `./ethd config`
-- Deposit for one key and generate the keystore files. This will use the throwaway ETH address you created earlier.
+- Deposit for one key and generate the keystore files. This will prompt you for the throwaway ETH address and key you created earlier.
   - `docker-compose run --rm generate-keys` 
 - Start the stack:
   - `./ethd up`
