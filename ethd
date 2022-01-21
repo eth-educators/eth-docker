@@ -293,10 +293,12 @@ query_deployment() {
     if uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 4 \
+      "node" "Ethereum node - consensus, execution and validator client" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     else
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 12 80 5 \
+      "node" "Ethereum node - consensus, execution and validator client" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     fi
 
@@ -368,7 +370,8 @@ query_consensus_client() {
       "teku-base.yml" "Teku (Java) - consensus and validator client" \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
-      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" 3>&1 1>&2 2>&3)
+      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" \
+      "prysm-base.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -608,7 +611,7 @@ config () {
         fi
         query_execution_client
         query_grafana
-	query_coinbase
+	#query_coinbase
 #        query_rapid_sync
     else
         unset EXECUTION_CLIENT
@@ -632,6 +635,9 @@ config () {
     fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
+    fi
+    if [ "${NETWORK}" = "kintsugi" ]; then
+	COMPOSE_FILE="${COMPOSE_FILE}:kintsugi-tools.yml"
     fi
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"

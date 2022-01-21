@@ -5,7 +5,7 @@ FROM chainsafe/lodestar:${DOCKER_TAG}
 # Here only to avoid build-time errors
 ARG BUILD_TARGET
 
-RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec && rm -rf /var/cache/apk/*
+RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec wget && rm -rf /var/cache/apk/*
 
 # Scripts that handle permissions
 COPY ./validator-import.sh /usr/local/bin/
@@ -24,6 +24,7 @@ RUN adduser \
     "${USER}"
 
 RUN mkdir -p /var/lib/lodestar/consensus && chown ${USER}:${USER} /var/lib/lodestar/consensus && chmod 700 /var/lib/lodestar/consensus
+COPY ./find-ip.sh /usr/local/bin/
 
 ARG USER=lsvalidator
 ARG UID=10000
