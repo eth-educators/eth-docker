@@ -16,11 +16,14 @@ services:
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
-    user: teku
+    #    user: teku
+    user: root
     stop_grace_period: 1m
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}-secrets/keys/teku-keys:/keys
+      - ./${NETWORK}-secrets/keys/teku-secrets:/secrets
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
     expose:
@@ -34,6 +37,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - find-ip.sh
       - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
@@ -42,7 +46,7 @@ services:
       - --p2p-port=${CL_P2P_PORT}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --validators-keystore-locking-enabled=true
-      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validator-keys=/keys:/secrets
       - --validators-graffiti=${GRAFFITI}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
@@ -56,15 +60,7 @@ services:
       - --Xee-endpoint=${EL_NODE}
       - --data-storage-non-canonical-blocks-enabled=true
       - --Xvalidators-suggested-fee-recipient-address=${REWARDS_TO}
-  validator-import:
-    restart: "no"
-    image: teku:local
-    user: root
-    volumes:
-      - teku-data:/var/lib/teku
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint: validator-import.sh
+      - --p2p-discovery-bootnodes=${ENR}
   validator-exit:
     restart: "no"
     image: teku:local

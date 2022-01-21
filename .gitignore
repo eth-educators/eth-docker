@@ -7,3 +7,5 @@ ext-network.yml
 *.swp
 alertmanager/config.yml
 blox-ssv-config.yaml
+.kintsugi-secrets/*
+!.kintsugi-secrets/.empty

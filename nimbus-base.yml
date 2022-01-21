@@ -16,12 +16,15 @@ services:
         - DOCKER_TAG=${NIM_DOCKER_TAG}
       dockerfile: ${NIM_DOCKERFILE}
     image: nimbus:local
-    user: user
+    #user: user
+    user: root
     stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets/keys/nimbus-keys:/keys
+      - ./${NETWORK}-secrets/keys/secrets:/secrets
     expose:
       - 8008/tcp
     ports:
@@ -33,6 +36,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - find-ip.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
@@ -49,7 +53,7 @@ services:
       - --rest-address=0.0.0.0
       - --rest-port=5052
       - --num-threads=0
-      - --enr-auto-update=true
+      - --enr-auto-update=false
       - --doppelganger-detection=false
       - --metrics
       - --metrics-port=8008
@@ -58,21 +62,8 @@ services:
       - --network=/configs
       - --bootstrap-node=${ENR}
       - --terminal-total-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
-  validator-import:
-    restart: "no"
-    image: nimbus:local
-    user: root
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - validator-import.sh
-      - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus
-      - deposits
-      - import
-      - /val_keys
+      - --validators-dir=/keys
+      - --secrets-dir=/secrets
   validator-exit:
     restart: "no"
     image: nimbus:local

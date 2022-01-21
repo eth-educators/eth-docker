@@ -75,19 +75,25 @@ services:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local
-    user: prysmvalidator
+    #user: prysmvalidator
+    user: root
     expose:
       - 8081/tcp
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets/keys/prysm:/keys
+      - ./${NETWORK}-secrets/keys/secrets:/secrets
     <<: *logging
     entrypoint:
       - validator
       - --datadir
       - /var/lib/prysm
       - --wallet-dir
-      - /var/lib/prysm/
+      - /keys
+      - --wallet-password-file
+      - /secrets/prysm-password.txt
       - --beacon-rpc-provider
       - consensus:4000
       - --graffiti
@@ -95,8 +101,6 @@ services:
       - --verbosity
       - ${LOG_LEVEL}
       - --accept-terms-of-use
-      - --wallet-password-file
-      - /var/lib/prysm/password.txt
       - --monitoring-host
       - 0.0.0.0
       - --web
@@ -104,7 +108,8 @@ services:
       - 0.0.0.0
       - --grpc-gateway-port
       - ${PRYSM_WEB_PORT}
-      - --kintsugi-testnet
+      - --chain-config-file
+      - /configs/config.yaml
     depends_on:
       - consensus
     labels:
@@ -131,25 +136,6 @@ services:
       - list
       - --wallet-dir=/var/lib/prysm/
       - --wallet-password-file=/var/lib/prysm/password.txt
-  validator-import:
-    restart: "no"
-    image: prysm-validator:local
-    user: root
-    volumes:
-      - prysmvalidator-data:/var/lib/prysm
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint: validator-import.sh
-    command:
-      - validator
-      - --verbosity
-      - ${LOG_LEVEL}
-      - --datadir
-      - /var/lib/prysm
-      - accounts
-      - import
-      - --wallet-dir=/var/lib/prysm/
-      - --keys-dir=/val_keys
   validator-exit:
     restart: "no"
     user: prysmvalidator

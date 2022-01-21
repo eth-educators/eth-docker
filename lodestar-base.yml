@@ -29,6 +29,7 @@ services:
       - 5052/tcp
     <<: *logging
     entrypoint:
+      - find-ip.sh
       - node
       - --max-old-space-size=6144
       - /usr/app/node_modules/.bin/lodestar
@@ -63,19 +64,26 @@ services:
   validator:
     restart: "${RESTART}"
     image: lodestar:local
-    user: lsvalidator
+    #user: lsvalidator
+    user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets/keys/keys:/keys
+      - ./${NETWORK}-secrets/keys/lodestar-secrets:/secrets
     <<: *logging
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - validator
       - --rootDir
       - /var/lib/lodestar/validators
+      - --keystoresDir
+      - /keys
+      - --secretsDir
+      - /secrets
       - --server
       - http://consensus:5052
       - --graffiti
@@ -84,26 +92,6 @@ services:
       - ${LOG_LEVEL}
       - --paramsFile
       - /configs/config.yaml
-  validator-import:
-    restart: "${RESTART}"
-    image: lodestar:local
-    user: root
-    volumes:
-      - lsvalidator-data:/var/lib/lodestar/validators
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - validator-import.sh
-      - node
-      - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
-      - account
-      - validator
-      - import
-      - --rootDir
-      - /var/lib/lodestar/validators
-      - --directory
-      - /val_keys
   validator-exit:
     restart: "no"
     image: lodestar:local

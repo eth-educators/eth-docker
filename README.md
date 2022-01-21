@@ -6,11 +6,7 @@ eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/e
 
 Please see the [official documentation](https://eth-docker.net).
 
-For a quick testnet start, you can install prerequisites and configure eth-docker, as a non-root user:
-
-* `sudo apt install -y docker.io docker-compose git && sudo systemctl enable --now docker`
-* `cd ~ && git clone https://github.com/eth2-educators/eth-docker.git && cd eth-docker`
-* `./ethd config`
+This branch is for [Kintsugi testnet](https://kintsugi.themerge.dev/)! Be sure to read the [quick start](KINTSUGI.md).
 
 ## License
 
@@ -18,4 +14,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker v1.7.2.4
+This is eth-docker vKintsugiFun

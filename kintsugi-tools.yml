@@ -1,0 +1,10 @@
+version: "3.4"
+services:
+  generate-keys:
+    image: eth2-val-tools:local
+    build:
+      context: ./eth2-val-tools
+    volumes:
+      - ./kintsugi-secrets:/tmp/secrets
+      - ./.env:/tmp/.env
+    entrypoint: exec_deposits.sh
