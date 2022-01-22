@@ -51,6 +51,8 @@ services:
       - ${CL_P2P_PORT}
       - --target-peers
       - ${LH_PEER_COUNT}
+      - --eth1-endpoints
+      - ${EL_NODE}
       - --execution-endpoints
       - ${EL_NODE}
       - --debug-level=${LOG_LEVEL}
