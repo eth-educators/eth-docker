@@ -59,7 +59,7 @@ services:
       - --metrics-host-allowlist=*
       - --Xee-endpoint=${EL_NODE}
       - --data-storage-non-canonical-blocks-enabled=true
-      - --Xvalidators-suggested-fee-recipient-address=${REWARDS_TO}
+      - --Xvalidators-proposer-default-fee-recipient=${REWARDS_TO}
       - --p2p-discovery-bootnodes=${ENR}
   validator-exit:
     restart: "no"
