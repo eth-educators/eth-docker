@@ -19,7 +19,7 @@ ARG USER=user
 ARG UID=10002
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates bash tzdata \
+  ca-certificates bash tzdata wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -46,6 +46,7 @@ RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus && chmod 7
 COPY --from=builder /usr/src/nim-beacon-chain/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
 # Scripts for privilege change and validator import
 COPY ./validator-import.sh /usr/local/bin/
+COPY ./find-ip.sh /usr/local/bin/
 
 USER ${USER}
 
