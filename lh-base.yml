@@ -70,6 +70,8 @@ services:
       - --terminal-total-difficulty-override
       - ${TOTAL_TERMINAL_DIFFICULTY}
       - --disable-enr-auto-update
+      - --fee-recipient
+      - ${REWARDS_TO}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local
