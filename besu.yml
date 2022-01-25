@@ -72,6 +72,8 @@ services:
       - ${ENODE}
       - --Xmerge-support
       - "true"
+      - --miner-enabled
+      - "true"
       - --miner-coinbase
       - ${REWARDS_TO}
   eth:
