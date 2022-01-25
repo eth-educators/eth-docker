@@ -45,6 +45,8 @@ services:
       - 0.0.0.0
       - --http-port
       - "5052"
+      - --port
+      - ${CL_P2P_PORT}
       - --enr-udp-port
       - ${CL_P2P_PORT}
       - --enr-tcp-port
