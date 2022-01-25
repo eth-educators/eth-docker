@@ -1,7 +1,7 @@
 ARG DOCKER_TAG
 
-#FROM hyperledger/besu:${DOCKER_TAG}
-FROM suburbandad/besu:${DOCKER_TAG}
+FROM hyperledger/besu:${DOCKER_TAG}
+#FROM suburbandad/besu:${DOCKER_TAG}
 
 # Unused but included to avoid warnings
 ARG BUILD_TARGET
@@ -11,15 +11,9 @@ USER root
 ARG USER=besu
 ARG UID=10001
 
-# See https://stackoverflow.com/a/55757473/12429735RUN
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/usr/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    "${USER}"
+USER root
+
+RUN groupmod -g "${UID}" besu && usermod -u "${UID}" -g "${UID}" besu
 
 RUN set -eux; \
         apt-get update; \
