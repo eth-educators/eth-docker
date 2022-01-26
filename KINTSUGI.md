@@ -13,7 +13,7 @@
   - Otherwise, run `sudo apt update && sudo apt -y install docker.io docker-compose`
   - Make your user part of the docker group: `sudo usermod -aG docker MYUSERNAME` and then `newgrp docker`
 
-### On Max OS X
+### On Mac OS X
 - Install docker desktop
   - allocate 8gb of RAM
 - install pre-requisites via homebrew
@@ -25,6 +25,7 @@
 
 
 ## Configure the clients you wish to run
+- Configure via ethd
   - `./ethd config`
 - Deposit for one key and generate the keystore files. This will prompt you for the throwaway ETH address and key you created earlier.
   - `docker-compose run --rm generate-keys` 
