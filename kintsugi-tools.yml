@@ -1,9 +1,12 @@
 version: "3.4"
 services:
   generate-keys:
-    image: eth2-val-tools:local
+    image: eth-val-tools:local
     build:
-      context: ./eth2-val-tools
+      context: ./eth-val-tools
+      dockerfile: ${VALTOOL_DOCKERFILE}
+      args:
+        - DOCKER_TAG=${VALTOOL_DOCKER_TAG}
     volumes:
       - ./kintsugi-secrets:/tmp/secrets
       - ./.env:/tmp/.env
