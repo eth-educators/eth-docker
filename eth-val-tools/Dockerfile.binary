@@ -1,0 +1,2 @@
+ARG DOCKER_TAG
+FROM ethstaker/eth-val-tools:${DOCKER_TAG}
