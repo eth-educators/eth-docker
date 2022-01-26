@@ -63,7 +63,7 @@ services:
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0
-      - --Xdata-storage-format=BONSAI
+        #      - --Xdata-storage-format=BONSAI
       - --genesis-file
       - "/configs/besu_genesis.json"
       - --network-id
