@@ -94,8 +94,8 @@ prune-geth() {
         exit 1
     fi
 
-    if [ $(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}') -lt 52428400 ]; then
-        echo "You do not have enough free disk space, make sure this reads at least 50G free (Avail):"
+    if [ $(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}') -lt 41943040 ]; then
+        echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
         df -h /var/lib/docker
         echo ""
         echo "Aborting."
@@ -260,7 +260,7 @@ envmigrate() {
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
         if [ -n "${value+set}" ]; then
-            sed -i "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+            sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
     if [ $keeptargets = "1" ]; then
@@ -268,7 +268,7 @@ envmigrate() {
       for var in "${TARGET_VARS[@]}"; do
           value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
           if [ -n "${value+set}" ]; then
-              sed -i "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+              sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
           fi
       done
     fi
@@ -574,7 +574,7 @@ set_value_in_env() {
         if ! grep -qF "${var}" "${ENV_FILE}" 2>/dev/null ; then
             echo "${var}=${!var}" >> "${ENV_FILE}"
         else
-            sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+            sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
         fi
     fi
 }
@@ -647,7 +647,7 @@ config () {
     fi
     if [ "${__deployment}" = "rocket" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
-        sed -i "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
+        sed -i '' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
     fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
@@ -735,7 +735,11 @@ if [[ "${#}" -eq 0 || "${1}" == "help" || "${1}" == "-h" || "${1}" == "--help" ]
 fi
 
 # Use this to make sure root doesn't end up owning files
-OWNER=$(stat -c '%U' .)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    OWNER=$(stat -f '$Su' .)
+else
+    OWNER=$(stat -c '%U' .)
+fi
 
 if ! [ -f "ethd" ]; then
     echo "Please run this from the eth-docker directory."
@@ -752,4 +756,4 @@ ENV_FILE=.env
 command="${1}"
 shift
 
-"${command}" "${@}"
+"${command}" $@

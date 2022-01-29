@@ -39,6 +39,7 @@ services:
       - --http.addr
       - 0.0.0.0
       - --http.vhosts=*
+      - --http.corsdomain=*
       - --http.api
       - web3,eth,net
       - --datadir
