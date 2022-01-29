@@ -260,7 +260,11 @@ envmigrate() {
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
         if [ -n "${value+set}" ]; then
-            sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+            else
+                sed -i "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+            fi
         fi
     done
     if [ $keeptargets = "1" ]; then
@@ -268,7 +272,11 @@ envmigrate() {
       for var in "${TARGET_VARS[@]}"; do
           value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
           if [ -n "${value+set}" ]; then
-              sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                  sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+              else
+                  sed -i "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+	      fi
           fi
       done
     fi
@@ -557,7 +565,11 @@ set_value_in_env() {
         if ! grep -qF "${var}" "${ENV_FILE}" 2>/dev/null ; then
             echo "${var}=${!var}" >> "${ENV_FILE}"
         else
-            sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' -e "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+	    else
+                sed -i "s~^\(${var}\s*=\s*\).*$~\1${!var}~" "${ENV_FILE}"
+            fi
         fi
     fi
 }
@@ -631,7 +643,11 @@ config () {
     fi
     if [ "${__deployment}" = "rocket" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
-        sed -i '' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
+	else
+            sed -i "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
+        fi
     fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
