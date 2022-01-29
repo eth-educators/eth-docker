@@ -1,6 +1,6 @@
 # eth-docker: Docker automation for Ethereum consensus and execution clients.
 
-eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/eth2/) consensus and execution clients.
+eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/upgrades/) consensus and execution clients.
 
 ### Getting Started
 
