@@ -451,17 +451,17 @@ query_execution_client() {
     if uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 9 60 2 \
-      "NONE" "Custom" \
       "nm.yml" "Nethermind (.NET)" \
-      "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
+      "geth.yml" "Geth (Go)" \
+      "NONE" "Custom" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?  Choose Custom for 3rd parties like Infura" 12 60 5 \
-      "NONE" "Custom" \
       "geth.yml" "Geth (Go)" \
-      "erigon.yml" "Erigon (Go)" \
       "nm.yml" "Nethermind (.NET)" \
-      "besu.yml" "Besu (Java)" 3>&1 1>&2 2>&3)
+      "besu.yml" "Besu (Java)" \
+      "erigon.yml" "Erigon (Go)" \
+      "NONE" "Custom" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -494,7 +494,7 @@ query_execution_client() {
 }
 
 query_grafana() {
-    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Grafana dashboards?" 10 60) then
+    if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
         GRAFANA_CLIENT="grafana.yml:grafana-shared.yml"
     else
         unset GRAFANA_CLIENT
@@ -582,15 +582,9 @@ set_value_in_env() {
 config () {
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
-        ENV_FILE_GUESS="$(eval realpath default.env)"
-        ENV_TEMPLATE=$(whiptail --title "Configure ENV_FILE" --inputbox "No ${ENV_FILE} file found, press enter to use the default, or choose a backup" 10 60 "${ENV_FILE_GUESS}" 3>&1 1>&2 2>&3)
+        ENV_TEMPLATE="default.env"
 
-        exitstatus=$?
-        if [ $exitstatus -eq 0 ]; then
-            echo "your configuration file template is:" "${ENV_TEMPLATE}"
-        else
-            echo "You chose Cancel."
-        fi
+        echo "Your configuration file template is:" "${ENV_TEMPLATE}"
 
         if [ "${EUID}" -eq 0 ]; then
           sudo -u "${OWNER}" cp "${ENV_TEMPLATE}" "${ENV_FILE}"
