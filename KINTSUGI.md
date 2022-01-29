@@ -21,7 +21,7 @@
 
 ## Get eth-docker
 - Clone this tool and get into the `merge` branch
-  - `git clone https://github.com/eth2-educators/eth-docker.git merge-test && cd merge-test && git fetch origin merge && git checkout merge`
+  - `git clone https://github.com/eth-educators/eth-docker.git merge-test && cd merge-test && git fetch origin merge && git checkout merge`
 
 
 ## Configure the clients you wish to run
