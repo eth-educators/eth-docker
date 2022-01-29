@@ -8,8 +8,8 @@ Please see the [official documentation](https://eth-docker.net).
 
 For a quick testnet start, you can install prerequisites and configure eth-docker, as a non-root user:
 
-* `sudo apt install -y docker.io docker-compose git && sudo systemctl enable --now docker`
-* `cd ~ && git clone https://github.com/eth2-educators/eth-docker.git && cd eth-docker`
+* `sudo apt install -y docker-compose  && sudo systemctl enable --now docker`
+* `cd ~ && git clone https://github.com/eth-educators/eth-docker.git && cd eth-docker`
 * `./ethd config`
 
 ## License
