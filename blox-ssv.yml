@@ -9,12 +9,11 @@ x-logging: &logging
 services:
   ssv-node:
     restart: "${RESTART}"
-    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
+    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest-ubuntu}
     user: 12000:12000
     volumes:
       - ./blox-ssv-config.yaml:/config.yaml
       - ssv-data:/tmp
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
@@ -29,7 +28,7 @@ services:
       - ssv-node
   ssv-generate-keys:
     restart: "no"
-    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-v0.1.8}
+    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest-ubuntu}
     command: /go/bin/ssvnode generate-operator-keys
 volumes:
   ssv-data:

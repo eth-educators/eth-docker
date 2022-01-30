@@ -19,13 +19,12 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - validator
       - --rootDir
       - /var/lib/lodestar/validators
@@ -44,13 +43,14 @@ services:
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
     entrypoint:
       - validator-import.sh
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - import
@@ -66,12 +66,11 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - voluntary-exit
@@ -89,12 +88,11 @@ services:
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - --rootDir

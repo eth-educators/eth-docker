@@ -20,7 +20,6 @@ services:
     user: geth
     volumes:
       - geth-eth1-data:/var/lib/goethereum
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
@@ -40,6 +39,7 @@ services:
       - --http.addr
       - 0.0.0.0
       - --http.vhosts=*
+      - --http.corsdomain=*
       - --http.api
       - web3,eth,net
       - --datadir

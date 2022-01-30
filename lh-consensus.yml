@@ -20,11 +20,10 @@ services:
     stop_grace_period: 1m
     volumes:
       - lhconsensus-data:/var/lib/lighthouse
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${LH_PORT}:${LH_PORT}/tcp
-      - ${LH_PORT}:${LH_PORT}/udp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
     expose:
       - 5052/tcp
       - 5054/tcp
@@ -47,7 +46,7 @@ services:
       - --network
       - ${NETWORK}
       - --port
-      - ${LH_PORT}
+      - ${CC_P2P_PORT}
       - --target-peers
       - ${LH_PEER_COUNT}
       - --eth1-endpoints
