@@ -9,6 +9,25 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu prysmvalidator "$BASH_SOURCE" "$@"
 fi
 
+__non_interactive=0
+if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
+  __non_interactive=1
+fi
+for arg do
+  shift
+  [ "$arg" = "--non-interactive" ] && continue
+  set -- "$@" "$arg"
+done
+
+if [ ${__non_interactive} = 1 ]; then
+  echo "${WALLET_PASSWORD}" > /var/lib/prysm/password.txt
+  chmod 600 /var/lib/prysm/password.txt
+  echo "${KEYSTORE_PASSWORD}" > /tmp/keystorepassword.txt
+  chmod 600 /tmp/keystorepassword.txt
+  exec "$@" --accept-terms-of-use --wallet-password-file /var/lib/prysm/password.txt --account-password-file /tmp/keystorepassword.txt
+fi
+
+# Only reached in interactive mode
 
 while true; do
   read -rp "Will you import keys via the Web UI? (y/n) " yn
@@ -31,7 +50,7 @@ echo
 
 if [ $import -ne 0 ]; then
   echo
-  "$@"
+  $@
   echo
 fi
 

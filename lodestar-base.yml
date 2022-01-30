@@ -22,8 +22,8 @@ services:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${LS_PORT}:${LS_PORT}/tcp
-      - ${LS_PORT}:${LS_PORT}/udp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
     expose:
       - 5052/tcp
     <<: *logging
@@ -41,9 +41,9 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${LS_PORT}"
+      - "/ip4/0.0.0.0/udp/${CC_P2P_PORT}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${LS_PORT}"
+      - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT}"
       - --eth1.providerUrl
       - ${EC_NODE}
       - --weakSubjectivitySyncLatest
@@ -83,11 +83,13 @@ services:
       - lsvalidator-data:/var/lib/lodestar/validators
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
     entrypoint:
       - validator-import.sh
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - import
@@ -107,7 +109,7 @@ services:
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - voluntary-exit
@@ -129,7 +131,7 @@ services:
     entrypoint:
       - node
       - --max-old-space-size=8192
-      - /usr/app/packages/cli/bin/lodestar
+      - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
       - --rootDir
