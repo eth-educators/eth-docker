@@ -24,8 +24,8 @@ services:
     expose:
       - 8008/tcp
     ports:
-      - ${NIM_PORT}:${NIM_PORT}/tcp
-      - ${NIM_PORT}:${NIM_PORT}/udp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
     networks:
       default:
         aliases:
@@ -36,8 +36,8 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --status-bar=false
-      - --tcp-port=${NIM_PORT}
-      - --udp-port=${NIM_PORT}
+      - --tcp-port=${CC_P2P_PORT}
+      - --udp-port=${CC_P2P_PORT}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
       - --web3-url=${EC_NODE}

@@ -129,8 +129,11 @@ services:
       - prysmvalidator-data:/var/lib/prysm
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
-    entrypoint: validator-import.sh
-    command:
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
+      - WALLET_PASSWORD=${WALLET_PASSWORD:-''}
+    entrypoint:
+      - validator-import.sh
       - validator
       - --verbosity
       - ${LOG_LEVEL}

@@ -11,6 +11,26 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu teku "$BASH_SOURCE" "$@"
 fi
 
+__non_interactive=0
+if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
+  __non_interactive=1
+fi
+for arg do
+  shift
+  [ "$arg" = "--non-interactive" ] && continue
+  set -- "$@" "$arg"
+done
+
+if [ ${__non_interactive} = 1 ]; then
+  for file in /var/lib/teku/validator-keys/keystore-*.json ; do
+    filename=$(basename $file .json)
+    echo "$KEYSTORE_PASSWORD" > "/var/lib/teku/validator-passwords/$filename.txt"
+  done
+  exit 0
+fi
+
+# Only reached in interactive mode
+
 # Prompt for password. There's no check that the password is right.
 
 echo "Storing the validator key password(s) in plain text will allow the validator to start automatically without user input."
@@ -46,7 +66,6 @@ if [ $justone -eq 1 ]; then
       echo
     fi
   done
-
   for file in /var/lib/teku/validator-keys/keystore-*.json ; do
     filename=$(basename $file .json)
     echo "$password1" > "/var/lib/teku/validator-passwords/$filename.txt"

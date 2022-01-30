@@ -20,24 +20,27 @@ services:
     stop_grace_period: 1m
     volumes:
       - nimbus-data:/var/lib/nimbus
+      - .eth/keymanagertoken:/keymanagertoken
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8008/tcp
     ports:
-      - ${NIM_PORT}:${NIM_PORT}/tcp
-      - ${NIM_PORT}:${NIM_PORT}/udp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
+      - 127.0.0.1:5053:5053/tcp
     networks:
       default:
         aliases:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --status-bar=false
-      - --tcp-port=${NIM_PORT}
-      - --udp-port=${NIM_PORT}
+      - --tcp-port=${CC_P2P_PORT}
+      - --udp-port=${CC_P2P_PORT}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
       - --web3-url=${EC_NODE}
@@ -57,6 +60,10 @@ services:
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
       - --validator-monitor-auto
+      - --keymanager
+      - --keymanager-port=5053
+      - --keymanager-address=0.0.0.0
+      - --keymanager-token-file=/var/lib/nimbus/token
     command: ${NIMBUS_RAPID_SYNC}
   validator-import:
     restart: "no"
@@ -66,6 +73,8 @@ services:
       - nimbus-data:/var/lib/nimbus
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
     entrypoint:
       - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
