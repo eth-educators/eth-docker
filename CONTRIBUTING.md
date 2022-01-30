@@ -1,6 +1,6 @@
 # Contributing
 
-If you'd like to contribue, check any open issues in the github repo.
+Contributions are welcome. All contributed code will be covered by the Apache License v2 of this project.
 
 ## Linting
 

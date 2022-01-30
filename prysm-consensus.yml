@@ -25,7 +25,6 @@ services:
     volumes:
       - prysmconsensus-data:/var/lib/prysm
       - certs:/letsencrypt
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080/tcp

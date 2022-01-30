@@ -16,7 +16,6 @@ services:
   client-stats:
     image: prysm-consensus:local
     volumes:
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - client-stats

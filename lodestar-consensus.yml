@@ -20,11 +20,10 @@ services:
     stop_grace_period: 1m
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${LS_PORT}:${LS_PORT}/tcp
-      - ${LS_PORT}:${LS_PORT}/udp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
+      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
     expose:
       - 5052/tcp
     <<: *logging
@@ -42,9 +41,9 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${LS_PORT}"
+      - "/ip4/0.0.0.0/udp/${CC_P2P_PORT}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${LS_PORT}"
+      - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT}"
       - --eth1.providerUrl
       - ${EC_NODE}
       - --weakSubjectivitySyncLatest

@@ -17,4 +17,3 @@ global:
   LogFormat: json
   LogLevelFormat: lowercase
   LogLevel: info
-
