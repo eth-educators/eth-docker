@@ -836,16 +836,12 @@ if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
 fi
 
+cd $(dirname $(realpath $BASH_SOURCE))
 # Use this to make sure root doesn't end up owning files
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OWNER=$(stat -f '$Su' .)
 else
     OWNER=$(stat -c '%U' .)
-fi
-
-if ! [ -f "ethd" ]; then
-    echo "Please run this from the eth-docker directory."
-    exit 1
 fi
 
 if [ "${OWNER}" == "root" ]; then
