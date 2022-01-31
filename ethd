@@ -62,7 +62,7 @@ been migrated, please recreate these changes yourself."
     else
         echo "No changes made to ${ENV_FILE} during migration"
     fi
-    if [[ -n $(snap list | grep -w "docker") ]]; then
+    if [[ ! "$OSTYPE" = "darwin"* && -n $(snap list | grep -w "docker") ]]; then
 	echo
 	echo "WARNING! Snap docker package detected. This WILL result in issues."
 	echo "Removing the package will delete volumes and require a resync,"
@@ -684,7 +684,7 @@ set_value_in_env() {
 }
 
 config () {
-    if [[ -n $(snap list | grep -w "docker") ]]; then
+    if [[ ! "$OSTYPE" = "darwin"* && -n $(snap list | grep -w "docker") ]]; then
         echo
         echo "WARNING! Snap docker package detected. This WILL result in issues."
         echo "Removing the package will delete volumes and require a resync,"
