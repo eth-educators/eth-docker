@@ -762,8 +762,8 @@ config () {
           query_graffiti
         fi
         query_execution_client
-        query_grafana
         query_rapid_sync
+        query_grafana
     else
         unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
