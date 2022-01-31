@@ -95,7 +95,7 @@ been migrated, please recreate these changes yourself."
 	echo "and then reinstall docker.io or docker-ce with apt,"
 	echo "re-import keys and restart eth-docker."
 	echo
-	echo "Do join us on EthStaker Discord to work through this emergency." 
+	echo "Do join us on EthStaker Discord to work through this emergency."
     fi
 }
 
@@ -713,9 +713,8 @@ config () {
         echo
         echo "The exact steps depend a little on whether there already is"
         echo "an apt version of docker installed as well, but in a nutshell"
-        echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
-        echo "and then reinstall docker.io or docker-ce with apt,"
-        echo "re-import keys and restart eth-docker."
+        echo '"sudo snap remove --purge docker" and then reinstall docker.io"'
+        echo "or docker-ce with apt, re-import keys and restart eth-docker."
         echo
         echo "Do join us on EthStaker Discord to work through this emergency."
 	echo
