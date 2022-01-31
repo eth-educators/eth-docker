@@ -62,6 +62,22 @@ been migrated, please recreate these changes yourself."
     else
         echo "No changes made to ${ENV_FILE} during migration"
     fi
+    if [[ -n $(snap list | grep -w "docker") ]]; then
+	echo
+	echo "WARNING! Snap docker package detected. This WILL result in issues."
+	echo "Removing the package will delete volumes and require a resync,"
+	echo "as well as re-import of all validator keys."
+	echo
+	echo "Doing so is still highly recommended however."
+	echo
+        echo "The exact steps depend a little on whether there already is"
+	echo "an apt version of docker installed as well, but in a nutshell"
+	echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+	echo "and then reinstall docker.io or docker-ce with apt,"
+	echo "re-import keys and restart eth-docker."
+	echo
+	echo "Do join us on EthStaker Discord to work through this emergency." 
+   fi
 }
 
 rocketeer() {
@@ -668,6 +684,25 @@ set_value_in_env() {
 }
 
 config () {
+    if [[ -n $(snap list | grep -w "docker") ]]; then
+        echo
+        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "Removing the package will delete volumes and require a resync,"
+        echo "as well as re-import of all validator keys."
+        echo
+        echo "Doing so is still highly recommended however."
+        echo
+        echo "The exact steps depend a little on whether there already is"
+        echo "an apt version of docker installed as well, but in a nutshell"
+        echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+        echo "and then reinstall docker.io or docker-ce with apt,"
+        echo "re-import keys and restart eth-docker."
+        echo
+        echo "Do join us on EthStaker Discord to work through this emergency."
+	echo
+	echo "Aborting, this is not safe."
+	exit 1
+   fi
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
         ENV_TEMPLATE="default.env"
