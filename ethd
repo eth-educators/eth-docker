@@ -6,6 +6,25 @@ cmd() {
     docker-compose "$@"
 }
 
+determine_distro() {
+    # Determine OS platform
+    __uname=$(uname | tr "[:upper:]" "[:lower:]")
+    # If Linux, try to determine specific distribution
+    if [ "$__uname" == "linux" ]; then
+        # If available, use LSB to identify distribution
+        if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+            __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+        # Otherwise, use release info file
+        else
+            __distro=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+        fi
+    fi
+    # For everything else (or if above failed), just use generic identifier
+    [ "$__distro" == "" ] && __distro=$__uname
+    unset __uname
+    __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
+}
+
 update() {
     __keeptargets=0
     while :
@@ -880,5 +899,7 @@ ENV_FILE=.env
 
 command="$1"
 shift
+
+determine_distro
 
 "$command" $@
