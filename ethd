@@ -77,7 +77,7 @@ been migrated, please recreate these changes yourself."
 	echo "re-import keys and restart eth-docker."
 	echo
 	echo "Do join us on EthStaker Discord to work through this emergency." 
-   fi
+    fi
 }
 
 rocketeer() {
