@@ -22,8 +22,8 @@ services:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
-      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
+      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
+      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
     expose:
       - 5052/tcp
     <<: *logging
@@ -41,9 +41,9 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${CC_P2P_PORT}"
+      - "/ip4/0.0.0.0/udp/${CC_P2P_PORT:-9000}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT}"
+      - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT:-9000}"
       - --eth1.providerUrl
       - ${EC_NODE}
       - --weakSubjectivitySyncLatest

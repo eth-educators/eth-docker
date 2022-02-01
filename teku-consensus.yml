@@ -26,8 +26,8 @@ services:
     expose:
       - 8008/tcp
     ports:
-      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
-      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
+      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
+      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -40,7 +40,7 @@ services:
       - --network=${NETWORK}
       - --eth1-endpoints=${EC_NODE}
       - --eth1-deposit-contract-max-request-size=150
-      - --p2p-port=${CC_P2P_PORT}
+      - --p2p-port=${CC_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
