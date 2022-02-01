@@ -15,7 +15,7 @@ services:
         - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
-    image: teku:local
+    image: teku:local-merge
     #    user: teku
     user: root
     stop_grace_period: 1m
@@ -63,7 +63,7 @@ services:
       - --p2p-discovery-bootnodes=${ENR}
   validator-exit:
     restart: "no"
-    image: teku:local
+    image: teku:local-merge
     user: teku
     volumes:
       - teku-data:/var/lib/teku

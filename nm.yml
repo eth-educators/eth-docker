@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
-    image: nethermind:local
+    image: nethermind:local-merge
     user: nethermind
     volumes:
       - nmexecution-data:/var/lib/nethermind

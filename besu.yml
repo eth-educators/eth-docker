@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
-    image: besu:local
+    image: besu:local-merge
     user: besu
     environment:
       - JAVA_OPTS=-Xmx4g

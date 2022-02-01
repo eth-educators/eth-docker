@@ -19,7 +19,7 @@ services:
     build:
       target: validator
       <<: *prysm-build
-    image: prysm-validator:local
+    image: prysm-validator:local-merge
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -57,7 +57,7 @@ services:
       - traefik.http.services.prysm.loadbalancer.server.port=${PRYSM_WEB_PORT}
   validator-account-list:
     restart: "no"
-    image: prysm-validator:local
+    image: prysm-validator:local-merge
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -74,7 +74,7 @@ services:
       - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
     restart: "no"
-    image: prysm-validator:local
+    image: prysm-validator:local-merge
     user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -93,7 +93,7 @@ services:
       - --keys-dir=/val_keys
   validator-exit:
     restart: "no"
-    image: prysm-validator:local
+    image: prysm-validator:local-merge
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm

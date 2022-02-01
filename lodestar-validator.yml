@@ -15,7 +15,7 @@ services:
       args:
         - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LS_DOCKER_TAG}
-    image: lodestar:local
+    image: lodestar:local-merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -39,7 +39,7 @@ services:
       - /configs/config.yaml
   validator-import:
     restart: "${RESTART}"
-    image: lodestar:local
+    image: lodestar:local-merge
     user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -59,7 +59,7 @@ services:
       - /val_keys
   validator-exit:
     restart: "no"
-    image: lodestar:local
+    image: lodestar:local-merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -82,7 +82,7 @@ services:
       - /configs/config.yaml
   validator-account:
     restart: "no"
-    image: lodestar:local
+    image: lodestar:local-merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators

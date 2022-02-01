@@ -15,7 +15,7 @@ services:
         - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NIM_DOCKER_TAG}
       dockerfile: ${NIM_DOCKERFILE}
-    image: nimbus:local
+    image: nimbus:local-merge
     #user: user
     user: root
     stop_grace_period: 1m
@@ -66,7 +66,7 @@ services:
       - --secrets-dir=/secrets
   validator-exit:
     restart: "no"
-    image: nimbus:local
+    image: nimbus:local-merge
     user: user
     volumes:
       - nimbus-data:/var/lib/nimbus

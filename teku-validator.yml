@@ -15,7 +15,7 @@ services:
         - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
-    image: teku:local
+    image: teku:local-merge
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -34,7 +34,7 @@ services:
       - --validators-early-attestations-enabled=false
   validator-import:
     restart: "no"
-    image: teku:local
+    image: teku:local-merge
     user: root
     volumes:
       - teku-data:/var/lib/teku
@@ -43,7 +43,7 @@ services:
     entrypoint: validator-import.sh
   validator-exit:
     restart: "no"
-    image: teku:local
+    image: teku:local-merge
     user: teku
     volumes:
       - teku-data:/var/lib/teku
