@@ -94,6 +94,7 @@ services:
       - CLIENT=${COMPOSE_FILE}
     volumes:
       - grafana-data:/var/lib/grafana
+      - grafana-config:/etc/grafana
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
@@ -113,4 +114,5 @@ services:
       - grafana
 volumes:
   grafana-data:
+  grafana-config:
   prom-data:
