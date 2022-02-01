@@ -16,7 +16,7 @@ services:
         - BUILD_TARGET=${ERIGON_SRC_BUILD_TARGET}
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 5m
-    image: erigon:local
+    image: erigon:local-merge
     user: erigon
     volumes:
       - erigon-el-data:/var/lib/erigon
@@ -51,7 +51,7 @@ services:
       - --metrics.expensive
   execution:
     restart: "${RESTART}"
-    image: erigon:local
+    image: erigon:local-merge
     user: erigon
     volumes:
       - erigon-el-data:/var/lib/erigon
