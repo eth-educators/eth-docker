@@ -64,6 +64,7 @@ services:
       - --metrics-host
       - 0.0.0.0
         #      - --Xdata-storage-format=BONSAI
+      - --sync-mode=FULL
       - --network
       - kintsugi_v1
       - --Xmerge-support

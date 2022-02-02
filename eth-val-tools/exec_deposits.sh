@@ -15,6 +15,14 @@ then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
+if [[ -d /tmp/secrets/keys ]]; then
+  read -p "This will overwrite validator keys for any existing deposits, do you want to proceed? " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+  fi
+fi 
+
 source kintsugi.env
 
 echo "In the next step, do NOT enter a mnemonic used to secure existing funds"
@@ -86,7 +94,7 @@ done < "$DEPOSIT_DATAS_FILE_LOCATION"
 
 # Output the keys so the clients can import them
 
-eth2-val-tools keystores \
+rm -rf /tmp/secrets/keys && eth2-val-tools keystores \
       --insecure \
       --prysm-pass="prysm" \
       --out-loc="/tmp/secrets/keys" \
