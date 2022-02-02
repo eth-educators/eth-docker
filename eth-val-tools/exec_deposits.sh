@@ -86,7 +86,7 @@ done < "$DEPOSIT_DATAS_FILE_LOCATION"
 
 # Output the keys so the clients can import them
 
-eth2-val-tools keystores \
+rm -rf /tmp/secrets/keys && eth2-val-tools keystores \
       --insecure \
       --prysm-pass="prysm" \
       --out-loc="/tmp/secrets/keys" \
