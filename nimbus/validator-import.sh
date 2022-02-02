@@ -20,10 +20,8 @@ for arg do
 done
 
 if [ ${__non_interactive} = 1 ]; then
-  echo "${KEYSTORE_PASSWORD}" > /tmp/keystorepassword.txt
-  chmod 600 /tmp/keystorepassword.txt
-  echo "Nimbus automated import is not yet functional"
-  exec "$@"
+  echo ${KEYSTORE_PASSWORD} | $@
+  exit 0
 fi
 
 # Only reached in interactive mode

@@ -6,6 +6,25 @@ cmd() {
     docker-compose "$@"
 }
 
+determine_distro() {
+    # Determine OS platform
+    __uname=$(uname | tr "[:upper:]" "[:lower:]")
+    # If Linux, try to determine specific distribution
+    if [ "$__uname" == "linux" ]; then
+        # If available, use LSB to identify distribution
+        if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+            __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+        # Otherwise, use release info file
+        else
+            __distro=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+        fi
+    fi
+    # For everything else (or if above failed), just use generic identifier
+    [ "$__distro" == "" ] && __distro=$__uname
+    unset __uname
+    __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
+}
+
 update() {
     __keeptargets=0
     while :
@@ -67,6 +86,22 @@ been migrated, please recreate these changes yourself."
         else
             echo "No changes made to ${ENV_FILE} during migration"
         fi
+    fi
+    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list | grep -w "docker") ]]; then
+	echo
+	echo "WARNING! Snap docker package detected. This WILL result in issues."
+	echo "Removing the package will delete volumes and require a resync,"
+	echo "as well as re-import of all validator keys."
+	echo
+	echo "Doing so is still highly recommended however."
+	echo
+        echo "The exact steps depend a little on whether there already is"
+	echo "an apt version of docker installed as well, but in a nutshell"
+	echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+	echo "and then reinstall docker.io or docker-ce with apt,"
+	echo "re-import keys and restart eth-docker."
+	echo
+	echo "Do join us on EthStaker Discord to work through this emergency."
     fi
 }
 
@@ -325,7 +360,7 @@ envmigrate() {
                 PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
                 OE_SRC_BUILD_TARGET OE_DOCKER_TAG OE_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
-                BESU_DOCKER_TAG BESU_DOCKERFILE DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
+                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
                 OPERA_DOCKER_TAG OPERA_DOCKERFILE OPERA_SRC_BUILD_TARGET \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT )
@@ -676,6 +711,24 @@ set_value_in_env() {
 }
 
 config () {
+	if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list | grep -w "docker") ]]; then
+        echo
+        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "Removing the package will delete volumes and require a resync,"
+        echo "as well as re-import of all validator keys."
+        echo
+        echo "Doing so is still highly recommended however."
+        echo
+        echo "The exact steps depend a little on whether there already is"
+        echo "an apt version of docker installed as well, but in a nutshell"
+        echo '"sudo snap remove --purge docker" and then reinstall docker.io"'
+        echo "or docker-ce with apt, re-import keys and restart eth-docker."
+        echo
+        echo "Do join us on EthStaker Discord to work through this emergency."
+	echo
+	echo "Aborting, this is not safe."
+	exit 1
+   fi
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
         ENV_TEMPLATE="default.env"
@@ -717,8 +770,8 @@ config () {
           query_graffiti
         fi
         query_execution_client
-        query_grafana
         query_rapid_sync
+        query_grafana
     else
         unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
@@ -836,7 +889,7 @@ if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
 fi
 
-cd $(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath ${BASH_SOURCE}))
 # Use this to make sure root doesn't end up owning files
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OWNER=$(stat -f '$Su' .)
@@ -853,5 +906,7 @@ ENV_FILE=.env
 
 command="$1"
 shift
+
+determine_distro
 
 "$command" $@

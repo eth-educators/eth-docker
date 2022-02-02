@@ -75,10 +75,10 @@ case "$CLIENT" in
     # Blox SSV Operator Dashboard
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator.json'
     __file='/etc/grafana/provisioning/dashboards/blox_ssv_operator_dashboard.json'
-    wget -qcO - $__url | jq '.title = "blox_ssv_operator_dashboard"' >$__file
+    wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_validator.json'
     __file='/etc/grafana/provisioning/dashboards/blox_ssv_validator_dashboard.json'
-    wget -qcO - $__url | jq '.title = "blox_ssv_validator_dashboard"' >$__file
+    wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
   * ) ;;
 esac
