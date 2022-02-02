@@ -52,7 +52,6 @@ services:
       - ${EC_RPC_PORT}
       - --JsonRpc.WebSocketsPort
       - ${EC_WS_PORT}
-      - --NoCategory.CorsOrigins=*
       - --Sync.FastSync
       - "true"
       - --config
