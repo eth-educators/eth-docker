@@ -15,6 +15,14 @@ then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
+if [[ -d /tmp/secrets/keys ]]; then
+  read -p "This will overwrite validator keys for any existing deposits, do you want to proceed? " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+  fi
+fi 
+
 source kintsugi.env
 
 echo "In the next step, do NOT enter a mnemonic used to secure existing funds"
