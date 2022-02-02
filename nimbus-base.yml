@@ -25,9 +25,9 @@ services:
     expose:
       - 8008/tcp
     ports:
-      - ${CC_P2P_PORT}:${CC_P2P_PORT}/tcp
-      - ${CC_P2P_PORT}:${CC_P2P_PORT}/udp
-      - 127.0.0.1:5053:5053/tcp
+      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
+      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
+      - 127.0.0.1:6052:6052/tcp
     networks:
       default:
         aliases:
@@ -39,8 +39,8 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --status-bar=false
-      - --tcp-port=${CC_P2P_PORT}
-      - --udp-port=${CC_P2P_PORT}
+      - --tcp-port=${CC_P2P_PORT:-9000}
+      - --udp-port=${CC_P2P_PORT:-9000}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
       - --web3-url=${EC_NODE}
@@ -61,7 +61,7 @@ services:
       - --metrics-address=0.0.0.0
       - --validator-monitor-auto
       - --keymanager
-      - --keymanager-port=5053
+      - --keymanager-port=6052
       - --keymanager-address=0.0.0.0
       - --keymanager-token-file=/var/lib/nimbus/token
     command: ${NIMBUS_RAPID_SYNC}
