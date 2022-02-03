@@ -100,9 +100,45 @@ services:
       - /var/lib/prysm/password.txt
       - --monitoring-host
       - 0.0.0.0
+      - --web
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --grpc-gateway-port
+      - ${KEY_API_PORT:-7500}
+      - --grpc-gateway-corsdomain=*
+      - --beacon-rpc-gateway-provider
+      - consensus:5052
     depends_on:
       - consensus
-  validator-account-list:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prysm.entrypoints=web,websecure
+      - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
+      - traefik.http.routers.prysm.tls.certresolver=letsencrypt
+      - traefik.http.services.prysm.loadbalancer.server.port=${KEY_API_PORT:-7500}
+  create-wallet:
+    restart: "no"
+    image: prysm-validator:local
+    user: prysmvalidator
+    environment:
+      - NETWORK=${NETWORK}
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: create-wallet.sh
+  get-keyapi-token:
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        sed -n 2p /var/lib/prysm/auth-token
+  validator-list:
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:local
