@@ -20,8 +20,11 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - validator-client
       - --beacon-node-api-endpoint=${CC_NODE}
@@ -32,6 +35,12 @@ services:
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
       - --validators-early-attestations-enabled=false
+      - --validator-api-enabled=true
+      - --validator-api-port=${KEY_API_PORT:-7500}
+      - --validator-api-host-allowlist=*
+      - --validator-api-cors-origins=*
+      - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
+      - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
   validator-import:
     restart: "no"
     image: teku:local

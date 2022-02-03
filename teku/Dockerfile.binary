@@ -22,6 +22,7 @@ RUN set -eux; \
 RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && chown -R teku:teku /var/lib/teku && chmod -R 700 /var/lib/teku
 # Script to query and store validator key passwords
 COPY ./validator-import.sh /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
 
