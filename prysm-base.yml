@@ -75,6 +75,8 @@ services:
       <<: *prysm-build
     image: prysm-validator:local
     user: prysmvalidator
+    ports:
+      - 127.0.0.1:5062:5062
     expose:
       - 8081/tcp
     volumes:
@@ -100,9 +102,36 @@ services:
       - /var/lib/prysm/password.txt
       - --monitoring-host
       - 0.0.0.0
+      - --rpc
+      - --rpc-host
+      - 0.0.0.0
+      - --rpc-port
+      - "5062"
     depends_on:
       - consensus
-  validator-account-list:
+  create-wallet:
+    restart: "no"
+    image: prysm-validator:local
+    user: prysmvalidator
+    environment:
+      - NETWORK=${NETWORK}
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: create-wallet.sh
+  get-keyapi-token:
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        cat /var/lib/prysm/auth-token
+  validator-list:
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:local

@@ -21,6 +21,8 @@ services:
       <<: *prysm-build
     image: prysm-validator:local
     user: prysmvalidator
+    ports:
+      - 127.0.0.1:5062:5062
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
@@ -44,7 +46,34 @@ services:
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
-  validator-account-list:
+      - --rpc
+      - --rpc-host
+      - 0.0.0.0
+      - --rpc-port
+      - "5062"
+  create-wallet:
+    restart: "no"
+    image: prysm-validator:local
+    user: prysmvalidator
+    environment:
+      - NETWORK=${NETWORK}
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: create-wallet.sh
+  get-keyapi-token:
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        cat /var/lib/prysm/auth-token
+  validator-list:
     restart: "no"
     image: prysm-validator:local
     user: prysmvalidator
