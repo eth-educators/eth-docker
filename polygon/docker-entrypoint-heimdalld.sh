@@ -5,7 +5,7 @@ set -Eeuo pipefail
 # If started as root, chown the `--datadir` and run heimdalld as heimdall
 if [ "$(id -u)" = '0' ]; then
    chown -R heimdall:heimdall /var/lib/heimdall
-   exec gosu heimdall "$BASH_SOURCE" "$@"
+   exec su-exec heimdall "$BASH_SOURCE" $@
 fi
 
 set -x
@@ -24,4 +24,4 @@ sed -i "/bor_rpc_url/c\bor_rpc_url = \"${HEIMDALL_BOR_RPC_URL}\"" /var/lib/heimd
 sed -i "/eth_rpc_url/c\eth_rpc_url = \"${HEIMDALL_ETH_RPC_URL}\"" /var/lib/heimdall/config/heimdall-config.toml
 sed -i '/amqp_url/c\amqp_url = "amqp://guest:guest@rabbitmq:5672"' /var/lib/heimdall/config/heimdall-config.toml
 
-exec "$@"
+exec $@

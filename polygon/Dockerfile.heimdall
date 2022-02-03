@@ -1,10 +1,8 @@
 ARG DOCKER_TAG
 
-FROM 0xpolygon/heimdall:${DOCKER_TAG} as source
+FROM 0xpolygon/heimdall:${DOCKER_TAG}
 
-FROM debian:bullseye-slim
-
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates bash tzdata wget gosu
+RUN apk update && apk add ca-certificates bash tzdata wget su-exec
 
 ARG USER=heimdall
 ARG UID=10000
@@ -18,11 +16,9 @@ RUN adduser \
     "${USER}"
 
 RUN mkdir -p /var/lib/heimdall && chown ${USER}:${USER} /var/lib/heimdall
-COPY ./docker-entrypoint-heimdalld.sh /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /var/lib/heimdall
 
-COPY --from=source /go/bin/* /usr/local/bin/
 COPY ./docker-entrypoint-heimdalld.sh /usr/local/bin/docker-entrypoint.sh
 
 USER ${USER}
