@@ -55,7 +55,10 @@ update() {
     else
         git pull
     fi
-    envmigrate
+    regex='COMPOSE_FILE=.*bor\.yml.*'
+    if [[ ! $(cat ${ENV_FILE}) =~ $regex ]]; then
+        envmigrate
+    fi
     cmd build --pull
     exec 3>&1
     exec 4>&2
@@ -64,16 +67,14 @@ update() {
     cmd pull || true
     exec 1>&3
     exec 2>&4
-    regex='COMPOSE_FILE=.*bor\.yml.*'
     if [[ $(cat ${ENV_FILE}) =~ $regex ]]; then
         echo "Running bor, ${ENV_FILE} left untouched"
     else
-        envmigrate $@
         echo
         echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${ENV_FILE}.bak."
 
-    if [ $__keeptargets = "0" ]; then
+      if [ $__keeptargets = "0" ]; then
       echo "NB: If you made changes to the source or binary build targets, these have NOT \
 been migrated, please recreate these changes yourself."
         fi
