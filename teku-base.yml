@@ -24,12 +24,13 @@ services:
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
     ports:
-      - 127.0.0.1:5062:5062/tcp
+      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
     expose:
       - 8008/tcp
     ports:
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
+      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}
     networks:
       default:
         aliases:
@@ -58,7 +59,7 @@ services:
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
       - --validator-api-enabled=true
-      - --validator-api-port=5062
+      - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*
       - --validator-api-cors-origins=*
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore

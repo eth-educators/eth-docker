@@ -21,7 +21,7 @@ services:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - 127.0.0.1:5062:5062/tcp
+      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
@@ -36,7 +36,7 @@ services:
       - --validators-graffiti=${GRAFFITI}
       - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
-      - --validator-api-port=5062
+      - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*
       - --validator-api-cors-origins=*
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore

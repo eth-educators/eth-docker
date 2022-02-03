@@ -2,4 +2,4 @@ version: "3.4"
 services:
   validator:
     ports:
-      - ${PRYSM_WEB_PORT}:${PRYSM_WEB_PORT}/tcp
+      - ${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp

@@ -21,8 +21,6 @@ services:
       <<: *prysm-build
     image: prysm-validator:local
     user: prysmvalidator
-    ports:
-      - 127.0.0.1:5062:5062
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
@@ -46,11 +44,20 @@ services:
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
-      - --rpc
-      - --rpc-host
+      - --web
+      - --grpc-gateway-host
       - 0.0.0.0
-      - --rpc-port
-      - "5062"
+      - --grpc-gateway-port
+      - ${KEY_API_PORT:-7500}
+      - --grpc-gateway-corsdomain=*
+      - --beacon-rpc-gateway-provider
+      - consensus:5052
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prysm.entrypoints=web,websecure
+      - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
+      - traefik.http.routers.prysm.tls.certresolver=letsencrypt
+      - traefik.http.services.prysm.loadbalancer.server.port=${KEY_API_PORT:-7500}
   create-wallet:
     restart: "no"
     image: prysm-validator:local

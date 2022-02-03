@@ -64,7 +64,7 @@ services:
     image: lighthouse:local
     user: lhvalidator
     ports:
-      - 127.0.0.1:5062:5062/tcp
+      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
     expose:
       - 5064/tcp
     volumes:
@@ -87,6 +87,8 @@ services:
       - --metrics-address
       - 0.0.0.0
       - --http
+      - --http-port
+      - ${KEY_API_PORT:-7500}
       - --http-address
       - 0.0.0.0
       - --http-allow-origin
