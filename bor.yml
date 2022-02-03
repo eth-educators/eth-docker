@@ -21,7 +21,7 @@ services:
       - HEIMDALL_CHAIN_ID=${HEIMDALL_CHAIN_ID}
       - HEIMDALL_SNAPSHOT_FILE=${HEIMDALL_SNAPSHOT_FILE}
       - HEIMDALL_GENESIS_URL=${HEIMDALL_GENESIS_URL}
-      - HEIMDALL_SEEDS=${HEIMDALL_SEEDS} 
+      - HEIMDALL_SEEDS=${HEIMDALL_SEEDS}
       - HEIMDALL_BOR_RPC_URL=${HEIMDALL_BOR_RPC_URL}
       - HEIMDALL_ETH_RPC_URL=${HEIMDALL_ETH_RPC_URL}
     restart: unless-stopped
@@ -36,7 +36,6 @@ services:
       - start
     volumes:
       - heimdall-data:/var/lib/heimdall
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - "26657/tcp"
@@ -97,11 +96,11 @@ services:
       - BOR_ARCHIVE_NODE_SNAPSHOT_FILE=${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}
       - BOR_FULL_NODE_SNAPSHOT_FILE=${BOR_FULL_NODE_SNAPSHOT_FILE}
       - BOR_MODE=${BOR_MODE}
-    entrypoint: 
+    entrypoint:
       - docker-entrypoint.sh
       - bor
       - --datadir
-      - /var/lib/bor/data 
+      - /var/lib/bor/data
       - --cache
       - ${BOR_CACHE}
       - --gcmode
@@ -119,13 +118,13 @@ services:
       - --txpool.globalslots
       - "100000"
       - --rpc.txfeecap
-      - "0" 
+      - "0"
       - --txpool.accountslots
-      - "256" 
+      - "256"
       - --bor.heimdall
-      - http://heimdallr:1317 
+      - http://heimdallr:1317
       - --bootnodes
-      - "${BOR_BOOTNODES}" 
+      - "${BOR_BOOTNODES}"
       - --syncmode
       - "full"
       - --txpool.accountqueue
