@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 
-FROM maticnetwork/bor:${DOCKER_TAG}
+FROM 0xpolygon/bor:${DOCKER_TAG}
 
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
