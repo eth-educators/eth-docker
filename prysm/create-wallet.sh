@@ -18,5 +18,5 @@ echo
 echo "$password1" >/var/lib/prysm/password.txt
 chmod 600 /var/lib/prysm/password.txt
 echo "Wallet password has been stored."
-validator wallet create --${NETWORK} --wallet-dir /var/lib/prysm --keymanager-kind local --accept-terms-of-use --wallet-password-file /var/lib/prysm/password.txt
+validator --datadir /var/lib/prysm wallet create --${NETWORK} --wallet-dir /var/lib/prysm --keymanager-kind direct --accept-terms-of-use --wallet-password-file /var/lib/prysm/password.txt
 echo "Wallet has been created."
