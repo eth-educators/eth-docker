@@ -24,7 +24,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - prysmconsensus-data:/var/lib/prysm
-      - certs:/letsencrypt
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080/tcp
