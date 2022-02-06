@@ -656,7 +656,7 @@ query_rapid_sync() {
     # Assume no to start
     TEKU_RAPID_SYNC=""
     LH_RAPID_SYNC=""
-    LS_RAPID_SYNC="false"
+    LS_RAPID_SYNC=""
     NIMBUS_RAPID_SYNC=""
     PRYSM_RAPID_SYNC=""
 
@@ -680,8 +680,9 @@ query_rapid_sync() {
     #        fi
             ;;
         "lodestar-base.yml" | "lodestar-consensus.yml")
-            if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint?" 10 60) then
-                LS_RAPID_SYNC="true"
+            if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+		query_remote_beacon
+                LS_RAPID_SYNC="--weakSubjectivitySyncLatest=true --weakSubjectivityServerUrl=${REMOTE_BEACON}"
             fi
             ;;
         "prysm-base.yml" | "prysm-consensus.yml")
