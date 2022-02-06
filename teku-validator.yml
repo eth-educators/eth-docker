@@ -20,8 +20,6 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh

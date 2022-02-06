@@ -3,28 +3,28 @@ services:
   deposit-cli-new:
     restart: "no"
     build:
-      context: ./eth-deposit-cli
+      context: ./staking-deposit-cli
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
-    image: eth-deposit-cli:local
+    image: staking-deposit-cli:local
     volumes:
       - ${DEPCLI_LOCALDIR}:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3
-      - /app/eth2deposit/deposit.py
+      - /app/staking_deposit/deposit.py
       - new-mnemonic
       - --chain
       - ${NETWORK}
   deposit-cli-existing:
     restart: "no"
-    image: eth-deposit-cli:local
+    image: staking-deposit-cli:local
     volumes:
       - ${DEPCLI_LOCALDIR}:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3
-      - /app/eth2deposit/deposit.py
+      - /app/staking_deposit/deposit.py
       - existing-mnemonic
       - --chain
       - ${NETWORK}
