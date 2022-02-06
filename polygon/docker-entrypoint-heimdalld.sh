@@ -12,10 +12,7 @@ set -x
 
 if [ ! -f /var/lib/heimdall/config/config.toml ]; then
   heimdalld init --home /var/lib/heimdall --chain-id ${HEIMDALL_CHAIN_ID}
-  mkdir -p /var/lib/heimdall/snapshot
-  wget -O /var/lib/heimdall/snapshot/heimsnap.tgz ${HEIMDALL_SNAPSHOT_FILE}
-  tar -xzvf /var/lib/heimdall/snapshot/heimsnap.tgz -C /var/lib/heimdall/data/
-  rm /var/lib/heimdall/snapshot/heimsnap.tgz
+  wget -q -O - "${HEIMDALL_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/heimdall/data/
 fi
 wget -O /var/lib/heimdall/config/genesis.json ${HEIMDALL_GENESIS_URL} -P /var/lib/heimdall/config
 sed -i "/seeds =/c\seeds = \"${HEIMDALL_SEEDS}\"" /var/lib/heimdall/config/config.toml
