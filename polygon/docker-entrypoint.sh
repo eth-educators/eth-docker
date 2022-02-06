@@ -17,14 +17,11 @@ wget -O genesis.json ${BOR_GENESIS}
 chmod +x ./setup.sh
 ./setup.sh
 if [ ! -f /var/lib/bor/setupdone ]; then
-  mkdir -p /var/lib/bor/snapshot
   if [ ${BOR_MODE} == "archive" ]; then
-    wget -O /var/lib/bor/snapshot/borsnap.tgz ${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}
+    wget -q -O - "${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/bor/data/bor/chaindata
   else
-    wget -O /var/lib/bor/snapshot/borsnap.tgz ${BOR_FULL_NODE_SNAPSHOT_FILE}
+    wget -q -O - "${BOR_FULL_NODE_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/bor/data/bor/chaindata
   fi
-  tar -xzvf /var/lib/bor/snapshot/borsnap.tgz -C /var/lib/bor/data/bor/chaindata
-  rm /var/lib/bor/snapshot/borsnap.tgz
   touch /var/lib/bor/setupdone
 fi
 
