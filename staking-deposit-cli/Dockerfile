@@ -25,7 +25,7 @@ RUN adduser \
 WORKDIR /app
 
 COPY --from=builder /src/eth2.0-deposit-cli/requirements.txt /src/eth2.0-deposit-cli/setup.py ./
-COPY --from=builder /src/eth2.0-deposit-cli/eth2deposit ./eth2deposit
+COPY --from=builder /src/eth2.0-deposit-cli/staking_deposit ./staking_deposit
 
 RUN apk add --update gcc libc-dev linux-headers bash su-exec
 
@@ -37,4 +37,4 @@ RUN chown -R ${USER}:${USER} /app
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT [ "docker-entrypoint.sh","python3","./eth2deposit/deposit.py" ]
+ENTRYPOINT [ "docker-entrypoint.sh","python3","./staking_deposit/deposit.py" ]

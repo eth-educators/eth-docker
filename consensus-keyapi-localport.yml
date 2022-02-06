@@ -1,0 +1,5 @@
+version: "3.4"
+services:
+  consensus:
+    ports:
+      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp

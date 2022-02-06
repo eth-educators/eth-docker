@@ -26,7 +26,6 @@ services:
     ports:
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
-      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
     networks:
       default:
         aliases:
