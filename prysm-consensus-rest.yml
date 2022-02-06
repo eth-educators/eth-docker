@@ -66,10 +66,6 @@ services:
       - ${LOG_LEVEL}
       - --${NETWORK}
       - --accept-terms-of-use
-      - --tls-cert
-      - /letsencrypt/certs/certs/${DOMAIN}.crt
-      - --tls-key
-      - /letsencrypt/certs/private/${DOMAIN}.key
       - --monitoring-host
       - 0.0.0.0
     labels:
