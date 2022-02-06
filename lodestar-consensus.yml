@@ -46,12 +46,11 @@ services:
       - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT:-9000}"
       - --eth1.providerUrl
       - ${EC_NODE}
-      - --weakSubjectivitySyncLatest
-      - ${LS_RAPID_SYNC}
       - --logLevel
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
+    command: ${LS_RAPID_SYNC}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
