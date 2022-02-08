@@ -64,8 +64,6 @@ services:
       - "1"
       - --Sync.AncientReceiptsBarrier
       - "1"
-      - --NoCategory.LogLevel
-      - ${LOG_LEVEL}
   eth:
     depends_on:
       - execution
