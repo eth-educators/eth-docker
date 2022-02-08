@@ -44,7 +44,7 @@ services:
       - "/ip4/0.0.0.0/udp/${CC_P2P_PORT:-9000}"
       - --network.localMultiaddrs
       - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT:-9000}"
-      - --eth1.providerUrl
+      - --eth1.providerUrls
       - ${EC_NODE}
       - --logLevel
       - ${LOG_LEVEL}
