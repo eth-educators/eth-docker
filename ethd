@@ -57,8 +57,8 @@ update() {
     fi
     regex='COMPOSE_FILE=.*bor\.yml.*'
     if [[ ! $(cat ${ENV_FILE}) =~ $regex ]]; then
-# BASH_SOURCE so newer code gets to do the migration, env so I have a way to
-# communicate with it
+    # BASH_SOURCE so newer code gets to do the migration, env so I have a way to
+    # communicate with it
         export KEEPTARGETS=$__keeptargets
         "${BASH_SOURCE}" envmigrate
         unset KEEPTARGETS
@@ -371,6 +371,20 @@ envmigrate() {
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT )
     NEW_VARS=( CC_P2P_PORT KEY_API_PORT )
 
+    # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
+    # then dropped that way of doing things with the parameter and used an ENV
+    # variable instead. This checks for that old->new behavior and looks for the parameter
+    if [ -z "${KEEPTARGETS-}" ]; then
+        __keeptargets=0
+        for var in "$@"; do
+            if [ "$var" = "--keep-targets" ]; then
+                __keeptargets=1
+            fi
+        done
+    else
+        __keeptargets=${KEEPTARGETS}
+    fi
+
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
       if [ -f ./"${ENV_FILE}".bak ]; then
@@ -391,21 +405,6 @@ envmigrate() {
             sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
-
-# I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
-# then dropped that way of doing things with the parameter and used an ENV
-# variable instead. This checks for that old->new behavior and looks for the parameter
-    if [ -z "${KEEPTARGETS-}" ]; then
-        for var in "$@"; do
-            if [ "$var" = "--keep-targets" ]; then
-                __keeptargets=1
-            else
-                __keeptargets=0
-            fi
-        done
-    else
-        __keeptargets=${KEEPTARGETS}
-    fi
 
     if [ $__keeptargets = "1" ]; then
       # Migrate over build targets
@@ -856,10 +855,6 @@ config () {
         cmd pull || true
         exec 1>&3
         exec 2>&4
-    fi
-
-    if [ ${__deployment} = "rocket" ]; then
-        update
     fi
 }
 
