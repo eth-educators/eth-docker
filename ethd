@@ -55,7 +55,11 @@ update() {
     else
         git pull
     fi
-    envmigrate
+# BASH_SOURCE so newer code gets to do the migration, env so I have a way to
+# communicate with it
+    export KEEPTARGETS=$__keeptargets
+    "${BASH_SOURCE}" envmigrate
+    unset KEEPTARGETS
     cmd build --pull
     exec 3>&1
     exec 4>&2
@@ -357,6 +361,20 @@ envmigrate() {
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT )
     NEW_VARS=( CC_P2P_PORT KEY_API_PORT )
+
+    # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
+    # then dropped that way of doing things with the parameter and used an ENV
+    # variable instead. This checks for that old->new behavior and looks for the parameter
+    if [ -z "${KEEPTARGETS-}" ]; then
+        __keeptargets=0
+        for var in "$@"; do
+            if [ "$var" = "--keep-targets" ]; then
+                __keeptargets=1
+            fi
+        done
+    else
+        __keeptargets=${KEEPTARGETS}
+    fi
 
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
@@ -819,11 +837,14 @@ config () {
     set_value_in_env
 
     if [[ "${EUID}" -eq 0 || -n $(id -nG $(id -u) | grep -w "docker") ]]; then
-        cmd build
-    fi
-
-    if [ ${__deployment} = "rocket" ]; then
-        update
+        cmd build --pull
+        exec 3>&1
+        exec 4>&2
+        exec 1> /dev/null
+        exec 2> /dev/null
+        cmd pull || true
+        exec 1>&3
+        exec 2>&4
     fi
 }
 
