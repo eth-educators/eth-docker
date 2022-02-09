@@ -203,21 +203,19 @@ prune-geth() {
     done
 
     echo ""
-    echo "Stopping Geth"
-    echo ""
-    cmd stop execution && cmd rm -f execution
-    echo ""
     echo "Starting prune"
     echo ""
-    cmd run --rm --name geth_prune -d execution snapshot prune-state
+    cmd run --rm set-prune-marker "touch /var/lib/goethereum/prune-marker"
+    cmd stop execution && cmd rm -f execution
+    start
     echo ""
-    echo "Prune is running, you can observe it with 'sudo docker logs -f --tail 500 geth_prune'"
+    echo "Prune is running, you can observe it with 'sudo ./ethd logs -f execution'"
     echo ""
     echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting database\". During \
 the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
     echo ""
-    echo "When prune is done, which takes 4-5 hours, start Geth again with 'sudo ./ethd start'."
-    echo "NB: 'sudo' can be left off these commands if your user is part of the 'docker' group."
+    echo "When prune is done, which takes 4-5 hours, Geth will automatically start again."
+    echo "NB: 'sudo' can be left off the `./ethd logs` command if your user is part of the 'docker' group."
     echo ""
 }
 
