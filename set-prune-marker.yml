@@ -1,0 +1,17 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  set-prune-marker:
+    image: alpine:latest
+    volumes:
+      - geth-eth1-data:/var/lib/goethereum
+    command: touch /var/lib/goethereum/prune-marker
+
+volumes:
+  geth-eth1-data:

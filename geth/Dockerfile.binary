@@ -20,6 +20,8 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
 USER ${USER}
 
 ENTRYPOINT ["geth"]
