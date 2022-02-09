@@ -136,6 +136,25 @@ rocketeer() {
 }
 
 prune-geth() {
+
+    __non_interactive=0
+    while :
+    do
+        if [ -z ${1+x} ]; then
+            break
+        fi
+        case "$1" in
+            --non-interactive)
+                __non_interactive=1
+                shift
+                ;;
+            *)
+                echo "Error: Unknown option: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 1
@@ -194,16 +213,18 @@ prune-geth() {
         fi
     fi
 
-    while true; do
-        read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
-        case $yn in
-            [Yy]es ) break;;
-            * ) echo "Aborting, no changes made"; exit 1;;
-        esac
-    done
+    if [ __non_interactive = 0 ]; then
+      while true; do
+          read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
+          case $yn in
+              [Yy]es ) break;;
+              * ) echo "Aborting, no changes made"; exit 1;;
+          esac
+      done
+    fi
 
     echo ""
-    echo "Starting prune"
+    echo "Starting Geth prune"
     echo ""
     cmd run --rm set-prune-marker "touch /var/lib/goethereum/prune-marker"
     cmd stop execution && cmd rm -f execution
