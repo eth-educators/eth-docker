@@ -34,6 +34,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - geth
       - --http
       - --http.addr
@@ -62,6 +63,14 @@ services:
       - --pprof.addr
       - 0.0.0.0
     command: ${GETH_CACHE}
+  set-prune-marker:
+    image: alpine:latest
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - geth-eth1-data:/var/lib/goethereum
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
   eth:
     depends_on:
       - execution
