@@ -5,6 +5,7 @@ x-logging: &logging
     options:
       max-size: 10m
       max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   prometheus:
@@ -84,6 +85,35 @@ services:
     expose:
       - 9745/tcp
     <<: *logging
+  promtail:
+    image: grafana/promtail:latest
+    user: root
+    ports:
+      - 9080:9080
+      - 9081:9081
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+      - ./promtail:/etc/promtail
+      - promtail-data:/tmp
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command:
+      - '--config.file=/etc/promtail/promtail.yml'
+    restart: "${RESTART}"
+    depends_on:
+      - loki
+    <<: *logging
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
+      - 9096:9096
+    volumes:
+      - loki-data:/tmp
+      - ./loki:/etc/loki
+    command:
+      - '--config.file=/etc/loki/loki.yml'
+    restart: "${RESTART}"
+    <<: *logging
   grafana:
     restart: "${RESTART}"
     build:
@@ -98,6 +128,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
+      - loki
     expose:
       - ${GRAFANA_PORT}/tcp
     entrypoint: ["provision-dashboards.sh"]
@@ -116,3 +147,5 @@ volumes:
   grafana-data:
   grafana-config:
   prom-data:
+  loki-data:
+  promtail-data:
