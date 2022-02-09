@@ -129,6 +129,7 @@ services:
     depends_on:
       - prometheus
       - loki
+      - promtail
     expose:
       - ${GRAFANA_PORT}/tcp
     entrypoint: ["provision-dashboards.sh"]
