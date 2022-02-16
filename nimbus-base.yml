@@ -21,6 +21,9 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NIMBUS_RAPID_SYNC=${NIMBUS_RAPID_SYNC:-}
+      - NETWORK=${NETWORK}
     expose:
       - 8008/tcp
     ports:
@@ -61,8 +64,8 @@ services:
       - --keymanager
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0
+      - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
-    command: ${NIMBUS_RAPID_SYNC}
   get-keyapi-token:
     restart: "no"
     image: alpine:latest
@@ -84,7 +87,7 @@ services:
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
     entrypoint:
       - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
