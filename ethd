@@ -368,9 +368,9 @@ envmigrate() {
             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
             EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC LH_RAPID_SYNC LS_RAPID_SYNC  \
-	        NIMBUS_RAPID_SYNC CC_NODE BEACON_STATS_API BEACON_STATS_MACHINE EC_P2P_PORT CC_P2P_PORT PRYSM_PORT  \
-	        PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
-	        EC_RPC_PORT EC_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
+            NIMBUS_RAPID_SYNC CC_NODE BEACON_STATS_API BEACON_STATS_MACHINE EC_P2P_PORT CC_P2P_PORT PRYSM_PORT  \
+            PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
+            EC_RPC_PORT EC_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
                 PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
@@ -411,7 +411,7 @@ envmigrate() {
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-        if [ -n "${value}" ]; then
+        if [ -n "${value}" -o ${var} = "GRAFFITI" ]; then
             sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
@@ -592,11 +592,7 @@ query_custom_execution_client() {
 }
 
 query_fallback_execution_client() {
-        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
-            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EC_NETWORK}.infura.io/ws/v3/..." 3>&1 1>&2 2>&3)
-        else
-            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
-        fi
+        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -636,11 +632,7 @@ query_execution_client() {
         EC_NODE="${EC_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
-            EC_NODE="ws://execution:8546"
-        else
-            EC_NODE="http://execution:8545"
-        fi
+        EC_NODE="http://execution:8545"
     fi
     EC_FALLBACK_NODE1="${EC_NODE}"
     EC_FALLBACK_NODE2="${EC_NODE}"
@@ -711,10 +703,10 @@ query_rapid_sync() {
             fi
             ;;
         "nimbus-base.yml" | "nimbus-consensus.yml")
-    #        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-    #            query_remote_beacon
-    #            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
-    #        fi
+            if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+                query_remote_beacon
+                NIMBUS_RAPID_SYNC="${REMOTE_BEACON}"
+            fi
             ;;
         "lodestar-base.yml" | "lodestar-consensus.yml")
             if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
