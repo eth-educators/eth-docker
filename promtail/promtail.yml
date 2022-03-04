@@ -47,4 +47,3 @@ scrape_configs:
 
   - output:
       source: output
-

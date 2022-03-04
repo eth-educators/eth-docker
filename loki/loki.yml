@@ -25,4 +25,3 @@ schema_config:
       index:
         prefix: index_
         period: 24h
-
