@@ -13,7 +13,7 @@ RUN groupmod -g "${UID}" user && usermod -u "${UID}" -g "${UID}" user
 
 RUN set -eux; \
         apt-get update; \
-        apt-get install -y gosu ca-certificates bash tzdata; \
+        DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y gosu ca-certificates bash tzdata; \
         rm -rf /var/lib/apt/lists/*; \
 # verify that the binary works
         gosu nobody true
