@@ -24,7 +24,6 @@ services:
     stop_grace_period: 1m
     volumes:
       - prysmconsensus-data:/var/lib/prysm
-      - certs:/letsencrypt
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080/tcp
@@ -32,7 +31,6 @@ services:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     expose:
-      - 4000/tcp
       - 5052/tcp
     networks:
       default:
@@ -68,10 +66,6 @@ services:
       - ${LOG_LEVEL}
       - --${NETWORK}
       - --accept-terms-of-use
-      - --tls-cert
-      - /letsencrypt/certs/certs/${DOMAIN}.crt
-      - --tls-key
-      - /letsencrypt/certs/private/${DOMAIN}.key
       - --monitoring-host
       - 0.0.0.0
     labels:
