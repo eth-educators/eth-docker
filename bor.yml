@@ -116,7 +116,7 @@ services:
       - --txpool.locals
       - ${TX_LOCAL_ADDR}
       - --txpool.globalslots
-      - "100000"
+      - "400000"
       - --rpc.txfeecap
       - "0"
       - --txpool.accountslots
@@ -132,7 +132,7 @@ services:
       - --txpool.globalqueue
       - "131072"
       - --maxpeers
-      - "150"
+      - "200"
       - --http
       - --http.addr
       - 0.0.0.0
