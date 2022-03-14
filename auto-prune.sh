@@ -29,7 +29,7 @@ if [ $FREE_DISK -lt ${byte_threshold} -o $PERCENT_FREE -lt ${percent_threshold} 
        exit 1
      fi
      echo "Starting Geth prune. $FREE_DISK_GB GiB free on disk, which is $PERCENT_FREE percent."
-     exec ./ethd prune-geth
+     exec ./ethd prune-geth --non-interactive
    else
      echo "Geth prune required. $FREE_DISK_GB GiB free on disk, which is $PERCENT_FREE percent."
    fi

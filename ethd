@@ -143,6 +143,25 @@ rocketeer() {
 }
 
 prune-geth() {
+
+    __non_interactive=0
+    while :
+    do
+        if [ -z ${1+x} ]; then
+            break
+        fi
+        case "$1" in
+            --non-interactive)
+                __non_interactive=1
+                shift
+                ;;
+            *)
+                echo "Error: Unknown option: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 1
@@ -201,16 +220,18 @@ prune-geth() {
         fi
     fi
 
-    while true; do
-        read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
-        case $yn in
-            [Yy]es ) break;;
-            * ) echo "Aborting, no changes made"; exit 1;;
-        esac
-    done
+    if [ __non_interactive = 0 ]; then
+      while true; do
+          read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
+          case $yn in
+              [Yy]es ) break;;
+              * ) echo "Aborting, no changes made"; exit 1;;
+          esac
+      done
+    fi
 
     echo ""
-    echo "Starting prune"
+    echo "Starting Geth prune"
     echo ""
     cmd run --rm set-prune-marker "touch /var/lib/goethereum/prune-marker"
     cmd stop execution && cmd rm -f execution
@@ -399,7 +420,7 @@ envmigrate() {
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-        if [ -n "${value}" ]; then
+        if [ -n "${value}" -o ${var} = "GRAFFITI" ]; then
             sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
@@ -581,11 +602,7 @@ query_custom_execution_client() {
 }
 
 query_fallback_execution_client() {
-        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
-            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EC_NETWORK}.infura.io/ws/v3/..." 3>&1 1>&2 2>&3)
-        else
-            EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
-        fi
+        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -625,11 +642,7 @@ query_execution_client() {
         EC_NODE="${EC_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
-            EC_NODE="ws://execution:8546"
-        else
-            EC_NODE="http://execution:8545"
-        fi
+        EC_NODE="http://execution:8545"
     fi
     EC_FALLBACK_NODE1="${EC_NODE}"
     EC_FALLBACK_NODE2="${EC_NODE}"
@@ -700,10 +713,10 @@ query_rapid_sync() {
             fi
             ;;
         "nimbus-base.yml" | "nimbus-consensus.yml")
-    #        if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-    #            query_remote_beacon
-    #            NIMBUS_RAPID_SYNC="--trusted-node-url=${REMOTE_BEACON}"
-    #        fi
+            if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+                query_remote_beacon
+                NIMBUS_RAPID_SYNC="${REMOTE_BEACON}"
+            fi
             ;;
         "lodestar-base.yml" | "lodestar-consensus.yml")
             if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint, e.g. Infura?" 10 60) then

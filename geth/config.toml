@@ -37,7 +37,6 @@ Lifetime = 10800000000000
 [Node]
 DataDir = "/data/heco/data"
 InsecureUnlockAllowed = true
-NoUSB = true
 IPCPath = "geth.ipc"
 HTTPHost = "0.0.0.0"
 HTTPPort = 8545

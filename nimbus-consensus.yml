@@ -5,6 +5,7 @@ x-logging: &logging
     options:
       max-size: 10m
       max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   consensus:
@@ -54,7 +55,6 @@ services:
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
       - --validator-monitor-totals
-    command: ${NIMBUS_RAPID_SYNC}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
