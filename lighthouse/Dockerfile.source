@@ -21,7 +21,7 @@ RUN set -eux; \
 # verify that the binary works
         gosu nobody true
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
   libssl-dev \
   ca-certificates \
   wget \
