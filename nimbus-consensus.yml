@@ -24,6 +24,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8008/tcp
+      - 5052/tcp
     ports:
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
