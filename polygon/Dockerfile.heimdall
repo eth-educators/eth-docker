@@ -2,7 +2,7 @@ ARG DOCKER_TAG
 
 FROM 0xpolygon/heimdall:${DOCKER_TAG}
 
-RUN apk update && apk add ca-certificates bash tzdata wget su-exec
+RUN apk update && apk add ca-certificates bash tzdata wget su-exec curl
 
 ARG USER=heimdall
 ARG UID=10000
