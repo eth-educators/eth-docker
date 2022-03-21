@@ -23,7 +23,6 @@ COPY --from=build /usr/app/lodestar/packages ./packages
 
 # Scripts that handle permissions
 COPY ./validator-import.sh /usr/local/bin/
-COPY ./find-ip.sh /usr/local/bin/
 
 ARG USER=lsconsensus
 ARG UID=10002

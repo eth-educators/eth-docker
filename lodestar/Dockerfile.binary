@@ -24,7 +24,6 @@ RUN adduser \
     "${USER}"
 
 RUN mkdir -p /var/lib/lodestar/consensus && chown ${USER}:${USER} /var/lib/lodestar/consensus && chmod 700 /var/lib/lodestar/consensus
-COPY ./find-ip.sh /usr/local/bin/
 
 ARG USER=lsvalidator
 ARG UID=10000
