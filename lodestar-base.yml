@@ -22,6 +22,7 @@ services:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
@@ -29,7 +30,6 @@ services:
       - 5052/tcp
     <<: *logging
     entrypoint:
-      - find-ip.sh
       - node
       - --max-old-space-size=6144
       - /usr/app/node_modules/.bin/lodestar
@@ -46,8 +46,6 @@ services:
       - "/ip4/0.0.0.0/udp/${CL_P2P_PORT}"
       - --network.localMultiaddrs
       - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT}"
-      - --eth1.providerUrl
-      - ${EL_NODE}
       - --logLevel
       - ${LOG_LEVEL}
       - --paramsFile
@@ -58,20 +56,19 @@ services:
       - ${ENR}
       - --network.connectToDiscv5Bootnodes
       - --network.discv5.enabled=true
-      - --eth1.disableEth1DepositDataTracker=true
-      - --eth1.enabled=true
-      - --execution.urls=${EL_NODE}
+      - --eth1.providerUrls
+      - ${EL_NODE}
+      - eth1.depositContractDeployBlock=5797
+      - --execution.urls=${EL_NODE_EXECUTION}
+      - --jwt-secret=/secrets/jwtsecret
   validator:
     restart: "${RESTART}"
     image: lodestar:local-merge
-    #user: lsvalidator
-    user: root
+    user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
-      - ./${NETWORK}-secrets/keys/keys:/keys
-      - ./${NETWORK}-secrets/keys/lodestar-secrets:/secrets
     <<: *logging
     entrypoint:
       - node
@@ -80,10 +77,6 @@ services:
       - validator
       - --rootDir
       - /var/lib/lodestar/validators
-      - --keystoresDir
-      - /keys
-      - --secretsDir
-      - /secrets
       - --server
       - http://consensus:5052
       - --graffiti
@@ -92,6 +85,28 @@ services:
       - ${LOG_LEVEL}
       - --paramsFile
       - /configs/config.yaml
+  validator-import:
+    restart: "${RESTART}"
+    image: lodestar:local
+    user: root
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
+    entrypoint:
+      - validator-import.sh
+      - node
+      - --max-old-space-size=8192
+      - /usr/app/node_modules/.bin/lodestar
+      - account
+      - validator
+      - import
+      - --rootDir
+      - /var/lib/lodestar/validators
+      - --directory
+      - /val_keys
   validator-exit:
     restart: "no"
     image: lodestar:local-merge

@@ -6,6 +6,25 @@ cmd() {
     docker-compose "${@}"
 }
 
+determine_distro() {
+    # Determine OS platform
+    __uname=$(uname | tr "[:upper:]" "[:lower:]")
+    # If Linux, try to determine specific distribution
+    if [ "$__uname" == "linux" ]; then
+        # If available, use LSB to identify distribution
+        if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+            __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+        # Otherwise, use release info file
+        else
+            __distro=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+        fi
+    fi
+    # For everything else (or if above failed), just use generic identifier
+    [ "$__distro" == "" ] && __distro=$__uname
+    unset __uname
+    __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
+}
+
 update() {
     if git branch | grep -q master; then
         git branch -m master main
@@ -302,7 +321,7 @@ envmigrate() {
 	     EL_RPC_PORT EL_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
-                PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
+                PRYSM_DOCKER_TAG PRYSM_VC_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
                 OE_SRC_BUILD_TARGET OE_DOCKER_TAG OE_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
                 BESU_DOCKER_TAG BESU_DOCKERFILE DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
@@ -634,18 +653,30 @@ set_value_in_env() {
     fi
 }
 
-config () {
+config() {
+    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list | grep -w "docker") ]]; then
+        echo
+        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "Removing the package will delete volumes and require a resync,"
+        echo "as well as re-import of all validator keys."
+        echo
+        echo "Doing so is still highly recommended however."
+        echo
+        echo "The exact steps depend a little on whether there already is"
+        echo "an apt version of docker installed as well, but in a nutshell"
+        echo '"sudo snap remove --purge docker" and then reinstall docker.io"'
+        echo "or docker-ce with apt, re-import keys and restart eth-docker."
+        echo
+        echo "Do join us on EthStaker Discord to work through this emergency."
+        echo
+        echo "Aborting, this is not safe."
+        exit 1
+    fi
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
-        ENV_FILE_GUESS="$(eval realpath default.env)"
-        ENV_TEMPLATE=$(whiptail --title "Configure ENV_FILE" --inputbox "No ${ENV_FILE} file found, press enter to use the default, or choose a backup" 10 60 "${ENV_FILE_GUESS}" 3>&1 1>&2 2>&3)
+        ENV_TEMPLATE="default.env"
 
-        exitstatus=$?
-        if [ $exitstatus -eq 0 ]; then
-            echo "your configuration file template is:" "${ENV_TEMPLATE}"
-        else
-            echo "You chose Cancel."
-        fi
+        echo "Your configuration file template is:" "${ENV_TEMPLATE}"
 
         if [ "${EUID}" -eq 0 ]; then
           sudo -u "${OWNER}" cp "${ENV_TEMPLATE}" "${ENV_FILE}"
@@ -817,5 +848,7 @@ ENV_FILE=.env
 
 command="${1}"
 shift
+
+determine_distro
 
 "${command}" $@
