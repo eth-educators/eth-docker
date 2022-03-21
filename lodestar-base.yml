@@ -58,7 +58,7 @@ services:
       - --network.discv5.enabled=true
       - --eth1.providerUrls
       - ${EL_NODE}
-      - eth1.depositContractDeployBlock=5797
+      - --eth1.depositContractDeployBlock=0
       - --execution.urls=${EL_NODE_EXECUTION}
       - --jwt-secret=/secrets/jwtsecret
   validator:

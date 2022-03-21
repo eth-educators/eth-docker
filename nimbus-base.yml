@@ -23,6 +23,7 @@ services:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     expose:
       - 8008/tcp
     ports:
@@ -58,6 +59,7 @@ services:
       - --network=/configs
       - --bootstrap-node=${ENR}
       - --terminal-total-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
+      - --jwt-secret=/secrets/jwtsecret
       - --keymanager
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0
