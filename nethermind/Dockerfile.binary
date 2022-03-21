@@ -21,11 +21,12 @@ RUN adduser \
 
 RUN set -eux; \
 	apt-get update; \
-	apt-get install -y ca-certificates; \
+	apt-get install -y ca-certificates gosu; \
 	rm -rf /var/lib/apt/lists/*
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 
 USER ${USER}
