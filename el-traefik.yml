@@ -14,6 +14,5 @@ services:
       - traefik.http.routers.elws.rule=Host(`${EL_WS_HOST}.${DOMAIN}`)
       - traefik.http.routers.elws.tls.certresolver=letsencrypt
       - traefik.http.services.elws.loadbalancer.server.port=${EL_WS_PORT}
-
   eth:
     image: tianon/true
