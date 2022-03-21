@@ -7,20 +7,6 @@ x-logging: &logging
       max-file: "3"
 
 services:
-  geth_init:
-    restart: "no"
-    image: geth:local-merge
-    user: geth
-    volumes:
-      - gethexecution-data:/var/lib/goethereum
-      - ./${NETWORK}:/configs
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - geth
-      - --datadir
-      - /var/lib/goethereum
-      - init
-      - /configs/genesis.json
   execution:
     restart: "${RESTART}"
     build:
@@ -31,10 +17,12 @@ services:
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_grace_period: 3m
     image: geth:local-merge
-    user: geth
+    user: root
     volumes:
       - gethexecution-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
@@ -48,6 +36,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - geth
       - --http
       - --http.addr
@@ -75,12 +64,16 @@ services:
       - 0.0.0.0
       - --bootnodes
       - ${ENODE}
-      - --catalyst
       - --networkid
       - ${NETWORK_ID}
+      - --authrpc.jwtsecret
+      - /var/lib/goethereum/jwtsecret
+      - --authrpc.addr
+      - 0.0.0.0
+      - --authrpc.vhosts=*
+      - --syncmode
+      - full
     command: ${GETH_CACHE}
-    depends_on:
-      - geth_init
   eth:
     depends_on:
       - execution

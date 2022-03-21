@@ -9,7 +9,8 @@ ARG BUILD_TARGET
 RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash
 
 WORKDIR /src
-RUN bash -c "git clone https://github.com/ethereum/go-ethereum.git && cd go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make geth"
+#RUN bash -c "git clone https://github.com/ethereum/go-ethereum.git && cd go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make geth"
+RUN bash -c "git clone https://github.com/mariusvanderwijden/go-ethereum && cd go-ethereum && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make geth"
 
 # Pull all binaries into a second stage deploy container
 FROM alpine:latest
@@ -17,7 +18,7 @@ FROM alpine:latest
 ARG USER=geth
 ARG UID=10001
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata su-exec bash
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -31,6 +32,7 @@ RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
 
 # Copy executable
 COPY --from=builder /src/go-ethereum/build/bin/geth /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
 
