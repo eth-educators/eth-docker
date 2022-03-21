@@ -17,13 +17,14 @@ services:
         - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local-merge
-    user: besu
+    #    user: besu
+    user: root
     environment:
       - JAVA_OPTS=-Xmx4g
     volumes:
       - besuexecution-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
@@ -37,6 +38,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/besu/bin/besu
       - --data-path
       - /var/lib/besu
@@ -44,7 +46,7 @@ services:
       - ${EL_P2P_PORT}
       - --rpc-http-enabled
       - --rpc-http-api
-      - "ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,EXECUTION"
+      - "WEB3,ETH,NET"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
@@ -52,25 +54,26 @@ services:
       - --rpc-http-cors-origins=*
       - --rpc-ws-enabled
       - --rpc-ws-api
-      - "ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,EXECUTION"
+      - "WEB3,ETH,NET"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
       - ${EL_WS_PORT}
       - --host-allowlist=*
+      - --engine-host-allowlist="*"
+      - --engine-jwt-enabled=true
+      - --engine-jwt-secret=/secrets/jwtsecret
       - --logging
       - ${LOG_LEVEL}
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0
-        #      - --Xdata-storage-format=BONSAI
+      - --data-storage-format=BONSAI
       - --sync-mode=FULL
       - --network
-      - kintsugi_v1
+      - ${NETWORK}
       - --Xmerge-support
       - "true"
-      - --miner-coinbase
-      - ${REWARDS_TO}
   eth:
     depends_on:
       - execution
