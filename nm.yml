@@ -17,11 +17,12 @@ services:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local-merge
-    user: nethermind
+    #    user: nethermind
+    user: root
     volumes:
       - nmexecution-data:/var/lib/nethermind
-      - ./${NETWORK}:/configs
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
@@ -34,6 +35,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - dotnet
       - /nethermind/Nethermind.Runner.dll
       - --datadir
@@ -47,27 +49,28 @@ services:
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
-      - "Web3,Eth,Subscribe,Net,Consensus,Engine"
+      - "Web3,Eth,Subscribe,Net,Engine"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
       - ${EL_RPC_PORT}
+      - --JsonRpc.JwtSecretFile=/var/lib/nethermind/jwtsecret
       - --JsonRpc.WebSocketsPort
       - ${EL_WS_PORT}
       - --Sync.FastSync
       - "true"
       - --config
       - ${NETWORK}
-      - --Pruning.Enabled
-      - "true"
-      - --Pruning.CacheMb
-      - "4096"
-      - --Init.ChainSpecPath
-      - "/configs/nethermind_genesis.json"
-      - --Merge.Enabled
-      - "true"
-      - --Merge.TerminalTotalDifficulty
-      - ${TOTAL_TERMINAL_DIFFICULTY}
+      - --Sync.AncientBodiesBarrier
+      - "1"
+      - --Sync.AncientReceiptsBarrier
+      - "1"
+      - --Pruning.Mode
+      - Full
+      - --Pruning.FullPruningTrigger
+      - VolumeFreeSpace
+      - --Pruning.FullPruningMaxDegreeOfParallelism
+      - "2"
   eth:
     depends_on:
       - execution
