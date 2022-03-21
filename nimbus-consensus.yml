@@ -40,7 +40,7 @@ services:
       - --tcp-port=${CL_P2P_PORT}
       - --udp-port=${CL_P2P_PORT}
       - --max-peers=${NIM_PEER_COUNT}
-      - --web3-url=${EL_NODE}
+      - --web3-url=${EL_NODE_EXECUTION}
       - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0

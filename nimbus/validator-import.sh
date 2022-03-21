@@ -9,4 +9,20 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu user "$BASH_SOURCE" "$@"
 fi
 
+__non_interactive=0
+if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
+  __non_interactive=1
+fi
+for arg do
+  shift
+  [ "$arg" = "--non-interactive" ] && continue
+  set -- "$@" "$arg"
+done
+
+if [ ${__non_interactive} = 1 ]; then
+  echo ${KEYSTORE_PASSWORD} | $@
+  exit 0
+fi
+
+# Only reached in interactive mode
 exec "$@"

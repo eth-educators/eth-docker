@@ -23,8 +23,6 @@ services:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
-      - ./${NETWORK}-secrets/keys/nimbus-keys:/keys
-      - ./${NETWORK}-secrets/keys/secrets:/secrets
     expose:
       - 8008/tcp
     ports:
@@ -36,7 +34,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
-      - find-ip.sh
+      - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
@@ -44,11 +42,9 @@ services:
       - --tcp-port=${CL_P2P_PORT}
       - --udp-port=${CL_P2P_PORT}
       - --max-peers=${NIM_PEER_COUNT}
-      - --web3-url=${EL_NODE}
+      - --web3-url=${EL_NODE_EXECUTION}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
-      - --rpc
-      - --rpc-address=0.0.0.0
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=5052
@@ -62,8 +58,42 @@ services:
       - --network=/configs
       - --bootstrap-node=${ENR}
       - --terminal-total-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
-      - --validators-dir=/keys
-      - --secrets-dir=/secrets
+      - --keymanager
+      - --keymanager-port=${KEY_API_PORT:-7500}
+      - --keymanager-address=0.0.0.0
+      - --keymanager-allow-origin=*
+      - --keymanager-token-file=/var/lib/nimbus/api-token.txt
+  get-keyapi-token:
+    restart: "no"
+    image: alpine:latest
+    user: "10002"
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        cat /var/lib/nimbus/api-token.txt
+  validator-import:
+    restart: "no"
+    image: nimbus:local
+    user: root
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+    entrypoint:
+      - validator-import.sh
+      - /usr/local/bin/nimbus_beacon_node
+      - --data-dir=/var/lib/nimbus
+      - --network=/configs
+      - deposits
+      - import
+      - /val_keys
   validator-exit:
     restart: "no"
     image: nimbus:local-merge
@@ -77,7 +107,7 @@ services:
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit
-      - --rpc-url=http://consensus:9190
+      - --rest-url=http://consensus:5052
       - --validator=
   eth:
     image: tianon/true
