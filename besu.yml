@@ -62,7 +62,7 @@ services:
       - --host-allowlist=*
       - --engine-host-allowlist="*"
       - --engine-jwt-enabled=true
-      - --engine-jwt-secret=/secrets/jwtsecret
+      - --engine-jwt-secret=/var/lib/besu/jwtsecret
       - --logging
       - ${LOG_LEVEL}
       - --metrics-enabled

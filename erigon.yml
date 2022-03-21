@@ -22,6 +22,7 @@ services:
       - erigon-el-data:/var/lib/erigon
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     ports:
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
@@ -49,20 +50,27 @@ services:
       - --metrics.addr
       - 0.0.0.0
       - --metrics.expensive
+      - --bootnodes
+      - ${ENODE}
+      - --networkid
+      - ${NETWORK_ID}
   execution:
     restart: "${RESTART}"
     image: erigon:local-merge
-    user: erigon
+    #    user: erigon
+    user: root
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}-secrets:/secrets
     expose:
       - ${EL_RPC_PORT}/tcp
     depends_on:
       - erigon
     pid: service:erigon # Use erigon's PID namespace. It's required to open Erigon's DB from another process (RPCDaemon local-mode)
     entrypoint:
+      - docker-entrypoint-rpc.sh
       - rpcdaemon
       - --datadir
       - /var/lib/erigon
@@ -72,10 +80,14 @@ services:
       - erigon:9090
       - --http.addr
       - 0.0.0.0
+      - --engine.addr
+      - 0.0.0.0
+      - --authrpc.jwtsecret
+      - /var/lib/erigon/jwtsecret
       - --http.vhosts=*
       - --http.corsdomain=*
       - --http.api
-      - web3,eth,net
+      - web3,eth,net,engine
       - --http.port
       - ${EL_RPC_PORT}
       - --ws

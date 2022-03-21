@@ -9,11 +9,12 @@ ARG UID=10001
 
 USER root
 
-RUN apk --no-cache add shadow bash && groupmod -g "${UID}" erigon && usermod -u "${UID}" -g "${UID}" erigon
+RUN apk --no-cache add shadow bash su-exec && groupmod -g "${UID}" erigon && usermod -u "${UID}" -g "${UID}" erigon
 
 RUN mkdir -p /var/lib/erigon && chown -R erigon:erigon /var/lib/erigon
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
+COPY ./docker-entrypoint-rpc.sh /usr/local/bin/
 
 USER erigon
 
