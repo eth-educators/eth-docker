@@ -1,6 +1,11 @@
 #!/bin/bash
 set -Eeuo pipefail
 
+if [[ ! -f /var/lib/erigon/setupdone ]]; then
+  erigon init --datadir=/var/lib/erigon /configs/genesis.json
+  touch /var/lib/erigon/setupdone
+fi
+
 # Check for mainnet or goerli, and set prune accordingly
 
 if [[ "$@" =~ "--chain mainnet" ]]; then
