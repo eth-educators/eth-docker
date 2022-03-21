@@ -21,7 +21,7 @@ services:
     volumes:
       - lhconsensus-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
@@ -44,30 +44,31 @@ services:
       - 0.0.0.0
       - --http-port
       - "5052"
-      - --port
+      - --enr-udp-port
+      - ${CL_P2P_PORT}
+      - --enr-tcp-port
+      - ${CL_P2P_PORT}
+      - --discovery-port
       - ${CL_P2P_PORT}
       - --target-peers
       - ${LH_PEER_COUNT}
-      - --execution-endpoints
-      - ${EL_NODE}
       - --eth1-endpoints
       - ${EL_NODE}
+      - --execution-endpoints
+      - ${EL_NODE_EXECUTION}
+      - --target-peers
+      - ${LH_PEER_COUNT}
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
       - 0.0.0.0
       - --validator-monitor-auto
-      - --testnet-dir
-      - /configs
-      - --boot-nodes
-      - ${ENR}
-      - --merge
-      - --disable-packet-filter
-      - --terminal-total-difficulty-override
-      - ${TOTAL_TERMINAL_DIFFICULTY}
-      - --fee-recipient
-      - ${REWARDS_TO}
       - --http-allow-sync-stalled
+      - --jwt-secrets
+      - /secrets/jwtsecret
+      - --merge
+      - --suggested-fee-recipient
+      - ${REWARDS_TO}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl
