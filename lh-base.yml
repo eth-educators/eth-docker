@@ -22,6 +22,7 @@ services:
       - lhconsensus-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
@@ -34,7 +35,6 @@ services:
           - eth2
     <<: *logging
     entrypoint:
-      - find-ip.sh
       - lighthouse
       - bn
       - --disable-upnp
@@ -45,58 +45,46 @@ services:
       - 0.0.0.0
       - --http-port
       - "5052"
-      - --port
-      - ${CL_P2P_PORT}
       - --enr-udp-port
       - ${CL_P2P_PORT}
       - --enr-tcp-port
+      - ${CL_P2P_PORT}
+      - --discovery-port
       - ${CL_P2P_PORT}
       - --target-peers
       - ${LH_PEER_COUNT}
       - --eth1-endpoints
       - ${EL_NODE}
       - --execution-endpoints
-      - ${EL_NODE}
+      - ${EL_NODE_EXECUTION}
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
       - 0.0.0.0
       - --validator-monitor-auto
-      - --testnet-dir
-      - /configs
-      - --boot-nodes
-      - ${ENR}
-      - --merge
+      - --network
+      - ${NETWORK}
       - --http-allow-sync-stalled
-      - --disable-packet-filter
-      - --terminal-total-difficulty-override
-      - ${TOTAL_TERMINAL_DIFFICULTY}
-      - --disable-enr-auto-update
-      - --fee-recipient
+      - --jwt-secrets
+      - /secrets/jwtsecret
+      - --merge
+      - --suggested-fee-recipient
       - ${REWARDS_TO}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local-merge
-    #    user: lhvalidator
-    user: root
+    user: lhvalidator
     expose:
       - 5064/tcp
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}:/configs
-      - ./${NETWORK}-secrets/keys/keys:/keys
-      - ./${NETWORK}-secrets/keys/secrets:/secrets
     <<: *logging
     entrypoint:
       - lighthouse
-      - --testnet-dir
-      - /configs
       - vc
-      - --validators-dir
-      - /keys
-      - --secrets-dir
-      - /secrets
+      - --datadir
+      - /var/lib/lighthouse
       - --init-slashing-protection
       - --beacon-nodes
       - ${CL_NODE}
@@ -106,8 +94,54 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --network
+      - ${NETWORK}
+      - --http
+      - --http-port
+      - ${KEY_API_PORT:-7500}
+      - --http-address
+      - 0.0.0.0
+      - --http-allow-origin
+      - "*"
+      - --unencrypted-http-transport
     depends_on:
       - consensus
+  get-keyapi-token:
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        cat /var/lib/lighthouse/validators/api-token.txt
+        echo
+  validator-import:
+    restart: "no"
+    image: lighthouse:local-merge
+    user: root
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
+    entrypoint:
+      - validator-import.sh
+      - lighthouse
+      - account
+      - validator
+      - import
+      - --datadir
+      - /var/lib/lighthouse
+      - --directory
+      - /val_keys
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
   validator-exit:
     restart: "no"
     image: lighthouse:local-merge
@@ -116,23 +150,16 @@ services:
       - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}:/configs
-      - ./${NETWORK}-secrets/keys/keys:/keys
-      - ./${NETWORK}-secrets/keys/secrets:/secrets
     entrypoint:
       - validator-exit.sh
       - lighthouse
-      - --testnet-dir
-      - /configs
       - account
       - validator
       - exit
       - --beacon-node
       - http://consensus:5052
-      - --validators-dir
-      - /keys
-      - --secrets-dir
-      - /secrets
+      - --datadir
+      - /var/lib/lighthouse
       - --debug-level=${LOG_LEVEL}
       - --keystore
     depends_on:
@@ -147,8 +174,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse
-      - --testnet-dir
-      - /configs
       - account
       - validator
       - --datadir

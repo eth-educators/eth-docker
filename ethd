@@ -169,6 +169,77 @@ the \"Compacting database\" stage it may not output logs for an hour or so, that
     echo ""
 }
 
+keyimport() {
+    set -Eeuo pipefail
+    if [ ! -f "./${ENV_FILE}" ]; then
+        echo "${ENV_FILE} configuration file not found, aborting."
+        exit 1
+    fi
+    if grep -q '^COMPOSE_FILE=.*consensus\.yml' "${ENV_FILE}" 2>/dev/null ; then
+        echo "eth-docker is configured to run consensus client only, key import not possible"
+        exit 1
+    fi
+
+    __prysm=0
+    __path=''
+    __non_interactive=0
+    if grep -q '^COMPOSE_FILE=.*prysm.*\.yml' "${ENV_FILE}" 2>/dev/null ; then
+        __prysm=1
+    fi
+
+    while :
+    do
+        if [ -z ${1+x} ]; then
+            break
+        fi
+        case "$1" in
+            --path)
+                if [ -z ${2+x} ]; then
+                    echo "--path requires a directory path, aborting"
+                    exit 1
+                fi
+                if [ ! -d $2 ]; then
+                    echo "$2 is not a directory"
+                    exit 1
+                fi
+                IFS=$'\n'
+                files=$(find $2 -name '*.json')
+                unset IFS
+                if [ -z "$files" ]; then
+                    echo "No .json files found in $2, aborting"
+                    exit 1
+                fi
+                rm -f ./.eth/validator_keys/*
+                cp $2/*.json .eth/validator_keys/
+                shift 2
+                ;;
+            --non-interactive)
+                if [ -z ${KEYSTORE_PASSWORD+x} ]; then
+                    echo "KEYSTORE_PASSWORD not set, aborting"
+                    exit 1
+                fi
+                if [ ${__prysm} = 1 ]; then
+                    if [ -z ${WALLET_PASSWORD+x} ]; then
+                        echo "Using Prysm and WALLET_PASSWORD not set, aborting"
+                        exit 1
+                    fi
+                fi
+                __non_interactive=1
+                shift
+                ;;
+            *)
+                echo "Error: Unknown option: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+    if [ ${__non_interactive} = 1 ]; then
+        cmd run --rm validator-import --non-interactive
+    else
+        cmd run --rm validator-import
+    fi
+}
+
 upgrade() {
   update
 }
@@ -222,7 +293,7 @@ envmigrate() {
     if [ ! -f "./${ENV_FILE}" ]; then
         return
     fi
-    ALL_VARS=( COMPOSE_FILE EL_NODE GRAFFITI NETWORK NETWORK_ID TOTAL_TERMINAL_DIFFICULTY ENODE ENR REWARDS_TO \
+    ALL_VARS=( COMPOSE_FILE EL_NODE EL_NODE_EXECUTION GRAFFITI NETWORK NETWORK_ID TOTAL_TERMINAL_DIFFICULTY ENODE ENR REWARDS_TO \
              PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
              CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PRYSM_HOST \
              EL_HOST EL_WS_HOST CL_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC LH_RAPID_SYNC LS_RAPID_SYNC  \
@@ -279,10 +350,10 @@ query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 9 60 2 \
-    "kintsugi" "Kintsugi Merge Testnet" 3>&1 1>&2 2>&3)
+    "kiln" "Kiln Merge Testnet" 3>&1 1>&2 2>&3)
 
-    if [ "${NETWORK}" = "kintsugi" ]; then
-        echo "You chose to run on Kintsugi merge testnet"
+    if [ "${NETWORK}" = "kiln" ]; then
+        echo "You chose to run on Kiln merge testnet"
     else
         echo "You chose Cancel."
         exit 0
@@ -447,6 +518,7 @@ query_execution_client() {
       "Which execution client do you want to run?" 12 60 5 \
       "besu.yml" "Besu (Java)" \
       "nm.yml" "Nethermind (.NET)" \
+      "erigon.yml" "Erigon (Go)" \
       "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
     fi
 
@@ -611,7 +683,7 @@ config () {
         fi
         query_execution_client
         query_grafana
-	#query_coinbase
+	query_coinbase
 #        query_rapid_sync
     else
         unset EXECUTION_CLIENT
@@ -636,8 +708,8 @@ config () {
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
-    if [ "${NETWORK}" = "kintsugi" ]; then
-	COMPOSE_FILE="${COMPOSE_FILE}:kintsugi-tools.yml"
+    if [ "${NETWORK}" = "kiln" ]; then
+	COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
@@ -681,6 +753,13 @@ printhelp() {
     echo "subcommands:"
     echo "  config "
     echo "     configures eth-docker with your choice of Ethereum clients"
+    echo "  keyimport [--non-interactive | --path ] "
+    echo "     import validator keys from .eth/validator_keys "
+    echo "     --path specifies an alternate import path "
+    echo "     --non-interactive is for use from another script, "
+    echo "       in which case KEYSTORE_PASSWORD must be set to the password "
+    echo "       shared by all keystore-m json files, and in the case of Prysm, "
+    echo "       WALLET_PASSWORD must be set to the password for Prysm's wallet "
     echo "  update [--keep-targets] "
     echo "     updates all client versions and eth-docker itself"
     echo "  start"
@@ -720,7 +799,7 @@ fi
 # Use this to make sure root doesn't end up owning files
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OWNER=$(stat -f '$Su' .)
-else 
+else
     OWNER=$(stat -c '%U' .)
 fi
 

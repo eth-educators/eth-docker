@@ -6,7 +6,7 @@ eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/e
 
 Please see the [official documentation](https://eth-docker.net).
 
-This branch is for [Kintsugi testnet](https://kintsugi.themerge.dev/)! Be sure to read the [quick start](KINTSUGI.md).
+This branch is for [Kiln testnet](https://kiln.themerge.dev/)! Be sure to read the [quick start](KILN.md).
 
 ## License
 
@@ -14,4 +14,4 @@ This branch is for [Kintsugi testnet](https://kintsugi.themerge.dev/)! Be sure t
 
 # Version
 
-This is eth-docker vKintsugiFun
+This is eth-docker vKilnFun.1

@@ -1,7 +1,7 @@
 ARG DOCKER_TAG
 
-FROM ethereum/client-go:${DOCKER_TAG}
-#FROM parithoshj/geth:${DOCKER_TAG}
+#FROM ethereum/client-go:${DOCKER_TAG}
+FROM parithoshj/geth:${DOCKER_TAG}
 
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
@@ -9,7 +9,7 @@ ARG BUILD_TARGET
 ARG USER=geth
 ARG UID=10001
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata su-exec bash
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -20,6 +20,8 @@ RUN adduser \
     "${USER}"
 
 RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
+
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
 
