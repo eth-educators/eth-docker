@@ -12,6 +12,7 @@ x-build: &prysm-build
   args:
     - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+    - DOCKER_VC_TAG=${PRYSM_VC_DOCKER_TAG}
 
 services:
   consensus:
@@ -26,6 +27,7 @@ services:
       - prysmconsensus-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
@@ -51,6 +53,10 @@ services:
       - "5052"
       - --http-web3provider
       - ${EL_NODE}
+      - --execution-provider
+      - ${EL_NODE_EXECUTION}
+      - --jwt-secret
+      - /secrets/jwtsecret
       - --p2p-tcp-port
       - ${CL_P2P_PORT}
       - --p2p-udp-port
@@ -68,32 +74,30 @@ services:
       - /configs/config.yaml
       - --bootstrap-node
       - ${ENR}
-      - --min-sync-peers=1
+      - --fee-recipient
+      - ${REWARDS_TO}
   validator:
     restart: "${RESTART}"
     build:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local-merge
-    #user: prysmvalidator
-    user: root
+    user: prysmvalidator
     expose:
       - 8081/tcp
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
-      - ./${NETWORK}-secrets/keys/prysm:/keys
-      - ./${NETWORK}-secrets/keys/secrets:/secrets
     <<: *logging
     entrypoint:
       - validator
       - --datadir
       - /var/lib/prysm
       - --wallet-dir
-      - /keys
+      - /var/lib/prysm/
       - --wallet-password-file
-      - /secrets/prysm-password.txt
+      - /var/lib/prysm/password.txt
       - --beacon-rpc-provider
       - consensus:4000
       - --graffiti
@@ -107,7 +111,10 @@ services:
       - --grpc-gateway-host
       - 0.0.0.0
       - --grpc-gateway-port
-      - ${PRYSM_WEB_PORT}
+      - ${KEY_API_PORT:-7500}
+      - --grpc-gateway-corsdomain=*
+      - --beacon-rpc-gateway-provider
+      - consensus:5052
       - --chain-config-file
       - /configs/config.yaml
     depends_on:
@@ -119,13 +126,35 @@ services:
       - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
       - traefik.http.routers.prysm.tls.certresolver=letsencrypt
       - traefik.http.services.prysm.loadbalancer.server.port=${PRYSM_WEB_PORT}
-  validator-account-list:
+  create-wallet:
+    restart: "no"
+    image: prysm-validator:local-merge
+    user: prysmvalidator
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
+    entrypoint: create-wallet.sh
+  get-keyapi-token:
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        sed -n 2p /var/lib/prysm/auth-token
+  validator-list:
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:local-merge
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     entrypoint:
       - validator
       - --datadir
@@ -136,6 +165,30 @@ services:
       - list
       - --wallet-dir=/var/lib/prysm/
       - --wallet-password-file=/var/lib/prysm/password.txt
+      - --chain-config-file
+      - /configs/config.yaml
+  validator-import:
+    restart: "no"
+    image: prysm-validator:local-merge
+    user: root
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
+      - WALLET_PASSWORD=${WALLET_PASSWORD:-''}
+    entrypoint:
+      - validator-import.sh
+      - validator
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --datadir
+      - /var/lib/prysm
+      - accounts
+      - import
+      - --wallet-dir=/var/lib/prysm/
+      - --keys-dir=/val_keys
   validator-exit:
     restart: "no"
     user: prysmvalidator
@@ -143,6 +196,7 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+      - ./${NETWORK}:/configs
     entrypoint:
       - validator
       - --verbosity
@@ -154,7 +208,8 @@ services:
       - --wallet-dir=/var/lib/prysm/
       - --beacon-rpc-provider=consensus:4000
       - --wallet-password-file=/var/lib/prysm/password.txt
-      - --kintsugi-testnet
+      - --chain-config-file
+      - /configs/config.yaml
     depends_on:
       - consensus
   eth:

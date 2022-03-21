@@ -79,7 +79,7 @@ services:
         cat /var/lib/nimbus/api-token.txt
   validator-import:
     restart: "no"
-    image: nimbus:local
+    image: nimbus:local-merge
     user: root
     volumes:
       - nimbus-data:/var/lib/nimbus
