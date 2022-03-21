@@ -22,6 +22,7 @@ services:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     expose:
       - 8008/tcp
     ports:
@@ -33,6 +34,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
@@ -55,6 +57,7 @@ services:
       - --network=/configs
       - --bootstrap-node=${ENR}
       - --terminal-total-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
+      - --jwt-secret=/secrets/jwtsecret
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl
