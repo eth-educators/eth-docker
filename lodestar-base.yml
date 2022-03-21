@@ -87,7 +87,7 @@ services:
       - /configs/config.yaml
   validator-import:
     restart: "${RESTART}"
-    image: lodestar:local
+    image: lodestar:local-merge
     user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators

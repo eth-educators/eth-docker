@@ -26,6 +26,7 @@ services:
       - prysmconsensus-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
@@ -51,6 +52,10 @@ services:
       - "5052"
       - --http-web3provider
       - ${EL_NODE}
+      - --execution-provider
+      - ${EL_NODE_EXECUTION}
+      - --jwt-secret
+      - /secrets/jwtsecret
       - --p2p-tcp-port
       - ${CL_P2P_PORT}
       - --p2p-udp-port
@@ -68,7 +73,8 @@ services:
       - /configs/config.yaml
       - --bootstrap-node
       - ${ENR}
-      - --min-sync-peers=1
+      - --fee-recipient
+      - ${REWARDS_TO}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.entrypoints=websecure
