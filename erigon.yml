@@ -46,7 +46,7 @@ services:
       - any
       - --chain
       - ${EC_NETWORK}
-      - --prune=hrtc
+      - --prune=htc
       - --metrics
       - --metrics.addr
       - 0.0.0.0
