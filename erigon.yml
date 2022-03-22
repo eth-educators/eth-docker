@@ -45,7 +45,7 @@ services:
       - ${EL_P2P_PORT}
       - --nat
       - any
-      - --prune=hrtc
+      - --prune=htc
       - --metrics
       - --metrics.addr
       - 0.0.0.0
