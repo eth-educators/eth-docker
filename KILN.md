@@ -38,7 +38,7 @@ machine. The launchpad is at https://kiln.launchpad.ethereum.org/
   - `./ethd logs -f consensus`
   - `./ethd logs -f execution`
   - `./ethd logs -f validator` - for those clients that have a separate validator client, like Lighthouse
-- Observe your validator at https://beaconchain.kintsugi.themerge.dev , by entering its public key or the ETH address you funded it from
+- Observe your validator at https://beaconchain.kiln.themerge.dev , by entering its public key or the ETH address you funded it from
 - If you want to try a different combo, first `./ethd terminate` so the chain data gets deleted, then just `./ethd config`, choose your clients,
   **wait 15 minutes**, and `./ethd up`. No need to generate keys again. The 15 minute wait is there to avoid slashing.
 
