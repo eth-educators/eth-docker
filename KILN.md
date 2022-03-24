@@ -12,10 +12,10 @@
   - Otherwise, run `sudo apt update && sudo apt -y install docker-compose`
   - Make your user part of the docker group: `sudo usermod -aG docker MYUSERNAME` and then `newgrp docker`
 
-### On Mac OS X
-- Install docker desktop
-  - allocate 8gb of RAM
-- install pre-requisites via homebrew
+### On macOS
+- Install Docker Desktop
+  - allocate 8GiB of RAM
+- Install pre-requisites via homebrew
   - `brew install coreutils newt`
 
 ## Get eth-docker
@@ -28,7 +28,7 @@
   - `./ethd config`
   - `docker-compose build` - this can take a while because it's source builds. You likely have time to walk the dog :)
 - Generate the keystore files. This mnemonic should be considered compromised, as it is not generated on an air-gapped
-machine. The launchpad is at https://kiln.launchpad.ethereum.org/
+machine.
   - `docker-compose run --rm deposit-cli-new --eth1_withdrawal_address YOURKILNADDRESS`
 - Deposit for this key at the [launchpad](https://kiln.launchpad.ethereum.org/).
 - Import the keys: `./ethd keyimport`
@@ -37,10 +37,10 @@ machine. The launchpad is at https://kiln.launchpad.ethereum.org/
 - Look at logs and see consensus and execution client synchronizing, and the validator client validating:
   - `./ethd logs -f consensus`
   - `./ethd logs -f execution`
-  - `./ethd logs -f validator` - for those clients that have a separate validator client, like Lighthouse
+  - `./ethd logs -f validator` - for those clients that have a separate validator client, like Lighthouse and Prysm
 - Observe your validator at https://beaconchain.kiln.themerge.dev , by entering its public key or the ETH address you funded it from
 - If you want to try a different combo, first `./ethd terminate` so the chain data gets deleted, then just `./ethd config`, choose your clients,
-  **wait 15 minutes**, and `./ethd up`. No need to generate keys again. The 15 minute wait is there to avoid slashing.
+  **wait 15 minutes**, `./ethd keyimport` and `./ethd up`. The 15 minute wait is there to avoid slashing.
 
 Note: Not all consensus/execution client combinations have been tested. Please join us on ethstaker Discord to discuss the results of your experimentation!
 And above all, have fun!
