@@ -2,19 +2,19 @@
 
 ## Obtain testnet eth
 - Create a throwaway ETH address in metamask.
-- Fund this address with 32.13 Kiln ETH using the FaucETH at https://kiln.themerge.dev/. Note the faucet gets hammered by bots, come to ethstaker Discord if you have trouble
+- Fund this address with Kiln ETH using the FaucETH at https://kiln.themerge.dev/. Note the faucet gets hammered by bots, come to [ethstaker Discord](https://discord.io/ethstaker) if you have trouble
   getting funds.
 
 ## Setup Prerequisites
 ### On Linux
-- Install docker
-  - If you already have docker installed, skip this step
+- Install Docker
+  - If you already have Docker installed, skip this step
   - Otherwise, run `sudo apt update && sudo apt -y install docker-compose`
   - Make your user part of the docker group: `sudo usermod -aG docker MYUSERNAME` and then `newgrp docker`
 
 ### On macOS
 - Install Docker Desktop
-  - allocate 8GiB of RAM
+  - Allocate 8GiB of RAM
 - Install pre-requisites via homebrew
   - `brew install coreutils newt`
 
