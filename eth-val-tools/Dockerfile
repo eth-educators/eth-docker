@@ -1,4 +1,4 @@
-FROM golang:1.17-bullseye as build
+FROM golang:1.18-bullseye as build
 
 RUN go install github.com/wealdtech/ethereal/v2@latest
 
@@ -9,7 +9,7 @@ FROM debian:bullseye-slim
 RUN apt update && apt install -y --no-install-recommends jq bash ca-certificates
 
 COPY --from=build /go/bin/eth2-val-tools /usr/local/bin/
-COPY --from=build /go/bin/ethereal /usr/local/bin/ 
+COPY --from=build /go/bin/ethereal /usr/local/bin/
 
 COPY exec_deposits.sh /usr/local/bin/
 COPY kintsugi.env /usr/local/bin/
