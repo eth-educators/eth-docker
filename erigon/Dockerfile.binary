@@ -18,4 +18,4 @@ COPY ./docker-entrypoint-rpc.sh /usr/local/bin/
 
 USER erigon
 
-ENTRYPOINT ["docker-entrypoint.sh", "erigon"]
+ENTRYPOINT ["erigon"]

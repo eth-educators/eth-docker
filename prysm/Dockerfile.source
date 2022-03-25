@@ -1,5 +1,5 @@
 # Build Prysm in a stock Go build container
-FROM golang:buster as builder
+FROM golang:1.18-buster as builder
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
