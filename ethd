@@ -642,7 +642,11 @@ query_execution_client() {
         EC_NODE="${EC_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-        EC_NODE="http://execution:8545"
+        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
+            EC_NODE="ws://execution:8546"
+        else
+            EC_NODE="http://execution:8545"
+        fi
     fi
     EC_FALLBACK_NODE1="${EC_NODE}"
     EC_FALLBACK_NODE2="${EC_NODE}"

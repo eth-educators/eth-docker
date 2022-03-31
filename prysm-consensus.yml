@@ -25,16 +25,13 @@ services:
     stop_grace_period: 1m
     volumes:
       - prysmconsensus-data:/var/lib/prysm
-      - certs:/letsencrypt
       - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080/tcp
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
-      - 4000:4000/tcp
     expose:
-      - 4000/tcp
       - 5052/tcp
     networks:
       default:
@@ -70,15 +67,8 @@ services:
       - ${LOG_LEVEL}
       - --${NETWORK}
       - --accept-terms-of-use
-      - --tls-cert
-      - /letsencrypt/certs/certs/${DOMAIN}.crt
-      - --tls-key
-      - /letsencrypt/certs/private/${DOMAIN}.key
       - --monitoring-host
       - 0.0.0.0
-    depends_on:
-      - traefik
-      - traefik-certs-dumper
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.entrypoints=websecure
@@ -90,26 +80,10 @@ services:
       - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
       - traefik.http.routers.cclb.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
-  traefik-certs-dumper:
-    image: ldez/traefik-certs-dumper:latest
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        apk add jq docker
-        adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/bin/false" --no-create-home --uid 10002 cert
-        while ! [ -e /letsencrypt/acme.json ] || ! [ `jq ".[] | .Certificates | length" /letsencrypt/acme.json` != 0 ]; do
-          sleep 1
-        done
-        traefik-certs-dumper file --version v2 --watch --source /letsencrypt/acme.json --dest /letsencrypt/certs --post-hook "/usr/bin/cert-change.sh"
-    volumes:
-      - certs:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./prysm/cert-change.sh:/usr/bin/cert-change.sh
   eth:
     image: tianon/true
     restart: "no"
     depends_on:
       - consensus
-      - traefik-certs-dumper
 volumes:
   prysmconsensus-data:

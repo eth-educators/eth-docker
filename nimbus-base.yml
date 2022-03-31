@@ -27,6 +27,7 @@ services:
       - NETWORK=${NETWORK}
     expose:
       - 8008/tcp
+      - 5052/tcp
     ports:
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
@@ -50,8 +51,6 @@ services:
       - --web3-url=${EC_FALLBACK_NODE2}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
-      - --rpc
-      - --rpc-address=0.0.0.0
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=5052
@@ -111,7 +110,7 @@ services:
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit
-      - --rpc-url=http://consensus:9190
+      - --rest-url=http://consensus:5052
       - --validator=
   eth:
     image: tianon/true

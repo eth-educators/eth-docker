@@ -9,3 +9,4 @@ ext-network.yml
 alertmanager/config.yml
 blox-ssv-config.yaml
 kintsugi-secrets/*
+kiln-secrets/*
