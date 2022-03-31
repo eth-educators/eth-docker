@@ -65,7 +65,7 @@ services:
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0
-      - --Xdata-storage-format=BONSAI
+      - --data-storage-format=BONSAI
   eth:
     depends_on:
       - execution
