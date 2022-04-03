@@ -64,7 +64,7 @@ services:
       - --engine-jwt-enabled=true
       - --engine-jwt-secret=/var/lib/besu/jwtsecret
       - --engine-rpc-http-port=8551
-      - --engine-rpc-ws-port=8551
+      - --engine-rpc-ws-port=8550
       - --logging
       - ${LOG_LEVEL}
       - --metrics-enabled

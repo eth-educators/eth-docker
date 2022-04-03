@@ -548,9 +548,13 @@ query_execution_client() {
     fi
 
     echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-    if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" ]; then
+    if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
         EL_NODE="ws://execution:8546"
-	EL_NODE_EXECUTION="ws://execution:8551"
+	if [ "${EXECUTION_CLIENT}" == "besu.yml" ]; then
+	    EL_NODE_EXECUTION="ws://execution:8550"
+	else
+	    EL_NODE_EXECUTION="ws://execution:8551"
+	fi
     else
         EL_NODE="http://execution:8545"
 	EL_NODE_EXECUTION="http://execution:8551"
