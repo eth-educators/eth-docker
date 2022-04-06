@@ -103,6 +103,8 @@ services:
       - --http-allow-origin
       - "*"
       - --unencrypted-http-transport
+      - --suggested-fee-recipient
+      - ${REWARDS_TO}
     depends_on:
       - consensus
   get-keyapi-token:

@@ -72,6 +72,7 @@ services:
       - VolumeFreeSpace
       - --Pruning.FullPruningMaxDegreeOfParallelism
       - "2"
+      - --JsonRpc.UnsecureDevNoRpcAuthentication=true
   eth:
     depends_on:
       - execution
