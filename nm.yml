@@ -73,6 +73,8 @@ services:
       - --Pruning.FullPruningMaxDegreeOfParallelism
       - "2"
       - --JsonRpc.UnsecureDevNoRpcAuthentication=true
+      - --JsonRpc.MethodsLoggingFiltering={"engine_forkchoiceUpdatedV1","engine_newPayloadV1"}
+      - --JsonRpc.MaxLoggedRequestParametersCharacters=256
   eth:
     depends_on:
       - execution
