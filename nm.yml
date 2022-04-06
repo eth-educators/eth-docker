@@ -53,13 +53,13 @@ services:
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
-      - ${EL_RPC_PORT}
+      - "8645"
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/jwtsecret
-      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:8551|http;wss|engine;eth;net;web3;subscribe
+      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:8551|http;wss|engine;eth;net;web3;subscribe,http://0.0.0.0:${EL_RPC_PORT}|http;wss|engine;eth;net;web3;subscribe|no-auth,http://0.0.0.0:${EL_WS_PORT}|http;wss|engine;eth;net;web3;subscribe|no-auth
       - --JsonRpc.WebSocketsPort
-      - ${EL_WS_PORT}
+      - "8646"
       - --Sync.FastSync
-      - "true"
+      - "false"
       - --config
       - ${NETWORK}
       - --Sync.AncientBodiesBarrier
@@ -72,7 +72,6 @@ services:
       - VolumeFreeSpace
       - --Pruning.FullPruningMaxDegreeOfParallelism
       - "2"
-      - --JsonRpc.UnsecureDevNoRpcAuthentication=true
       - --JsonRpc.MethodsLoggingFiltering={"engine_forkchoiceUpdatedV1","engine_newPayloadV1"}
       - --JsonRpc.MaxLoggedRequestParametersCharacters=256
   eth:
