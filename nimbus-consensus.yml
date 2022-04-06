@@ -22,6 +22,9 @@ services:
     volumes:
       - nimbus-consensus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NIMBUS_RAPID_SYNC=${NIMBUS_RAPID_SYNC:-}
+      - NETWORK=${NETWORK}
     expose:
       - 8008/tcp
       - 5052/tcp
@@ -34,6 +37,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /usr/local/bin/nimbus_beacon_node
       - --data-dir=/var/lib/nimbus
       - --non-interactive
@@ -56,6 +60,8 @@ services:
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
       - --validator-monitor-totals
+      - --subscribe-all-subnets
+      - --in-process-validators=false
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
