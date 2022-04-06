@@ -592,8 +592,11 @@ query_custom_execution_client() {
 }
 
 query_fallback_execution_client() {
-        EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
-
+	if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
+	    EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+        else
+	    EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+        fi
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
             echo "your fallback execution client is:" "${EC_FALLBACK_NODE1}"
@@ -643,7 +646,7 @@ query_execution_client() {
 
     if (whiptail --title "Select Option" --yesno "Do you want to use a fallback execution client?" 10 60) then
         query_fallback_execution_client
-        if [[ "${CONSENSUS_CLIENT}" != "prysm-base.yml" && "${CONSENSUS_CLIENT}" != "nimbus-base.yml" ]]; then
+        if [[ "${CONSENSUS_CLIENT}" != "prysm-base.yml" && "${CONSENSUS_CLIENT}" != "nimbus-base.yml" && "${CONSENSUS_CLIENT}" != "prysm-consensus.yml" && "${CONSENSUS_CLIENT}" != "nimbus-consensus.yml" ]]; then
             EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
         fi
     fi
