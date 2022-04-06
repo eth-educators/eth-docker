@@ -49,15 +49,15 @@ services:
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
-      - "Web3,Eth,Subscribe,Net,Engine"
+      - "Web3,Eth,Subscribe,Net"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
-      - "8645"
+      - ${EL_RPC_PORT}
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/jwtsecret
-      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:8551|http;wss|engine;eth;net;web3;subscribe,http://0.0.0.0:${EL_RPC_PORT}|http;wss|engine;eth;net;web3;subscribe|no-auth,http://0.0.0.0:${EL_WS_PORT}|http;wss|engine;eth;net;web3;subscribe|no-auth
+      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:8551|http;wss|engine;eth;net;web3;subscribe
       - --JsonRpc.WebSocketsPort
-      - "8646"
+      - ${EL_WS_PORT}
       - --Sync.FastSync
       - "false"
       - --config
