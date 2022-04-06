@@ -60,6 +60,7 @@ services:
       - 0.0.0.0
       - --validator-monitor-auto
       - --subscribe-all-subnets
+      - --import-all-attestations
     command: ${LH_RAPID_SYNC}
     labels:
       - traefik.enable=true
