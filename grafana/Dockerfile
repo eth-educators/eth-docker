@@ -9,7 +9,4 @@ COPY ./dashboard.yml /etc/grafana/provisioning/dashboards/
 COPY ./datasource.yml /etc/grafana/provisioning/datasources/
 COPY ./provision-dashboards.sh /usr/local/bin/
 
-# node dashboard
-ADD node-exporter_dashboard.json /etc/grafana/provisioning/dashboards/
-
 ENTRYPOINT [ "/run.sh" ]
