@@ -54,7 +54,6 @@ services:
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=5052
-      - --num-threads=0
       - --enr-auto-update=true
       - --doppelganger-detection=false
       - --metrics
