@@ -42,6 +42,9 @@ services:
       - ${EC_RPC_PORT}
       - --logging
       - ${LOG_LEVEL}
+      - --metrics
+      - --metrics-port=6060
+      - --metrics-interface=all
       - --snapshot-peers
       - "250"
       - --cache-size
