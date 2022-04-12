@@ -39,6 +39,8 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --metrics-port
+      - "8009"
       - --http
       - --http-port
       - ${KEY_API_PORT:-7500}

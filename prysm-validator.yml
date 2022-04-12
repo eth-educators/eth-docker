@@ -53,6 +53,10 @@ services:
       - --grpc-gateway-corsdomain=*
       - --beacon-rpc-gateway-provider
       - consensus:5052
+      - --monitoring-host
+      - 0.0.0.0
+      - --monitoring-port
+      - "8009"
     labels:
       - traefik.enable=true
       - traefik.http.routers.prysm.entrypoints=web,websecure
