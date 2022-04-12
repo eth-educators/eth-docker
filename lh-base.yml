@@ -58,6 +58,8 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --metrics-port
+      - "8008"
       - --validator-monitor-auto
     command: ${LH_RAPID_SYNC}
   validator:
@@ -85,6 +87,8 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --metrics-port
+      - "8009"
       - --http
       - --http-port
       - ${KEY_API_PORT:-7500}

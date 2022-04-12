@@ -58,6 +58,8 @@ services:
       - --metrics
       - --metrics-address
       - 0.0.0.0
+      - --metrics-port
+      - "8008"
       - --validator-monitor-auto
       - --subscribe-all-subnets
       - --import-all-attestations
