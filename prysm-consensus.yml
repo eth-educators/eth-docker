@@ -69,6 +69,8 @@ services:
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0
+      - --monitoring-port
+      - "8008"
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.entrypoints=websecure

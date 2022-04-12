@@ -69,6 +69,8 @@ services:
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0
+      - --monitoring-port
+      - "8008"
   validator:
     restart: "${RESTART}"
     build:
@@ -101,6 +103,8 @@ services:
       - /var/lib/prysm/password.txt
       - --monitoring-host
       - 0.0.0.0
+      - --monitoring-port
+      - "8009"
       - --web
       - --grpc-gateway-host
       - 0.0.0.0

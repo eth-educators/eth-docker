@@ -17,10 +17,10 @@ rule_files:
 scrape_configs:
   - job_name: 'nodes'
     static_configs:
-      - targets: ['consensus:5054']
+      - targets: ['consensus:8008']
   - job_name: 'validator'
     static_configs:
-      - targets: ['validator:5064']
+      - targets: ['validator:8009']
   - job_name: 'node_exporter'
     static_configs:
       - targets: ['node-exporter:9100']
