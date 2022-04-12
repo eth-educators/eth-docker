@@ -21,6 +21,7 @@ case "$CLIENT" in
   *geth* ) cat /etc/prometheus/geth-prom.yml >> /etc/prometheus/prometheus.yml ;;
   *erigon* ) cat /etc/prometheus/erigon-prom.yml >> /etc/prometheus/prometheus.yml ;;
   *besu* ) cat /etc/prometheus/besu-prom.yml >> /etc/prometheus/prometheus.yml ;;
+  *nm* ) cat /etc/prometheus/nethermind-prom.yml >> /etc/prometheus/prometheus.yml ;;
 esac
 
 case "$CLIENT" in

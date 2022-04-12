@@ -65,6 +65,8 @@ services:
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0
+      - --metrics-port
+      - "6060"
       - --data-storage-format=BONSAI
   eth:
     depends_on:

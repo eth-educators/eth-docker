@@ -55,6 +55,10 @@ services:
       - ${EC_WS_PORT}
       - --Sync.FastSync
       - "true"
+      - --Metrics.Enabled
+      - "true"
+      - --Metrics.ExposePort
+      - "6060"
       - --config
       - ${EC_NETWORK}
       - --Pruning.Enabled
