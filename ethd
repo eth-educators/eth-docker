@@ -103,38 +103,6 @@ been migrated, please recreate these changes yourself."
     fi
 }
 
-rocketeer() {
-    if ! command -v yq &> /dev/null; then
-        if ! $(grep -q "ID_LIKE=debian" /etc/os-release); then
-            echo "yq not installed and I don't know how to install it on non-Debian system"
-            exit
-        fi
-        if [ ${EUID} -ne 0 ]; then
-            echo "Elevating to root privileges"
-            exec sudo ${BASH_SOURCE} rocketeer
-        fi
-        echo "Installing yq"
-        add-apt-repository -y ppa:rmescandon/yq
-        apt-get -y install yq
-        if [ $? -ne 0 ]; then
-            echo "Installation of yq failed, exiting"
-            exit 1
-        fi
-        echo "Dropping root privileges"
-        exec sudo -u ${OWNER} ${BASH_SOURCE} rocketeer
-    fi
-    echo "Making changes to original Rocketpool file"
-    FILE=~/.rocketpool/docker-compose.yml
-    cp "${FILE}" "${FILE}.bak"
-    yq eval 'del(.services.eth1)' -i "${FILE}"
-    yq eval 'del(.services.eth2)' -i "${FILE}"
-    yq eval 'del(.. | select(has("depends_on")).depends_on)' -i "${FILE}"
-    yq eval 'del(.volumes)' -i "${FILE}"
-    echo ""
-    echo "eth1 and eth2 services have been removed from ${FILE}"
-    echo "A copy of the original is in ${FILE}.bak"
-}
-
 prune-geth() {
 
     __non_interactive=0
@@ -901,8 +869,6 @@ printhelp() {
     echo "     stops the Ethereum node software and destroys all data stores"
     echo "  prune-geth"
     echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
-    echo "  rocketeer"
-    echo "     edits the Rocketpool docker-compose file to use eth-docker's clients"
     echo ""
     echo ""
     echo "The logs subcommand can be appended by flags and specify the container(s). example: "
