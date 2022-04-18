@@ -88,9 +88,6 @@ services:
   promtail:
     image: grafana/promtail:latest
     user: root
-    ports:
-      - 9080:9080
-      - 9081:9081
     volumes:
       - /etc/machine-id:/etc/machine-id:ro
       - ./promtail:/etc/promtail
@@ -104,9 +101,6 @@ services:
     <<: *logging
   loki:
     image: grafana/loki:latest
-    ports:
-      - 3100:3100
-      - 9096:9096
     volumes:
       - loki-data:/tmp
       - ./loki:/etc/loki
