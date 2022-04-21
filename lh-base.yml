@@ -122,6 +122,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-''}
+      - NETWORK=${NETWORK}
     entrypoint:
       - validator-import.sh
       - lighthouse
