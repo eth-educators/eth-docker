@@ -1,5 +1,0 @@
-# To be used in conjunction with traefik.yml
-version: "3.4"
-services:
-  eth:
-    image: tianon/true
