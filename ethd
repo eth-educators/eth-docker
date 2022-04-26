@@ -60,7 +60,16 @@ update() {
     # BASH_SOURCE so newer code gets to do the migration, env so I have a way to
     # communicate with it
         export KEEPTARGETS=$__keeptargets
+        if git branch --show-current | grep -q rpc-nodes; then
+            __rpc_branch=1
+        else
+            __rpc_branch=0
+        fi
         "${BASH_SOURCE}" envmigrate
+        git branch --show-current | grep -q rpc-nodes
+        if [ "${__rpc_branch}" = 0 -a $? = 0 ]; then
+            "${BASH_SOURCE}" envmigrate # default.env will have changed so let's do it again
+        fi
         unset KEEPTARGETS
     fi
     cmd build --pull
@@ -92,7 +101,7 @@ been migrated, please recreate these changes yourself."
             echo "No changes made to ${ENV_FILE} during migration"
         fi
     fi
-    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list | grep -w "docker") ]]; then
+    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
 	echo
 	echo "WARNING! Snap docker package detected. This WILL result in issues."
 	echo "Removing the package will delete volumes and require a resync,"
@@ -100,7 +109,7 @@ been migrated, please recreate these changes yourself."
 	echo
 	echo "Doing so is still highly recommended however."
 	echo
-        echo "The exact steps depend a little on whether there already is"
+    echo "The exact steps depend a little on whether there already is"
 	echo "an apt version of docker installed as well, but in a nutshell"
 	echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
 	echo "and then reinstall docker.io or docker-ce with apt,"
@@ -389,6 +398,9 @@ envmigrate() {
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
         if [ -n "${value}" -o ${var} = "GRAFFITI" ]; then
+            if [ "${var}" = "COMPOSE_FILE" ]; then
+                migrate_compose_file
+            fi
             sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
@@ -411,6 +423,65 @@ envmigrate() {
         fi
     done
     rm .env.source
+}
+
+migrate_compose_file() {
+# Some files have been renamed and others removed altogether
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-validator.yml teku-base.yml teku-validator.yml "" "" "" "" "" "" "" "" "" )
+# These files were removed from main branch and are only present in rpc-nodes now
+    ADV_YML=( lh-consensus.yml lh-validator.yml lh-stats-consensus.yml lh-stats-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml teku-validator.yml traefik-shared.yml )
+
+    __old_grafana=0
+    __new_grafana=0
+    __grafana_regex=".+-grafana\.yml"
+    if git branch --show-current | grep -q rpc-nodes; then
+        __rpc_branch=1
+    else
+        __rpc_branch=0
+    fi
+    __switched_branch=0
+    IFS=":"
+    set -o noglob
+    __ymlarray=($value) # split+glob with glob disabled, and split using : as delimiter
+    set +o noglob
+
+    value=""
+    for n in "${!__ymlarray[@]}"; do
+        __ymlfile="${__ymlarray[n]}"
+        if [[ "${__ymlfile}" =~ $__grafana_regex ]]; then
+            __old_grafana=1
+        fi
+        if [ "${__ymlfile}" = "grafana.yml" ]; then
+            __new_grafana=1
+        fi
+        for index in "${!FROM_YML[@]}"; do
+            if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
+                __ymlfile=${TO_YML[index]}
+                break
+            fi
+        done
+        for index in "${!ADV_YML[@]}"; do
+            if [ "${__rpc_branch}" = 0 -a "${ADV_YML[index]}" = "${__ymlfile}" -a "${__switched_branch}" = 0 ]; then
+                __switched_branch=1
+                echo "Breaking change: Consensus and validator yml files are now only in rpc-nodes branch."
+                echo "Switching you over to that branch automatically."
+                git fetch origin rpc-nodes
+                git checkout rpc-nodes
+                break
+            fi
+        done
+        if [ -n "${__ymlfile}" ]; then
+            if [ -z "${value}" ]; then
+                value="${__ymlfile}"
+            else
+                value="${value}:${__ymlfile}"
+            fi
+        fi
+    done
+    if [ "${__new_grafana}" = 0 -a "${__old_grafana}" = 1 ]; then
+        value="${value}:grafana.yml"
+    fi
 }
 
 query_network() {
