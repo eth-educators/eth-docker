@@ -26,6 +26,8 @@ services:
     volumes:
       - prysmbeacon-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-}
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp

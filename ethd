@@ -343,8 +343,8 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 GRAFFITI NETWORK EC_NETWORK \
             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PROM_HOST PRYSM_HOST \
-            EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY TEKU_RAPID_SYNC LH_RAPID_SYNC LS_RAPID_SYNC  \
-            NIMBUS_RAPID_SYNC CC_NODE BEACON_STATS_API BEACON_STATS_MACHINE EC_P2P_PORT CC_P2P_PORT PRYSM_PORT  \
+            EC_HOST EC_WS_HOST CC_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
+            CC_NODE BEACON_STATS_API BEACON_STATS_MACHINE EC_P2P_PORT CC_P2P_PORT PRYSM_PORT  \
             PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             EC_RPC_PORT EC_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
@@ -740,60 +740,11 @@ query_graffiti() {
 
 query_rapid_sync() {
     # Assume no to start
-    TEKU_RAPID_SYNC=""
-    LH_RAPID_SYNC=""
-    LS_RAPID_SYNC=""
-    NIMBUS_RAPID_SYNC=""
-    PRYSM_RAPID_SYNC=""
+    RAPID_SYNC_URL=""
 
-    if [ ${NETWORK} = "gnosis" ]; then
-      case "${CONSENSUS_CLIENT}" in
-          "teku-base.yml" | "teku-consensus.yml")
-              if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Teku rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
-              fi
-              ;;
-          "lh-base.yml" | "lh-consensus.yml")
-              if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Lighthouse rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
-              fi
-              ;;
-          *)
-              ;;
-      esac
-    else
-      case "${CONSENSUS_CLIENT}" in
-          "teku-base.yml" | "teku-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
-              fi
-              ;;
-          "lh-base.yml" | "lh-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
-              fi
-              ;;
-          "nimbus-base.yml" | "nimbus-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  NIMBUS_RAPID_SYNC="${REMOTE_BEACON}"
-              fi
-              ;;
-          "lodestar-base.yml" | "lodestar-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  LS_RAPID_SYNC="--weakSubjectivitySyncLatest=true --weakSubjectivityServerUrl=${REMOTE_BEACON}"
-              fi
-              ;;
-          "prysm-base.yml" | "prysm-consensus.yml")
-              ;;
-          *)
-              ;;
-      esac
+    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+        query_remote_beacon
+        RAPID_SYNC_URL="${REMOTE_BEACON}"
     fi
 }
 
@@ -897,16 +848,8 @@ config () {
     set_value_in_env
     var=CC_NODE
     set_value_in_env
-    var=TEKU_RAPID_SYNC
+    var=RAPID_SYNC_URL
     set_value_in_env
-    var=LH_RAPID_SYNC
-    set_value_in_env
-    var=LS_RAPID_SYNC
-    set_value_in_env
-    var=NIMBUS_RAPID_SYNC
-    set_value_in_env
-#    var=PRYSM_RAPID_SYNC
-#    set_value_in_env
     var=COMPOSE_FILE
     set_value_in_env
     var=EC_NODE

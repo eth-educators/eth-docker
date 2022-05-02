@@ -15,6 +15,13 @@ if [ "$(id -u)" = '0' ]; then
   fi
 fi
 
+# Check whether we should rapid sync
+if [ -n "${RAPID_SYNC_URL:+x}" ]; then
+  __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
+else
+  __rapid_sync=""
+fi
+
 # Fetch genesis file as needed if beacon
 if [[ "$1" =~ ^(beacon-chain)$ ]]; then
   if [[ "$@" =~ --prater ]]; then
@@ -23,10 +30,10 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
       echo "Fetching genesis file for Prater testnet"
       curl -o "$GENESIS" https://prysmaticlabs.com/uploads/prater-genesis.ssz
     fi
-    exec "$@" "--genesis-state=$GENESIS"
+    exec $@ "--genesis-state=$GENESIS" ${__rapid_sync}
   else
-    exec "$@"
+    exec $@ ${__rapid_sync}
   fi
 else
-  exec "$@"
+  exec $@ ${__rapid_sync}
 fi
