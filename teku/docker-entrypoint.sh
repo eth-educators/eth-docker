@@ -12,4 +12,11 @@ if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
     openssl pkcs12 -export -in /var/lib/teku/teku-keyapi.crt -inkey /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.keystore -name teku-keyapi -passout pass:$__password
 fi
 
-exec $@
+# Check whether we should rapid sync
+if [ -n "${RAPID_SYNC_URL:+x}" ]; then
+  __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v1/debug/beacon/states/finalized"
+else
+  __rapid_sync=""
+fi
+
+exec $@ ${__rapid_sync}

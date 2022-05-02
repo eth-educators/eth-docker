@@ -22,6 +22,8 @@ services:
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-}
     ports:
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
@@ -29,6 +31,7 @@ services:
       - 5052/tcp
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - node
       - --max-old-space-size=6144
       - /usr/app/node_modules/.bin/lodestar
@@ -51,7 +54,6 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
-    command: ${LS_RAPID_SYNC}
   validator:
     restart: "${RESTART}"
     image: lodestar:local
