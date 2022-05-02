@@ -7,7 +7,7 @@ x-logging: &logging
       max-file: "3"
 
 services:
-  erigon:
+  execution:
     restart: "${RESTART}"
     build:
       context: ./erigon
@@ -17,17 +17,18 @@ services:
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 5m
     image: erigon:local-merge
-    user: erigon
+    user: root
     volumes:
       - erigon-el-data:/var/lib/erigon
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}:/configs
+      - ./${NETWORK}-secrets:/secrets
     ports:
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
+      - 42069:42069/tcp
+      - 42069:42069/udp
     expose:
-      - 9090/tcp
       - 6060/tcp
     networks:
       default:
@@ -54,42 +55,20 @@ services:
       - ${ENODE}
       - --networkid
       - ${NETWORK_ID}
-  execution:
-    restart: "${RESTART}"
-    image: erigon:local-merge
-    #    user: erigon
-    user: root
-    volumes:
-      - erigon-el-data:/var/lib/erigon
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}-secrets:/secrets
-    expose:
-      - ${EL_RPC_PORT}/tcp
-    depends_on:
-      - erigon
-    pid: service:erigon # Use erigon's PID namespace. It's required to open Erigon's DB from another process (RPCDaemon local-mode)
-    entrypoint:
-      - docker-entrypoint-rpc.sh
-      - rpcdaemon
-      - --datadir
-      - /var/lib/erigon
-      - --private.api.addr
-      - erigon:9090
-      - --txpool.api.addr
-      - erigon:9090
       - --http.addr
       - 0.0.0.0
+      - --http.port
+      - ${EL_RPC_PORT}
       - --engine.addr
       - 0.0.0.0
+      - --engine.port
+      - "8551"
       - --authrpc.jwtsecret
       - /var/lib/erigon/jwtsecret
       - --http.vhosts=*
       - --http.corsdomain=*
       - --http.api
-      - web3,eth,net,engine
-      - --http.port
-      - ${EL_RPC_PORT}
+      - web3,eth,net
       - --ws
   eth:
     depends_on:

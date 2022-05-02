@@ -6,15 +6,25 @@ if [[ ! -f /var/lib/erigon/setupdone ]]; then
   touch /var/lib/erigon/setupdone
 fi
 
+if [[ ! -f /secrets/jwtsecret ]]; then
+  __secret1=$(echo $RANDOM | md5sum | head -c 32)
+  __secret2=$(echo $RANDOM | md5sum | head -c 32)
+  echo -n ${__secret1}${__secret2} > /secrets/jwtsecret
+fi
+
+cp /secrets/jwtsecret /var/lib/erigon/jwtsecret
+chown 10001:10001 /var/lib/erigon/jwtsecret
+chown 10002:10002 /secrets/jwtsecret
+
 # Check for mainnet or goerli, and set prune accordingly
 
 if [[ "$@" =~ "--chain mainnet" ]]; then
   echo "mainnet: Running with prune.r.before=11184524 for eth deposit contract"
-  exec "$@" --prune.r.before=11184524
+  exec su-exec erigon "$@" --prune.r.before=11184524
 elif [[ "$@" =~ "--chain goerli" ]]; then
   echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
-  exec "$@" --prune.r.before=4367322
+  exec su-exec erigon "$@" --prune.r.before=4367322
 else
   echo "Unable to determine eth deposit contract, running without prune.r.before"
-  exec "$@"
+  exec su-exec erigon "$@"
 fi

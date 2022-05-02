@@ -9,7 +9,7 @@ ARG BUILD_TARGET
 RUN apk update && apk add --no-cache make gcc g++ musl-dev linux-headers git bash
 
 WORKDIR /src
-RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon && make rpcdaemon"
+RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon"
 
 # Pull all binaries into a second stage deploy container
 FROM alpine:latest
@@ -31,9 +31,7 @@ RUN mkdir -p /var/lib/erigon && chown ${USER}:${USER} /var/lib/erigon
 
 # Copy executable
 COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/
-COPY --from=builder /src/erigon/build/bin/rpcdaemon /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
-COPY ./docker-entrypoint-rpc.sh /usr/local/bin/
 
 USER ${USER}
 
