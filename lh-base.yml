@@ -162,6 +162,8 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --debug-level=${LOG_LEVEL}
+      - --network
+      - ${NETWORK}
       - --keystore
     depends_on:
       - consensus
