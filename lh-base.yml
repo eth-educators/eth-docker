@@ -22,6 +22,8 @@ services:
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-''}
     ports:
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
       - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
