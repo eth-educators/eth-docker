@@ -10,7 +10,7 @@ services:
       - traefik.http.routers.el.tls.certresolver=letsencrypt
       - traefik.http.routers.ellb.service=el
       - traefik.http.routers.ellb.entrypoints=websecure
-      - traefik.http.routers.ellb.rule=Host(`${El_LB:-el-lb}.${DOMAIN}`)
+      - traefik.http.routers.ellb.rule=Host(`${EL_LB:-el-lb}.${DOMAIN}`)
       - traefik.http.routers.ellb.tls.certresolver=letsencrypt
       - traefik.http.services.el.loadbalancer.server.port=${EL_RPC_PORT:-8545}
       - traefik.http.routers.elws.service=elws
@@ -19,7 +19,7 @@ services:
       - traefik.http.routers.elws.tls.certresolver=letsencrypt
       - traefik.http.routers.elwslb.service=elws
       - traefik.http.routers.elwslb.entrypoints=websecure
-      - traefik.http.routers.elwslb.rule=Host(`${El_WS_LB:-elws-lb}.${DOMAIN}`)
+      - traefik.http.routers.elwslb.rule=Host(`${EL_WS_LB:-elws-lb}.${DOMAIN}`)
       - traefik.http.routers.elwslb.tls.certresolver=letsencrypt
       - traefik.http.services.elws.loadbalancer.server.port=${EL_WS_PORT:-8546}
   eth:
