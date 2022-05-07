@@ -24,7 +24,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
-      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-''}
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
