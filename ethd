@@ -518,14 +518,16 @@ query_deployment() {
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 4 \
       "node" "Ethereum node - consensus, execution and validator client" \
-      "rocket" "Validator client only - integrate with RocketPool"  3>&1 1>&2 2>&3)
+      "rocket" "Validator client only - integrate with RocketPool" \
+      "validator" "Validator client only - integrate with other consensus layer" \
+      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     else
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 12 80 5 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rocket" "Validator client only - integrate with RocketPool" \
-      "blox" "Blox SSV node - consensus, execution and ssv-node" \
       "validator" "Validator client only - integrate with other consensus layer" \
+      "blox" "Blox SSV node - consensus, execution and ssv-node" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     fi
 
@@ -810,7 +812,7 @@ config () {
     query_network
     query_deployment
     case "${__deployment}" in
-      "node" )
+      "node")
         query_consensus_client
         ;;
       "validator" | "rocket")
