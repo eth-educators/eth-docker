@@ -33,6 +33,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - lighthouse
       - bn
       - --disable-upnp
@@ -60,7 +61,6 @@ services:
       - --metrics-port
       - "8008"
       - --validator-monitor-auto
-    command: ${LH_RAPID_SYNC}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local

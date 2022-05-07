@@ -31,6 +31,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - lighthouse
       - bn
       - --disable-upnp

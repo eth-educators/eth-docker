@@ -5,9 +5,9 @@ if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     echo $__token > /var/lib/nimbus/api-token.txt
 fi
 
-if [ -n "${NIMBUS_RAPID_SYNC}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
+if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
     touch /var/lib/nimbus/setupdone
-    exec /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${NIMBUS_RAPID_SYNC}
+    exec /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL}
 fi
 
 exec $@
