@@ -25,11 +25,9 @@ services:
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
       - RAPID_SYNC_URL=${RAPID_SYNC_URL:-''}
-    expose:
-      - 8008/tcp
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -41,9 +39,9 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${EC_NODE}
+      - --eth1-endpoints=${EL_NODE:-http://execution:8545}
       - --eth1-deposit-contract-max-request-size=150
-      - --p2p-port=${CC_P2P_PORT:-9000}
+      - --p2p-port=${CL_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords

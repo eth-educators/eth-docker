@@ -18,8 +18,6 @@ services:
         - DOCKER_TAG=${LH_DOCKER_TAG}
     image: lighthouse:local
     user: lhvalidator
-    expose:
-      - 5064/tcp
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
@@ -30,7 +28,7 @@ services:
       - --datadir
       - /var/lib/lighthouse
       - --beacon-nodes
-      - ${CC_NODE}
+      - ${CL_NODE:-http://consensus:5052}
       - --graffiti
       - ${GRAFFITI}
       - --network
@@ -100,7 +98,7 @@ services:
       - validator
       - exit
       - --beacon-node
-      - ${CC_NODE}
+      - ${CL_NODE:-http://consensus:5052}
       - --datadir
       - /var/lib/lighthouse
       - --network

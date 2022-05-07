@@ -15,11 +15,8 @@ services:
       - oe-eth1-data:/var/lib/openethereum
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
-    expose:
-      - ${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     entrypoint:
       - openethereum
       - --no-ipc
@@ -32,14 +29,14 @@ services:
       - --ws-apis=web3,eth,pubsub,net
       - --ws-hosts=all
       - --ws-origins=all
-      - --ws-port=${EC_WS_PORT}
-      - --chain=${EC_NETWORK}
+      - --ws-port=${EL_WS_PORT:-8546}
+      - --chain=${EL_NETWORK:-goerli}
       - --reseal-on-txs
       - none
       - --port
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT:-30303}
       - --jsonrpc-port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT:-8545}
       - --logging
       - ${LOG_LEVEL}
       - --metrics
