@@ -1,9 +1,9 @@
-# To be used in conjunction with oe.yml, nm.yml, besu.yml or geth.yml
+# To be used in conjunction with erigon.yml, oe.yml, nm.yml, besu.yml or geth.yml
 version: "3.4"
 services:
   execution:
     ports:
-      - ${EC_RPC_PORT}:${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}:${EC_WS_PORT}/tcp
+      - ${EL_RPC_PORT}:${EL_RPC_PORT:-8545}/tcp
+      - ${EL_WS_PORT}:${EL_WS_PORT:-8546}/tcp
   eth:
     image: tianon/true

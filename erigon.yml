@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -23,11 +23,8 @@ services:
       - erigon-ec-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
-    expose:
-      - 9090/tcp
-      - 6060/tcp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
@@ -41,11 +38,11 @@ services:
       - --datadir
       - /var/lib/erigon
       - --port
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT:-30303}
       - --nat
       - any
       - --chain
-      - ${EC_NETWORK}
+      - ${EL_NETWORK:-goerli}
       - --prune=htc
       - --metrics
       - --metrics.addr
@@ -58,8 +55,6 @@ services:
     volumes:
       - erigon-ec-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
-    expose:
-      - ${EC_RPC_PORT}/tcp
     depends_on:
       - erigon
     pid: service:erigon # Use erigon's PID namespace. It's required to open Erigon's DB from another process (RPCDaemon local-mode)
@@ -78,7 +73,7 @@ services:
       - --http.api
       - web3,eth,net
       - --http.port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT:-8545}
       - --ws
   eth:
     depends_on:
