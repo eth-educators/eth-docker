@@ -55,6 +55,7 @@ services:
       - ${ENODE}
       - --networkid
       - ${NETWORK_ID}
+      - --http
       - --http.addr
       - 0.0.0.0
       - --http.port
@@ -62,13 +63,13 @@ services:
       - --engine.addr
       - 0.0.0.0
       - --engine.port
-      - "8551"
+      - "8550"
       - --authrpc.jwtsecret
       - /var/lib/erigon/jwtsecret
       - --http.vhosts=*
       - --http.corsdomain=*
       - --http.api
-      - web3,eth,net
+      - web3,eth,net,engine
       - --ws
   eth:
     depends_on:

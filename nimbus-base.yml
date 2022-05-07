@@ -60,7 +60,6 @@ services:
       - --bootstrap-node=${ENR}
       - --terminal-total-difficulty-override=${TOTAL_TERMINAL_DIFFICULTY}
       - --jwt-secret=/secrets/jwtsecret
-      - --use-jwt-debug=true
       - --keymanager
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0
