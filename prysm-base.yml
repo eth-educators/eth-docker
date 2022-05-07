@@ -31,10 +31,6 @@ services:
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
-    expose:
-      - 5052/tcp
-      - 4000/tcp
-      - 8080/tcp
     networks:
       default:
         aliases:
@@ -52,11 +48,11 @@ services:
       - --grpc-gateway-port
       - "5052"
       - --http-web3provider
-      - ${EC_NODE}
+      - ${EL_NODE:-http://execution:8545}
       - --fallback-web3provider
-      - ${EC_FALLBACK_NODE1}
+      - ${EL_FALLBACK_NODE1:-http://execution:8545}
       - --fallback-web3provider
-      - ${EC_FALLBACK_NODE2}
+      - ${EL_FALLBACK_NODE2:-http://execution:8545}
       - --eth1-header-req-limit
       - "150"
       - --p2p-tcp-port
@@ -80,8 +76,6 @@ services:
       <<: *prysm-build
     image: prysm-validator:local
     user: prysmvalidator
-    expose:
-      - 8081/tcp
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
