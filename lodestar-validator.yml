@@ -30,7 +30,7 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - ${CC_NODE}
+      - ${CL_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --logLevel
@@ -78,7 +78,7 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - ${CC_NODE}
+      - ${CL_NODE}
       -  --logLevel
       - ${LOG_LEVEL}
       - --network

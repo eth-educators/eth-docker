@@ -31,8 +31,6 @@ services:
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
-    expose:
-      - 5052/tcp
     networks:
       default:
         aliases:
@@ -50,11 +48,11 @@ services:
       - --grpc-gateway-port
       - "5052"
       - --http-web3provider
-      - ${EC_NODE}
+      - ${EL_NODE}
       - --fallback-web3provider
-      - ${EC_FALLBACK_NODE1}
+      - ${EL_FALLBACK_NODE1}
       - --fallback-web3provider
-      - ${EC_FALLBACK_NODE2}
+      - ${EL_FALLBACK_NODE2}
       - --eth1-header-req-limit
       - "150"
       - --p2p-tcp-port
@@ -74,12 +72,12 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cc.rule=Host(`${CL_HOST}.${DOMAIN}`)
       - traefik.http.routers.cc.service=cc
       - traefik.http.routers.cc.tls.certresolver=letsencrypt
       - traefik.http.routers.cclb.service=cc
       - traefik.http.routers.cclb.entrypoints=websecure
-      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.routers.cclb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cclb.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:

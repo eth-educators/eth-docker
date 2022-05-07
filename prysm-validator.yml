@@ -33,7 +33,7 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - ${CC_NODE}
+      - ${CL_NODE}
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
@@ -143,7 +143,7 @@ services:
       - accounts
       - voluntary-exit
       - --wallet-dir=/var/lib/prysm/
-      - --beacon-rpc-provider=${CC_NODE}
+      - --beacon-rpc-provider=${CL_NODE}
       - --wallet-password-file=/var/lib/prysm/password.txt
       - --${NETWORK}
       - --tls-cert=/etc/ssl/certs/ca-certificates.crt

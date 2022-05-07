@@ -23,14 +23,11 @@ services:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - NIMBUS_RAPID_SYNC=${NIMBUS_RAPID_SYNC:-}
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-''}
       - NETWORK=${NETWORK}
-    expose:
-      - 8008/tcp
-      - 5052/tcp
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -42,13 +39,13 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --status-bar=false
-      - --tcp-port=${CC_P2P_PORT:-9000}
-      - --udp-port=${CC_P2P_PORT:-9000}
+      - --tcp-port=${CL_P2P_PORT:-9000}
+      - --udp-port=${CL_P2P_PORT:-9000}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
-      - --web3-url=${EC_NODE}
-      - --web3-url=${EC_FALLBACK_NODE1}
-      - --web3-url=${EC_FALLBACK_NODE2}
+      - --web3-url=${EL_NODE:-ws://execution:8546}
+      - --web3-url=${EL_FALLBACK_NODE1:-ws://execution:8546}
+      - --web3-url=${EL_FALLBACK_NODE2:-ws://execution:8546}
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rest

@@ -22,11 +22,11 @@ services:
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-''}
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
-    expose:
-      - 5052/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     <<: *logging
     entrypoint:
       - node
@@ -42,11 +42,11 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${CC_P2P_PORT:-9000}"
+      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT:-9000}"
+      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
       - --eth1.providerUrls
-      - ${EC_NODE}
+      - ${EL_NODE:-http://execution:8545}
       - --logLevel
       - ${LOG_LEVEL}
       - --network

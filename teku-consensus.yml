@@ -24,11 +24,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
-    expose:
-      - 8008/tcp
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -39,9 +37,9 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${EC_NODE}
+      - --eth1-endpoints=${EL_NODE}
       - --eth1-deposit-contract-max-request-size=150
-      - --p2p-port=${CC_P2P_PORT:-9000}
+      - --p2p-port=${CL_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
@@ -58,11 +56,11 @@ services:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
       - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cc.rule=Host(`${CL_HOST}.${DOMAIN}`)
       - traefik.http.routers.cc.tls.certresolver=letsencrypt
       - traefik.http.routers.cclb.service=cc
       - traefik.http.routers.cclb.entrypoints=websecure
-      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.routers.cclb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cclb.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:

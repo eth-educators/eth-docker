@@ -25,12 +25,8 @@ services:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
-    expose:
-      - ${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}/tcp
-      - 9545/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
@@ -41,14 +37,14 @@ services:
       - --data-path
       - /var/lib/besu
       - --p2p-port
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT:-30303}
       - --rpc-http-enabled
       - --rpc-http-api
       - "WEB3,ETH,NET"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT:-8545}
       - --rpc-http-cors-origins=*
       - --rpc-ws-enabled
       - --rpc-ws-api
@@ -56,12 +52,12 @@ services:
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
-      - ${EC_WS_PORT}
+      - ${EL_WS_PORT:-8546}
       - --host-allowlist=*
       - --logging
       - ${LOG_LEVEL}
       - --network
-      - ${EC_NETWORK}
+      - ${EL_NETWORK:-goerli}
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0

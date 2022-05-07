@@ -22,11 +22,8 @@ services:
     volumes:
       - nm-eth1-data:/var/lib/nethermind
     ports:
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/tcp
-      - ${EC_P2P_PORT}:${EC_P2P_PORT}/udp
-    expose:
-      - ${EC_RPC_PORT}/tcp
-      - ${EC_WS_PORT}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
@@ -40,9 +37,9 @@ services:
       - --Init.WebSocketsEnabled
       - "true"
       - --Network.DiscoveryPort
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT:-30303}
       - --Network.P2PPort
-      - ${EC_P2P_PORT}
+      - ${EL_P2P_PORT:-30303}
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
@@ -50,9 +47,9 @@ services:
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
-      - ${EC_RPC_PORT}
+      - ${EL_RPC_PORT:-8545}
       - --JsonRpc.WebSocketsPort
-      - ${EC_WS_PORT}
+      - ${EL_WS_PORT:-8546}
       - --Sync.FastSync
       - "true"
       - --Metrics.Enabled
@@ -60,7 +57,7 @@ services:
       - --Metrics.ExposePort
       - "6060"
       - --config
-      - ${EC_NETWORK}
+      - ${EL_NETWORK:-goerli}
       - --Pruning.Enabled
       - "true"
       - --Pruning.CacheMb
