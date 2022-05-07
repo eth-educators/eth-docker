@@ -33,6 +33,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/teku/bin/teku
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE

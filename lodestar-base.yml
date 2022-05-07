@@ -29,6 +29,7 @@ services:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - node
       - --max-old-space-size=6144
       - /usr/app/node_modules/.bin/lodestar
@@ -51,7 +52,6 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
-    command: ${LS_RAPID_SYNC}
   validator:
     restart: "${RESTART}"
     image: lodestar:local

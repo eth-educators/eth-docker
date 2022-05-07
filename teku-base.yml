@@ -61,7 +61,6 @@ services:
       - --validator-api-cors-origins=*
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
-    command: ${TEKU_RAPID_SYNC}
   get-keyapi-token:
     restart: "no"
     image: alpine:latest

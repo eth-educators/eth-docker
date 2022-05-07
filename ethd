@@ -120,7 +120,6 @@ been migrated, please recreate these changes yourself."
 }
 
 prune-geth() {
-
     __non_interactive=0
     while :
     do
@@ -398,7 +397,7 @@ envmigrate() {
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-        if [ -n "${value}" -o ${var} = "GRAFFITI" ]; then
+        if [ -n "${value}" -o "${var}" = "GRAFFITI" ]; then
             if [ "${var}" = "COMPOSE_FILE" ]; then
                 migrate_compose_file
             fi
@@ -760,60 +759,10 @@ query_graffiti() {
 
 query_rapid_sync() {
     # Assume no to start
-    TEKU_RAPID_SYNC=""
-    LH_RAPID_SYNC=""
-    LS_RAPID_SYNC=""
-    NIMBUS_RAPID_SYNC=""
-    PRYSM_RAPID_SYNC=""
-
-    if [ ${NETWORK} = "gnosis" ]; then
-      case "${CONSENSUS_CLIENT}" in
-          "teku-base.yml" | "teku-consensus.yml")
-              if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Teku rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
-              fi
-              ;;
-          "lh-base.yml" | "lh-consensus.yml")
-              if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use Lighthouse rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
-              fi
-              ;;
-          *)
-              ;;
-      esac
-    else
-      case "${CONSENSUS_CLIENT}" in
-          "teku-base.yml" | "teku-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Teku rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  TEKU_RAPID_SYNC="--initial-state=${REMOTE_BEACON}/eth/v1/debug/beacon/states/finalized"
-              fi
-              ;;
-          "lh-base.yml" | "lh-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Lighthouse rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  LH_RAPID_SYNC="--checkpoint-sync-url=${REMOTE_BEACON}"
-              fi
-              ;;
-          "nimbus-base.yml" | "nimbus-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Nimbus rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  NIMBUS_RAPID_SYNC="${REMOTE_BEACON}"
-              fi
-              ;;
-          "lodestar-base.yml" | "lodestar-consensus.yml")
-              if (whiptail --title "Select Option" --yesno "Do you want to use Lodestar rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
-                  query_remote_beacon
-                  LS_RAPID_SYNC="--weakSubjectivitySyncLatest=true --weakSubjectivityServerUrl=${REMOTE_BEACON}"
-              fi
-              ;;
-          "prysm-base.yml" | "prysm-consensus.yml")
-              ;;
-          *)
-              ;;
-      esac
+    RAPID_SYNC_URL=""
+    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+        query_remote_beacon
+        RAPID_SYNC_URL="${REMOTE_BEACON}"
     fi
 }
 
@@ -917,16 +866,8 @@ config () {
     set_value_in_env
     var=CC_NODE
     set_value_in_env
-    var=TEKU_RAPID_SYNC
+    var=RAPID_SYNC_URL
     set_value_in_env
-    var=LH_RAPID_SYNC
-    set_value_in_env
-    var=LS_RAPID_SYNC
-    set_value_in_env
-    var=NIMBUS_RAPID_SYNC
-    set_value_in_env
-#    var=PRYSM_RAPID_SYNC
-#    set_value_in_env
     var=COMPOSE_FILE
     set_value_in_env
     var=EC_NODE
