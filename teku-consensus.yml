@@ -24,6 +24,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL:-''}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -52,18 +53,17 @@ services:
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
       - --p2p-subscribe-all-subnets-enabled=true
-    command: ${TEKU_RAPID_SYNC}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cc.service=cc
-      - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CL_HOST}.${DOMAIN}`)
-      - traefik.http.routers.cc.tls.certresolver=letsencrypt
-      - traefik.http.routers.cclb.service=cc
-      - traefik.http.routers.cclb.entrypoints=websecure
-      - traefik.http.routers.cclb.rule=Host(`${CL_LB}.${DOMAIN}`)
-      - traefik.http.routers.cclb.tls.certresolver=letsencrypt
-      - traefik.http.services.cc.loadbalancer.server.port=5052
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=5052
   eth:
     image: tianon/true
     restart: "no"
