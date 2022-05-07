@@ -23,10 +23,8 @@ services:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
-    expose:
-      - 5052/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     <<: *logging
     entrypoint:
       - node
@@ -42,11 +40,11 @@ services:
       - --api.rest.port
       - "5052"
       - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${CC_P2P_PORT:-9000}"
+      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
       - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${CC_P2P_PORT:-9000}"
+      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
       - --eth1.providerUrls
-      - ${EC_NODE}
+      - ${EL_NODE}
       - --logLevel
       - ${LOG_LEVEL}
       - --network
@@ -56,11 +54,11 @@ services:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
       - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cc.rule=Host(`${CL_HOST}.${DOMAIN}`)
       - traefik.http.routers.cc.tls.certresolver=letsencrypt
       - traefik.http.routers.cclb.service=cc
       - traefik.http.routers.cclb.entrypoints=websecure
-      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.routers.cclb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cclb.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:

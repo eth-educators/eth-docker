@@ -29,8 +29,8 @@ services:
       - 8008/tcp
       - 5052/tcp
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -42,13 +42,13 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --status-bar=false
-      - --tcp-port=${CC_P2P_PORT:-9000}
-      - --udp-port=${CC_P2P_PORT:-9000}
+      - --tcp-port=${CL_P2P_PORT:-9000}
+      - --udp-port=${CL_P2P_PORT:-9000}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
-      - --web3-url=${EC_NODE}
-      - --web3-url=${EC_FALLBACK_NODE1}
-      - --web3-url=${EC_FALLBACK_NODE2}
+      - --web3-url=${EL_NODE}
+      - --web3-url=${EL_FALLBACK_NODE1}
+      - --web3-url=${EL_FALLBACK_NODE2}
       - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0
@@ -65,11 +65,11 @@ services:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
       - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cc.rule=Host(`${CL_HOST}.${DOMAIN}`)
       - traefik.http.routers.cc.tls.certresolver=letsencrypt
       - traefik.http.routers.cclb.service=cc
       - traefik.http.routers.cclb.entrypoints=websecure
-      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.routers.cclb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cclb.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:

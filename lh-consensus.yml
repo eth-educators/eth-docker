@@ -23,11 +23,8 @@ services:
       - lhconsensus-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/tcp
-      - ${CC_P2P_PORT:-9000}:${CC_P2P_PORT:-9000}/udp
-    expose:
-      - 5052/tcp
-      - 5054/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -47,11 +44,11 @@ services:
       - --network
       - ${NETWORK}
       - --port
-      - ${CC_P2P_PORT:-9000}
+      - ${CL_P2P_PORT:-9000}
       - --target-peers
       - ${LH_PEER_COUNT}
       - --eth1-endpoints
-      - ${EC_NODE}
+      - ${EL_NODE}
       - --eth1-blocks-per-log-query
       - "150"
       - --debug-level=${LOG_LEVEL}
@@ -68,11 +65,11 @@ services:
       - traefik.enable=true
       - traefik.http.routers.cc.service=cc
       - traefik.http.routers.cc.entrypoints=websecure
-      - traefik.http.routers.cc.rule=Host(`${CC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cc.rule=Host(`${CL_HOST}.${DOMAIN}`)
       - traefik.http.routers.cc.tls.certresolver=letsencrypt
       - traefik.http.routers.cclb.service=cc
       - traefik.http.routers.cclb.entrypoints=websecure
-      - traefik.http.routers.cclb.rule=Host(`${CC_LB}.${DOMAIN}`)
+      - traefik.http.routers.cclb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cclb.tls.certresolver=letsencrypt
       - traefik.http.services.cc.loadbalancer.server.port=5052
   eth:

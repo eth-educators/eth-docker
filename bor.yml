@@ -160,20 +160,20 @@ services:
       - traefik.enable=true
       - traefik.http.routers.bor.service=bor
       - traefik.http.routers.bor.entrypoints=websecure
-      - traefik.http.routers.bor.rule=Host(`${EC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.bor.rule=Host(`${EL_HOST}.${DOMAIN}`)
       - traefik.http.routers.bor.tls.certresolver=letsencrypt
       - traefik.http.routers.borlb.service=bor
       - traefik.http.routers.borlb.entrypoints=websecure
-      - traefik.http.routers.borlb.rule=Host(`${EC_LB}.${DOMAIN}`)
+      - traefik.http.routers.borlb.rule=Host(`${EL_LB}.${DOMAIN}`)
       - traefik.http.routers.borlb.tls.certresolver=letsencrypt
       - traefik.http.services.bor.loadbalancer.server.port=${BOR_RPC_PORT}
       - traefik.http.routers.borws.service=borws
       - traefik.http.routers.borws.entrypoints=websecure
-      - traefik.http.routers.borws.rule=Host(`${EC_WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.borws.rule=Host(`${EL_WS_HOST}.${DOMAIN}`)
       - traefik.http.routers.borws.tls.certresolver=letsencrypt
       - traefik.http.routers.borwslb.service=borws
       - traefik.http.routers.borwslb.entrypoints=websecure
-      - traefik.http.routers.borwslb.rule=Host(`${EC_WS_LB}.${DOMAIN}`)
+      - traefik.http.routers.borwslb.rule=Host(`${EL_WS_LB}.${DOMAIN}`)
       - traefik.http.routers.borwslb.tls.certresolver=letsencrypt
       - traefik.http.services.borws.loadbalancer.server.port=${BOR_WS_PORT}
 
