@@ -57,7 +57,7 @@ services:
       - traefik.http.routers.prysm.entrypoints=web,websecure
       - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
       - traefik.http.routers.prysm.tls.certresolver=letsencrypt
-      - traefik.http.services.prysm.loadbalancer.server.port=${PRYSM_WEB_PORT}
+      - traefik.http.services.prysm.loadbalancer.server.port=${KEY_API_PORT}
   create-wallet:
     restart: "no"
     image: prysm-validator:local-merge

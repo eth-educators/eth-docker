@@ -38,8 +38,6 @@ services:
     entrypoint:
       - docker-entrypoint.sh
       - erigon
-      - --private.api.addr
-      - 0.0.0.0:9090
       - --datadir
       - /var/lib/erigon
       - --port
