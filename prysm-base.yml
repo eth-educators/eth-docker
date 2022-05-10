@@ -52,8 +52,6 @@ services:
       - --grpc-gateway-port
       - "5052"
       - --http-web3provider
-      - ${EL_NODE}
-      - --execution-provider
       - ${EL_NODE_EXECUTION}
       - --jwt-secret
       - /secrets/jwtsecret
@@ -74,7 +72,7 @@ services:
       - /configs/config.yaml
       - --bootstrap-node
       - ${ENR}
-      - --fee-recipient
+      - --suggested-fee-recipient
       - ${REWARDS_TO}
   validator:
     restart: "${RESTART}"
