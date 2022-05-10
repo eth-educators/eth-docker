@@ -61,7 +61,7 @@ services:
       - --engine.addr
       - 0.0.0.0
       - --engine.port
-      - "8550"
+      - "8551"
       - --authrpc.jwtsecret
       - /var/lib/erigon/jwtsecret
       - --http.vhosts=*
