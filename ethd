@@ -156,10 +156,10 @@ prune-geth() {
         exit 1
     fi
 
-    rpc_line=$(grep '^EC_RPC_PORT=' "${ENV_FILE}")
-    regex='^EC_RPC_PORT=([0-9]+)'
+    rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
+    regex='^EL_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
-        echo "Unable to determine EC_RPC_PORT, aborting."
+        echo "Unable to determine EL_RPC_PORT, aborting."
         exit 1
     else
         rpc_port="${BASH_REMATCH[1]}"
@@ -364,7 +364,7 @@ envmigrate() {
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
 	   EC_HOST EC_WS_HOST EC_LB EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
-    NEW_VARS=( CC_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
+    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
 	   EL_HOST EL_WS_HOST EL_LB EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
@@ -493,13 +493,13 @@ query_network() {
     "gnosis" "Gnosis Beacon Chain" 3>&1 1>&2 2>&3)
 
     if [ "${NETWORK}" == "mainnet" ]; then
-        EC_NETWORK=mainnet
+        EL_NETWORK=mainnet
         echo "You chose to run on Ethereum mainnet"
     elif [ "${NETWORK}" == "prater" ]; then
-        EC_NETWORK=goerli
+        EL_NETWORK=goerli
         echo "You chose to run on Prater testnet"
     elif [ "${NETWORK}" == "gnosis" ]; then
-        EC_NETWORK=xdai
+        EL_NETWORK=xdai
         echo "You chose to run on Gnosis Beacon Chain"
     else
         echo "You chose Cancel."
@@ -644,11 +644,11 @@ query_consensus_only_client() {
 }
 
 query_custom_execution_client() {
-        EC_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${EC_NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
+        EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${EL_NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
-            echo "your custom execution client is:" $EC_CUSTOM_NODE
+            echo "your custom execution client is:" $EL_CUSTOM_NODE
         else
             echo "You chose Cancel."
             exit 0
@@ -657,13 +657,13 @@ query_custom_execution_client() {
 
 query_fallback_execution_client() {
 	if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
-	    EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+	    EL_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EL_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
         else
-	    EC_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EC_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+	    EL_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EL_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
         fi
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
-            echo "your fallback execution client is:" "${EC_FALLBACK_NODE1}"
+            echo "your fallback execution client is:" "${EL_FALLBACK_NODE1}"
         else
             echo "You chose Cancel."
             exit 0
@@ -701,22 +701,22 @@ query_execution_client() {
     if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
         unset EXECUTION_CLIENT
         query_custom_execution_client
-        EC_NODE="${EC_CUSTOM_NODE}"
+        EL_NODE="${EL_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
         if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
-            EC_NODE="ws://execution:8546"
+            EL_NODE="ws://execution:8546"
         else
-            EC_NODE="http://execution:8545"
+            EL_NODE="http://execution:8545"
         fi
     fi
-    EC_FALLBACK_NODE1="${EC_NODE}"
-    EC_FALLBACK_NODE2="${EC_NODE}"
+    EL_FALLBACK_NODE1="${EL_NODE}"
+    EL_FALLBACK_NODE2="${EL_NODE}"
 
     if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use a fallback execution client?" 10 60) then
         query_fallback_execution_client
         if [[ "${CONSENSUS_CLIENT}" != "prysm-base.yml" && "${CONSENSUS_CLIENT}" != "nimbus-base.yml" && "${CONSENSUS_CLIENT}" != "prysm-consensus.yml" && "${CONSENSUS_CLIENT}" != "nimbus-consensus.yml" ]]; then
-            EC_NODE="${EC_NODE}"",""${EC_FALLBACK_NODE1}"
+            EL_NODE="${EL_NODE}"",""${EL_FALLBACK_NODE1}"
         fi
     fi
 }
@@ -828,7 +828,7 @@ config () {
     esac
 
     if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
-        CC_NODE="http://consensus:5052"
+        CL_NODE="http://consensus:5052"
 
         if [ ${__deployment} = "node" ]; then
           query_graffiti
@@ -842,7 +842,7 @@ config () {
 
         query_graffiti
         query_remote_beacon
-        CC_NODE="${REMOTE_BEACON}"
+        CL_NODE="${REMOTE_BEACON}"
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
@@ -864,21 +864,21 @@ config () {
 
     var=GRAFFITI
     set_value_in_env
-    var=CC_NODE
+    var=CL_NODE
     set_value_in_env
     var=RAPID_SYNC_URL
     set_value_in_env
     var=COMPOSE_FILE
     set_value_in_env
-    var=EC_NODE
+    var=EL_NODE
     set_value_in_env
-    var=EC_FALLBACK_NODE1
+    var=EL_FALLBACK_NODE1
     set_value_in_env
-    var=EC_FALLBACK_NODE2
+    var=EL_FALLBACK_NODE2
     set_value_in_env
     var=NETWORK
     set_value_in_env
-    var=EC_NETWORK
+    var=EL_NETWORK
     set_value_in_env
 
     if [[ "${EUID}" -eq 0 || -n $(id -nG $(id -u) | grep -w "docker") ]]; then
