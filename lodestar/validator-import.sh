@@ -20,9 +20,10 @@ for arg do
 done
 
 if [ ${__non_interactive} = 1 ]; then
-  echo ${KEYSTORE_PASSWORD} | $@
-  exit 0
+  echo "${KEYSTORE_PASSWORD}" > /tmp/keystorepassword.txt
+  chmod 600 /tmp/keystorepassword.txt
+  exec $@ --passphraseFile /tmp/keystorepassword.txt
 fi
 
 # Only reached in interactive mode
-exec "$@"
+exec $@
