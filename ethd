@@ -648,6 +648,15 @@ query_coinbase() {
         fi
 }
 
+query_mev() {
+    if (whiptail --title "Select Option" --yesno "Do you want to use MEV Boost?" 10 60) then
+        MEV_BOOST="true"
+    else
+        MEV_BOOST=""
+    fi
+}
+
+
 set_value_in_env() {
     # Assumes that "var" has been set to the name of the variable to be changed
     if [ "${!var+x}" ]; then
@@ -660,7 +669,7 @@ set_value_in_env() {
 }
 
 config() {
-    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list | grep -w "docker") ]]; then
+    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2> /dev/null | grep -w "docker") ]]; then
         echo
         echo "WARNING! Snap docker package detected. This WILL result in issues."
         echo "Removing the package will delete volumes and require a resync,"
@@ -717,6 +726,11 @@ config() {
 
         if [ ${__deployment} = "node" ]; then
           query_graffiti
+	  if [ "${CONSENSUS_CLIENT}" = "lh-base.yml" ]; then
+	    query_mev
+	  else
+	    MEV_BOOST=""
+	  fi
         fi
         query_execution_client
         query_grafana
@@ -745,6 +759,9 @@ config() {
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
+    if [ "${MEV_BOOST}" = "true" ]; then
+	COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
+    fi
     if [ "${NETWORK}" = "kiln" ]; then
 	COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
@@ -763,8 +780,8 @@ config() {
     set_value_in_env
     var=NIMBUS_RAPID_SYNC
     set_value_in_env
-#    var=PRYSM_RAPID_SYNC
-#    set_value_in_env
+    var=MEV_BOOST
+    set_value_in_env
     var=COMPOSE_FILE
     set_value_in_env
     var=EL_NODE

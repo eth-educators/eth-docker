@@ -16,12 +16,12 @@ services:
         - BUILD_TARGET=${MEV_SRC_BUILD_TARGET}
         - DOCKER_TAG=${MEV_DOCKER_TAG}
     image: mev-boost:local
-    environment:
-      - RELAY_URLS=https://builder-relay-kiln.flashbots.net/
     entrypoint:
       - /app/mev-boost
       - -host
       - 0.0.0.0
+      - -relays
+      - ${MEV_RELAYS}
     <<: *logging
   eth:
     depends_on:
