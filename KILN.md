@@ -1,4 +1,4 @@
-# Getting up and running on Kintsugi testnet
+# Getting up and running on Kiln testnet
 
 ## Obtain testnet eth
 - Create a throwaway ETH address in metamask.
