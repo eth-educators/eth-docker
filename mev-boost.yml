@@ -1,0 +1,28 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+
+services:
+  mev-boost:
+    restart: "${RESTART}"
+    build:
+      context: ./flashbots
+      dockerfile: ${MEV_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${MEV_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${MEV_DOCKER_TAG}
+    image: mev-boost:local
+    environment:
+      - RELAY_URLS=https://builder-relay-kiln.flashbots.net/
+    entrypoint:
+      - /app/mev-boost
+      - -host
+      - 0.0.0.0
+    <<: *logging
+  eth:
+    depends_on:
+      - mev-boost

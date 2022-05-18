@@ -22,6 +22,8 @@ services:
       - lhconsensus-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
       - ./${NETWORK}-secrets:/secrets
+    environment:
+      - MEV_BOOST=${MEV_BOOST}
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
@@ -34,6 +36,7 @@ services:
           - eth2
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - lighthouse
       - bn
       - --disable-upnp
