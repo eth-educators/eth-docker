@@ -15,7 +15,7 @@ services:
       args:
         - BUILD_TARGET=${MEV_SRC_BUILD_TARGET}
         - DOCKER_TAG=${MEV_DOCKER_TAG}
-    image: mev-boost:local
+    image: mev-boost:local-merge
     entrypoint:
       - /app/mev-boost
       - -host
