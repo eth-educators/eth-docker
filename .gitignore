@@ -1,6 +1,7 @@
 .env*
 docker-compose.yml
 ext-network.yml
+ext-network.yml.original
 .eth/*
 !.eth/README.md
 !.eth/validator_keys/.empty
