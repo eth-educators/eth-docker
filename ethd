@@ -340,7 +340,7 @@ envmigrate() {
     if [ ! -f "./${ENV_FILE}" ]; then
         return
     fi
-    ALL_VARS=( COMPOSE_FILE EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 GRAFFITI NETWORK EL_NETWORK \
+    ALL_VARS=( COMPOSE_FILE REWARDS_TO EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 GRAFFITI NETWORK EL_NETWORK \
             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PROM_HOST PRYSM_HOST \
             EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
@@ -414,6 +414,14 @@ envmigrate() {
             sed -i'.original' -e "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
+    # Check for rewards
+    var="REWARDS_TO"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+    if [ -z "${value}" ]; then
+        whiptail --msgbox "Please set a fee recipient ETH address for post-merge priority fees and MEV" 8 60
+        query_coinbase
+        set_value_in_env
+    fi
     rm .env.source
 }
 
@@ -748,6 +756,18 @@ query_rapid_sync() {
     fi
 }
 
+query_coinbase() {
+        REWARDS_TO=$(whiptail --title "Configure coinbase" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
+
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            echo "Your rewards address is:" $REWARDS_TO
+        else
+            echo "You chose Cancel."
+            exit 0
+        fi
+}
+
 set_value_in_env() {
     # Assumes that "var" has been set to the name of the variable to be changed
     if [ "${!var+x}" ]; then
@@ -760,7 +780,7 @@ set_value_in_env() {
 }
 
 config () {
-	if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list | grep -w "docker") ]]; then
+	if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
         echo
         echo "WARNING! Snap docker package detected. This WILL result in issues."
         echo "Removing the package will delete volumes and require a resync,"
@@ -796,9 +816,11 @@ config () {
     case "${__deployment}" in
       "node" | "blox" )
         query_consensus_client
+	query_coinbase
         ;;
       "validator" | "rocket")
         query_validator_client
+	query_coinbase
         ;;
       "rpc")
         query_consensus_only_client
@@ -844,6 +866,8 @@ config () {
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
 
+    var=REWARDS_TO
+    set_value_in_env
     var=GRAFFITI
     set_value_in_env
     var=CL_NODE
