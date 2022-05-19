@@ -1,4 +1,4 @@
-from python:buster as builder
+from python:bullseye as builder
 
 ARG BUILD_TARGET
 
@@ -7,7 +7,7 @@ RUN mkdir -p /src
 WORKDIR /src
 RUN bash -c "git clone https://github.com/ethereum/staking-deposit-cli.git && cd staking-deposit-cli && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}"
 
-FROM python:3.9-alpine
+FROM python:3.10-alpine
 
 ARG USER=depcli
 ARG UID=1000
