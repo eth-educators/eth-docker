@@ -672,6 +672,7 @@ query_execution_client() {
     elif uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 9 60 3 \
+      "besu.yml" "Besu (Java)" \
       "nm.yml" "Nethermind (.NET)" \
       "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
     else
