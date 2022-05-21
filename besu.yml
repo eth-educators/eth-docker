@@ -74,8 +74,6 @@ services:
       - --sync-mode=FULL
       - --network
       - ${NETWORK}
-      - --Xmerge-support
-      - "true"
   eth:
     depends_on:
       - execution
