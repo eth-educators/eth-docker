@@ -22,6 +22,7 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/teku/secrets
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
@@ -104,3 +105,4 @@ services:
       - consensus
 volumes:
   teku-data:
+  jwtsecret:

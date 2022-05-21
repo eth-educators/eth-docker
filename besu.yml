@@ -24,6 +24,7 @@ services:
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/besu/secrets
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -33,6 +34,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - /opt/besu/bin/besu
       - --data-path
       - /var/lib/besu
@@ -54,6 +56,11 @@ services:
       - --rpc-ws-port
       - ${EL_WS_PORT:-8546}
       - --host-allowlist=*
+      - --engine-host-allowlist=*
+      - --engine-jwt-enabled=true
+      - --engine-jwt-secret=/var/lib/besu/jwtsecret
+      - --engine-rpc-enabled=true
+      - --engine-rpc-port=8551
       - --logging
       - ${LOG_LEVEL}
       - --network
@@ -64,8 +71,10 @@ services:
       - --metrics-port
       - "6060"
       - --data-storage-format=BONSAI
+      - --sync-mode=X_SNAP
   eth:
     depends_on:
       - execution
 volumes:
   besu-eth1-data:
+  jwtsecret:

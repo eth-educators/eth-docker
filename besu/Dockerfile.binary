@@ -18,7 +18,9 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/besu && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu
+RUN mkdir -p /var/lib/besu/secrets && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 755 /var/lib/besu/secrets
+
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER besu
 
