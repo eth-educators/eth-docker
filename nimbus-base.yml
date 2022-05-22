@@ -109,6 +109,20 @@ services:
       - exit
       - --rest-url=http://consensus:5052
       - --validator=
+  validator-list:
+    restart: "no"
+    image: nimbus:local
+    user: user
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        for dir in /var/lib/nimbus/validators/*; do
+          echo $$(basename $${dir})
+        done
   eth:
     image: tianon/true
     restart: "no"

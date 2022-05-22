@@ -125,6 +125,24 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
+  validator-list:
+    restart: "no"
+    image: lighthouse:local
+    user: lhvalidator
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ${DEPCLI_LOCALDIR}:/interchange
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - lighthouse
+      - account
+      - validator
+      - list
+      - --datadir
+      - /var/lib/lighthouse
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
   eth:
     image: tianon/true
     restart: "no"
