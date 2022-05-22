@@ -31,10 +31,6 @@ services:
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/udp
-    expose:
-      - 5052/tcp
-      - 4000/tcp
-      - 8080/tcp
     networks:
       default:
         aliases:

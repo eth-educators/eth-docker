@@ -58,7 +58,6 @@ services:
       - --ee-jwt-secret-file
       - /secrets/jwtsecret
       - --validators-proposer-default-fee-recipient=${REWARDS_TO}
-      - --p2p-discovery-bootnodes=${ENR}
       - --validator-api-enabled=true
       - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*

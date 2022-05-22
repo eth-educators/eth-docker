@@ -55,7 +55,6 @@ services:
       - --ee-jwt-secret-file
       - /secrets/jwtsecret
       - --validators-proposer-default-fee-recipient=${REWARDS_TO}
-      - --p2p-discovery-bootnodes=${ENR}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

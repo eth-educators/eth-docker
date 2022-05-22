@@ -67,7 +67,9 @@ services:
       - --Sync.AncientReceiptsBarrier
       - "1"
       - --Pruning.Mode
-      - Full
+      - Hybrid
+      - --Pruning.CacheMb
+      - "4096"
       - --Pruning.FullPruningTrigger
       - VolumeFreeSpace
       - --Pruning.FullPruningMaxDegreeOfParallelism

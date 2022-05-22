@@ -21,7 +21,6 @@ services:
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}:/configs
       - ./${NETWORK}-secrets:/secrets
     ports:
       - ${CL_P2P_PORT}:${CL_P2P_PORT}/tcp
@@ -50,14 +49,8 @@ services:
       - ${EL_NODE}
       - --logLevel
       - ${LOG_LEVEL}
-      - --paramsFile
-      - /configs/config.yaml
-      - --genesisStateFile
-      - /configs/genesis.ssz
-      - --network.discv5.bootEnrs
-      - ${ENR}
-      - --network.connectToDiscv5Bootnodes
-      - --network.discv5.enabled=true
+      - --network
+      - ${NETWORK}
       - --eth1.providerUrls
       - ${EL_NODE}
       - --eth1.depositContractDeployBlock=0
