@@ -76,3 +76,4 @@ COPY ./validator-import.sh /usr/local/bin/
 COPY ./create-wallet.sh /usr/local/bin/
 
 USER ${USER}
+ENTRYPOINT ["validator"]

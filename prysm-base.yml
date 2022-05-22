@@ -159,8 +159,6 @@ services:
       - list
       - --wallet-dir=/var/lib/prysm/
       - --wallet-password-file=/var/lib/prysm/password.txt
-      - --chain-config-file
-      - /configs/config.yaml
   validator-import:
     restart: "no"
     image: prysm-validator:local-merge
@@ -202,8 +200,6 @@ services:
       - --wallet-dir=/var/lib/prysm/
       - --beacon-rpc-provider=consensus:4000
       - --wallet-password-file=/var/lib/prysm/password.txt
-      - --chain-config-file
-      - /configs/config.yaml
     depends_on:
       - consensus
   eth:
