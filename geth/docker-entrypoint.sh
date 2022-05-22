@@ -12,9 +12,9 @@ chown 10001:10001 /var/lib/goethereum/jwtsecret
 chown 10002:10002 /secrets/jwtsecret
 
 # Init from genesis file if needed
-if [[ ! -f /var/lib/goethereum/setupdone ]]; then
-  su-exec geth geth --datadir /var/lib/goethereum init /configs/genesis.json
-  touch /var/lib/goethereum/setupdone
-fi
+#if [[ ! -f /var/lib/goethereum/setupdone ]]; then
+#  su-exec geth geth --datadir /var/lib/goethereum init /configs/genesis.json
+#  touch /var/lib/goethereum/setupdone
+#fi
 
 exec su-exec geth $@

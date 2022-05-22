@@ -21,15 +21,10 @@ services:
     volumes:
       - gethexecution-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
-      - ./${NETWORK}:/configs
       - ./${NETWORK}-secrets:/secrets
     ports:
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
       - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
-    expose:
-      - ${EL_RPC_PORT}/tcp
-      - ${EL_WS_PORT}/tcp
-      - 6060/tcp
     networks:
       default:
         aliases:
@@ -64,15 +59,12 @@ services:
       - 0.0.0.0
       - --bootnodes
       - ${ENODE}
-      - --networkid
-      - ${NETWORK_ID}
+      - --${NETWORK}
       - --authrpc.jwtsecret
       - /var/lib/goethereum/jwtsecret
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.vhosts=*
-      - --syncmode
-      - full
     command: ${GETH_CACHE}
   eth:
     depends_on:
