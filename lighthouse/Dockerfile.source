@@ -6,7 +6,7 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y git gcc g++ make cmake clang pkg-config libssl-dev patch --no-install-recommends
 
 WORKDIR /usr/src
-RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make"
+RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:lh-pr; git checkout lh-pr; else git checkout ${BUILD_TARGET}; fi && make"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bullseye-slim
