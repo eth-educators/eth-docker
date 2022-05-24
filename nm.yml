@@ -11,6 +11,7 @@ services:
   execution:
     restart: "${RESTART}"
     stop_grace_period: 3m
+    stop_signal: SIGINT
     build:
       context: ./nethermind
       dockerfile: ${NM_DOCKERFILE}
