@@ -1,0 +1,46 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  execution:
+    restart: "${RESTART}"
+    build:
+      context: ./akula
+      dockerfile: ${AKULA_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${AKULA_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${AKULA_DOCKER_TAG}
+    stop_grace_period: 3m
+    image: akula:local
+    user: akula
+    volumes:
+      - akula-el-data:/var/lib/akula
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+    <<: *logging
+    entrypoint:
+      - akula
+      - --datadir
+      - /var/lib/akula
+      - --listen-port
+      - ${EL_P2P_PORT:-30303}
+      - --discv4-port
+      - ${EL_P2P_PORT:-30303}
+      - --rpc-listen-address
+      - 0.0.0.0:${EL_RPC_PORT:-8545}
+      - --chain
+      - ${EL_NETWORK:-mainnet}
+      - --prune
+  eth:
+    depends_on:
+      - execution
+volumes:
+  akula-el-data:

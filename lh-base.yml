@@ -94,6 +94,8 @@ services:
       - --http-allow-origin
       - "*"
       - --unencrypted-http-transport
+      - --suggested-fee-recipient
+      - ${REWARDS_TO}
     depends_on:
       - consensus
   get-keyapi-token:
@@ -118,7 +120,7 @@ services:
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - NETWORK=${NETWORK}
     entrypoint:
       - validator-import.sh
@@ -163,12 +165,29 @@ services:
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - lighthouse
+      - account
+      - validator
+      - --datadir
+      - /var/lib/lighthouse
+      - --network
+      - ${NETWORK}
+      - --debug-level=${LOG_LEVEL}
+  validator-list:
+    restart: "no"
+    image: lighthouse:local
+    user: lhvalidator
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
       - ${DEPCLI_LOCALDIR}:/interchange
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse
       - account
       - validator
+      - list
       - --datadir
       - /var/lib/lighthouse
       - --network

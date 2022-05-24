@@ -84,7 +84,7 @@ services:
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
     entrypoint:
       - validator-import.sh
       - node
@@ -134,6 +134,24 @@ services:
       - /usr/app/node_modules/.bin/lodestar
       - account
       - validator
+      - --rootDir
+      - /var/lib/lodestar/validators
+      - --network
+      - ${NETWORK}
+  validator-list:
+    restart: "no"
+    image: lodestar:local
+    user: lsvalidator
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - node
+      - --max-old-space-size=8192
+      - /usr/app/node_modules/.bin/lodestar
+      - account
+      - validator
+      - list
       - --rootDir
       - /var/lib/lodestar/validators
       - --network
