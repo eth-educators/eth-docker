@@ -108,6 +108,7 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${REWARDS_TO}
+      - --private-tx-proposals
     depends_on:
       - consensus
   get-keyapi-token:
