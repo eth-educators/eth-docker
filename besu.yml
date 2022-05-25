@@ -64,6 +64,7 @@ services:
       - --metrics-port
       - "6060"
       - --data-storage-format=BONSAI
+      - --sync-mode=X_SNAP
   eth:
     depends_on:
       - execution
