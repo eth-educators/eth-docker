@@ -21,6 +21,7 @@ services:
     user: besu
     environment:
       - JAVA_OPTS=-Xmx4g
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
@@ -58,13 +59,13 @@ services:
       - --host-allowlist=*
       - --engine-host-allowlist=*
       - --engine-jwt-enabled=true
-      - --engine-jwt-secret=/var/lib/besu/jwtsecret
+      - --engine-jwt-secret=/var/lib/besu/secrets/jwtsecret
       - --engine-rpc-enabled=true
       - --engine-rpc-port=8551
       - --logging
       - ${LOG_LEVEL}
       - --network
-      - ${EL_NETWORK:-goerli}
+      - ${NETWORK}
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0

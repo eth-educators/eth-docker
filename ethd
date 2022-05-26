@@ -348,7 +348,7 @@ envmigrate() {
             EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
             CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
             PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
-            EL_RPC_PORT EL_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
+            EL_RPC_PORT EL_WS_PORT RESTART LOG_LEVEL JWT_SECRET GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
                 PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
@@ -490,18 +490,15 @@ query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 9 60 3 \
-    "prater" "Prater Testnet" \
-    "mainnet" "Ethereum Mainnet" \
-    "gnosis" "Gnosis Beacon Chain" 3>&1 1>&2 2>&3)
+    "ropsten" "Ropsten Testnet" 3>&1 1>&2 2>&3)
 
     if [ "${NETWORK}" == "mainnet" ]; then
-        EL_NETWORK=mainnet
         echo "You chose to run on Ethereum mainnet"
     elif [ "${NETWORK}" == "prater" ]; then
-        EL_NETWORK=goerli
         echo "You chose to run on Prater testnet"
+    elif [ "${NETWORK}" == "ropsten" ]; then
+        echo "You chose to run on Ropsten testnet"
     elif [ "${NETWORK}" == "gnosis" ]; then
-        EL_NETWORK=xdai
         echo "You chose to run on Gnosis Beacon Chain"
     else
         echo "You chose Cancel."
@@ -638,7 +635,7 @@ query_consensus_only_client() {
 }
 
 query_custom_execution_client() {
-        EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${EL_NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
+        EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -651,9 +648,9 @@ query_custom_execution_client() {
 
 query_fallback_execution_client() {
 	if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
-	    EL_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${EL_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+	    EL_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "wss://${NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
         else
-	    EL_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${EL_NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
+	    EL_FALLBACK_NODE1=$(whiptail --title "Configure fallback execution client" --inputbox "What is the URL for your fallback execution client? (right-click to paste)" 10 60 "https://${NETWORK}.infura.io/v3/..." 3>&1 1>&2 2>&3)
         fi
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -886,8 +883,6 @@ config () {
     var=EL_FALLBACK_NODE2
     set_value_in_env
     var=NETWORK
-    set_value_in_env
-    var=EL_NETWORK
     set_value_in_env
 
     if [[ "${EUID}" -eq 0 || -n $(id -nG $(id -u) | grep -w "docker") ]]; then
