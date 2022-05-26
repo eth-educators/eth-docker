@@ -358,9 +358,9 @@ envmigrate() {
                 BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
-	   EC_HOST EC_WS_HOST EC_P2P_PORT CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
+	   EC_HOST EC_WS_HOST EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
     NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
-	   EL_HOST EL_WS_HOST EL_P2P_PORT CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
+	   EL_HOST EL_WS_HOST EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
     # then dropped that way of doing things with the parameter and used an ENV
@@ -420,7 +420,7 @@ envmigrate() {
     var="REWARDS_TO"
     value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
     if [ -z "${value}" ]; then
-        whiptail --msgbox "Please set a fee recipient ETH address for post-merge priority fees and MEV" 8 60
+	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/About/Rewards) for more information." 16 75
         query_coinbase
         set_value_in_env
     fi
@@ -429,8 +429,8 @@ envmigrate() {
 
 migrate_compose_file() {
 # Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-validator.yml teku-base.yml teku-validator.yml "" "" "" "" "" "" "" "" "" )
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-validator.yml teku-base.yml teku-validator.yml "" "" "" "" "" "" "" "" "" "" )
 # These files were removed from main branch and are only present in rpc-nodes now
     ADV_YML=( lh-consensus.yml lh-stats-consensus.yml lh-stats-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml traefik-shared.yml )
 
@@ -757,7 +757,7 @@ query_rapid_sync() {
 }
 
 query_coinbase() {
-        REWARDS_TO=$(whiptail --title "Configure coinbase" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
+        REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then

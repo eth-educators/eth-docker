@@ -101,6 +101,21 @@ services:
       - voluntary-exit
       - --beacon-node-api-endpoint=http://consensus:5052
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+  validator-list:
+    restart: "no"
+    image: teku:local
+    user: teku
+    volumes:
+      - teku-data:/var/lib/teku
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        for file in /var/lib/teku/validator-keys/*; do
+          echo -n "0x"
+          cat $${file} | jq -r .pubkey
+        done
   eth:
     image: tianon/true
     restart: "no"
