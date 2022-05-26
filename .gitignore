@@ -9,5 +9,3 @@ ext-network.yml.original
 *.swp
 alertmanager/config.yml
 blox-ssv-config.yaml
-kintsugi-secrets/*
-kiln-secrets/*

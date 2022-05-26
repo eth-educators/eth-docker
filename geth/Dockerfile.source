@@ -27,7 +27,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/goethereum && chown ${USER}:${USER} /var/lib/goethereum
+RUN mkdir -p /var/lib/goethereum/secrets && chown -R ${USER}:${USER} /var/lib/goethereum && chmod -R 700 /var/lib/goethereum && chmod 755 /var/lib/goethereum/secrets
 
 # Copy executable
 COPY --from=builder /src/go-ethereum/build/bin/geth /usr/local/bin/
