@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -19,9 +19,12 @@ services:
     stop_grace_period: 3m
     image: geth:local
     user: geth
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/goethereum/secrets
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -53,12 +56,19 @@ services:
       - ${EL_WS_PORT:-8546}
       - --ws.api
       - web3,eth,net
-      - --${EL_NETWORK:-goerli}
+      - --${NETWORK}
       - --metrics
       - --metrics.expensive
       - --pprof
       - --pprof.addr
       - 0.0.0.0
+      - --authrpc.jwtsecret
+      - /var/lib/goethereum/secrets/jwtsecret
+      - --authrpc.addr
+      - 0.0.0.0
+      - --authrpc.vhosts=*
+      - --override.terminaltotaldifficulty
+      - ${OVERRIDE_TTD}
     command: ${GETH_CACHE}
   set-prune-marker:
     image: alpine:latest
@@ -73,3 +83,4 @@ services:
       - execution
 volumes:
   geth-eth1-data:
+  jwtsecret:
