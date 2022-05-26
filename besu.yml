@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -73,6 +73,7 @@ services:
       - "6060"
       - --data-storage-format=BONSAI
       - --sync-mode=X_SNAP
+      - --override-genesis-config=terminalTotalDifficulty=${OVERRIDE_TTD}
   eth:
     depends_on:
       - execution
