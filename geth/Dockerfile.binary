@@ -7,8 +7,14 @@ ARG BUILD_TARGET
 
 ARG USER=geth
 ARG UID=10001
+# GID 10002 is deliberate so it can exchange secret with CL
+ARG GID=10002
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata su-exec
+
+RUN addgroup \
+    --gid "${GID}" \
+    "${USER}"
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -16,6 +22,7 @@ RUN adduser \
     --gecos "" \
     --shell "/sbin/nologin" \
     --uid "${UID}" \
+    --ingroup "${USER}" \
     "${USER}"
 
 RUN mkdir -p /var/lib/goethereum/secrets && chown -R ${USER}:${USER} /var/lib/goethereum && chmod -R 700 /var/lib/goethereum && chmod 755 /var/lib/goethereum/secrets

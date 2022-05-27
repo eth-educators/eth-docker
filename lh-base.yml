@@ -22,8 +22,10 @@ services:
     volumes:
       - lhbeacon-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/lighthouse/beacon/secrets
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -50,10 +52,14 @@ services:
       - ${CL_P2P_PORT:-9000}
       - --target-peers
       - ${LH_PEER_COUNT}
+# I don't have a specific RPC target any more in .env. Hopefully LH will remove the need for this
       - --eth1-endpoints
-      - ${EL_NODE:-http://execution:8545}
-      - --eth1-blocks-per-log-query
-      - "150"
+      - http://execution:${EL_RPC_PORT}
+      - --execution-endpoints
+      - ${EL_NODE}
+      - --http-allow-sync-stalled
+      - --jwt-secrets
+      - /var/lib/lighthouse/beacon/secrets/jwtsecret
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
@@ -61,6 +67,7 @@ services:
       - --metrics-port
       - "8008"
       - --validator-monitor-auto
+      - --terminal-total-difficulty-override=${OVERRIDE_TTD}
   validator:
     restart: "${RESTART}"
     image: lighthouse:local

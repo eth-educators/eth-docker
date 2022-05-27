@@ -8,4 +8,9 @@ else
   __rapid_sync=""
 fi
 
+if [ -n "${JWT_SECRET}" ]; then
+  echo -n ${JWT_SECRET} > /var/lib/lighthouse/beacon/secrets/jwtsecret
+  echo "JWT secret was supplied in .env"
+fi
+
 exec $@ ${__rapid_sync}

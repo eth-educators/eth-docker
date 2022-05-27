@@ -14,7 +14,7 @@ fi
 
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/teku/secrets/jwtsecret
-  echo "Secret was supplied"
+  echo "JWT secret was supplied in .env"
 fi
 
 # Check whether we should rapid sync

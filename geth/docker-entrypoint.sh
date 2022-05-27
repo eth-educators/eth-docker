@@ -1,4 +1,10 @@
 #!/usr/bin/env sh
+
+if [ "$(id -u)" = '0' ]; then
+  chown -R geth:geth /var/lib/goethereum
+  exec su-exec geth docker-entrypoint.sh "$@"
+fi
+
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/goethereum/secrets/jwtsecret
   echo "JWT secret was supplied in .env"
