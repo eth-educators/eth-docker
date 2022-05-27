@@ -27,6 +27,7 @@ services:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -65,7 +66,6 @@ services:
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${REWARDS_TO}
-      - --Xnetwork-total-terminal-difficulty-override=${OVERRIDE_TTD}
   get-keyapi-token:
     restart: "no"
     image: alpine:latest

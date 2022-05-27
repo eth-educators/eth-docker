@@ -24,6 +24,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx4g
       - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
@@ -74,7 +75,6 @@ services:
       - "6060"
       - --data-storage-format=BONSAI
       - --sync-mode=X_SNAP
-      - --override-genesis-config=terminalTotalDifficulty=${OVERRIDE_TTD}
   eth:
     depends_on:
       - execution

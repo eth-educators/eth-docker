@@ -17,9 +17,17 @@ if [[ ! -f /var/lib/goethereum/secrets/jwtsecret ]]; then
   echo -n ${__secret1}${__secret2} > /var/lib/goethereum/secrets/jwtsecret
 fi
 
+# Check whether we should override TTD
+if [ -n "${OVERRIDE_TTD}" ]; then
+  __override_ttd="--override.terminaltotaldifficulty=${OVERRIDE_TTD}"
+  echo "Overriding TTD to ${OVERRIDE_TTD}"
+else
+  __override_ttd=""
+fi
+
 if [ -f /var/lib/goethereum/prune-marker ]; then
   $@ snapshot prune-state
   rm -f /var/lib/goethereum/prune-marker
 else
-  exec $@
+  exec $@ ${__override_ttd}
 fi
