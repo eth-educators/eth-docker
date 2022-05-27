@@ -18,7 +18,9 @@ services:
         - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local
-    user: besu
+# Root so a chown can happen for the secret, then gosu into besu. This can become besu again
+# after merge
+    user: root
     environment:
       - JAVA_OPTS=-Xmx4g
       - JWT_SECRET=${JWT_SECRET}
@@ -60,7 +62,6 @@ services:
       - --engine-host-allowlist=*
       - --engine-jwt-enabled=true
       - --engine-jwt-secret=/var/lib/besu/secrets/jwtsecret
-      - --engine-rpc-enabled=true
       - --engine-rpc-port=8551
       - --logging
       - ${LOG_LEVEL}

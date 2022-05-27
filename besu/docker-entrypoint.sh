@@ -1,6 +1,11 @@
 #!/bin/bash
 set -Eeuo pipefail
 
+if [ "$(id -u)" = '0' ]; then
+  chown -R besu:besu /var/lib/besu
+  exec gosu besu "$BASH_SOURCE" "$@"
+fi
+
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/besu/secrets/jwtsecret
   echo "JWT secret was supplied in .env"
