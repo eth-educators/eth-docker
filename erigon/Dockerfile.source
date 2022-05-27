@@ -16,8 +16,14 @@ FROM alpine:latest
 
 ARG USER=erigon
 ARG UID=10001
+# GID 10002 is deliberate so it can exchange secret with CL
+ARG GID=10002
 
-RUN apk add --no-cache libgcc libstdc++ bash ca-certificates tzdata
+RUN apk add --no-cache libgcc libstdc++ bash ca-certificates tzdata su-exec
+
+RUN addgroup \
+    --gid "${GID}" \
+    "${USER}"
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -25,9 +31,10 @@ RUN adduser \
     --gecos "" \
     --shell "/sbin/nologin" \
     --uid "${UID}" \
+    --ingroup "${USER}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/erigon && chown ${USER}:${USER} /var/lib/erigon
+RUN mkdir -p /var/lib/erigon/secrets && chown -R erigon:erigon /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 755 /var/lib/erigon/secrets
 
 # Copy executable
 COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/

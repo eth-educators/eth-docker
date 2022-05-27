@@ -8,7 +8,7 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  erigon:
+  execution:
     restart: "${RESTART}"
     build:
       context: ./erigon
@@ -18,13 +18,22 @@ services:
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 5m
     image: erigon:local
-    user: erigon
+# Root so a chown can happen for the secret, then su-exec into erigon. This can become erigon again
+# after merge
+    user: root
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - erigon-ec-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/erigon/secrets
     ports:
-      - ${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/udp
+      - ${EL_P2P_PORT-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT-30303}:${EL_P2P_PORT:-30303}/udp
+      # torrent ports
+      - ${ERIGON_TORRENT_PORT:-42069}:${ERIGON_TORRENT_PORT:-42069}/tcp
+      - ${ERIGON_TORRENT_PORT:-42069}:${ERIGON_TORRENT_PORT:-42069}/udp
     networks:
       default:
         aliases:
@@ -39,44 +48,36 @@ services:
       - /var/lib/erigon
       - --port
       - ${EL_P2P_PORT:-30303}
+      - --torrent.port
+      - ${ERIGON_TORRENT_PORT:-42069}
       - --nat
       - any
       - --chain
-      - ${EL_NETWORK:-goerli}
+      - ${NETWORK}
       - --prune=htc
       - --metrics
       - --metrics.addr
       - 0.0.0.0
       - --metrics.expensive
-  execution:
-    restart: "${RESTART}"
-    image: erigon:local
-    user: erigon
-    volumes:
-      - erigon-ec-data:/var/lib/erigon
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - erigon
-    pid: service:erigon # Use erigon's PID namespace. It's required to open Erigon's DB from another process (RPCDaemon local-mode)
-    entrypoint:
-      - rpcdaemon
-      - --datadir
-      - /var/lib/erigon
-      - --private.api.addr
-      - erigon:9090
-      - --txpool.api.addr
-      - erigon:9090
+      - --http
       - --http.addr
       - 0.0.0.0
+      - --http.port
+      - ${EL_RPC_PORT}
       - --http.vhosts=*
       - --http.corsdomain=*
       - --http.api
-      - web3,eth,net
-      - --http.port
-      - ${EL_RPC_PORT:-8545}
+      - web3,eth,net,engine
       - --ws
+      - --engine.addr
+      - 0.0.0.0
+      - --engine.port
+      - "8551"
+      - --authrpc.jwtsecret
+      - /var/lib/erigon/secrets/jwtsecret
   eth:
     depends_on:
       - execution
 volumes:
   erigon-ec-data:
+  jwtsecret:
