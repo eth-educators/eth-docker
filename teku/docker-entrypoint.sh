@@ -24,4 +24,12 @@ else
   __rapid_sync=""
 fi
 
-exec $@ ${__rapid_sync}
+# Check whether we should override TTD
+if [ -n "${OVERRIDE_TTD}" ]; then
+  __override_ttd="--Xnetwork-total-terminal-difficulty-override=${OVERRIDE_TTD}"
+  echo "Overriding TTD to ${OVERRIDE_TTD}"
+else
+  __override_ttd=""
+fi
+
+exec $@ ${__rapid_sync} ${__override_ttd}

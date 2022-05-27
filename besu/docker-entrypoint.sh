@@ -18,4 +18,12 @@ if [[ ! -f /var/lib/besu/secrets/jwtsecret ]]; then
   echo -n ${__secret1}${__secret2} > /var/lib/besu/secrets/jwtsecret
 fi
 
-exec $@
+# Check whether we should override TTD
+if [ -n "${OVERRIDE_TTD}" ]; then
+  __override_ttd="--override-genesis-config=terminalTotalDifficulty=${OVERRIDE_TTD}"
+  echo "Overriding TTD to ${OVERRIDE_TTD}"
+else
+  __override_ttd=""
+fi
+
+exec $@ ${__override_ttd}

@@ -23,6 +23,7 @@ services:
     user: root
     environment:
       - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
@@ -69,8 +70,6 @@ services:
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.vhosts=*
-      - --override.terminaltotaldifficulty
-      - ${OVERRIDE_TTD}
     command: ${GETH_CACHE}
   set-prune-marker:
     image: alpine:latest
