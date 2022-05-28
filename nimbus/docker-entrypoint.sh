@@ -5,9 +5,22 @@ if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     echo $__token > /var/lib/nimbus/api-token.txt
 fi
 
-if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
-    touch /var/lib/nimbus/setupdone
-    exec /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL}
+if [ -n "${JWT_SECRET}" ]; then
+  echo -n ${JWT_SECRET} > /var/lib/nimbus/secrets/jwtsecret
+  echo "JWT secret was supplied in .env"
 fi
 
-exec $@
+# Check whether we should override TTD
+if [ -n "${OVERRIDE_TTD}" ]; then
+  __override_ttd="--terminal-total-difficulty-override=${OVERRIDE_TTD}"
+  echo "Overriding TTD to ${OVERRIDE_TTD}"
+else
+  __override_ttd=""
+fi
+
+if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
+    touch /var/lib/nimbus/setupdone
+    exec /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL} ${__override_ttd}
+fi
+
+exec $@ ${__override_ttd}
