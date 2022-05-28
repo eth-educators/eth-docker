@@ -22,8 +22,11 @@ services:
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/lodestar/consensus/secrets
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -46,8 +49,10 @@ services:
       - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
       - --network.localMultiaddrs
       - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
-      - --eth1.providerUrls
-      - ${EL_NODE:-http://execution:8545}
+      - --execution.urls
+      - ${EL_NODE}
+      - --jwt-secret
+      - /var/lib/lodestar/consensus/secrets/jwtsecret
       - --logLevel
       - ${LOG_LEVEL}
       - --network
@@ -165,3 +170,4 @@ services:
 volumes:
   lsconsensus-data:
   lsvalidator-data:
+  jwtsecret:

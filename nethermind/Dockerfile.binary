@@ -33,7 +33,7 @@ RUN set -eux; \
         gosu nobody true
 
 RUN chown -R ${USER}:${USER} /nethermind
-RUN mkdir -p /var/lib/nethermind/secrets && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 755 /var/lib/nethermind/secrets
+RUN mkdir -p /var/lib/nethermind/secrets && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 750 /var/lib/nethermind/secrets
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
