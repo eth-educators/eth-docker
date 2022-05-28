@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -19,9 +19,16 @@ services:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local
-    user: nethermind
+# Root so a chown can happen for the secret, then gosu into nethermind. This can become nethermind again
+# after merge
+    user: root
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/nethermind/secrets
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -31,6 +38,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - dotnet
       - /nethermind/Nethermind.Runner.dll
       - --datadir
@@ -51,6 +59,8 @@ services:
       - ${EL_RPC_PORT:-8545}
       - --JsonRpc.WebSocketsPort
       - ${EL_WS_PORT:-8546}
+      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:8551|http;wss|engine;eth;net;web3;subscribe
+      - --JsonRpc.JwtSecretFile=/var/lib/nethermind/secrets/jwtsecret
       - --Sync.FastSync
       - "true"
       - --Metrics.Enabled
@@ -58,7 +68,7 @@ services:
       - --Metrics.ExposePort
       - "6060"
       - --config
-      - ${EL_NETWORK:-goerli}
+      - ${NETWORK}
       - --Pruning.Enabled
       - "true"
       - --Pruning.CacheMb
@@ -74,3 +84,4 @@ services:
       - execution
 volumes:
   nm-eth1-data:
+  jwtsecret:
