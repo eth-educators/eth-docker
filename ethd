@@ -635,7 +635,7 @@ query_consensus_only_client() {
 }
 
 query_custom_execution_client() {
-        EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 https://${NETWORK}.infura.io/v3/... 3>&1 1>&2 2>&3)
+        EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom execution client? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -733,15 +733,37 @@ query_rapid_sync() {
 }
 
 query_coinbase() {
-        REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
+    REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
 
-        exitstatus=$?
-        if [ $exitstatus -eq 0 ]; then
-            echo "Your rewards address is:" $REWARDS_TO
-        else
-            echo "You chose Cancel."
-            exit 0
-        fi
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your rewards address is:" $REWARDS_TO
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
+}
+
+query_override() {
+    if [ "${NETWORK}" = "ropsten" ]; then
+        OVERRIDE_TTD=100000000000000000000000
+    elif [ "${NETWORK}" = "goerli" ]; then
+        OVERRIDE_TTD=100000000000000000000000
+    elif [ "${NETWORK}" = "sepolia" ]; then
+        OVERRIDE_TTD=100000000000000000000000
+    else
+        OVERRIDE_TTD=100000000000000000000000
+    fi
+
+    OVERRIDE_TTD=$(whiptail --title "Configure Override TTD" --inputbox "What is the override TTD for the ${NETWORK} network? (right-click to paste)" 10 60 ${OVERRIDE_TTD} 3>&1 1>&2 2>&3)
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your override TTD for ${NETWORK} is:" $OVERRIDE_TTD
+    else
+        echo "You chose Cancel."
+        exit 0
+    fi
 }
 
 set_value_in_env() {
@@ -792,11 +814,9 @@ config () {
     case "${__deployment}" in
       "node" | "blox" )
         query_consensus_client
-	query_coinbase
         ;;
       "validator" | "rocket")
         query_validator_client
-	query_coinbase
         ;;
       "rpc")
         query_consensus_only_client
@@ -810,18 +830,23 @@ config () {
     if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
         CL_NODE="http://consensus:5052"
 
-        if [ ${__deployment} = "node" ]; then
-          query_graffiti
-        fi
         query_execution_client
         query_rapid_sync
         query_grafana
+	if [ ! ${__deployment} = "rpc" ]; then
+	  query_coinbase
+	fi
+	query_override
+        if [ ${__deployment} = "node" ]; then
+          query_graffiti
+        fi
     else
         unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
 
-        query_graffiti
         query_remote_beacon
+        query_coinbase
+        query_graffiti
         CL_NODE="${REMOTE_BEACON}"
     fi
 
@@ -858,6 +883,8 @@ config () {
     var=EL_NODE
     set_value_in_env
     var=NETWORK
+    set_value_in_env
+    var=OVERRIDE_TTD
     set_value_in_env
 
     if [[ "${EUID}" -eq 0 || -n $(id -nG $(id -u) | grep -w "docker") ]]; then
