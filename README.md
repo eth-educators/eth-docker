@@ -18,4 +18,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker pre-merge v2.0.0-sumthin
+This is eth-docker pre-merge v2.0.0-b1
