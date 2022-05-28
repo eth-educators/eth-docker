@@ -420,7 +420,7 @@ envmigrate() {
     var="REWARDS_TO"
     value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
     if [ -z "${value}" ]; then
-	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/About/Rewards) for more information." 16 75
+	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
         query_coinbase
         set_value_in_env
     fi
