@@ -1,5 +1,7 @@
 ARG DOCKER_TAG
 
+FROM ghcr.io/tomwright/dasel:latest as dasel
+
 FROM nethermind/nethermind:${DOCKER_TAG}
 
 # Unused, this is here to avoid build time complaints
@@ -34,6 +36,8 @@ RUN set -eux; \
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind/secrets && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 750 /var/lib/nethermind/secrets
+
+COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
