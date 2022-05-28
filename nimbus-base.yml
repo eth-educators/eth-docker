@@ -22,9 +22,12 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/nimbus/secrets
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - NETWORK=${NETWORK}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -43,9 +46,8 @@ services:
       - --udp-port=${CL_P2P_PORT:-9000}
       - --max-peers=${NIM_PEER_COUNT}
       - --network=${NETWORK}
-      - --web3-url=${EL_NODE:-ws://execution:8546}
-      - --web3-url=${EL_FALLBACK_NODE1:-ws://execution:8546}
-      - --web3-url=${EL_FALLBACK_NODE2:-ws://execution:8546}
+      - --web3-url=${EL_NODE}
+      - --jwt-secret=/var/lib/nimbus/secrets/jwtsecret
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rest
@@ -130,3 +132,4 @@ services:
       - consensus
 volumes:
   nimbus-data:
+  jwtsecret:
