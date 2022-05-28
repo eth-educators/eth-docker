@@ -41,7 +41,7 @@ RUN adduser \
     --ingroup "${USER}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/besu/secrets && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 755 /var/lib/besu/secrets
+RUN mkdir -p /var/lib/besu/secrets && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 750 /var/lib/besu/secrets
 
 # Copy executable
 COPY --from=builder /usr/src/besu/build/install/besu/. /opt/besu/
