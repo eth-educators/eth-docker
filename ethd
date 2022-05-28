@@ -97,20 +97,29 @@ been migrated, please recreate these changes yourself."
         echo "No changes made to ${ENV_FILE} during migration"
     fi
     if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
-	echo
-	echo "WARNING! Snap docker package detected. This WILL result in issues."
-	echo "Removing the package will delete volumes and require a resync,"
-	echo "as well as re-import of all validator keys."
-	echo
-	echo "Doing so is still highly recommended however."
-	echo
-    echo "The exact steps depend a little on whether there already is"
-	echo "an apt version of docker installed as well, but in a nutshell"
-	echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
-	echo "and then reinstall docker.io or docker-ce with apt,"
-	echo "re-import keys and restart eth-docker."
-	echo
-	echo "Do join us on EthStaker Discord to work through this emergency."
+        echo
+        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "Removing the package will delete volumes and require a resync,"
+        echo "as well as re-import of all validator keys."
+        echo
+        echo "Doing so is still highly recommended however."
+        echo
+        echo "The exact steps depend a little on whether there already is"
+        echo "an apt version of docker installed as well, but in a nutshell"
+        echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+        echo "and then reinstall docker.io or docker-ce with apt,"
+        echo "re-import keys and restart eth-docker."
+        echo
+        echo "Do join us on EthStaker Discord to work through this emergency."
+   fi
+    if [[ "$__distro" = "ubuntu" ]]; then
+      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
+      if [ ${__major_version} -lt 20 ]; then
+         echo
+         echo "WARNING! Ubuntu ${__major_version} is known to cause issues with docker-compose."
+         echo "Please either install a custom version of docker-compose or update to Ubuntu 20.04 or 22.04"
+         echo
+      fi
     fi
 }
 
@@ -733,15 +742,22 @@ query_rapid_sync() {
 }
 
 query_coinbase() {
-    REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
+    while true; do
+        REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
 
-    exitstatus=$?
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your rewards address is:" $REWARDS_TO
-    else
-        echo "You chose Cancel."
-        exit 0
-    fi
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            if [[ ${REWARDS_TO} == 0x* && ${#REWARDS_TO} -eq 42 ]]; then
+              echo "Your rewards address is:" $REWARDS_TO
+              break
+            else
+              whiptail --msgbox "${REWARDS_TO} is not a valid ETH address. You can try again or Cancel on the next screen.\n\nThe client will not start successfully until a valid ETH rewards address has been set." 16 75
+            fi
+        else
+            echo "You chose Cancel."
+            exit 0
+        fi
+    done
 }
 
 query_override() {
@@ -778,24 +794,33 @@ set_value_in_env() {
 }
 
 config () {
-	if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
-        echo
-        echo "WARNING! Snap docker package detected. This WILL result in issues."
-        echo "Removing the package will delete volumes and require a resync,"
-        echo "as well as re-import of all validator keys."
-        echo
-        echo "Doing so is still highly recommended however."
-        echo
-        echo "The exact steps depend a little on whether there already is"
-        echo "an apt version of docker installed as well, but in a nutshell"
-        echo '"sudo snap remove --purge docker" and then reinstall docker.io"'
-        echo "or docker-ce with apt, re-import keys and restart eth-docker."
-        echo
-        echo "Do join us on EthStaker Discord to work through this emergency."
-	echo
-	echo "Aborting, this is not safe."
-	exit 1
-   fi
+    if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
+      echo
+      echo "WARNING! Snap docker package detected. This WILL result in issues."
+      echo "Removing the package will delete volumes and require a resync,"
+      echo "as well as re-import of all validator keys."
+      echo
+      echo "Doing so is still highly recommended however."
+      echo
+      echo "The exact steps depend a little on whether there already is"
+      echo "an apt version of docker installed as well, but in a nutshell"
+      echo '"sudo snap remove --purge docker" and then reinstall docker.io"'
+      echo "or docker-ce with apt, re-import keys and restart eth-docker."
+      echo
+      echo "Do join us on EthStaker Discord to work through this emergency."
+      echo
+      echo "Aborting, this is not safe."
+      exit 1
+    fi
+    if [[ "$__distro" = "ubuntu" ]]; then
+      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1) 
+      if [ ${__major_version} -lt 20 ]; then
+         echo
+         echo "WARNING! Ubuntu ${__major_version} is known to cause issues with docker-compose."
+         echo "Please either install a custom version of docker-compose or update to Ubuntu 20.04 or 22.04"
+         echo
+      fi
+    fi
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
         ENV_TEMPLATE="default.env"
