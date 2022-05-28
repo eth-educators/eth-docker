@@ -839,6 +839,9 @@ config () {
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
+    if [ "${NETWORK}" = "ropsten" -o "${NETWORK}" = "goerli" -o "${NETWORK}" = "sepolia" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
+    fi
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
 

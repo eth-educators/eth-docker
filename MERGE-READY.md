@@ -20,7 +20,7 @@
 
 ## Get eth-docker
 - Clone this tool and get into the `merge-getready` branch
-  - `git clone https://github.com/eth-educators/eth-docker.git mergish-test && cd mergish-test && git fetch origin merge-getready && git checkout merge-getready`
+  - `git clone https://github.com/eth-educators/eth-docker.git merger-test && cd merger-test && git fetch origin merge-getready && git checkout merge-getready`
 
 
 ## Configure the clients you wish to run
