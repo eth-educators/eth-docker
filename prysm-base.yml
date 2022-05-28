@@ -26,8 +26,11 @@ services:
     volumes:
       - prysmbeacon-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/prysm/secrets
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
@@ -48,13 +51,9 @@ services:
       - --grpc-gateway-port
       - "5052"
       - --http-web3provider
-      - ${EL_NODE:-http://execution:8545}
-      - --fallback-web3provider
-      - ${EL_FALLBACK_NODE1:-http://execution:8545}
-      - --fallback-web3provider
-      - ${EL_FALLBACK_NODE2:-http://execution:8545}
-      - --eth1-header-req-limit
-      - "150"
+      - ${EL_NODE}
+      - --jwt-secret
+      - /var/lib/prysm/secrets/jwtsecret
       - --p2p-tcp-port
       - ${PRYSM_PORT}
       - --p2p-udp-port
@@ -213,3 +212,4 @@ services:
 volumes:
   prysmbeacon-data:
   prysmvalidator-data:
+  jwtsecret:

@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -58,7 +58,6 @@ services:
       - http://execution:${EL_RPC_PORT}
       - --execution-endpoints
       - ${EL_NODE}
-      - --http-allow-sync-stalled
       - --jwt-secrets
       - /var/lib/lighthouse/beacon/secrets/jwtsecret
       - --debug-level=${LOG_LEVEL}
