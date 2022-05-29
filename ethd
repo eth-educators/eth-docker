@@ -366,9 +366,9 @@ envmigrate() {
                 OPERA_DOCKER_TAG OPERA_DOCKERFILE OPERA_SRC_BUILD_TARGET \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
-	   EC_HOST EC_WS_HOST EC_LB EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
+	   EC_HOST EC_WS_HOST EC_LB EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
     NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
-	   EL_HOST EL_WS_HOST EL_LB EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
+	   EL_HOST EL_WS_HOST EL_LB EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
     # then dropped that way of doing things with the parameter and used an ENV
@@ -428,8 +428,8 @@ envmigrate() {
     # Check for rewards
     var="REWARDS_TO"
     value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-    if [ -z "${value}" ]; then
-	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/About/Rewards) for more information." 16 75
+    if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
+	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
         query_coinbase
         set_value_in_env
     fi
@@ -721,13 +721,6 @@ query_execution_client() {
     fi
     EL_FALLBACK_NODE1="${EL_NODE}"
     EL_FALLBACK_NODE2="${EL_NODE}"
-
-    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use a fallback execution client?" 10 60) then
-        query_fallback_execution_client
-        if [[ "${CONSENSUS_CLIENT}" != "prysm-base.yml" && "${CONSENSUS_CLIENT}" != "nimbus-base.yml" && "${CONSENSUS_CLIENT}" != "prysm-consensus.yml" && "${CONSENSUS_CLIENT}" != "nimbus-consensus.yml" ]]; then
-            EL_NODE="${EL_NODE}"",""${EL_FALLBACK_NODE1}"
-        fi
-    fi
 }
 
 query_grafana() {
@@ -769,22 +762,30 @@ query_graffiti() {
 query_rapid_sync() {
     # Assume no to start
     RAPID_SYNC_URL=""
-    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+
+    if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
         query_remote_beacon
         RAPID_SYNC_URL="${REMOTE_BEACON}"
     fi
 }
 
 query_coinbase() {
+    while true; do
         REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
-            echo "Your rewards address is:" $REWARDS_TO
+            if [[ ${REWARDS_TO} == 0x* && ${#REWARDS_TO} -eq 42 ]]; then
+              echo "Your rewards address is:" $REWARDS_TO
+              break
+            else
+              whiptail --msgbox "${REWARDS_TO} is not a valid ETH address. You can try again or Cancel on the next screen.\n\nThe client will not start successfully until a valid ETH rewards address has been set." 16 75
+            fi
         else
             echo "You chose Cancel."
             exit 0
         fi
+    done
 }
 
 set_value_in_env() {
@@ -835,11 +836,9 @@ config () {
     case "${__deployment}" in
       "node")
         query_consensus_client
-	query_coinbase
         ;;
       "validator" | "rocket")
         query_validator_client
-	query_coinbase
         ;;
       "blox" | "rpc")
         query_consensus_only_client
@@ -853,19 +852,23 @@ config () {
     if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
         CL_NODE="http://consensus:5052"
 
-        if [ ${__deployment} = "node" ]; then
-          query_graffiti
-        fi
         query_execution_client
         query_rapid_sync
         query_grafana
+        if [ ! ${__deployment} = "rpc" ]; then
+          query_coinbase
+        fi
+        if [ ${__deployment} = "node" ]; then
+          query_graffiti
+        fi
     else
         unset EXECUTION_CLIENT
         unset GRAFANA_CLIENT
 
-        query_graffiti
         query_remote_beacon
         CL_NODE="${REMOTE_BEACON}"
+        query_coinbase
+        query_graffiti
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
