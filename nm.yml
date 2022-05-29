@@ -11,6 +11,7 @@ services:
   execution:
     restart: "${RESTART}"
     stop_grace_period: 3m
+    stop_signal: SIGINT
     build:
       context: ./nethermind
       dockerfile: ${NM_DOCKERFILE}
@@ -18,7 +19,8 @@ services:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local
-    user: nethermind
+# Root so we can chown the volumes in /nethermind. Gosu to nethermind after
+    user: root
     volumes:
       - nm-eth1-data:/var/lib/nethermind
     ports:
@@ -30,6 +32,7 @@ services:
           - eth1
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - dotnet
       - /nethermind/Nethermind.Runner.dll
       - --datadir

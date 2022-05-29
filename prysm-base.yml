@@ -94,9 +94,6 @@ services:
       - ${LOG_LEVEL}
       - --${NETWORK}
       - --accept-terms-of-use
-      # If you chose not to store the wallet password during import, comment out the two following lines
-      - --wallet-password-file
-      - /var/lib/prysm/password.txt
       - --monitoring-host
       - 0.0.0.0
       - --monitoring-port
@@ -109,6 +106,11 @@ services:
       - --grpc-gateway-corsdomain=*
       - --beacon-rpc-gateway-provider
       - consensus:5052
+      - --suggested-fee-recipient
+      - ${REWARDS_TO}
+      # If you chose not to store the wallet password during import, comment out the two following lines
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
     depends_on:
       - consensus
     labels:
@@ -167,8 +169,8 @@ services:
       - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
-      - WALLET_PASSWORD=${WALLET_PASSWORD}
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - WALLET_PASSWORD=${WALLET_PASSWORD:-}
     entrypoint:
       - validator-import.sh
       - validator

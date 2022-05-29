@@ -11,9 +11,11 @@ RUN apt-get update -y && apt-get install -y git
 RUN bash -c "git clone https://github.com/NethermindEth/nethermind && cd nethermind && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && git submodule update --init src/Dirichlet src/int256 src/rocksdb-sharp src/Math.Gmp.Native && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
+FROM ghcr.io/tomwright/dasel:latest as dasel
+
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 
-RUN apt-get update && apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates gosu tzdata && rm -rf /var/lib/apt/lists/*
 
 ARG USER=nethermind
 ARG UID=10001
@@ -32,6 +34,9 @@ COPY --from=build /nethermind/out .
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind && chown ${USER}:${USER} /var/lib/nethermind
+
+COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
 
