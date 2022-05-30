@@ -52,6 +52,8 @@ update() {
         git branch -u origin/main main
         git remote set-head origin -a
     fi
+# Do not track changes to ext-network.yml
+    git update-index --assume-unchanged ext-network.yml
     if [ "${EUID}" -eq 0 ]; then
         sudo -u "${OWNER}" git pull
     else
