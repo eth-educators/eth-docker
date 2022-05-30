@@ -41,7 +41,7 @@ services:
       - --status-bar=false
       - --tcp-port=${CL_P2P_PORT:-9000}
       - --udp-port=${CL_P2P_PORT:-9000}
-      - --max-peers=${CL_PEER_COUNT:-160}
+      - --max-peers=${CL_MAX_PEER_COUNT:-160}
       - --network=${NETWORK}
       - --web3-url=${EL_NODE:-ws://execution:8546}
       - --web3-url=${EL_FALLBACK_NODE1:-ws://execution:8546}
