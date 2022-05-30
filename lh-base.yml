@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse:local
+    image: lighthouse:merge
     user: lhconsensus
     stop_grace_period: 1m
     volumes:
@@ -69,7 +69,7 @@ services:
       - --validator-monitor-auto
   validator:
     restart: "${RESTART}"
-    image: lighthouse:local
+    image: lighthouse:merge
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -119,7 +119,7 @@ services:
         echo
   validator-import:
     restart: "no"
-    image: lighthouse:local
+    image: lighthouse:merge
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -143,7 +143,7 @@ services:
       - --debug-level=${LOG_LEVEL}
   validator-exit:
     restart: "no"
-    image: lighthouse:local
+    image: lighthouse:merge
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -167,7 +167,7 @@ services:
       - consensus
   validator-account:
     restart: "no"
-    image: lighthouse:local
+    image: lighthouse:merge
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -183,7 +183,7 @@ services:
       - --debug-level=${LOG_LEVEL}
   validator-list:
     restart: "no"
-    image: lighthouse:local
+    image: lighthouse:merge
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse

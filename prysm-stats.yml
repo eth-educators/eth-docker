@@ -10,7 +10,7 @@ services:
       - --monitoring-host
       - 0.0.0.0
   client-stats:
-    image: prysm-consensus:local
+    image: prysm-consensus:merge
     volumes:
       - /etc/localtime:/etc/localtime:ro
     entrypoint:

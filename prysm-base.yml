@@ -20,7 +20,7 @@ services:
     build:
       target: consensus
       <<: *prysm-build
-    image: prysm-consensus:local
+    image: prysm-consensus:merge
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
@@ -73,7 +73,7 @@ services:
     build:
       target: validator
       <<: *prysm-build
-    image: prysm-validator:local
+    image: prysm-validator:merge
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -120,7 +120,7 @@ services:
       - traefik.http.services.prysm.loadbalancer.server.port=${KEY_API_PORT:-7500}
   create-wallet:
     restart: "no"
-    image: prysm-validator:local
+    image: prysm-validator:merge
     user: prysmvalidator
     environment:
       - NETWORK=${NETWORK}
@@ -143,7 +143,7 @@ services:
   validator-list:
     restart: "no"
     user: prysmvalidator
-    image: prysm-validator:local
+    image: prysm-validator:merge
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
@@ -161,7 +161,7 @@ services:
       - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
     restart: "no"
-    image: prysm-validator:local
+    image: prysm-validator:merge
     user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -185,7 +185,7 @@ services:
   validator-exit:
     restart: "no"
     user: prysmvalidator
-    image: prysm-validator:local
+    image: prysm-validator:merge
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro

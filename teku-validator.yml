@@ -16,7 +16,7 @@ services:
         - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
-    image: teku:local
+    image: teku:merge
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -43,7 +43,7 @@ services:
       - --validators-proposer-default-fee-recipient=${REWARDS_TO}
   validator-import:
     restart: "no"
-    image: teku:local
+    image: teku:merge
     user: root
     volumes:
       - teku-data:/var/lib/teku
@@ -54,7 +54,7 @@ services:
     entrypoint: validator-import.sh
   validator-exit:
     restart: "no"
-    image: teku:local
+    image: teku:merge
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -66,7 +66,7 @@ services:
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
   validator-list:
     restart: "no"
-    image: teku:local
+    image: teku:merge
     user: teku
     volumes:
       - teku-data:/var/lib/teku
