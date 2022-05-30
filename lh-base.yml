@@ -49,7 +49,7 @@ services:
       - --port
       - ${CL_P2P_PORT:-9000}
       - --target-peers
-      - ${LH_PEER_COUNT}
+      - ${CL_PEER_COUNT:-80}
       - --eth1-endpoints
       - ${EL_NODE:-http://execution:8545}
       - --eth1-blocks-per-log-query
