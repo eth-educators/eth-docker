@@ -53,6 +53,10 @@ services:
       - 0.0.0.0
       - --rpc-ws-port
       - ${EL_WS_PORT:-8546}
+      - --max-peers
+      - ${EL_MAX_PEER_COUNT:-25}
+      - --fast-sync-min-peers
+      - ${EL_MIN_PEER_COUNT:-5}
       - --host-allowlist=*
       - --logging
       - ${LOG_LEVEL}
