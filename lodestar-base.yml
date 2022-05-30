@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LS_DOCKER_TAG}
-    image: lodestar:local
+    image: lodestar:merge
     user: lsconsensus
     stop_grace_period: 1m
     volumes:
@@ -59,7 +59,7 @@ services:
       - ${NETWORK}
   validator:
     restart: "${RESTART}"
-    image: lodestar:local
+    image: lodestar:merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -82,7 +82,7 @@ services:
       - ${NETWORK}
   validator-import:
     restart: "${RESTART}"
-    image: lodestar:local
+    image: lodestar:merge
     user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -106,7 +106,7 @@ services:
       - ${NETWORK}
   validator-exit:
     restart: "no"
-    image: lodestar:local
+    image: lodestar:merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -128,7 +128,7 @@ services:
       - ${NETWORK}
   validator-account:
     restart: "no"
-    image: lodestar:local
+    image: lodestar:merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -145,7 +145,7 @@ services:
       - ${NETWORK}
   validator-list:
     restart: "no"
-    image: lodestar:local
+    image: lodestar:merge
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
