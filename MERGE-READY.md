@@ -20,17 +20,17 @@
 
 ## Get eth-docker
 - Clone this tool and get into the `merge-getready` branch
-  - `git clone https://github.com/eth-educators/eth-docker.git merger-test && cd merger-test && git fetch origin merge-getready && git checkout merge-getready`
-
+  - `git clone https://github.com/eth-educators/eth-docker.git merge-ready && cd merge-ready && git fetch origin merge-getready && git checkout merge-getready`
+- N.B.: When you log into a fresh Terminal, use `cd ~/merge-ready` to get back into this directory
 
 ## Configure the clients you wish to run
 - Configure via ethd
   - `./ethd config`
-  - `docker-compose build --pull`
 - Generate the keystore files. This mnemonic should be considered compromised, as it is not generated on an air-gapped
 machine.
   - `docker-compose run --rm deposit-cli-new --eth1_withdrawal_address YOURTESTADDRESS`
-- Deposit for this key at the launchpad for your testnet.
+- Deposit for this key at the launchpad for your testnet. The `deposit_data` JSON file will be in `.eth/validator_keys`,
+ which is "hidden" directory if you use a graphical file explorer.
 - Import the keys: `./ethd keyimport`
 - Start the stack:
   - `./ethd up`
