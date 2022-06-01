@@ -68,6 +68,7 @@ COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
 # Scripts that handle permissions
 COPY ./validator-import.sh /usr/local/bin/
 COPY ./validator-exit.sh /usr/local/bin/
+COPY ./docker-entrypoint-vc.sh /usr/local/bin/
 
 # For voluntary exit
 ENV KEYSTORE=nonesuch
