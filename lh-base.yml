@@ -71,11 +71,14 @@ services:
     restart: "${RESTART}"
     image: lighthouse:merge
     user: lhvalidator
+    environment:
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
+      - docker-entrypoint-vc.sh
       - lighthouse
       - vc
       - --datadir
@@ -97,8 +100,7 @@ services:
       - ${KEY_API_PORT:-7500}
       - --http-address
       - 0.0.0.0
-      - --http-allow-origin
-      - "*"
+      - --http-allow-origin=*
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${REWARDS_TO}
