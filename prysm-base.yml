@@ -68,6 +68,8 @@ services:
       - 0.0.0.0
       - --monitoring-port
       - "8008"
+      - --suggested-fee-recipient
+      - ${REWARDS_TO}
   validator:
     restart: "${RESTART}"
     build:

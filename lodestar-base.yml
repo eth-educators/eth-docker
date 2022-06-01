@@ -57,6 +57,8 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
+      - --chain.defaultFeeRecipient
+      - ${REWARDS_TO}
   validator:
     restart: "${RESTART}"
     image: lodestar:merge
@@ -80,6 +82,8 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
+      - --defaultFeeRecipient
+      - ${REWARDS_TO}
   validator-import:
     restart: "${RESTART}"
     image: lodestar:merge

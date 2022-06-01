@@ -67,6 +67,9 @@ services:
       - --metrics-port
       - "8008"
       - --validator-monitor-auto
+      - --suggested-fee-recipient
+      - ${REWARDS_TO}
+      - --merge
   validator:
     restart: "${RESTART}"
     image: lighthouse:merge
