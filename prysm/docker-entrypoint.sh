@@ -35,5 +35,5 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
     exec $@ ${__rapid_sync}
   fi
 else
-  exec $@ ${__rapid_sync}
+  exec $@
 fi

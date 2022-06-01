@@ -492,7 +492,7 @@ query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 9 60 3 \
-    "prater" "Prater Testnet" \
+    "prater" "Görli (né Prater) Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Beacon Chain" 3>&1 1>&2 2>&3)
 
