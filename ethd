@@ -354,7 +354,7 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE REWARDS_TO EL_NODE GRAFFITI NETWORK EL_NETWORK \
             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PROM_HOST PRYSM_HOST \
-            EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL OVERRIDE_TTD \
+            EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
             CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
             PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             EL_RPC_PORT EL_WS_PORT ERIGON_TORRENT_PORT RESTART LOG_LEVEL JWT_SECRET GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
@@ -762,7 +762,7 @@ query_coinbase() {
 
 query_override() {
     if [ "${NETWORK}" = "ropsten" ]; then
-        OVERRIDE_TTD=100000000000000000000000
+        OVERRIDE_TTD=50000000000000000
     elif [ "${NETWORK}" = "goerli" ]; then
         OVERRIDE_TTD=100000000000000000000000
     elif [ "${NETWORK}" = "sepolia" ]; then
@@ -813,7 +813,7 @@ config () {
       exit 1
     fi
     if [[ "$__distro" = "ubuntu" ]]; then
-      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1) 
+      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
       if [ ${__major_version} -lt 20 ]; then
          echo
          echo "WARNING! Ubuntu ${__major_version} is known to cause issues with docker-compose."
