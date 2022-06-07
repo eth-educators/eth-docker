@@ -692,6 +692,9 @@ query_execution_client() {
         else
             EL_NODE="http://execution:8551"
         fi
+	if [ "${EXECUTION_CLIENT}" = "erigon.yml" ]; then
+	    echo "Please remember to set your EL_WS_PORT to match EL_RPC_PORT for Erigon"
+	fi
     fi
 }
 
