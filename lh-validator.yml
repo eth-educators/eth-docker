@@ -67,7 +67,7 @@ services:
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
@@ -91,7 +91,7 @@ services:
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-exit.sh
@@ -113,7 +113,7 @@ services:
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}:/interchange
+      - ./.eth:/interchange
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse
@@ -130,7 +130,7 @@ services:
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}:/interchange
+      - ./.eth:/interchange
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse

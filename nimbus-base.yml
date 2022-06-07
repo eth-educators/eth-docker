@@ -81,7 +81,7 @@ services:
     user: root
     volumes:
       - nimbus-data:/var/lib/nimbus
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
