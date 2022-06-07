@@ -21,4 +21,12 @@ else
   __override_ttd=""
 fi
 
-exec $@ ${__rapid_sync} ${__override_ttd}
+# Check whether we should use MEV Boost
+if [ "${MEV_BOOST}" = "true" ]; then
+  __mev_boost="--builder http://mev-boost:18550"
+  echo "MEV Boost enabled"
+else
+  __mev_boost=""
+fi
+
+exec $@ ${__mev_boost} ${__rapid_sync} ${__override_ttd}
