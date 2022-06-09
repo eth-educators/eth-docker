@@ -687,11 +687,7 @@ query_execution_client() {
         EL_NODE="${EL_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-        if [ "${CONSENSUS_CLIENT}" == "nimbus-base.yml" -o "${CONSENSUS_CLIENT}" == "nimbus-consensus.yml" ]; then
-            EL_NODE="ws://execution:8551"
-        else
-            EL_NODE="http://execution:8551"
-        fi
+        EL_NODE="http://execution:8551"
 	if [ "${EXECUTION_CLIENT}" = "erigon.yml" ]; then
 	    echo "Please remember to set your EL_WS_PORT to match EL_RPC_PORT for Erigon"
 	fi
