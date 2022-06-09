@@ -42,6 +42,12 @@ machine.
 - If you want to try a different combo, first `./ethd terminate` so the chain data gets deleted, then just `./ethd config`, choose your clients,
   **wait 15 minutes**, `./ethd keyimport` and `./ethd up`. The 15 minute wait is there to avoid slashing.
 
+## What to do when TTD changes
+
+If the announced TTD of the chain you are running on changes, you have two options.
+- Run `./ethd update`, observe whether it brought in a new TTD. If it did, run `./ethd restart`
+- Run `nano .env` and manually change the `OVERRIDE_TTD`. Save, then `./ethd restart`
+
 Note: Not all consensus/execution client combinations have been tested. Please join us on ethstaker Discord to discuss the results of your experimentation!
 And above all, have fun!
 
