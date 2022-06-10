@@ -41,14 +41,14 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Prater testnet"
-      wget -O "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
+      curl -L -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
     fi
     exec $@ "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd}
   elif [[ "$@" =~ --ropsten ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Ropsten testnet"
-      wget -O "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
+      curl -L -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
     fi
     exec $@ "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd}
   else
