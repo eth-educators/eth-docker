@@ -8,7 +8,7 @@ services:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
     image: staking-deposit-cli:local
     volumes:
-      - ${DEPCLI_LOCALDIR}:/app/.eth/
+      - ./.eth:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3
@@ -20,7 +20,7 @@ services:
     restart: "no"
     image: staking-deposit-cli:local
     volumes:
-      - ${DEPCLI_LOCALDIR}:/app/.eth/
+      - ./.eth:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3

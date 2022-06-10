@@ -47,7 +47,8 @@ services:
       - --ee-jwt-secret-file
       - /var/lib/teku/secrets/jwtsecret
       - --p2p-port=${CL_P2P_PORT:-9000}
-      - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
+      - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
+      - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
@@ -86,7 +87,7 @@ services:
     user: root
     volumes:
       - teku-data:/var/lib/teku
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}

@@ -54,6 +54,10 @@ services:
       - ${EL_NODE}
       - --jwt-secret
       - /var/lib/lodestar/consensus/secrets/jwtsecret
+      - --network.maxPeers
+      - ${CL_MAX_PEER_COUNT:-55}
+      - --network.targetPeers
+      - ${CL_MIN_PEER_COUNT:-50}
       - --logLevel
       - ${LOG_LEVEL}
       - --network
@@ -91,7 +95,7 @@ services:
     user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
