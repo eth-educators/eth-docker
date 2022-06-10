@@ -759,7 +759,6 @@ query_coinbase() {
             exit 0
         fi
     done
-<<<<<<< HEAD
 }
 
 query_override() {
