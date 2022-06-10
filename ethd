@@ -871,8 +871,6 @@ config () {
         unset GRAFANA_CLIENT
 
         query_remote_beacon
-        query_coinbase
-        query_graffiti
         CL_NODE="${REMOTE_BEACON}"
         query_coinbase
         query_graffiti
