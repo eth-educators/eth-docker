@@ -13,8 +13,8 @@ fi
 #        <logger name="JsonRpc.*" minlevel="Warn" writeTo="file-async"/>
 #        <logger name="JsonRpc.*" minlevel="Warn" writeTo="auto-colored-console-async"/>
 #        <logger name="JsonRpc.*" final="true"/>
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-minlevel":"Warn","-writeTo":"file-async"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-minlevel":"Warn","-writeTo":"auto-colored-console-async"}'
+dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-minlevel":"Error","-writeTo":"file-async"}'
+dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-minlevel":"Error","-writeTo":"auto-colored-console-async","-final":"true"}'
 dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-final":"true"}'
 
 exec $@
