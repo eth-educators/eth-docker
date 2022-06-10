@@ -45,6 +45,9 @@ RUN mkdir -p /var/lib/nethermind/secrets && chown -R ${USER}:${USER} /var/lib/ne
 COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
+COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
 USER ${USER}
 
 ENTRYPOINT ["./Nethermind.Runner"]

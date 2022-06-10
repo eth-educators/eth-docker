@@ -53,7 +53,7 @@ services:
       - --port
       - ${CL_P2P_PORT:-9000}
       - --target-peers
-      - ${LH_PEER_COUNT}
+      - ${CL_MAX_PEER_COUNT:-80}
 # I don't have a specific RPC target any more in .env. Hopefully LH will remove the need for this
       - --eth1-endpoints
       - http://execution:${EL_RPC_PORT}
@@ -130,7 +130,7 @@ services:
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
@@ -154,7 +154,7 @@ services:
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-exit.sh
@@ -194,7 +194,7 @@ services:
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}:/interchange
+      - ./.eth:/interchange
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse

@@ -52,6 +52,8 @@ update() {
         git branch -u origin/main main
         git remote set-head origin -a
     fi
+# Do not track changes to ext-network.yml
+    git update-index --assume-unchanged ext-network.yml
     if [ "${EUID}" -eq 0 ]; then
         sudo -u "${OWNER}" git pull
     else
@@ -354,8 +356,8 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE REWARDS_TO EL_NODE GRAFFITI NETWORK EL_NETWORK MEV_BOOST \
             PRYSM_PEER_COUNT LH_PEER_COUNT TEKU_PEER_COUNT NIM_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PROM_HOST PRYSM_HOST \
-            EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
-            CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
+            EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT \
+            EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
             PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             EL_RPC_PORT EL_WS_PORT ERIGON_TORRENT_PORT RESTART LOG_LEVEL JWT_SECRET GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
@@ -364,7 +366,7 @@ envmigrate() {
 		AKULA_SRC_BUILD_TARGET AKULA_DOCKER_TAG AKULA_DOCKERFILE \
                 OE_SRC_BUILD_TARGET OE_DOCKER_TAG OE_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
-                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG DEPCLI_LOCALDIR \
+                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_NETWORK \
 	   EC_HOST EC_WS_HOST EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
@@ -428,7 +430,7 @@ envmigrate() {
     # Check for rewards
     var="REWARDS_TO"
     value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-    if [ -z "${value}" ]; then
+    if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
 	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
         query_coinbase
         set_value_in_env
@@ -734,7 +736,7 @@ query_rapid_sync() {
     # Assume no to start
     RAPID_SYNC_URL=""
 
-    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+    if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
         query_remote_beacon
         RAPID_SYNC_URL="${REMOTE_BEACON}"
     fi
@@ -757,6 +759,7 @@ query_coinbase() {
             exit 0
         fi
     done
+<<<<<<< HEAD
 }
 
 query_override() {
@@ -872,6 +875,8 @@ config () {
         query_coinbase
         query_graffiti
         CL_NODE="${REMOTE_BEACON}"
+        query_coinbase
+        query_graffiti
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
