@@ -60,7 +60,7 @@ services:
       - --p2p-udp-port
       - ${PRYSM_UDP_PORT}
       - --p2p-max-peers
-      - ${PRYSM_PEER_COUNT}
+      - ${CL_MAX_PEER_COUNT:-45}
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}
