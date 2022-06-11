@@ -49,7 +49,7 @@ services:
       - --port
       - ${CL_P2P_PORT:-9000}
       - --target-peers
-      - ${LH_PEER_COUNT}
+      - ${CL_MAX_PEER_COUNT:-80}
       - --eth1-endpoints
       - ${EL_NODE:-http://execution:8545}
       - --eth1-blocks-per-log-query
@@ -91,8 +91,7 @@ services:
       - ${KEY_API_PORT:-7500}
       - --http-address
       - 0.0.0.0
-      - --http-allow-origin
-      - "*"
+      - --http-allow-origin=*
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${REWARDS_TO}
@@ -117,7 +116,7 @@ services:
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
@@ -141,7 +140,7 @@ services:
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}/validator_keys:/validator_keys
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - validator-exit.sh
@@ -181,7 +180,7 @@ services:
     user: lhvalidator
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ${DEPCLI_LOCALDIR}:/interchange
+      - ./.eth:/interchange
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - lighthouse
