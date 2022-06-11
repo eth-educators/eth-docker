@@ -28,12 +28,12 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Prater testnet"
-      curl -o "$GENESIS" https://prysmaticlabs.com/uploads/prater-genesis.ssz
+      curl -L -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
     fi
     exec $@ "--genesis-state=$GENESIS" ${__rapid_sync}
   else
     exec $@ ${__rapid_sync}
   fi
 else
-  exec $@ ${__rapid_sync}
+  exec $@
 fi
