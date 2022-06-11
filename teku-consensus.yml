@@ -42,7 +42,8 @@ services:
       - --eth1-endpoints=${EL_NODE}
       - --eth1-deposit-contract-max-request-size=150
       - --p2p-port=${CL_P2P_PORT:-9000}
-      - --p2p-peer-upper-bound=${TEKU_PEER_COUNT}
+      - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
+      - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true

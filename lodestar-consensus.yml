@@ -46,6 +46,10 @@ services:
       - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
       - --network.localMultiaddrs
       - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
+      - --network.maxPeers
+      - ${CL_MAX_PEER_COUNT:-55}
+      - --network.targetPeers
+      - ${CL_MIN_PEER_COUNT:-50}
       - --eth1.providerUrls
       - ${EL_NODE}
       - --logLevel
