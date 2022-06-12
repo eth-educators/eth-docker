@@ -193,7 +193,7 @@ prune-geth() {
         fi
     fi
 
-    if [ __non_interactive = 0 ]; then
+    if [ $__non_interactive = 0 ]; then
       while true; do
           read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
           case $yn in
