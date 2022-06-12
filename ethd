@@ -200,7 +200,7 @@ prune-geth() {
         fi
     fi
 
-    if [ __non_interactive = 0 ]; then
+    if [ $__non_interactive = 0 ]; then
       while true; do
           read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
           case $yn in
@@ -264,16 +264,8 @@ prune-bor() {
         exit 1
     fi
 
-    rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
-    regex='^EL_RPC_PORT=([0-9]+)'
-    if [[ ! "${rpc_line}" =~ ${regex} ]]; then
-        echo "Unable to determine EL_RPC_PORT, aborting."
-        exit 1
-    else
-        rpc_port="${BASH_REMATCH[1]}"
-    fi
-
-    sync_status=$(cmd exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+    rpc_port=8545
+    sync_status=$(cmd exec -T bor wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
         echo "Bor is not running, aborting."
@@ -287,7 +279,7 @@ prune-bor() {
         echo "Aborting."
         exit 1
     fi
-    node_logs=$(cmd logs --no-color --tail 1000 execution)
+    node_logs=$(cmd logs --no-color --tail 1000 bor)
     if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
         echo "Bor has not finished generating a state snapshot yet, aborting."
         exit 1
@@ -303,7 +295,7 @@ prune-bor() {
         fi
     fi
 
-    if [ __non_interactive = 0 ]; then
+    if [ $__non_interactive = 0 ]; then
       while true; do
           read -rp "WARNING - this will stop Bor and prune its database. Do you wish to continue? (No/Yes) " yn
           case $yn in
