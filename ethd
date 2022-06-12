@@ -99,20 +99,20 @@ been migrated, please recreate these changes yourself."
         echo "No changes made to ${ENV_FILE} during migration"
     fi
     if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
-	echo
-	echo "WARNING! Snap docker package detected. This WILL result in issues."
-	echo "Removing the package will delete volumes and require a resync,"
-	echo "as well as re-import of all validator keys."
-	echo
-	echo "Doing so is still highly recommended however."
-	echo
-    echo "The exact steps depend a little on whether there already is"
-	echo "an apt version of docker installed as well, but in a nutshell"
-	echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
-	echo "and then reinstall docker.io or docker-ce with apt,"
-	echo "re-import keys and restart eth-docker."
-	echo
-	echo "Do join us on EthStaker Discord to work through this emergency."
+        echo
+        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "Removing the package will delete volumes and require a resync,"
+        echo "as well as re-import of all validator keys."
+        echo
+        echo "Doing so is still highly recommended however."
+        echo
+        echo "The exact steps depend a little on whether there already is"
+        echo "an apt version of docker installed as well, but in a nutshell"
+        echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+        echo "and then reinstall docker.io or docker-ce with apt,"
+        echo "re-import keys and restart eth-docker."
+        echo
+        echo "Do join us on EthStaker Discord to work through this emergency."
     fi
 }
 
@@ -422,9 +422,23 @@ envmigrate() {
     var="REWARDS_TO"
     value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
     if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+        whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
         query_coinbase
         set_value_in_env
+    fi
+    # Check for CL and EL
+    var="COMPOSE_FILE"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+    # Case 1 ... CL, do we have an EL?
+    if [[ "${value}" =~ "-base.yml" ]]; then
+        if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nm.yml" ]]; then
+            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, Infura will no longer be usable after The Merge" 16 75
+	fi
+    # Case 2 ... EL, do we have a CL?
+    elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nm.yml" ]]; then
+        if [[ ! "${value}" =~ "-base.yml" ]]; then
+	    whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, an EL alone will no longer be usable after The Merge" 16 75
+	fi
     fi
     rm .env.source
 }
