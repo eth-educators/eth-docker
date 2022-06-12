@@ -8,21 +8,27 @@ if [ "$(id -u)" = '0' ]; then
    exec su-exec bor "$BASH_SOURCE" "$@"
 fi
 
-set -x
-cd /var/lib/bor
-wget -O setup.sh ${BOR_SETUP}
-sed -i '/^cp .\/static-nodes.json/d' setup.sh
-sed -i '/^# set -x/c\set -x' setup.sh
-wget -O genesis.json ${BOR_GENESIS}
-chmod +x ./setup.sh
-./setup.sh
-if [ ! -f /var/lib/bor/setupdone ]; then
-  if [ ${BOR_MODE} == "archive" ]; then
-    wget -q -O - "${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/bor/data/bor/chaindata
-  else
-    wget -q -O - "${BOR_FULL_NODE_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/bor/data/bor/chaindata
-  fi
-  touch /var/lib/bor/setupdone
-fi
+if [ -f /var/lib/bor/prune-marker ]; then
+  $@ snapshot prune-state
+  rm -f /var/lib/bor/prune-marker
+else
+  set -x
+  cd /var/lib/bor
+  wget -O setup.sh ${BOR_SETUP}
+  sed -i '/^cp .\/static-nodes.json/d' setup.sh
+  sed -i '/^# set -x/c\set -x' setup.sh
+  wget -O genesis.json ${BOR_GENESIS}
+  chmod +x ./setup.sh
+  ./setup.sh
 
-exec "$@"
+  if [ ! -f /var/lib/bor/setupdone ]; then
+    if [ ${BOR_MODE} == "archive" ]; then
+      wget -q -O - "${BOR_ARCHIVE_NODE_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/bor/data/bor/chaindata
+    else
+      wget -q -O - "${BOR_FULL_NODE_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/bor/data/bor/chaindata
+    fi
+    touch /var/lib/bor/setupdone
+  fi
+
+  exec $@
+fi
