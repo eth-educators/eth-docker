@@ -227,6 +227,109 @@ the \"Compacting database\" stage it may not output logs for an hour or so, that
     echo ""
 }
 
+prune-bor() {
+    __non_interactive=0
+    while :
+    do
+        if [ -z ${1+x} ]; then
+            break
+        fi
+        case "$1" in
+            --non-interactive)
+                __non_interactive=1
+                shift
+                ;;
+            *)
+                echo "Error: Unknown option: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    if [ ! -f "./${ENV_FILE}" ]; then
+        echo "${ENV_FILE} configuration file not found, aborting."
+        exit 1
+    fi
+
+    if ! grep -q '^COMPOSE_FILE=.*bor\.yml' "${ENV_FILE}" 2>/dev/null ; then
+        echo "You do not appear to be using Bor, aborting."
+        exit 1
+    fi
+
+    if [ $(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}') -lt 41943040 ]; then
+        echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
+        df -h /var/lib/docker
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+
+    rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
+    regex='^EL_RPC_PORT=([0-9]+)'
+    if [[ ! "${rpc_line}" =~ ${regex} ]]; then
+        echo "Unable to determine EL_RPC_PORT, aborting."
+        exit 1
+    else
+        rpc_port="${BASH_REMATCH[1]}"
+    fi
+
+    sync_status=$(cmd exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+    exitstatus=$?
+    if [ $exitstatus -ne 0 ]; then
+        echo "Bor is not running, aborting."
+        exit 1
+    fi
+
+    if [[ ! "${sync_status}" =~ "false" ]]; then
+        echo "Bor is not done syncing yet. Sync status:"
+        echo "${sync_status}"
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+    node_logs=$(cmd logs --no-color --tail 1000 execution)
+    if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
+        echo "Bor has not finished generating a state snapshot yet, aborting."
+        exit 1
+    fi
+
+    regex='\[([0-9][0-9]-[0-9][0-9])\|([0-9][0-9]:[0-9][0-9]):[0-9.]*\][[:space:]]*Generated state'
+    if [[ "${node_logs}" =~ $regex ]]; then
+        snap_time=$(date -d "1970-${BASH_REMATCH[1]} ${BASH_REMATCH[2]}" +"%s")
+        now_time=$(date +"%s")
+        if [ $(($snap_time+2100)) -gt $now_time ]; then
+            echo "Please wait 35 minutes after snapshot generation finished. Aborting."
+            exit 1
+        fi
+    fi
+
+    if [ __non_interactive = 0 ]; then
+      while true; do
+          read -rp "WARNING - this will stop Bor and prune its database. Do you wish to continue? (No/Yes) " yn
+          case $yn in
+              [Yy]es ) break;;
+              * ) echo "Aborting, no changes made"; exit 1;;
+          esac
+      done
+    fi
+
+    echo ""
+    echo "Starting Bor prune"
+    echo ""
+    cmd run --rm set-prune-marker "touch /var/lib/bor/prune-marker"
+    cmd stop bor && cmd rm -f bor
+    start
+    echo ""
+    echo "Prune is running, you can observe it with './ethd logs -f bor'"
+    echo ""
+    echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting database\". During \
+the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
+    echo ""
+    echo "When prune is done, which takes 4-5 hours, Bor will automatically start again."
+    echo "NB: You will need 'sudo' for the './ethd logs' command if your user is not part of the 'docker' group."
+    echo ""
+}
+
 keyimport() {
     set -Eeuo pipefail
     if [ ! -f "./${ENV_FILE}" ]; then
@@ -958,6 +1061,8 @@ printhelp() {
     echo "     stops the Ethereum node software and destroys all data stores"
     echo "  prune-geth"
     echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
+    echo "  prune-bor"
+    echo "     stops the Bor execution client and prunes its DB. This takes about 4-5 hours"
     echo ""
     echo ""
     echo "The logs subcommand can be appended by flags and specify the container(s). example: "
