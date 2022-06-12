@@ -177,6 +177,15 @@ services:
       - traefik.http.routers.borwslb.tls.certresolver=letsencrypt
       - traefik.http.services.borws.loadbalancer.server.port=${BOR_WS_PORT}
 
+  set-prune-marker:
+    image: alpine:latest
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - bor-data:/var/lib/bor
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
+
   eth:
     image: tianon/true
     depends_on:
