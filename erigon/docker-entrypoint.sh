@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -Eeuo pipefail
 
 if [ "$(id -u)" = '0' ]; then
@@ -26,18 +26,46 @@ else
   __override_ttd=""
 fi
 
-# Check for mainnet or goerli, and set prune accordingly
+# Check for network, and set prune accordingly
 
 if [[ "$@" =~ "--chain mainnet" ]]; then
   echo "mainnet: Running with prune.r.before=11184524 for eth deposit contract"
-  exec $@ --prune.r.before=11184524 ${__override_ttd}
+  __prune="--prune.r.before=11184524"
 elif [[ "$@" =~ "--chain goerli" ]]; then
   echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
-  exec $@ --prune.r.before=4367322 ${__override_ttd}
+  __prune="--prune.r.before=4367322"
 elif [[ "$@" =~ "--chain ropsten" ]]; then
   echo "ropsten: Running with prune.r.before=12269949 for eth deposit contract"
-  exec $@ --prune.r.before=12269949 ${__override_ttd}
+  __prune="--prune.r.before=12269949"
+elif [[ "$@" =~ "--chain sepolia" ]]; then
+  echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
+  __prune="--prune.r.before=1273020"
 else
   echo "Unable to determine eth deposit contract, running without prune.r.before"
-  exec $@ ${__override_ttd}
+  __prune=""
 fi
+
+shopt -s nocasematch
+case ${LOG_LEVEL} in
+  error)
+    __verbosity="--verbosity 1"
+    ;;
+  warn)
+    __verbosity="--verbosity 2"
+    ;;
+  info)
+    __verbosity="--verbosity 3"
+    ;;
+  debug)
+    __verbosity="--verbosity 4"
+    ;;
+  trace)
+    __verbosity="--verbosity 5"
+    ;;
+  *)
+    echo "LOG_LEVEL ${LOG_LEVEL} not recognized"
+    __verbosity=""
+    ;;
+esac
+
+exec $@ ${__prune} ${__verbosity} ${__override_ttd}

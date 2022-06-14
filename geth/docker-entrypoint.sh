@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 if [ "$(id -u)" = '0' ]; then
   chown -R geth:geth /var/lib/goethereum
@@ -25,9 +25,33 @@ else
   __override_ttd=""
 fi
 
+# Set verbosity
+shopt -s nocasematch
+case ${LOG_LEVEL} in
+  error)
+    __verbosity="--verbosity 1"
+    ;;
+  warn)
+    __verbosity="--verbosity 2"
+    ;;
+  info)
+    __verbosity="--verbosity 3"
+    ;;
+  debug)
+    __verbosity="--verbosity 4"
+    ;;
+  trace)
+    __verbosity="--verbosity 5"
+    ;;
+  *)
+    echo "LOG_LEVEL ${LOG_LEVEL} not recognized"
+    __verbosity=""
+    ;;
+esac
+
 if [ -f /var/lib/goethereum/prune-marker ]; then
   $@ snapshot prune-state
   rm -f /var/lib/goethereum/prune-marker
 else
-  exec $@ ${__override_ttd}
+  exec $@ ${__override_ttd} ${__verbosity}
 fi
