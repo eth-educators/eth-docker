@@ -62,7 +62,7 @@ services:
       - --keymanager-address=0.0.0.0
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
-      - --suggested-fee-recipient=${REWARDS_TO}
+      - --suggested-fee-recipient=${FEE_RECIPIENT}
   get-keyapi-token:
     restart: "no"
     image: alpine:latest
