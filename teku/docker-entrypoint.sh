@@ -34,7 +34,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--Xvalidators-proposer-blinded-blocks-enabled=true --Xvalidators-proposer-mev-boost-enabled=true --Xeb-endpoint=http://mev-boost:18550"
+  __mev_boost="--Xvalidators-proposer-blinded-blocks-enabled=true --Xvalidators-registration-default-enabled=true --Xeb-endpoint=http://mev-boost:18550"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
