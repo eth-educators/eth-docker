@@ -69,7 +69,7 @@ services:
       - --monitoring-port
       - "8008"
       - --suggested-fee-recipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
   validator:
     restart: "${RESTART}"
     build:
@@ -108,7 +108,7 @@ services:
       - --beacon-rpc-gateway-provider
       - consensus:5052
       - --suggested-fee-recipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt

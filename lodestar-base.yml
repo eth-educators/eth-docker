@@ -63,7 +63,7 @@ services:
       - --network
       - ${NETWORK}
       - --chain.defaultFeeRecipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
   validator:
     restart: "${RESTART}"
     image: lodestar:merge
@@ -88,7 +88,7 @@ services:
       - --network
       - ${NETWORK}
       - --defaultFeeRecipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
   validator-import:
     restart: "${RESTART}"
     image: lodestar:merge

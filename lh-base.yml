@@ -69,7 +69,7 @@ services:
       - "8008"
       - --validator-monitor-auto
       - --suggested-fee-recipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
       - --merge
   validator:
     restart: "${RESTART}"
@@ -107,7 +107,7 @@ services:
       - --http-allow-origin=*
       - --unencrypted-http-transport
       - --suggested-fee-recipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
       - --private-tx-proposals
     depends_on:
       - consensus
