@@ -104,7 +104,6 @@ services:
       - node
       - --max-old-space-size=8192
       - /usr/app/node_modules/.bin/lodestar
-      - account
       - validator
       - import
       - --rootDir
@@ -124,7 +123,6 @@ services:
       - node
       - --max-old-space-size=8192
       - /usr/app/node_modules/.bin/lodestar
-      - account
       - validator
       - voluntary-exit
       - --rootDir
@@ -133,23 +131,6 @@ services:
       - http://consensus:5052
       -  --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
-  validator-account:
-    restart: "no"
-    image: lodestar:merge
-    user: lsvalidator
-    volumes:
-      - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - node
-      - --max-old-space-size=8192
-      - /usr/app/node_modules/.bin/lodestar
-      - account
-      - validator
-      - --rootDir
-      - /var/lib/lodestar/validators
       - --network
       - ${NETWORK}
   validator-list:
@@ -163,7 +144,6 @@ services:
       - node
       - --max-old-space-size=8192
       - /usr/app/node_modules/.bin/lodestar
-      - account
       - validator
       - list
       - --rootDir
