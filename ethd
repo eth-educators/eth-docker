@@ -99,6 +99,9 @@ been migrated, please recreate these changes yourself."
 	echo "If you are coming from a pre-merge setup, please pay special attention to EL_NODE,"
 	echo "as failover is no longer supported."
 	echo
+	echo "Likewise, you'll want to decide whether to use mev-boost. Please see MEV_BOOST"
+	echo "in .env for details"
+	echo
 	echo "An ./ethd restart command will start using the new images and configuration."
     else
         echo "No changes made to ${ENV_FILE} during migration"
@@ -460,6 +463,17 @@ envmigrate() {
         if [[ ! "${value}" =~ "-base.yml" ]]; then
 	    whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
 	fi
+    fi
+    # Adjust EL_NODE as needed
+    var="EL_NODE"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+    if [[ "${value}" =~ "infura.io" ]]; then
+       echo "Detected use of an Infura project as an EL or failover EL. This is no longer supported with merge."
+    fi
+    if [[ "${value}" =~ "http://execution:8545" || "${value}" =~ "ws://execution:8546" || "${value}" =~ "ws://execution:8545" ]]; then
+       EL_NODE="http://execution:8551"
+       set_value_in_env
+       echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
     fi
     rm .env.source
 }
