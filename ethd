@@ -541,20 +541,24 @@ query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 9 60 3 \
-    "ropsten" "Ropsten Testnet" 3>&1 1>&2 2>&3)
+    "ropsten" "Ropsten Testnet" \
+    "sepolia" "Sepolia Testnet" 3>&1 1>&2 2>&3)
 
-    if [ "${NETWORK}" == "mainnet" ]; then
-        echo "You chose to run on Ethereum mainnet"
-    elif [ "${NETWORK}" == "prater" ]; then
-        echo "You chose to run on Prater testnet"
-    elif [ "${NETWORK}" == "ropsten" ]; then
-        echo "You chose to run on Ropsten testnet"
-    elif [ "${NETWORK}" == "gnosis" ]; then
-        echo "You chose to run on Gnosis Beacon Chain"
-    else
-        echo "You chose Cancel."
-        exit 0
-    fi
+    case "${NETWORK}" in
+       "mainnet")
+           echo "You chose to run on Ethereum mainnet"
+           ;;
+       "gnosis")
+           echo "You chose to run on Gnosis Beacon Chain"
+           ;;
+       "goerli" | "ropsten" | "sepolia")
+           echo "You chose to run on ${NETWORK} testnet"
+           ;;
+       *)
+           echo "You chose Cancel"
+           exit 0
+           ;;
+    esac
 }
 
 query_deployment() {
@@ -802,14 +806,17 @@ query_coinbase() {
 }
 
 query_override() {
-    if [ "${NETWORK}" = "ropsten" ]; then
-        OVERRIDE_TTD=50000000000000000
-    elif [ "${NETWORK}" = "goerli" ]; then
-        OVERRIDE_TTD=100000000000000000000000
-    elif [ "${NETWORK}" = "sepolia" ]; then
-        OVERRIDE_TTD=100000000000000000000000
-    else
-        OVERRIDE_TTD=100000000000000000000000
+    case "${NETWORK}" in
+        "ropsten")
+            OVERRIDE_TTD=50000000000000000
+            ;;
+        *)
+            OVERRIDE_TTD=100000000000000000000000
+            ;;
+    esac
+
+    if [ -z "${OVERRIDE_TTD}" ]; then
+        return
     fi
 
     OVERRIDE_TTD=$(whiptail --title "Configure Override TTD" --inputbox "What is the override TTD for the ${NETWORK} network? (right-click to paste)" 10 60 ${OVERRIDE_TTD} 3>&1 1>&2 2>&3)
@@ -878,7 +885,7 @@ config () {
     query_network
     query_deployment
     case "${__deployment}" in
-      "node" | "blox" )
+      "node" | "blox")
         query_consensus_client
         ;;
       "validator" | "rocket")
