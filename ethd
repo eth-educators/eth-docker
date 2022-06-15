@@ -3,7 +3,7 @@
 set -uo pipefail
 
 cmd() {
-    docker-compose "$@"
+    docker-compose $@
 }
 
 determine_distro() {
@@ -313,7 +313,7 @@ upgrade() {
 }
 
 start() {
-    cmd up -d eth
+    cmd up -d
 }
 
 up() {
@@ -354,7 +354,7 @@ restart() {
 }
 
 logs() {
-    cmd logs "$@"
+    cmd logs $@
 }
 
 envmigrate() {

@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -90,6 +90,7 @@ services:
       - --defaultFeeRecipient
       - ${FEE_RECIPIENT}
   validator-import:
+    profiles: ["tools"]
     restart: "${RESTART}"
     image: lodestar:merge
     user: root
@@ -113,6 +114,7 @@ services:
       - --network
       - ${NETWORK}
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: lodestar:merge
     user: lsvalidator
@@ -134,6 +136,7 @@ services:
       - --network
       - ${NETWORK}
   validator-list:
+    profiles: ["tools"]
     restart: "no"
     image: lodestar:merge
     user: lsvalidator
@@ -150,12 +153,6 @@ services:
       - /var/lib/lodestar/validators
       - --network
       - ${NETWORK}
-  eth:
-    image: tianon/true
-    restart: "no"
-    depends_on:
-      - consensus
-      - validator
 volumes:
   lsconsensus-data:
   lsvalidator-data:

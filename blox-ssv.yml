@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -24,10 +24,8 @@ services:
       - CONFIG_PATH=/config.yaml
       - HOME=/tmp
     command: make BUILD_PATH=/go/bin/ssvnode start-node
-  eth:
-    depends_on:
-      - ssv-node
   ssv-generate-keys:
+    profiles: ["tools"]
     restart: "no"
     image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
     command: /go/bin/ssvnode generate-operator-keys

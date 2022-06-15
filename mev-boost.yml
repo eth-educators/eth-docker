@@ -23,6 +23,3 @@ services:
       - -relays
       - ${MEV_RELAYS}
     <<: *logging
-  eth:
-    depends_on:
-      - mev-boost

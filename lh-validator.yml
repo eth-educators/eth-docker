@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -52,6 +52,7 @@ services:
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
   get-keyapi-token:
+    profiles: ["tools"]
     restart: "no"
     image: alpine:latest
     user: "10000"
@@ -65,6 +66,7 @@ services:
         cat /var/lib/lighthouse/validators/api-token.txt
         echo
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: root
@@ -89,6 +91,7 @@ services:
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: root
@@ -111,6 +114,7 @@ services:
       - --debug-level=${LOG_LEVEL}
       - --keystore
   validator-account:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: lhvalidator
@@ -128,6 +132,7 @@ services:
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-list:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: lhvalidator
@@ -145,10 +150,5 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  eth:
-    image: tianon/true
-    restart: "no"
-    depends_on:
-      - validator
 volumes:
   lhvalidator-data:

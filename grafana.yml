@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -123,9 +123,6 @@ services:
       - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
       - traefik.http.routers.grafana.tls.certresolver=letsencrypt
       - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
-  eth:
-    depends_on:
-      - grafana
 volumes:
   grafana-data:
   grafana-config:

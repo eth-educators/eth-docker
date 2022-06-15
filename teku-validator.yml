@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -42,6 +42,7 @@ services:
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: teku:merge
     user: root
@@ -53,6 +54,7 @@ services:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
     entrypoint: validator-import.sh
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: teku:merge
     user: teku
@@ -65,6 +67,7 @@ services:
       - --beacon-node-api-endpoint=${CL_NODE:-http://consensus:5052}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
   validator-list:
+    profiles: ["tools"]
     restart: "no"
     image: teku:merge
     user: teku
@@ -79,10 +82,5 @@ services:
           echo -n "0x"
           cat $${file} | jq -r .pubkey
         done
-  eth:
-    image: tianon/true
-    restart: "no"
-    depends_on:
-      - validator
 volumes:
   teku-data:

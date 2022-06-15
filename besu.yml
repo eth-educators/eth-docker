@@ -79,9 +79,6 @@ services:
       - "6060"
       - --data-storage-format=BONSAI
       - --sync-mode=X_SNAP
-  eth:
-    depends_on:
-      - execution
 volumes:
   besu-eth1-data:
   jwtsecret:
