@@ -18,9 +18,5 @@ services:
     depends_on:
       - prometheus
 
-  eth:
-    depends_on:
-      - alertmanager
-
 volumes:
   alertmanager-data:

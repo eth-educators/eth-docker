@@ -1,6 +1,7 @@
 version: "3.4"
 services:
   deposit-cli-new:
+    profiles: ["tools"]
     restart: "no"
     build:
       context: ./staking-deposit-cli
@@ -17,6 +18,7 @@ services:
       - --chain
       - ${NETWORK}
   deposit-cli-existing:
+    profiles: ["tools"]
     restart: "no"
     image: staking-deposit-cli:local
     volumes:

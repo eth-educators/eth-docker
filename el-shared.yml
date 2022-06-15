@@ -5,5 +5,3 @@ services:
     ports:
       - ${EL_RPC_PORT}:${EL_RPC_PORT:-8545}/tcp
       - ${EL_WS_PORT}:${EL_WS_PORT:-8546}/tcp
-  eth:
-    image: tianon/true

@@ -9,7 +9,7 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=no
 WorkingDirectory=/home/USER/eth-docker
-ExecStart=/usr/bin/docker-compose up -d eth
+ExecStart=/usr/bin/docker-compose up -d
 TimeoutStartSec=0
 
 [Install]

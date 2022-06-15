@@ -76,9 +76,6 @@ services:
       - "8551"
       - --authrpc.jwtsecret
       - /var/lib/erigon/secrets/jwtsecret
-  eth:
-    depends_on:
-      - execution
 volumes:
   erigon-ec-data:
   jwtsecret:

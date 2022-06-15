@@ -66,6 +66,7 @@ services:
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
   get-keyapi-token:
+    profiles: ["tools"]
     restart: "no"
     image: alpine:latest
     user: "10002"
@@ -78,6 +79,7 @@ services:
       - |
         cat /var/lib/nimbus/api-token.txt
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: nimbus:merge
     user: root
@@ -96,6 +98,7 @@ services:
       - import
       - /val_keys
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: nimbus:merge
     user: user
@@ -112,6 +115,7 @@ services:
       - --rest-url=http://consensus:5052
       - --validator=
   validator-list:
+    profiles: ["tools"]
     restart: "no"
     image: nimbus:merge
     user: user
@@ -125,11 +129,6 @@ services:
         for dir in /var/lib/nimbus/validators/*; do
           echo $$(basename $${dir})
         done
-  eth:
-    image: tianon/true
-    restart: "no"
-    depends_on:
-      - consensus
 volumes:
   nimbus-data:
   jwtsecret:

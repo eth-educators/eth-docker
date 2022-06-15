@@ -3,7 +3,7 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
@@ -121,6 +121,7 @@ services:
       - traefik.http.routers.prysm.tls.certresolver=letsencrypt
       - traefik.http.services.prysm.loadbalancer.server.port=${KEY_API_PORT:-7500}
   create-wallet:
+    profiles: ["tools"]
     restart: "no"
     image: prysm-validator:merge
     user: prysmvalidator
@@ -131,6 +132,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     entrypoint: create-wallet.sh
   get-keyapi-token:
+    profiles: ["tools"]
     restart: "no"
     image: alpine:latest
     user: "10000"
@@ -143,6 +145,7 @@ services:
       - |
         sed -n 2p /var/lib/prysm/auth-token
   validator-list:
+    profiles: ["tools"]
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:merge
@@ -162,6 +165,7 @@ services:
       # If you chose not to store the wallet password during import, comment out the following line
       - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: prysm-validator:merge
     user: root
@@ -185,6 +189,7 @@ services:
       - --keys-dir=/val_keys
       - --${NETWORK}
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     user: prysmvalidator
     image: prysm-validator:merge
@@ -205,12 +210,6 @@ services:
       - --${NETWORK}
     depends_on:
       - consensus
-  eth:
-    image: tianon/true
-    restart: "no"
-    depends_on:
-      - consensus
-      - validator
 volumes:
   prysmbeacon-data:
   prysmvalidator-data:

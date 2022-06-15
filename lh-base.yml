@@ -112,6 +112,7 @@ services:
     depends_on:
       - consensus
   get-keyapi-token:
+    profiles: ["tools"]
     restart: "no"
     image: alpine:latest
     user: "10000"
@@ -125,6 +126,7 @@ services:
         cat /var/lib/lighthouse/validators/api-token.txt
         echo
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: root
@@ -149,6 +151,7 @@ services:
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: root
@@ -173,6 +176,7 @@ services:
     depends_on:
       - consensus
   validator-account:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: lhvalidator
@@ -189,6 +193,7 @@ services:
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
   validator-list:
+    profiles: ["tools"]
     restart: "no"
     image: lighthouse:merge
     user: lhvalidator
@@ -206,12 +211,6 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
-  eth:
-    image: tianon/true
-    restart: "no"
-    depends_on:
-      - consensus
-      - validator
 volumes:
   lhbeacon-data:
   lhvalidator-data:

@@ -79,9 +79,6 @@ services:
       - "1"
       - --log
       - ${LOG_LEVEL}
-  eth:
-    depends_on:
-      - execution
 volumes:
   nm-eth1-data:
   jwtsecret:
