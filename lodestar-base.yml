@@ -68,6 +68,8 @@ services:
     restart: "${RESTART}"
     image: lodestar:merge
     user: lsvalidator
+    environment:
+      - MEV_BOOST=${MEV_BOOST}
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
