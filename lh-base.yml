@@ -28,6 +28,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
     ports:
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -77,6 +79,9 @@ services:
     user: lhvalidator
     environment:
       - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
@@ -108,7 +113,6 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --private-tx-proposals
     depends_on:
       - consensus
   get-keyapi-token:
