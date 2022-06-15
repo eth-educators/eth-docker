@@ -20,6 +20,7 @@ services:
       - /app/mev-boost
       - -addr
       - 0.0.0.0:18550
+      - -${NETWORK}
       - -relays
       - ${MEV_RELAYS}
     <<: *logging
