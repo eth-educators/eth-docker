@@ -73,6 +73,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
+      - docker-entrypoint-vc.sh
       - node
       - --max-old-space-size=8192
       - /usr/app/node_modules/.bin/lodestar
