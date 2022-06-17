@@ -1,9 +1,6 @@
 ARG DOCKER_TAG
 FROM flashbots/mev-boost:${DOCKER_TAG} as mev
 
-# Unused, this is here to avoid build time complaints
-ARG BUILD_TARGET
-
 ARG USER=mev
 ARG UID=10666
 
