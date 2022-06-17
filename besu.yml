@@ -78,7 +78,8 @@ services:
       - --metrics-port
       - "6060"
       - --data-storage-format=BONSAI
-      - --sync-mode=X_CHECKPOINT
+#      - --sync-mode=X_CHECKPOINT
+      - --sync-mode=fast
 volumes:
   besu-eth1-data:
   jwtsecret:
