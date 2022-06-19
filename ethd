@@ -68,6 +68,16 @@ update() {
         __rpc_branch=0
     fi
     "${BASH_SOURCE}" envmigrate
+    if [ $? -ne 0 ]; then
+        echo "Please make requested changes manually or run \"./ethd update\" again"
+	echo "before running \"./ethd restart\"."
+	echo
+	echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
+        echo "start successfully. Already running containers will keep running with the"
+        echo "old configuration until you are ready to restart them."
+	echo
+	exit 1
+    fi
     git branch --show-current | grep -q rpc-nodes
     if [ "${__rpc_branch}" = 0 -a $? = 0 ]; then
         "${BASH_SOURCE}" envmigrate # default.env will have changed so let's do it again
@@ -528,7 +538,7 @@ query_network() {
         echo "You chose to run on Gnosis Beacon Chain"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -553,7 +563,7 @@ query_deployment() {
         echo "Your deployment choice is:" "${__deployment}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -594,7 +604,7 @@ query_validator_client() {
         echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -625,7 +635,7 @@ query_consensus_client() {
         echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -656,7 +666,7 @@ query_consensus_only_client() {
         echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -668,7 +678,7 @@ query_custom_execution_client() {
             echo "your custom execution client is:" $EL_CUSTOM_NODE
         else
             echo "You chose Cancel."
-            exit 0
+            exit 1
         fi
 }
 
@@ -683,7 +693,7 @@ query_fallback_execution_client() {
             echo "your fallback execution client is:" "${EL_FALLBACK_NODE1}"
         else
             echo "You chose Cancel."
-            exit 0
+            exit 1
         fi
 }
 
@@ -710,7 +720,7 @@ query_execution_client() {
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 
     if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
@@ -749,7 +759,7 @@ query_remote_beacon() {
         echo "your remote consensus client is:" "${REMOTE_BEACON}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -761,7 +771,7 @@ query_graffiti() {
         echo "your Graffiti is:" "${GRAFFITI}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -789,7 +799,7 @@ query_coinbase() {
             fi
         else
             echo "You chose Cancel."
-            exit 0
+            exit 1
         fi
     done
 }
