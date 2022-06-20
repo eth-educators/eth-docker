@@ -40,7 +40,7 @@ services:
       - --validator-api-cors-origins=*
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
-      - --validators-proposer-default-fee-recipient=${REWARDS_TO}
+      - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
   validator-import:
     restart: "no"
     image: teku:local
