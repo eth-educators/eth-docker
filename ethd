@@ -70,7 +70,17 @@ update() {
             __rpc_branch=0
         fi
         "${BASH_SOURCE}" envmigrate
-        git branch --show-current | grep -q rpc-nodes
+	if [ $? -ne 0 ]; then
+	    echo "Please make requested changes manually or run \"./ethd update\" again"
+	    echo "before running \"./ethd restart\"."
+	    echo
+	    echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
+	    echo "start successfully. Already running containers will keep running with the"
+	    echo "old configuration until you are ready to restart them."
+	    echo
+	    exit 1
+	fi
+	git branch --show-current | grep -q rpc-nodes
         if [ "${__rpc_branch}" = 0 -a $? = 0 ]; then
             "${BASH_SOURCE}" envmigrate # default.env will have changed so let's do it again
         fi
@@ -106,20 +116,20 @@ been migrated, please recreate these changes yourself."
         fi
     fi
     if [[ "$__distro" = "ubuntu" && -n $(which snap) && -n $(snap list 2>/dev/null | grep -w "docker") ]]; then
-	echo
-	echo "WARNING! Snap docker package detected. This WILL result in issues."
-	echo "Removing the package will delete volumes and require a resync,"
-	echo "as well as re-import of all validator keys."
-	echo
-	echo "Doing so is still highly recommended however."
-	echo
-    echo "The exact steps depend a little on whether there already is"
-	echo "an apt version of docker installed as well, but in a nutshell"
-	echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
-	echo "and then reinstall docker.io or docker-ce with apt,"
-	echo "re-import keys and restart eth-docker."
-	echo
-	echo "Do join us on EthStaker Discord to work through this emergency."
+        echo
+        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "Removing the package will delete volumes and require a resync,"
+        echo "as well as re-import of all validator keys."
+        echo
+        echo "Doing so is still highly recommended however."
+        echo
+        echo "The exact steps depend a little on whether there already is"
+        echo "an apt version of docker installed as well, but in a nutshell"
+        echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+        echo "and then reinstall docker.io or docker-ce with apt,"
+        echo "re-import keys and restart eth-docker."
+        echo
+        echo "Do join us on EthStaker Discord to work through this emergency."
     fi
 }
 
@@ -446,7 +456,7 @@ envmigrate() {
     if [ ! -f "./${ENV_FILE}" ]; then
         return
     fi
-    ALL_VARS=( COMPOSE_FILE REWARDS_TO EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 GRAFFITI NETWORK EL_NETWORK \
+    ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 GRAFFITI NETWORK EL_NETWORK \
             CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST PROM_HOST PRYSM_HOST \
             EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
@@ -463,9 +473,11 @@ envmigrate() {
                 OPERA_DOCKER_TAG OPERA_DOCKERFILE OPERA_SRC_BUILD_TARGET \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
-	   EC_HOST EC_WS_HOST EC_LB EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
+	   EC_HOST EC_WS_HOST EC_LB EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT \
+           REWARDS_TO )
     NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
-	   EL_HOST EL_WS_HOST EL_LB EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
+	   EL_HOST EL_WS_HOST EL_LB EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT \
+           FEE_RECIPIENT )
 
     # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
     # then dropped that way of doing things with the parameter and used an ENV
@@ -523,12 +535,33 @@ envmigrate() {
         fi
     done
     # Check for rewards
-    var="REWARDS_TO"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+    var="FEE_RECIPIENT"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-	    whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+        whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
         query_coinbase
         set_value_in_env
+    fi
+    # User signals it's a distributed setup and not to nag
+    var="DISTRIBUTED"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    if [ "${value}" = "true" ]; then
+        rm .env.source
+	return
+    fi
+    # Check for CL and EL
+    var="COMPOSE_FILE"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    # Case 1 ... CL, do we have an EL?
+    if [[ "${value}" =~ "-base.yml" ]]; then
+        if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nm.yml" ]]; then
+            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, as Infura will no longer be usable as an EL after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+	fi
+    # Case 2 ... EL, do we have a CL?
+    elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nm.yml" ]]; then
+        if [[ ! "${value}" =~ "-base.yml" ]]; then
+	    whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+	fi
     fi
     rm .env.source
 }
@@ -611,7 +644,7 @@ query_network() {
         echo "You chose to run on Gnosis Beacon Chain"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -644,7 +677,7 @@ query_deployment() {
         echo "Your deployment choice is:" "${__deployment}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -685,7 +718,7 @@ query_validator_client() {
         echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -716,7 +749,7 @@ query_consensus_client() {
         echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -747,7 +780,7 @@ query_consensus_only_client() {
         echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -759,7 +792,7 @@ query_custom_execution_client() {
             echo "your custom execution client is:" $EL_CUSTOM_NODE
         else
             echo "You chose Cancel."
-            exit 0
+            exit 1
         fi
 }
 
@@ -774,7 +807,7 @@ query_fallback_execution_client() {
             echo "your fallback execution client is:" "${EL_FALLBACK_NODE1}"
         else
             echo "You chose Cancel."
-            exit 0
+            exit 1
         fi
 }
 
@@ -801,7 +834,7 @@ query_execution_client() {
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 
     if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
@@ -840,7 +873,7 @@ query_remote_beacon() {
         echo "your remote consensus client is:" "${REMOTE_BEACON}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -852,7 +885,7 @@ query_graffiti() {
         echo "your Graffiti is:" "${GRAFFITI}"
     else
         echo "You chose Cancel."
-        exit 0
+        exit 1
     fi
 }
 
@@ -868,19 +901,19 @@ query_rapid_sync() {
 
 query_coinbase() {
     while true; do
-        REWARDS_TO=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
+        FEE_RECIPIENT=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
-            if [[ ${REWARDS_TO} == 0x* && ${#REWARDS_TO} -eq 42 ]]; then
-              echo "Your rewards address is:" $REWARDS_TO
+            if [[ ${FEE_RECIPIENT} == 0x* && ${#FEE_RECIPIENT} -eq 42 ]]; then
+              echo "Your rewards address is:" ${FEE_RECIPIENT}
               break
             else
-              whiptail --msgbox "${REWARDS_TO} is not a valid ETH address. You can try again or Cancel on the next screen.\n\nThe client will not start successfully until a valid ETH rewards address has been set." 16 75
+              whiptail --msgbox "${FEE_RECIPIENT} is not a valid ETH address. You can try again or Cancel on the next screen.\n\nThe client will not start successfully until a valid ETH rewards address has been set." 16 75
             fi
         else
             echo "You chose Cancel."
-            exit 0
+            exit 1
         fi
     done
 }
@@ -985,7 +1018,7 @@ config () {
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
 
-    var=REWARDS_TO
+    var=FEE_RECIPIENT
     set_value_in_env
     var=GRAFFITI
     set_value_in_env

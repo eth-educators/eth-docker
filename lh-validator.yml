@@ -47,7 +47,7 @@ services:
       - --http-allow-origin=*
       - --unencrypted-http-transport
       - --suggested-fee-recipient
-      - ${REWARDS_TO}
+      - ${FEE_RECIPIENT}
   get-keyapi-token:
     restart: "no"
     image: alpine:latest
