@@ -76,6 +76,9 @@ services:
       - "8551"
       - --authrpc.jwtsecret
       - /var/lib/erigon/secrets/jwtsecret
+      # Workaround for high memory use in alpha
+      - --batchSize
+      - 128m
 volumes:
   erigon-ec-data:
   jwtsecret:
