@@ -2,8 +2,10 @@
 #set -euo pipefail
 set -uo pipefail
 
+__compose_exe="docker-compose"
+
 cmd() {
-    docker-compose $@
+    $__compose_exe $@
 }
 
 determine_distro() {
@@ -25,6 +27,16 @@ determine_distro() {
     [ "$__distro" == "" ] && __distro=$__uname
     unset __uname
     __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
+}
+
+determine_compose() {
+# This is mainly for Debian and docker-ce, where docker-compose does not exist
+  type -P docker-compose >/dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    __compose_exe="docker compose"
+  else
+    __compose_exe="docker-compose"
+  fi
 }
 
 update() {
@@ -1044,5 +1056,6 @@ command="$1"
 shift
 
 determine_distro
+determine_compose
 
 "$command" $@
