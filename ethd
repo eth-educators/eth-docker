@@ -3,7 +3,7 @@
 set -uo pipefail
 
 cmd() {
-    docker-compose "$@"
+    docker-compose $@
 }
 
 determine_distro() {
@@ -27,6 +27,14 @@ determine_distro() {
     __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
 }
 
+handle_root() {
+    if [ "${EUID}" -eq 0 ]; then
+        __as_owner="sudo -u ${OWNER}"
+    else
+        __as_owner=""
+    fi
+}
+
 update() {
     __keeptargets=0
     while :
@@ -46,45 +54,41 @@ update() {
         esac
     done
 
-    if git branch | grep -q master; then
-        git branch -m master main
-        git fetch origin
-        git branch -u origin/main main
-        git remote set-head origin -a
+    if ${__as_owner} git branch | grep -q master; then
+        ${__as_owner} git branch -m master main
+        ${__as_owner} git fetch origin
+        ${__as_owner} git branch -u origin/main main
+        ${__as_owner} git remote set-head origin -a
     fi
 # Do not track changes to ext-network.yml
-    git update-index --assume-unchanged ext-network.yml
-    if [ "${EUID}" -eq 0 ]; then
-        sudo -u "${OWNER}" git pull
-    else
-        git pull
-    fi
+    ${__as_owner} git update-index --assume-unchanged ext-network.yml
+    ${__as_owner} git pull
     regex='COMPOSE_FILE=.*bor\.yml.*'
     if [[ ! $(cat ${ENV_FILE}) =~ $regex ]]; then
-    # BASH_SOURCE so newer code gets to do the migration, env so I have a way to
-    # communicate with it
-        export KEEPTARGETS=$__keeptargets
-        if git branch --show-current | grep -q rpc-nodes; then
-            __rpc_branch=1
-        else
-            __rpc_branch=0
-        fi
-        "${BASH_SOURCE}" envmigrate
-	if [ $? -ne 0 ]; then
-	    echo "Please make requested changes manually or run \"./ethd update\" again"
-	    echo "before running \"./ethd restart\"."
-	    echo
-	    echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
-	    echo "start successfully. Already running containers will keep running with the"
-	    echo "old configuration until you are ready to restart them."
-	    echo
-	    exit 1
-	fi
-	git branch --show-current | grep -q rpc-nodes
-        if [ "${__rpc_branch}" = 0 -a $? = 0 ]; then
-            "${BASH_SOURCE}" envmigrate # default.env will have changed so let's do it again
-        fi
-        unset KEEPTARGETS
+# BASH_SOURCE so newer code gets to do the migration, env so I have a way to
+# communicate with it
+      export KEEPTARGETS=$__keeptargets
+      if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
+          __rpc_branch=1
+      else
+          __rpc_branch=0
+      fi
+      "${BASH_SOURCE}" envmigrate
+      if [ $? -ne 0 ]; then
+        echo "Please make requested changes manually or run \"./ethd update\" again"
+	echo "before running \"./ethd restart\"."
+	echo
+	echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
+        echo "start successfully. Already running containers will keep running with the"
+        echo "old configuration until you are ready to restart them."
+	echo
+	exit 1
+      fi
+      ${__as_owner} git branch --show-current | grep -q rpc-nodes
+      if [ "${__rpc_branch}" = 0 -a $? = 0 ]; then
+        "${BASH_SOURCE}" envmigrate # default.env will have changed so let's do it again
+      fi
+      unset KEEPTARGETS
     fi
     cmd build --pull
     exec 3>&1
@@ -576,7 +580,7 @@ migrate_compose_file() {
     __old_grafana=0
     __new_grafana=0
     __grafana_regex=".+-grafana\.yml"
-    if git branch --show-current | grep -q rpc-nodes; then
+    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
         __rpc_branch=1
     else
         __rpc_branch=0
@@ -607,8 +611,8 @@ migrate_compose_file() {
                 __switched_branch=1
                 echo "Breaking change: Consensus and validator yml files are now only in rpc-nodes branch."
                 echo "Switching you over to that branch automatically."
-                git fetch origin rpc-nodes
-                git checkout rpc-nodes
+                ${__as_owner} git fetch origin rpc-nodes
+                ${__as_owner} git checkout rpc-nodes
                 break
             fi
         done
@@ -1125,5 +1129,6 @@ command="$1"
 shift
 
 determine_distro
+handle_root
 
 "$command" $@
