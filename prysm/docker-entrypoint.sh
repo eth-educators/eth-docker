@@ -51,6 +51,13 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
       curl -L -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
     fi
     exec $@ "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd}
+  elif [[ "$@" =~ --sepolia ]]; then
+    GENESIS=/var/lib/prysm/genesis.ssz
+    if [ ! -f "$GENESIS" ]; then
+      echo "Fetching genesis file for Sepolia testnet"
+      curl -L -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/sepolia/genesis.ssz
+    fi
+    exec $@ "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd}
   else
     exec $@ ${__rapid_sync} ${__override_ttd}
   fi
