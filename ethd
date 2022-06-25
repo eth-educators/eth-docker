@@ -36,6 +36,22 @@ handle_root() {
 }
 
 update() {
+    if [ -z "${ETHDSECUNDO-}" ]; then
+        if ${__as_owner} git branch | grep -q master; then
+            ${__as_owner} git branch -m master main
+            ${__as_owner} git fetch origin
+            ${__as_owner} git branch -u origin/main main
+            ${__as_owner} git remote set-head origin -a
+        fi
+        # Do not track changes to ext-network.yml
+        ${__as_owner} git update-index --assume-unchanged ext-network.yml
+        ${__as_owner} git pull
+        # BASH_SOURCE so newer code gets to do the update. Use an ENV var
+        # to avoid infinite loop
+        export ETHDSECUNDO=1
+        exec "${BASH_SOURCE}" update $@
+    fi
+
     __keeptargets=0
     while :
     do
@@ -54,39 +70,20 @@ update() {
         esac
     done
 
-    if ${__as_owner} git branch | grep -q master; then
-        ${__as_owner} git branch -m master main
-        ${__as_owner} git fetch origin
-        ${__as_owner} git branch -u origin/main main
-        ${__as_owner} git remote set-head origin -a
-    fi
-# Do not track changes to ext-network.yml
-    ${__as_owner} git update-index --assume-unchanged ext-network.yml
-    ${__as_owner} git pull
-# BASH_SOURCE so newer code gets to do the migration, env so I have a way to
-# communicate with it
-    export KEEPTARGETS=$__keeptargets
     if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
         __rpc_branch=1
     else
         __rpc_branch=0
     fi
-    "${BASH_SOURCE}" envmigrate
-    if [ $? -ne 0 ]; then
-        echo "Please make requested changes manually or run \"./ethd update\" again"
-	echo "before running \"./ethd restart\"."
-	echo
-	echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
-        echo "start successfully. Already running containers will keep running with the"
-        echo "old configuration until you are ready to restart them."
-	echo
-	exit 1
+
+    envmigrate
+
+    if [ "${__switched_branch-}" -eq 1 ]; then
+        # This code has changed, run it again on the new branch
+        export ETHDSECUNDO=1 #Not strictly necessary but this way we don't rely on what happens earlier
+        exec "${BASH_SOURCE}" update $@
     fi
-    ${__as_owner} git branch --show-current | grep -q rpc-nodes
-    if [ "${__rpc_branch}" = 0 -a $? = 0 ]; then
-        "${BASH_SOURCE}" envmigrate # default.env will have changed so let's do it again
-    fi
-    unset KEEPTARGETS
+
     cmd build --pull
     exec 3>&1
     exec 4>&2
@@ -127,6 +124,194 @@ been migrated, please recreate these changes yourself."
         echo "re-import keys and restart eth-docker."
         echo
         echo "Do join us on EthStaker Discord to work through this emergency."
+    fi
+    unset ETHDSECUNDO
+    # If this is called by an older version of ethd, envmigrate
+    # is in its own bash instance: Need to kill the ethd parent
+    if ps $PPID | grep -q "ethd"; then
+        echo
+        echo "Updated from an older version of eth-docker. You'll see \"Terminated\","
+        echo "which keeps the update from running twice. This is normal and will"
+        echo "only happen this once."
+        echo
+        kill $PPID
+    fi
+}
+
+envmigrate() {
+    if [ -z "${ETHDSECUNDO-}" ]; then
+        # We'd only ever hit this if called from an older version of ethd, so let's
+        # get the new version executed.
+        export ETHDSECUNDO=1
+        # Account for different ways that envmigrate was called in older code and
+        # set keep-targets correctly regardless
+        if [ -z "${KEEPTARGETS-}" ]; then
+            __keep=""
+            for var in "$@"; do
+                if [ "$var" = "--keep-targets" ]; then
+                    __keep="--keep-targets"
+                fi
+            done
+        else
+            __keep=""
+            if [ ${KEEPTARGETS-} -eq 1 ]; then
+                __keep="--keep-targets"
+            fi
+        fi
+        exec "${BASH_SOURCE}" update ${__keep}
+    fi
+
+    if [ ! -f "./${ENV_FILE}" ]; then
+        return
+    fi
+    ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 GRAFFITI NETWORK EL_NETWORK \
+            CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL CF_EMAIL \
+            CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED \
+            PROM_HOST PRYSM_HOST EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
+            CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
+            PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
+            EL_RPC_PORT EL_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
+    TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
+                TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
+                PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
+                AKULA_SRC_BUILD_TARGET AKULA_DOCKER_TAG AKULA_DOCKERFILE \
+                LS_SRC_BUILD_TARGET LS_DOCKER_TAG LS_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
+                GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
+                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG \
+                NODE_EXPORTER_IGNORE_MOUNT_REGEX )
+    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
+	        EC_HOST EC_WS_HOST EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT REWARDS_TO )
+    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
+	        EL_HOST EL_WS_HOST EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT FEE_RECIPIENT )
+
+    if [ "${EUID}" -eq 0 ]; then
+      # Previous version of this tool when run as root may have created a root-owned .env.bak
+      if [ -f ./"${ENV_FILE}".bak ]; then
+          rm "${ENV_FILE}".bak
+      fi
+      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".bak
+      sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
+      sudo -u "${OWNER}" cp "${ENV_FILE}".bak .env.source
+    else
+      cp "${ENV_FILE}" "${ENV_FILE}".bak
+      cp default.env "${ENV_FILE}"
+      cp "${ENV_FILE}".bak .env.source
+    fi
+    # Migrate over user settings
+    for var in "${ALL_VARS[@]}"; do
+        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        if [ -n "${value}" -o "${var}" = "GRAFFITI" ]; then
+            if [ "${var}" = "COMPOSE_FILE" ]; then
+                migrate_compose_file
+            fi
+            sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+        fi
+    done
+    if [ $__keeptargets = "1" ]; then
+      # Migrate over build targets
+      for var in "${TARGET_VARS[@]}"; do
+          value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+          if [ -n "${value}" ]; then
+              sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+          fi
+      done
+    fi
+    # Move value from old variable name(s) to new one(s)
+    for index in "${!OLD_VARS[@]}"; do
+        var=${OLD_VARS[index]}
+        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        if [ -n "${value}" ]; then
+            sed -i'.original' -e "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+        fi
+    done
+    # Check for rewards
+    var="FEE_RECIPIENT"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
+        whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+        query_coinbase
+        set_value_in_env
+    fi
+    # User signals it's a distributed setup and not to nag
+    var="DISTRIBUTED"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    if [ "${value}" = "true" ]; then
+        rm .env.source
+	return
+    fi
+    # Check for CL and EL
+    var="COMPOSE_FILE"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    # Case 1 ... CL, do we have an EL?
+    if [[ "${value}" =~ "-base.yml" ]]; then
+        if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nm.yml" ]]; then
+            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, as Infura will no longer be usable as an EL after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+	fi
+    # Case 2 ... EL, do we have a CL?
+    elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nm.yml" ]]; then
+        if [[ ! "${value}" =~ "-base.yml" ]]; then
+	    whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+	fi
+    fi
+    rm .env.source
+}
+
+migrate_compose_file() {
+# Some files have been renamed and others removed altogether
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-validator.yml teku-base.yml teku-validator.yml "" "" "" "" "" "" "" "" "" "" )
+# These files were removed from main branch and are only present in rpc-nodes now
+    ADV_YML=( lh-consensus.yml lh-stats-consensus.yml lh-stats-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml traefik-shared.yml )
+
+    __old_grafana=0
+    __new_grafana=0
+    __grafana_regex=".+-grafana\.yml"
+    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
+        __rpc_branch=1
+    else
+        __rpc_branch=0
+    fi
+    __switched_branch=0
+    IFS=":"
+    set -o noglob
+    __ymlarray=($value) # split+glob with glob disabled, and split using : as delimiter
+    set +o noglob
+
+    value=""
+    for n in "${!__ymlarray[@]}"; do
+        __ymlfile="${__ymlarray[n]}"
+        if [[ "${__ymlfile}" =~ $__grafana_regex ]]; then
+            __old_grafana=1
+        fi
+        if [ "${__ymlfile}" = "grafana.yml" ]; then
+            __new_grafana=1
+        fi
+        for index in "${!FROM_YML[@]}"; do
+            if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
+                __ymlfile=${TO_YML[index]}
+                break
+            fi
+        done
+        for index in "${!ADV_YML[@]}"; do
+            if [ "${__rpc_branch}" = 0 -a "${ADV_YML[index]}" = "${__ymlfile}" -a "${__switched_branch}" = 0 ]; then
+                __switched_branch=1
+                echo "Breaking change: Consensus and validator yml files are now only in rpc-nodes branch."
+                echo "Switching you over to that branch automatically."
+                ${__as_owner} git fetch origin rpc-nodes
+                ${__as_owner} git checkout rpc-nodes
+                break
+            fi
+        done
+        if [ -n "${__ymlfile}" ]; then
+            if [ -z "${value}" ]; then
+                value="${__ymlfile}"
+            else
+                value="${value}:${__ymlfile}"
+            fi
+        fi
+    done
+    if [ "${__new_grafana}" = 0 -a "${__old_grafana}" = 1 ]; then
+        value="${value}:grafana.yml"
     fi
 }
 
@@ -352,175 +537,6 @@ restart() {
 
 logs() {
     cmd logs "$@"
-}
-
-envmigrate() {
-    if [ ! -f "./${ENV_FILE}" ]; then
-        return
-    fi
-    ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 GRAFFITI NETWORK EL_NETWORK \
-            CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL CF_EMAIL \
-	    CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED \
-	    PROM_HOST PRYSM_HOST EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
-            CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
-            PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
-            EL_RPC_PORT EL_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
-    TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
-                TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
-                PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
-                AKULA_SRC_BUILD_TARGET AKULA_DOCKER_TAG AKULA_DOCKERFILE \
-		LS_SRC_BUILD_TARGET LS_DOCKER_TAG LS_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
-                GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
-                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG \
-                NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
-	   EC_HOST EC_WS_HOST EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT REWARDS_TO )
-    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
-	   EL_HOST EL_WS_HOST EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT FEE_RECIPIENT )
-
-    # I had a "${BASH_SOURCE} envmigrate $@" so that new code would do the migration,
-    # then dropped that way of doing things with the parameter and used an ENV
-    # variable instead. This checks for that old->new behavior and looks for the parameter
-    if [ -z "${KEEPTARGETS-}" ]; then
-        __keeptargets=0
-        for var in "$@"; do
-            if [ "$var" = "--keep-targets" ]; then
-                __keeptargets=1
-            fi
-        done
-    else
-        __keeptargets=${KEEPTARGETS}
-    fi
-
-    if [ "${EUID}" -eq 0 ]; then
-      # Previous version of this tool when run as root may have created a root-owned .env.bak
-      if [ -f ./"${ENV_FILE}".bak ]; then
-          rm "${ENV_FILE}".bak
-      fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".bak
-      sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-      sudo -u "${OWNER}" cp "${ENV_FILE}".bak .env.source
-    else
-      cp "${ENV_FILE}" "${ENV_FILE}".bak
-      cp default.env "${ENV_FILE}"
-      cp "${ENV_FILE}".bak .env.source
-    fi
-    # Migrate over user settings
-    for var in "${ALL_VARS[@]}"; do
-        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-        if [ -n "${value}" -o "${var}" = "GRAFFITI" ]; then
-            if [ "${var}" = "COMPOSE_FILE" ]; then
-                migrate_compose_file
-            fi
-            sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
-        fi
-    done
-    if [ $__keeptargets = "1" ]; then
-      # Migrate over build targets
-      for var in "${TARGET_VARS[@]}"; do
-          value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-          if [ -n "${value}" ]; then
-              sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
-          fi
-      done
-    fi
-    # Move value from old variable name(s) to new one(s)
-    for index in "${!OLD_VARS[@]}"; do
-        var=${OLD_VARS[index]}
-        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
-        if [ -n "${value}" ]; then
-            sed -i'.original' -e "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
-        fi
-    done
-    # Check for rewards
-    var="FEE_RECIPIENT"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
-    if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-        whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
-        query_coinbase
-        set_value_in_env
-    fi
-    # User signals it's a distributed setup and not to nag
-    var="DISTRIBUTED"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
-    if [ "${value}" = "true" ]; then
-        rm .env.source
-	return
-    fi
-    # Check for CL and EL
-    var="COMPOSE_FILE"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
-    # Case 1 ... CL, do we have an EL?
-    if [[ "${value}" =~ "-base.yml" ]]; then
-        if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nm.yml" ]]; then
-            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, as Infura will no longer be usable as an EL after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
-	fi
-    # Case 2 ... EL, do we have a CL?
-    elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nm.yml" ]]; then
-        if [[ ! "${value}" =~ "-base.yml" ]]; then
-	    whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
-	fi
-    fi
-    rm .env.source
-}
-
-migrate_compose_file() {
-# Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-validator.yml teku-base.yml teku-validator.yml "" "" "" "" "" "" "" "" "" "" )
-# These files were removed from main branch and are only present in rpc-nodes now
-    ADV_YML=( lh-consensus.yml lh-stats-consensus.yml lh-stats-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml traefik-shared.yml )
-
-    __old_grafana=0
-    __new_grafana=0
-    __grafana_regex=".+-grafana\.yml"
-    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
-        __rpc_branch=1
-    else
-        __rpc_branch=0
-    fi
-    __switched_branch=0
-    IFS=":"
-    set -o noglob
-    __ymlarray=($value) # split+glob with glob disabled, and split using : as delimiter
-    set +o noglob
-
-    value=""
-    for n in "${!__ymlarray[@]}"; do
-        __ymlfile="${__ymlarray[n]}"
-        if [[ "${__ymlfile}" =~ $__grafana_regex ]]; then
-            __old_grafana=1
-        fi
-        if [ "${__ymlfile}" = "grafana.yml" ]; then
-            __new_grafana=1
-        fi
-        for index in "${!FROM_YML[@]}"; do
-            if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
-                __ymlfile=${TO_YML[index]}
-                break
-            fi
-        done
-        for index in "${!ADV_YML[@]}"; do
-            if [ "${__rpc_branch}" = 0 -a "${ADV_YML[index]}" = "${__ymlfile}" -a "${__switched_branch}" = 0 ]; then
-                __switched_branch=1
-                echo "Breaking change: Consensus and validator yml files are now only in rpc-nodes branch."
-                echo "Switching you over to that branch automatically."
-                ${__as_owner} git fetch origin rpc-nodes
-                ${__as_owner} git checkout rpc-nodes
-                break
-            fi
-        done
-        if [ -n "${__ymlfile}" ]; then
-            if [ -z "${value}" ]; then
-                value="${__ymlfile}"
-            else
-                value="${value}:${__ymlfile}"
-            fi
-        fi
-    done
-    if [ "${__new_grafana}" = 0 -a "${__old_grafana}" = 1 ]; then
-        value="${value}:grafana.yml"
-    fi
 }
 
 query_network() {
@@ -803,6 +819,19 @@ query_coinbase() {
             fi
         else
             echo "You chose Cancel."
+            echo
+            echo "Please make requested changes manually or run \"./ethd update\" again"
+            echo "before running \"./ethd restart\"."
+            echo
+            echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
+            echo "start successfully. Already running containers will keep running with the"
+            echo "old configuration until you are ready to restart them."
+            echo
+            # If this is called by an older version of ethd, envmigrate
+            # is in its own bash instance: Need to kill the ethd parent
+            if ps $PPID | grep -q "ethd"; then
+                kill $PPID
+            fi
             exit 1
         fi
     done
@@ -834,9 +863,9 @@ config () {
         echo "or docker-ce with apt, re-import keys and restart eth-docker."
         echo
         echo "Do join us on EthStaker Discord to work through this emergency."
-	echo
-	echo "Aborting, this is not safe."
-	exit 1
+        echo
+        echo "Aborting, this is not safe."
+        exit 1
    fi
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
