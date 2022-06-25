@@ -83,6 +83,7 @@ update() {
         if [ "${__switched_branch-}" -eq 1 ]; then
             # This code has changed, run it again on the new branch
             export ETHDSECUNDO=1 #Not strictly necessary but this way we don't rely on what happens earlier
+            export ETHDSWITCHED=1
             exec "${BASH_SOURCE}" update $@
         fi
     fi
@@ -132,6 +133,13 @@ been migrated, please recreate these changes yourself."
         echo "Do join us on EthStaker Discord to work through this emergency."
     fi
     unset ETHDSECUNDO
+    if [[ ${ETHDSWITCHED-} -eq 1 ]]; then
+        unset ETHDSWITCHED
+        echo
+        echo "You were migrated to the rpc-nodes branch of eth-docker"
+        echo "because you run an advanced setup"
+        echo
+    fi
     # If this is called by an older version of ethd, envmigrate
     # is in its own bash instance: Need to kill the ethd parent
     if ps $PPID | grep -q "ethd"; then
@@ -243,9 +251,11 @@ envmigrate() {
         set_value_in_env
     fi
     # User signals it's a distributed setup and not to nag
+    # Ditto do not nag if we switched branch, as the code that does
+    # the check won't be accurate
     var="DISTRIBUTED"
     value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
-    if [ "${value}" = "true" ]; then
+    if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
         rm .env.source
         return
     fi
