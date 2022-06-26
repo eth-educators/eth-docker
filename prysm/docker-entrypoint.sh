@@ -30,10 +30,10 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
       echo "Fetching genesis file for Prater testnet"
       curl -L -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
     fi
-    exec $@ "--genesis-state=$GENESIS" ${__rapid_sync}
+    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync}
   else
-    exec $@ ${__rapid_sync}
+    exec "$@" ${__rapid_sync}
   fi
 else
-  exec $@
+  exec "$@"
 fi
