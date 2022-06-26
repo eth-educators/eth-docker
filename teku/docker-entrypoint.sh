@@ -19,4 +19,4 @@ else
     __rapid_sync=""
 fi
 
-exec $@ ${__rapid_sync}
+exec "$@" ${__rapid_sync}
