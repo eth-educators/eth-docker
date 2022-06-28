@@ -822,6 +822,9 @@ query_override() {
         "ropsten")
             OVERRIDE_TTD=50000000000000000
             ;;
+        "sepolia")
+            OVERRIDE_TTD=17000000000000000
+            ;;
         *)
             OVERRIDE_TTD=100000000000000000000000
             ;;
