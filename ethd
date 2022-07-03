@@ -3,7 +3,7 @@
 set -uo pipefail
 
 cmd() {
-    docker-compose $@
+    docker-compose "$@"
 }
 
 determine_distro() {
@@ -374,7 +374,7 @@ prune-geth() {
     sync_status=$(cmd exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
-        echo "Geth is not running, aborting."
+        echo "Unable to connect to Geth: Is it running? Aborting."
         exit 1
     fi
 
