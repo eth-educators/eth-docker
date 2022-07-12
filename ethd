@@ -304,10 +304,12 @@ migrate_compose_file() {
         __rpc_branch=0
     fi
     __switched_branch=0
+    __old_ifs="$IFS"
     IFS=":"
     set -o noglob
     __ymlarray=($value) # split+glob with glob disabled, and split using : as delimiter
     set +o noglob
+    IFS="$__old_ifs"
 
     value=""
     for n in "${!__ymlarray[@]}"; do
