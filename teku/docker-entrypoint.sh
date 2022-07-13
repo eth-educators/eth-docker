@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ -f /var/lib/teku/teku-keyapi.keystore && $(date +%s -r /var/lib/teku/teku-keyapi.keystore) -gt $(date +%s --date="300 days ago") ]]; then
-  rm /var/lib/teku/teku-keyapi.keystore
+if [[ -f /var/lib/teku/teku-keyapi.keystore && $(date +%s -r /var/lib/teku/teku-keyapi.keystore) -lt $(date +%s --date="300 days ago") ]]; then
+    rm /var/lib/teku/teku-keyapi.keystore
 fi
 
 if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
@@ -19,9 +19,9 @@ fi
 
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
-  __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v1/debug/beacon/states/finalized"
+    __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v1/debug/beacon/states/finalized"
 else
-  __rapid_sync=""
+    __rapid_sync=""
 fi
 
 # Check whether we should override TTD
@@ -40,4 +40,4 @@ else
   __mev_boost=""
 fi
 
-exec $@ ${__mev_boost} ${__rapid_sync} ${__override_ttd}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__override_ttd}

@@ -31,4 +31,4 @@ else
   __mev_boost=""
 fi
 
-exec $@ ${__mev_boost} ${__override_ttd}
+exec "$@" ${__mev_boost} ${__override_ttd}

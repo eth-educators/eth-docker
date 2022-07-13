@@ -20,4 +20,4 @@ else
   __mev_boost=""
 fi
 
-exec $@ ${__mev_boost}
+exec "$@" ${__mev_boost}
