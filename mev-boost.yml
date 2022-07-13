@@ -22,6 +22,7 @@ services:
       - 0.0.0.0:18550
       - -relays
       - ${MEV_RELAYS}
+      - -${NETWORK}
     <<: *logging
   eth:
     depends_on:
