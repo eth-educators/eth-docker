@@ -23,7 +23,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
+      - docker-entrypoint-vc.sh
       - /opt/teku/bin/teku
       - validator-client
       - --beacon-node-api-endpoint=${CL_NODE:-http://consensus:5052}
