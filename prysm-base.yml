@@ -31,6 +31,7 @@ services:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
       - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
     ports:
       - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
