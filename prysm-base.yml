@@ -109,6 +109,7 @@ services:
       - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+      - --enable-validator-registration
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
