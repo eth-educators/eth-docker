@@ -57,10 +57,7 @@ services:
       - ${CL_P2P_PORT:-9000}
       - --target-peers
       - ${CL_MAX_PEER_COUNT:-80}
-# I don't have a specific RPC target any more in .env. Hopefully LH will remove the need for this
-      - --eth1-endpoints
-      - http://execution:${EL_RPC_PORT}
-      - --execution-endpoints
+      - --execution-endpoint
       - ${EL_NODE}
       - --jwt-secrets
       - /var/lib/lighthouse/beacon/secrets/jwtsecret
