@@ -1,5 +1,7 @@
 # eth-docker: Docker automation for Ethereum consensus and execution clients.
 
+[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/eth-educators/eth-docker/badge)](https://www.gitpoap.io/gh/eth-educators/eth-docker)
+
 eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/upgrades/) consensus and execution clients.
 
 ### Getting Started
@@ -18,4 +20,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker v1.8.6
+This is eth-docker v1.8.8
