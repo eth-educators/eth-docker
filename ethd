@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #set -euo pipefail
 set -uo pipefail
 
@@ -790,7 +790,11 @@ query_execution_client() {
         EL_NODE="${EL_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-        EL_NODE="http://execution:8551"
+	if [[ "${CONSENSUS_CLIENT}" =~ "nimbus-" ]]; then
+            EL_NODE="ws://execution:8551"
+	else
+            EL_NODE="http://execution:8551"
+	fi
 	if [ "${EXECUTION_CLIENT}" = "erigon.yml" ]; then
 	    echo "Please remember to set your EL_WS_PORT to match EL_RPC_PORT for Erigon"
 	fi
@@ -906,6 +910,26 @@ query_override() {
     fi
 }
 
+query_mev() {
+    if (whiptail --title "Select Option" --yesno "Do you want to use MEV Boost?" 10 60) then
+        MEV_BOOST="true"
+        case "${NETWORK}" in
+            "ropsten")
+                MEV_RELAYS=https://0xb124d80a00b80815397b4e7f1f05377ccc83aeeceb6be87963ba3649f1e6efa32ca870a88845917ec3f26a8e2aa25c77@builder-relay-ropsten.flashbots.net
+                ;;
+            "kiln")
+                MEV_RELAYS=https://0xb5246e299aeb782fbc7c91b41b3284245b1ed5206134b0028b81dfb974e5900616c67847c2354479934fc4bb75519ee1@builder-relay-kiln.flashbots.net
+                ;;
+            "sepolia")
+                MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@builder-relay-sepolia.flashbots.net
+                ;;
+        esac
+    else
+        MEV_BOOST="false"
+        MEV_RELAYS=https://0xb124d80a00b80815397b4e7f1f05377ccc83aeeceb6be87963ba3649f1e6efa32ca870a88845917ec3f26a8e2aa25c77@builder-relay-ropsten.flashbots.net
+    fi
+}
+
 set_value_in_env() {
     # Assumes that "var" has been set to the name of the variable to be changed
     if [ "${!var+x}" ]; then
@@ -981,6 +1005,9 @@ config () {
 
         query_execution_client
         query_rapid_sync
+        if [[ "${CONSENSUS_CLIENT}" =~ "prysm-" || "${CONSENSUS_CLIENT}" =~ "teku-" || "${CONSENSUS_CLIENT}" =~ "lodestar-" ]]; then
+            query_mev
+        fi
         query_grafana
 	if [ ! ${__deployment} = "rpc" ]; then
 	  query_coinbase
@@ -1006,15 +1033,18 @@ config () {
     if [ "${__deployment}" = "blox" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv.yml"
     fi
-    if [ "${__deployment}" = "rocket" ]; then
-        COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
-        sed -i'.original' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
-    fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
-    if [ "${NETWORK}" = "ropsten" -o "${NETWORK}" = "goerli" -o "${NETWORK}" = "sepolia" ]; then
+    if [ "${MEV_BOOST}" = "true" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
+    fi
+    if [ "${NETWORK}" = "ropsten" -o "${NETWORK}" = "goerli" -o "${NETWORK}" = "sepolia" -o "${NETWORK}" = "kiln" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
+    fi
+    if [ "${__deployment}" = "rocket" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
+        sed -i'.original' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
     fi
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
@@ -1034,6 +1064,10 @@ config () {
     var=NETWORK
     set_value_in_env
     var=OVERRIDE_TTD
+    set_value_in_env
+    var=MEV_BOOST
+    set_value_in_env
+    var=MEV_RELAYS
     set_value_in_env
 
     if [[ "${EUID}" -eq 0 || -n $(id -nG $(id -u) | grep -w "docker") ]]; then
