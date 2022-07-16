@@ -160,8 +160,7 @@ been migrated, please recreate these changes yourself."
     if [[ ${ETHDSWITCHED-} -eq 1 ]]; then
         unset ETHDSWITCHED
         echo
-        echo "You were migrated to the rpc-nodes branch of eth-docker"
-        echo "because you run an advanced setup"
+        echo "You were migrated to the $(${__as_owner} git branch --show-current) branch of eth-docker"
         echo
     fi
     # If this is called by an older version of ethd, envmigrate
