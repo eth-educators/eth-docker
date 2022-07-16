@@ -162,6 +162,7 @@ been migrated, please recreate these changes yourself."
         echo
         echo "You were migrated to the $(${__as_owner} git branch --show-current) branch of eth-docker"
         echo
+        delete_erigon
     fi
     # If this is called by an older version of ethd, envmigrate
     # is in its own bash instance: Need to kill the ethd parent
@@ -366,6 +367,33 @@ migrate_compose_file() {
     if [ "${__new_grafana}" = 0 -a "${__old_grafana}" = 1 ]; then
         value="${value}:grafana.yml"
     fi
+}
+
+delete_erigon() {
+    # Check for Erigon
+    var="COMPOSE_FILE"
+    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    if [[ ! "${value}" =~ "erigon.yml" ]]; then
+        return
+    fi
+
+    echo "Detected Erigon. For merge, it will need to be re-synced from scratch"
+    echo
+    while true; do
+        read -rp "WARNING - About to delete the Erigon database. Do you wish to continue? (Y/n) " yn
+        case $yn in
+            [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 1;;
+            * ) break;;
+        esac
+    done
+
+    echo "Stopping Erigon container"
+    docker stop $(basename $(realpath .))_erigon_1 && docker rm -f $(basename $(realpath .))_erigon_1
+    cmd stop execution && cmd rm -f execution
+    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
+    echo ""
+    echo "Erigon stopped and database deleted."
+    echo ""
 }
 
 prune-geth() {
