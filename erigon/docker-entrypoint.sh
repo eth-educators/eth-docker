@@ -29,8 +29,10 @@ fi
 # Check for network, and set prune accordingly
 
 if [[ "$@" =~ "--chain mainnet" ]]; then
-  echo "mainnet: Running with prune.r.before=11184524 for eth deposit contract"
-  __prune="--prune.r.before=11184524"
+#  echo "mainnet: Running with prune.r.before=11184524 for eth deposit contract"
+#  __prune="--prune.r.before=11184524"
+  echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
+  __prune="--prune.r.before=11052984"
 elif [[ "$@" =~ "--chain goerli" ]]; then
   echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
   __prune="--prune.r.before=4367322"
