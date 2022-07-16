@@ -3,7 +3,7 @@ FROM rust:latest as builder
 
 ARG BUILD_TARGET=master
 
-RUN apt-get update && apt-get install -y git gcc g++ make cmake libclang-dev clang pkg-config llvm-dev libssl-dev --no-install-recommends
+RUN apt-get update && apt-get install -y cmake libclang-dev clang libext2fs-dev --no-install-recommends
 
 WORKDIR /usr/src
 RUN bash -c "git clone https://github.com/akula-bft/akula && cd akula && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && cargo build --all --profile=production"
