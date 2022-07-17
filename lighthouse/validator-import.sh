@@ -4,7 +4,7 @@ set -Eeuo pipefail
 # Copy keys, then restart script without root
 if [ "$(id -u)" = '0' ]; then
   mkdir /val_keys
-  cp /validator_keys/* /val_keys/
+  cp /validator_keys/*.json /val_keys/
   chown lhvalidator:lhvalidator /val_keys/*
   exec gosu lhvalidator "$BASH_SOURCE" "$@"
 fi
@@ -13,17 +13,16 @@ __non_interactive=0
 if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
   __non_interactive=1
 fi
-
-if [ -f /val_keys/slashing_protection.json ]; then
-  echo "Found slashing protection file, it will be imported."
-  lighthouse account_manager validator slashing-protection import --datadir /var/lib/lighthouse --network ${NETWORK} /val_keys/slashing_protection.json
-fi
-
 for arg do
   shift
   [ "$arg" = "--non-interactive" ] && continue
   set -- "$@" "$arg"
 done
+
+if [ -f /val_keys/slashing_protection.json ]; then
+  echo "Found slashing protection file, it will be imported."
+  lighthouse account_manager validator slashing-protection import --datadir /var/lib/lighthouse --network ${NETWORK} /val_keys/slashing_protection.json
+fi
 
 if [ ${__non_interactive} = 1 ]; then
   echo "${KEYSTORE_PASSWORD}" > /tmp/keystorepassword.txt
