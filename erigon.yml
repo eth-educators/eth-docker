@@ -26,7 +26,7 @@ services:
       - OVERRIDE_TTD=${OVERRIDE_TTD}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - erigon-ec-data:/var/lib/erigon
+      - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/erigon/secrets
     ports:
@@ -80,5 +80,5 @@ services:
       - --batchSize
       - 128m
 volumes:
-  erigon-ec-data:
+  erigon-el-data:
   jwtsecret:

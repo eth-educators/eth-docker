@@ -377,6 +377,10 @@ delete_erigon() {
         return
     fi
 
+    if [ -z "$(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
+        return
+    fi
+
     echo "Detected Erigon. For merge, it will need to be re-synced from scratch"
     echo
     while true; do
