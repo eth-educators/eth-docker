@@ -911,6 +911,11 @@ query_coinbase() {
 }
 
 query_override() {
+    if ! (whiptail --title "Select Option" --yesno --defaultno "Do you want to set an Override TTD?" 10 60) then
+        OVERRIDE_TTD=""
+        return
+    fi
+
     case "${NETWORK}" in
         "ropsten")
             OVERRIDE_TTD=50000000000000000
@@ -919,18 +924,14 @@ query_override() {
             OVERRIDE_TTD=17000000000000000
             ;;
         "kiln")
-            OVERRIDE_TTD=
+            OVERRIDE_TTD=20000000000000
             ;;
         *)
             OVERRIDE_TTD=100000000000000000000000
             ;;
     esac
 
-    if [ -z "${OVERRIDE_TTD}" ]; then
-        return
-    fi
-
-    OVERRIDE_TTD=$(whiptail --title "Configure Override TTD" --inputbox "What is the override TTD for the ${NETWORK} network? Leave EMPTY to use the client default (right-click to paste)" 10 60 ${OVERRIDE_TTD} 3>&1 1>&2 2>&3)
+    OVERRIDE_TTD=$(whiptail --title "Configure Override TTD" --inputbox "What is the override TTD for the ${NETWORK} network? Set as EMPTY to use the client default (right-click to paste)" 10 60 ${OVERRIDE_TTD} 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
