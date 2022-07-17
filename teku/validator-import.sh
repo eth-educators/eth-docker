@@ -8,6 +8,11 @@ if [ "$(id -u)" = '0' ]; then
   chmod 600 /var/lib/teku/validator-keys/*
   echo "Copied validator key(s) from .eth/validator_keys"
   echo
+  if [ -f /validator_keys/slashing_protection.json ]; then
+    mkdir /val_keys
+    cp /validator_keys/slashing_protection.json /val_keys/
+    chown teku:teku /val_keys/*
+  fi
   exec gosu teku "$BASH_SOURCE" "$@"
 fi
 
@@ -20,6 +25,11 @@ for arg do
   [ "$arg" = "--non-interactive" ] && continue
   set -- "$@" "$arg"
 done
+
+if [ -f /val_keys/slashing_protection.json ]; then
+  echo "Found slashing protection file, it will be imported."
+  /opt/teku/bin/teku slashing-protection import --data-path=/var/lib/teku --from=/val_keys/slashing_protection.json
+fi
 
 if [ ${__non_interactive} = 1 ]; then
   for file in /var/lib/teku/validator-keys/keystore-*.json ; do
