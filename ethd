@@ -926,6 +926,9 @@ query_override() {
         "kiln")
             OVERRIDE_TTD=20000000000000
             ;;
+        "goerli")
+            OVERRIDE_TTD=10790000
+            ;;
         *)
             OVERRIDE_TTD=100000000000000000000000
             ;;
