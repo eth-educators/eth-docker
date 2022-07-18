@@ -178,6 +178,7 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - WALLET_PASSWORD=${WALLET_PASSWORD:-}
+      - NETWORK=${NETWORK}
     entrypoint:
       - validator-import.sh
       - validator
