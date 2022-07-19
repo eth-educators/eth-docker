@@ -82,7 +82,7 @@ update() {
         esac
     done
 
-    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
+    if ${__as_owner} git rev-parse –abbrev-ref HEAD | grep -q rpc-nodes; then
         __rpc_branch=1
     else
         __rpc_branch=0
@@ -160,7 +160,7 @@ been migrated, please recreate these changes yourself."
     if [[ ${ETHDSWITCHED-} -eq 1 ]]; then
         unset ETHDSWITCHED
         echo
-        echo "You were migrated to the $(${__as_owner} git branch --show-current) branch of eth-docker"
+        echo "You were migrated to the $(${__as_owner} git rev-parse –abbrev-ref HEAD) branch of eth-docker"
         echo
         delete_erigon
     fi
@@ -318,7 +318,7 @@ migrate_compose_file() {
     __old_grafana=0
     __new_grafana=0
     __grafana_regex=".+-grafana\.yml"
-    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
+    if ${__as_owner} git rev-parse –abbrev-ref HEAD | grep -q rpc-nodes; then
         __rpc_branch=1
     else
         __rpc_branch=0
