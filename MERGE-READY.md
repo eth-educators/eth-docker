@@ -28,16 +28,18 @@
   - `./ethd config`
 - Generate the keystore files. This mnemonic should be considered compromised, as it is not generated on an air-gapped
 machine.
-  - `docker-compose run --rm deposit-cli-new --eth1_withdrawal_address YOURTESTADDRESS`
+  - `sudo docker-compose build --pull`
+  - `sudo docker-compose run --rm deposit-cli-new --eth1_withdrawal_address YOURTESTADDRESS`
 - Deposit for this key at the launchpad for your testnet. The `deposit_data` JSON file will be in `.eth/validator_keys`,
  which is "hidden" directory if you use a graphical file explorer.
 - Import the keys: `./ethd keyimport`
+- Edit `.env` and set `FEE_RECIPIENT` to your staking address
 - Start the stack:
-  - `./ethd up`
+  - `sudo ./ethd up`
 - Look at logs and see consensus and execution client synchronizing, and the validator client validating:
-  - `./ethd logs -f consensus`
-  - `./ethd logs -f execution`
-  - `./ethd logs -f validator` - for those clients that have a separate validator client, like Lighthouse and Prysm
+  - `sudo ./ethd logs -f consensus`
+  - `sudo ./ethd logs -f execution`
+  - `sudo ./ethd logs -f validator` - for those clients that have a separate validator client, like Lighthouse and Prysm
 - Observe your validator at the beaconcha.in site for this testnet, by entering its public key or the ETH address you funded it from
 - If you want to try a different combo, first `./ethd terminate` so the chain data gets deleted, then just `./ethd config`, choose your clients,
   **wait 15 minutes**, `./ethd keyimport` and `./ethd up`. The 15 minute wait is there to avoid slashing.
