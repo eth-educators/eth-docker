@@ -1197,8 +1197,13 @@ determine_distro
 determine_compose
 handle_root
 
-if ! docker images >/dev/null 2>&1; then
-    echo "Please ensure your user can call docker before running this script"
+if ! docker images >/dev/null 2>&1 && ! sudo docker images >/dev/null 2>&1; then
+    echo "Please ensure your user can access docker before running this script"
+    exit 1
+fi
+
+if ! cmd --help >/dev/null 2>&1; then
+    echo "Please ensure your user can call $__compose_exe before running this script"
     exit 1
 fi
 
