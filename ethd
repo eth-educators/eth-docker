@@ -37,6 +37,11 @@ determine_compose() {
   else
     __compose_exe="docker-compose"
   fi
+
+  # If this user cannot access docker directly, then use sudo
+  if ! docker images >/dev/null 2>&1; then
+    __compose_exe="sudo $__compose_exe"
+  fi
 }
 
 handle_root() {
