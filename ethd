@@ -1183,6 +1183,11 @@ if [ "${OWNER}" == "root" ]; then
     exit 1
 fi
 
+if ! type -P whiptail >/dev/null 2>&1; then
+    echo "Please install the package whiptail or newt before running this script"
+    exit 1
+fi
+
 ENV_FILE=.env
 
 command="$1"
@@ -1191,5 +1196,15 @@ shift
 determine_distro
 determine_compose
 handle_root
+
+if ! docker images >/dev/null 2>&1 && ! sudo docker images >/dev/null 2>&1; then
+    echo "Please ensure your user can access docker before running this script"
+    exit 1
+fi
+
+if ! cmd --help >/dev/null 2>&1; then
+    echo "Please ensure your user can call $__compose_exe before running this script"
+    exit 1
+fi
 
 "$command" $@
