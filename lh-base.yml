@@ -59,7 +59,7 @@ services:
       - ${CL_MAX_PEER_COUNT:-80}
       - --execution-endpoint
       - ${EL_NODE}
-      - --jwt-secrets
+      - --execution-jwt
       - /var/lib/lighthouse/beacon/secrets/jwtsecret
       - --debug-level=${LOG_LEVEL}
       - --metrics
@@ -70,7 +70,6 @@ services:
       - --validator-monitor-auto
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --merge
   validator:
     restart: "${RESTART}"
     image: lighthouse:merge
