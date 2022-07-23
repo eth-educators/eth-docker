@@ -632,7 +632,7 @@ logs() {
 query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
-    "Which network do you want to run on?" 9 60 3 \
+    "Which network do you want to run on?" 11 60 4 \
     "goerli" "Görli (né Prater) Testnet" \
     "sepolia" "Sepolia Testnet" \
     "ropsten" "Ropsten Testnet" \
@@ -730,8 +730,9 @@ query_consensus_client() {
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
-      "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
+      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" \
+      "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
       "teku-base.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
@@ -761,8 +762,9 @@ query_consensus_only_client() {
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
-      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
       "nimbus-consensus.yml" "Nimbus (Nim) - consensus client" \
+      "lodestar-consensus.yml" "Lodestar (Javascript) - consensus client" \
+      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
       "teku-consensus.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
@@ -811,8 +813,8 @@ query_execution_client() {
       "Which execution client do you want to run?" 12 60 5 \
       "besu.yml" "Besu (Java)" \
       "geth.yml" "Geth (Go)" \
-      "erigon.yml" "Erigon (Go)" \
-      "nm.yml" "Nethermind (.NET)" 3>&1 1>&2 2>&3)
+      "nm.yml" "Nethermind (.NET)" \
+      "erigon.yml" "Erigon - alpha (Go)" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?

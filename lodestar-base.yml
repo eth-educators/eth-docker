@@ -84,6 +84,12 @@ services:
       - /var/lib/lodestar/validators
       - --server
       - http://consensus:5052
+      - --keymanager.enabled
+      - "true"
+      - --keymanager.address
+      - 0.0.0.0
+      - --keymanager.port
+      - ${KEY_API_PORT:-7500}
       - --graffiti
       - ${GRAFFITI}
       - --logLevel
@@ -92,6 +98,20 @@ services:
       - ${NETWORK}
       - --defaultFeeRecipient
       - ${FEE_RECIPIENT}
+  get-keyapi-token:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        cat /var/lib/lodestar/validators/validator-db/api-token.txt
+        echo
   validator-import:
     profiles: ["tools"]
     restart: "${RESTART}"
