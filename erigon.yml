@@ -28,7 +28,7 @@ services:
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/erigon/secrets
+      - jwtsecret:/var/lib/erigon/ee-secret
     ports:
       - ${EL_P2P_PORT-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT-30303}:${EL_P2P_PORT:-30303}/udp
@@ -75,7 +75,7 @@ services:
       - --engine.port
       - "8551"
       - --authrpc.jwtsecret
-      - /var/lib/erigon/secrets/jwtsecret
+      - /var/lib/erigon/ee-secret/jwtsecret
       # Workaround for high memory use in alpha
       - --batchSize
       - 128m

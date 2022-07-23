@@ -16,7 +16,7 @@ if [ "$(id -u)" = '0' ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/prysm/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/prysm/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 

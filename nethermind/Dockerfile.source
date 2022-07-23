@@ -40,7 +40,7 @@ WORKDIR /nethermind
 COPY --from=build /nethermind/out .
 
 RUN chown -R ${USER}:${USER} /nethermind
-RUN mkdir -p /var/lib/nethermind/secrets && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 750 /var/lib/nethermind/secrets
+RUN mkdir -p /var/lib/nethermind/ee-secret && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 750 /var/lib/nethermind/ee-secret
 
 COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/

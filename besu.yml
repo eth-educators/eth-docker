@@ -28,7 +28,7 @@ services:
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/besu/secrets
+      - jwtsecret:/var/lib/besu/ee-secret
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -67,7 +67,7 @@ services:
       - --host-allowlist=*
       - --engine-host-allowlist=*
       - --engine-jwt-enabled=true
-      - --engine-jwt-secret=/var/lib/besu/secrets/jwtsecret
+      - --engine-jwt-secret=/var/lib/besu/ee-secret/jwtsecret
       - --engine-rpc-port=8551
       - --logging
       - ${LOG_LEVEL}

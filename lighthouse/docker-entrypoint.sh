@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/lighthouse/beacon/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/lighthouse/beacon/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 

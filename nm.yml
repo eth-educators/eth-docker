@@ -28,7 +28,7 @@ services:
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/nethermind/secrets
+      - jwtsecret:/var/lib/nethermind/ee-secret
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -60,7 +60,7 @@ services:
       - --JsonRpc.WebSocketsPort
       - ${EL_WS_PORT:-8546}
       - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:8551|http;ws|engine;eth;subscribe
-      - --JsonRpc.JwtSecretFile=/var/lib/nethermind/secrets/jwtsecret
+      - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
       - --Sync.SnapSync
       - "true"
       - --Metrics.Enabled

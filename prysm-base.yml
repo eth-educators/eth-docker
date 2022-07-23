@@ -26,7 +26,7 @@ services:
     volumes:
       - prysmbeacon-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/prysm/secrets
+      - jwtsecret:/var/lib/prysm/ee-secret
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
@@ -54,7 +54,7 @@ services:
       - --http-web3provider
       - ${EL_NODE}
       - --jwt-secret
-      - /var/lib/prysm/secrets/jwtsecret
+      - /var/lib/prysm/ee-secret/jwtsecret
       - --p2p-tcp-port
       - ${PRYSM_PORT}
       - --p2p-udp-port

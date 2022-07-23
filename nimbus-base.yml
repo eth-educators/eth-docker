@@ -22,7 +22,7 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/nimbus/secrets
+      - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - NETWORK=${NETWORK}
@@ -48,7 +48,7 @@ services:
       - --max-peers=${CL_MAX_PEER_COUNT:-160}
       - --network=${NETWORK}
       - --web3-url=${EL_NODE}
-      - --jwt-secret=/var/lib/nimbus/secrets/jwtsecret
+      - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rest

@@ -53,7 +53,7 @@ RUN adduser \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/lighthouse/beacon/secrets && chown -R ${USER}:${USER} /var/lib/lighthouse/beacon && chmod -R 700 /var/lib/lighthouse/beacon && chmod 750 /var/lib/lighthouse/beacon/secrets
+RUN mkdir -p /var/lib/lighthouse/beacon/ee-secret && chown -R ${USER}:${USER} /var/lib/lighthouse/beacon && chmod -R 700 /var/lib/lighthouse/beacon && chmod 750 /var/lib/lighthouse/beacon/ee-secret
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 ARG USER=lhvalidator

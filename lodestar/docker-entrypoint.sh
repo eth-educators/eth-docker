@@ -6,7 +6,7 @@ if [ ! -f /var/lib/lodestar/consensus/api-token.txt ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/lodestar/consensus/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/lodestar/consensus/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 

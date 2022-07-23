@@ -26,15 +26,15 @@ dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.
 dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"*","-minlevel":"Info","-writeTo":"auto-colored-console-async"}'
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/nethermind/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/nethermind/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
-if [[ ! -f /var/lib/nethermind/secrets/jwtsecret ]]; then
+if [[ ! -f /var/lib/nethermind/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
   __secret1=$(echo $RANDOM | md5sum | head -c 32)
   __secret2=$(echo $RANDOM | md5sum | head -c 32)
-  echo -n ${__secret1}${__secret2} > /var/lib/nethermind/secrets/jwtsecret
+  echo -n ${__secret1}${__secret2} > /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
 # Check whether we should override TTD
