@@ -23,7 +23,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/lodestar/consensus/secrets && chown -R ${USER}:${USER} /var/lib/lodestar/consensus && chmod -R 700 /var/lib/lodestar/consensus && chmod 750 /var/lib/lodestar/consensus/secrets
+RUN mkdir -p /var/lib/lodestar/consensus/ee-secret && chown -R ${USER}:${USER} /var/lib/lodestar/consensus && chmod -R 700 /var/lib/lodestar/consensus && chmod 750 /var/lib/lodestar/consensus/ee-secret
 
 ARG USER=lsvalidator
 ARG UID=10000

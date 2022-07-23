@@ -28,7 +28,7 @@ services:
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/goethereum/secrets
+      - jwtsecret:/var/lib/goethereum/ee-secret
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -67,7 +67,7 @@ services:
       - --pprof.addr
       - 0.0.0.0
       - --authrpc.jwtsecret
-      - /var/lib/goethereum/secrets/jwtsecret
+      - /var/lib/goethereum/ee-secret/jwtsecret
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.vhosts=*

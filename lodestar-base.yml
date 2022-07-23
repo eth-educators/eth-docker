@@ -22,7 +22,7 @@ services:
     volumes:
       - lsconsensus-data:/var/lib/lodestar/consensus
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/lodestar/consensus/secrets
+      - jwtsecret:/var/lib/lodestar/consensus/ee-secret
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
@@ -53,7 +53,7 @@ services:
       - --execution.urls
       - ${EL_NODE}
       - --jwt-secret
-      - /var/lib/lodestar/consensus/secrets/jwtsecret
+      - /var/lib/lodestar/consensus/ee-secret/jwtsecret
       - --network.maxPeers
       - ${CL_MAX_PEER_COUNT:-55}
       - --network.targetPeers

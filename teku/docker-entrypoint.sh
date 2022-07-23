@@ -13,7 +13,7 @@ if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/teku/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/teku/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 

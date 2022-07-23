@@ -6,15 +6,15 @@ if [ "$(id -u)" = '0' ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/goethereum/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/goethereum/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
-if [[ ! -f /var/lib/goethereum/secrets/jwtsecret ]]; then
+if [[ ! -f /var/lib/goethereum/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
   __secret1=$(echo $RANDOM | md5sum | head -c 32)
   __secret2=$(echo $RANDOM | md5sum | head -c 32)
-  echo -n ${__secret1}${__secret2} > /var/lib/goethereum/secrets/jwtsecret
+  echo -n ${__secret1}${__secret2} > /var/lib/goethereum/ee-secret/jwtsecret
 fi
 
 # Check whether we should override TTD

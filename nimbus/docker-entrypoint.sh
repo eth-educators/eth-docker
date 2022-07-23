@@ -6,7 +6,7 @@ if [ ! -f /var/lib/nimbus/api-token.txt ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/nimbus/secrets/jwtsecret
+  echo -n ${JWT_SECRET} > /var/lib/nimbus/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
