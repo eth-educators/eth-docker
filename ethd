@@ -636,9 +636,8 @@ query_network() {
     "goerli" "Görli (né Prater) Testnet" \
     "sepolia" "Sepolia Testnet (permissioned validators)" \
     "ropsten" "Ropsten Testnet (abandoned after mainnet merge)" \
-    "kiln" "Kiln Testnet (abandoned at mainnet merge)" 3>&1 1>&2 2>&3)
-    # Need a Nethermind that's merge-ready and supports Gnosis, first
-    # "gnosis" "Gnosis Beacon Chain" 3>&1 1>&2 2>&3)
+    "kiln" "Kiln Testnet (abandoned at mainnet merge)" \
+    "gnosis" "Gnosis Beacon Chain" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
        "mainnet")
