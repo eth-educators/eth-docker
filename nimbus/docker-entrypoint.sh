@@ -23,4 +23,12 @@ if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
     exec /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL} ${__override_ttd}
 fi
 
-exec "$@" ${__override_ttd}
+# Check whether we should use MEV Boost
+if [ "${MEV_BOOST}" = "true" ]; then
+  __mev_boost="--payload-builder=http://mev-boost:18550"
+  echo "MEV Boost enabled"
+else
+  __mev_boost=""
+fi
+
+exec "$@" ${__mev_boost} ${__override_ttd}
