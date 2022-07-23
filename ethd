@@ -632,11 +632,13 @@ logs() {
 query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
-    "Which network do you want to run on?" 11 60 4 \
+    "Which network do you want to run on?" 12 60 5 \
     "goerli" "Görli (né Prater) Testnet" \
-    "sepolia" "Sepolia Testnet" \
-    "ropsten" "Ropsten Testnet" \
-    "kiln" "Kiln Testnet" 3>&1 1>&2 2>&3)
+    "sepolia" "Sepolia Testnet (permissioned validators)" \
+    "ropsten" "Ropsten Testnet (abandoned after mainnet merge)" \
+    "kiln" "Kiln Testnet (abandoned at mainnet merge)" 3>&1 1>&2 2>&3)
+    # Need a Nethermind that's merge-ready and supports Gnosis, first
+    # "gnosis" "Gnosis Beacon Chain" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
        "mainnet")
@@ -726,7 +728,8 @@ query_consensus_client() {
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
       "lh-base.yml" "Lighthouse (Rust) - consensus and validator client" \
-      "teku-base.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
+      "teku-base.yml" "Teku (Java) - consensus and validator client" \
+      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
