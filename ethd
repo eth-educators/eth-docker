@@ -119,12 +119,15 @@ been migrated, please recreate these changes yourself."
         echo
         diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
 	echo
-	echo "If you are coming from a pre-merge setup, please pay special attention to EL_NODE,"
-	echo "as failover is no longer supported."
-	echo
-	echo "Likewise, you'll want to decide whether to use mev-boost. Please see MEV_BOOST"
-	echo "in .env for details"
-	echo
+        if [ __pre_merge -eq 1 ]; then
+            echo "You appear to be coming from a pre-merge setup."
+            echo "A copy of your original settings is in .env.premerge"
+            echo
+            echo "Pay special attention to EL_NODE, as failover is no longer supported."
+	    echo
+	    echo "Decide whether to use mev-boost. Please see MEV_BOOST in .env for details."
+	    echo
+        fi
 	echo "An ./ethd restart command will start using the new images and configuration."
     else
         echo "No changes made to ${ENV_FILE} during migration"
@@ -235,6 +238,13 @@ envmigrate() {
       cp default.env "${ENV_FILE}"
       cp "${ENV_FILE}".bak .env.source
     fi
+    # Detect pre-merge
+    if grep -q "FALLBACK_NODE1" ".env.source"; then
+      __pre_merge=1
+      cp .env.source .env.premerge
+    else
+      __pre_merge=0
+    fi
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
@@ -280,6 +290,7 @@ envmigrate() {
     value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
         rm .env.source
+        rm .env.original
         return
     fi
     # Check for CL and EL
@@ -309,6 +320,7 @@ envmigrate() {
        echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
     fi
     rm .env.source
+    rm .env.original
 }
 
 migrate_compose_file() {
