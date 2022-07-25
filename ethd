@@ -87,12 +87,6 @@ update() {
         esac
     done
 
-    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
-        __rpc_branch=1
-    else
-        __rpc_branch=0
-    fi
-
     envmigrate
 
     if [ "${__switched_branch-}" -eq 1 ]; then
@@ -315,19 +309,12 @@ envmigrate() {
 
 migrate_compose_file() {
 # Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml lh-stats.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-validator.yml teku-base.yml teku-validator.yml "" "" "" "" "" "" "" "" "" "" "" )
-# These files were removed from main branch and are only present in rpc-nodes now
-    ADV_YML=( lh-consensus.yml lh-stats-consensus.yml lh-stats-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml traefik-shared.yml )
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml teku-validator.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lh-base.yml lh-vc-only.yml teku-base.yml teku-vc-only.yml lh-cl-only.yml lh-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
     __grafana_regex=".+-grafana\.yml"
-    if ${__as_owner} git branch --show-current | grep -q rpc-nodes; then
-        __rpc_branch=1
-    else
-        __rpc_branch=0
-    fi
     __switched_branch=0
     __old_ifs="$IFS"
     IFS=":"
@@ -348,16 +335,6 @@ migrate_compose_file() {
         for index in "${!FROM_YML[@]}"; do
             if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
                 __ymlfile=${TO_YML[index]}
-                break
-            fi
-        done
-        for index in "${!ADV_YML[@]}"; do
-            if [ "${__rpc_branch}" = 0 -a "${ADV_YML[index]}" = "${__ymlfile}" -a "${__switched_branch}" = 0 ]; then
-                __switched_branch=1
-                echo "Breaking change: Consensus and validator yml files are now only in rpc-nodes branch."
-                echo "Switching you over to that branch automatically."
-                ${__as_owner} git fetch origin rpc-nodes
-                ${__as_owner} git checkout rpc-nodes
                 break
             fi
         done
@@ -685,32 +662,32 @@ query_validator_client() {
     if [ ${NETWORK} = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
       "Which validator client do you want to run?" 9 65 2 \
-      "lh-validator.yml" "Lighthouse validator client" \
-      "teku-validator.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+      "lh-vc-only.yml" "Lighthouse validator client" \
+      "teku-vc-only.yml" "Teku validator client" 3>&1 1>&2 2>&3)
     elif [ "${__deployment}" = "rocket" ]; then
         if uname -a | grep -q aarch64; then
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
           "Which validator client do you want to run?" 9 65 2 \
-          "lh-validator.yml" "Lighthouse validator client" \
-          "teku-validator.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+          "lh-vc-only.yml" "Lighthouse validator client" \
+          "teku-vc-only.yml" "Teku validator client" 3>&1 1>&2 2>&3)
         else
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
           "Which validator client do you want to run?" 9 65 2 \
-          "teku-validator.yml" "Teku validator client" \
-          "lh-validator.yml" "Lighthouse validator client" 3>&1 1>&2 2>&3)
+          "teku-vc-only.yml" "Teku validator client" \
+          "lh-vc-only.yml" "Lighthouse validator client" 3>&1 1>&2 2>&3)
         fi
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
       "Which validator client do you want to run?" 9 65 2 \
-      "lh-validator.yml" "Lighthouse validator client" \
-      "teku-validator.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+      "lh-vc-only.yml" "Lighthouse validator client" \
+      "teku-vc-only.yml" "Teku validator client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
       "Which validator client do you want to run?" 11 65 4 \
-      "teku-validator.yml" "Teku validator client" \
-      "lh-validator.yml" "Lighthouse validator client" \
-      "lodestar-validator.yml" "Lodestar validator client" \
-      "prysm-validator.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
+      "teku-vc-only.yml" "Teku validator client" \
+      "lh-vc-only.yml" "Lighthouse validator client" \
+      "lodestar-vc-only.yml" "Lodestar validator client" \
+      "prysm-vc-only.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -759,23 +736,23 @@ query_consensus_only_client() {
     if [ ${NETWORK} = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
-      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
-      "teku-consensus.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
+      "lh-cl-only.yml" "Lighthouse (Rust) - consensus client" \
+      "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
-      "nimbus-consensus.yml" "Nimbus (Nim) - consensus client" \
-      "lodestar-consensus.yml" "Lodestar (Javascript) - consensus client" \
-      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
-      "teku-consensus.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
+      "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
+      "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
+      "lh-cl-only.yml" "Lighthouse (Rust) - consensus client" \
+      "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 12 65 5 \
-      "teku-consensus.yml" "Teku (Java) - consensus client" \
-      "lh-consensus.yml" "Lighthouse (Rust) - consensus client" \
-      "nimbus-consensus.yml" "Nimbus (Nim) - consensus client" \
-      "lodestar-consensus.yml" "Lodestar (Javascript) - consensus client" \
-      "prysm-consensus.yml" "Prysm (Go) - consensus client" 3>&1 1>&2 2>&3)
+      "teku-cl-only.yml" "Teku (Java) - consensus client" \
+      "lh-cl-only.yml" "Lighthouse (Rust) - consensus client" \
+      "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
+      "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
+      "prysm-cl-only.yml" "Prysm (Go) - consensus client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -1030,13 +1007,13 @@ config () {
     query_network
     query_deployment
     case "${__deployment}" in
-      "node" | "blox")
+      "node")
         query_consensus_client
         ;;
       "validator" | "rocket")
         query_validator_client
         ;;
-      "rpc")
+      "blox" | "rpc")
         query_consensus_only_client
         ;;
       *)

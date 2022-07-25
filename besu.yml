@@ -80,7 +80,7 @@ services:
       - "6060"
       - --data-storage-format=BONSAI
 #      - --sync-mode=X_CHECKPOINT
-      - --sync-mode=fast
+      - --sync-mode=X_SNAP
 volumes:
   besu-eth1-data:
   jwtsecret:

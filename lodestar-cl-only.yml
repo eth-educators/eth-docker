@@ -1,0 +1,80 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  consensus:
+    restart: "${RESTART}"
+    build:
+      context: ./lodestar
+      dockerfile: ${LS_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${LS_DOCKER_TAG}
+    image: lodestar:merge
+    user: lsconsensus
+    stop_grace_period: 1m
+    volumes:
+      - lsconsensus-data:/var/lib/lodestar/consensus
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/lodestar/consensus/ee-secret
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+    ports:
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - node
+      - --max-old-space-size=4096
+      - /usr/app/node_modules/.bin/lodestar
+      - beacon
+      - --rootDir
+      - /var/lib/lodestar/consensus
+      - --api.rest.enabled
+      - "true"
+      - --api.rest.host
+      - 0.0.0.0
+      - --api.rest.port
+      - "5052"
+      - --network.discv5.bindAddr
+      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
+      - --network.localMultiaddrs
+      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
+      - --execution.urls
+      - ${EL_NODE}
+      - --jwt-secret
+      - /var/lib/lodestar/consensus/ee-secret/jwtsecret
+      - --network.maxPeers
+      - ${CL_MAX_PEER_COUNT:-55}
+      - --network.targetPeers
+      - ${CL_MIN_PEER_COUNT:-50}
+      - --logLevel
+      - ${LOG_LEVEL}
+      - --network
+      - ${NETWORK}
+      - --chain.defaultFeeRecipient
+      - ${FEE_RECIPIENT}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=5052
+volumes:
+  lsconsensus-data:
+  jwtsecret:

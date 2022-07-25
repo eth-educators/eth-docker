@@ -8,62 +8,6 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  consensus:
-    restart: "${RESTART}"
-    build:
-      context: ./lodestar
-      dockerfile: ${LS_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${LS_DOCKER_TAG}
-    image: lodestar:merge
-    user: lsconsensus
-    stop_grace_period: 1m
-    volumes:
-      - lsconsensus-data:/var/lib/lodestar/consensus
-      - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/lodestar/consensus/ee-secret
-    environment:
-      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
-      - MEV_BOOST=${MEV_BOOST}
-    ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
-    <<: *logging
-    entrypoint:
-      - docker-entrypoint.sh
-      - node
-      - --max-old-space-size=4096
-      - /usr/app/node_modules/.bin/lodestar
-      - beacon
-      - --rootDir
-      - /var/lib/lodestar/consensus
-      - --api.rest.enabled
-      - "true"
-      - --api.rest.host
-      - 0.0.0.0
-      - --api.rest.port
-      - "5052"
-      - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
-      - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
-      - --execution.urls
-      - ${EL_NODE}
-      - --jwt-secret
-      - /var/lib/lodestar/consensus/ee-secret/jwtsecret
-      - --network.maxPeers
-      - ${CL_MAX_PEER_COUNT:-55}
-      - --network.targetPeers
-      - ${CL_MIN_PEER_COUNT:-50}
-      - --logLevel
-      - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
-      - --chain.defaultFeeRecipient
-      - ${FEE_RECIPIENT}
   validator:
     restart: "${RESTART}"
     image: lodestar:merge
@@ -83,7 +27,7 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - http://consensus:5052
+      - ${CL_NODE:-http://consensus:5052}
       - --keymanager.enabled
       - "true"
       - --keymanager.address
@@ -124,7 +68,7 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - NETWORK=${NETWORK}
-      - CL_NODE=http://consensus:5052
+      - CL_NODE=${CL_NODE:-http://consensus:5052}
     entrypoint:
       - validator-import.sh
       - node
@@ -138,8 +82,6 @@ services:
       - /val_keys
       - --network
       - ${NETWORK}
-    depends_on:
-      - consensus
   validator-exit:
     profiles: ["tools"]
     restart: "no"
@@ -157,7 +99,7 @@ services:
       - --rootDir
       - /var/lib/lodestar/validators
       - --server
-      - http://consensus:5052
+      - ${CL_NODE:-http://consensus:5052}
       -  --logLevel
       - ${LOG_LEVEL}
       - --network
@@ -181,6 +123,4 @@ services:
       - --network
       - ${NETWORK}
 volumes:
-  lsconsensus-data:
   lsvalidator-data:
-  jwtsecret:
