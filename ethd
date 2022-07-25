@@ -119,7 +119,7 @@ been migrated, please recreate these changes yourself."
         echo
         diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
 	echo
-        if [ __pre_merge -eq "1" ]; then
+        if [ $__pre_merge -eq 1 ]; then
             echo "You appear to be coming from a pre-merge setup."
             echo "A copy of your original settings is in .env.premerge"
             echo
