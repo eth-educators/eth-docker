@@ -159,10 +159,10 @@ been migrated, please recreate these changes yourself."
     if [[ ${ETHDSWITCHED-} -eq 1 ]]; then
         unset ETHDSWITCHED
         echo
-        echo "You were migrated to the $(${__as_owner} git branch --show-current) branch of eth-docker"
+        echo "You were migrated to the $(${__as_owner} git name-rev --name-only HEAD) branch of eth-docker"
         echo
-        delete_erigon
     fi
+    delete_erigon
     # If this is called by an older version of ethd, envmigrate
     # is in its own bash instance: Need to kill the ethd parent
     if ps $PPID | grep -q "ethd"; then
