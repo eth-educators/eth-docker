@@ -242,6 +242,9 @@ envmigrate() {
             if [ "${var}" = "COMPOSE_FILE" ]; then
                 migrate_compose_file
             fi
+            if [[ "${var}" = "NETWORK" && "${value}" =~ "prater" ]]; then
+                value="goerli"
+            fi
             sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
