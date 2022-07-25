@@ -20,4 +20,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker pre-merge v2.0.0-b4
+This is eth-docker pre-merge v2.0.0-b5
