@@ -68,6 +68,7 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - NETWORK=${NETWORK}
+      - CL_NODE=${CL_NODE:-http://consensus:5052}
     entrypoint:
       - validator-import.sh
       - node
@@ -81,8 +82,6 @@ services:
       - /val_keys
       - --network
       - ${NETWORK}
-      - --server
-      - ${CL_NODE:-http://consensus:5052}
   validator-exit:
     profiles: ["tools"]
     restart: "no"

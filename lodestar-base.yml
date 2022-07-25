@@ -124,6 +124,7 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - NETWORK=${NETWORK}
+      - CL_NODE=http://consensus:5052
     entrypoint:
       - validator-import.sh
       - node
