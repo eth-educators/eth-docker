@@ -1,0 +1,127 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  validator:
+    restart: "${RESTART}"
+    image: lodestar:merge
+    user: lsvalidator
+    environment:
+      - MEV_BOOST=${MEV_BOOST}
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint-vc.sh
+      - node
+      - --max-old-space-size=4096
+      - /usr/app/node_modules/.bin/lodestar
+      - validator
+      - --rootDir
+      - /var/lib/lodestar/validators
+      - --server
+      - ${CL_NODE:-http://consensus:5052}
+      - --keymanager.enabled
+      - "true"
+      - --keymanager.address
+      - 0.0.0.0
+      - --keymanager.port
+      - ${KEY_API_PORT:-7500}
+      - --graffiti
+      - ${GRAFFITI}
+      - --logLevel
+      - ${LOG_LEVEL}
+      - --network
+      - ${NETWORK}
+      - --defaultFeeRecipient
+      - ${FEE_RECIPIENT}
+  get-keyapi-token:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:latest
+    user: "10000"
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        cat /var/lib/lodestar/validators/validator-db/api-token.txt
+        echo
+  validator-import:
+    profiles: ["tools"]
+    restart: "${RESTART}"
+    image: lodestar:merge
+    user: root
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - ./.eth/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - NETWORK=${NETWORK}
+    entrypoint:
+      - validator-import.sh
+      - node
+      - --max-old-space-size=4096
+      - /usr/app/node_modules/.bin/lodestar
+      - validator
+      - import
+      - --rootDir
+      - /var/lib/lodestar/validators
+      - --directory
+      - /val_keys
+      - --network
+      - ${NETWORK}
+      - --server
+      - ${CL_NODE:-http://consensus:5052}
+  validator-exit:
+    profiles: ["tools"]
+    restart: "no"
+    image: lodestar:merge
+    user: lsvalidator
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - node
+      - --max-old-space-size=4096
+      - /usr/app/node_modules/.bin/lodestar
+      - validator
+      - voluntary-exit
+      - --rootDir
+      - /var/lib/lodestar/validators
+      - --server
+      - ${CL_NODE:-http://consensus:5052}
+      -  --logLevel
+      - ${LOG_LEVEL}
+      - --network
+      - ${NETWORK}
+  validator-list:
+    profiles: ["tools"]
+    restart: "no"
+    image: lodestar:merge
+    user: lsvalidator
+    volumes:
+      - lsvalidator-data:/var/lib/lodestar/validators
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - node
+      - --max-old-space-size=4096
+      - /usr/app/node_modules/.bin/lodestar
+      - validator
+      - list
+      - --rootDir
+      - /var/lib/lodestar/validators
+      - --network
+      - ${NETWORK}
+volumes:
+  lsvalidator-data:
