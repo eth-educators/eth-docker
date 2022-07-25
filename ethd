@@ -119,7 +119,7 @@ been migrated, please recreate these changes yourself."
         echo
         diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
 	echo
-        if [ __pre_merge -eq 1 ]; then
+        if [ __pre_merge -eq "1" ]; then
             echo "You appear to be coming from a pre-merge setup."
             echo "A copy of your original settings is in .env.premerge"
             echo
@@ -651,18 +651,23 @@ query_network() {
 
 query_deployment() {
     if [ ${NETWORK} = "gnosis" ]; then
-      __deployment="node"
+      __deployment=$(whiptail --notags --title "Select deployment type" --menu \
+      "What kind of deployment do you want to run?" 11 80 3 \
+      "node" "Ethereum node - consensus, execution and validator client" \
+      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 4 \
       "node" "Ethereum node - consensus, execution and validator client" \
-      "rocket" "Validator client only - integrate with RocketPool"  3>&1 1>&2 2>&3)
+      "rocket" "Validator client only - integrate with RocketPool" \
+      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     else
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 12 80 5 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rocket" "Validator client only - integrate with RocketPool" \
-      "blox" "Blox SSV node - consensus, execution and ssv-node" 3>&1 1>&2 2>&3)
+      "blox" "Blox SSV node - consensus, execution and ssv-node" \
+      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -883,7 +888,7 @@ query_rapid_sync() {
 
 query_coinbase() {
     while true; do
-        FEE_RECIPIENT=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
+        FEE_RECIPIENT=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -961,7 +966,19 @@ query_mev() {
             "sepolia")
                 MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@builder-relay-sepolia.flashbots.net
                 ;;
+            *)
+                MEV_RELAYS=""
+                ;;
         esac
+        MEV_RELAYS=$(whiptail --title "Configure MEV relays" --inputbox "What MEV relay(s) do you want to use? (right-click to paste)" 10 60 ${MEV_RELAYS} 3>&1 1>&2 2>&3)
+
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            echo "Your MEV relay(s): " ${MEV_RELAYS}
+        else
+            echo "You chose Cancel."
+            exit 0
+        fi
     else
         MEV_BOOST="false"
         MEV_RELAYS=https://0xb124d80a00b80815397b4e7f1f05377ccc83aeeceb6be87963ba3649f1e6efa32ca870a88845917ec3f26a8e2aa25c77@builder-relay-ropsten.flashbots.net
@@ -1038,6 +1055,7 @@ config () {
         ;;
     esac
 
+    MEV_BOOST=false
     if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
         CL_NODE="http://consensus:5052"
 
@@ -1047,9 +1065,7 @@ config () {
             query_mev
         fi
         query_grafana
-	if [ ! ${__deployment} = "rpc" ]; then
-	  query_coinbase
-	fi
+	query_coinbase
 	query_override
         if [ ${__deployment} = "node" ]; then
           query_graffiti
