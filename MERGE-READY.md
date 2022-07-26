@@ -26,6 +26,8 @@
 ## Configure the clients you wish to run
 - Configure via ethd
   - `./ethd config`
+- Build all required images
+  - `./ethd cmd build --pull`
 - Generate the keystore files. This mnemonic should be considered compromised, as it is not generated on an air-gapped
 machine.
   - `docker-compose run --rm deposit-cli-new --eth1_withdrawal_address YOURTESTADDRESS`
