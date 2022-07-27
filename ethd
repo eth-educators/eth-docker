@@ -8,6 +8,10 @@ cmd() {
     $__compose_exe "$@"
 }
 
+dodocker() {
+    $__maybe_sudo docker "$@"
+}
+
 determine_distro() {
     # Determine OS platform
     __uname=$(uname | tr "[:upper:]" "[:lower:]")
@@ -373,7 +377,7 @@ delete_erigon() {
         return
     fi
 
-    if [ -z "$($__maybe_sudo docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
+    if [ -z "$(dodocker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
         return
     fi
 
@@ -388,9 +392,9 @@ delete_erigon() {
     done
 
     echo "Stopping Erigon container"
-    $__maybe_sudo docker stop $(basename $(realpath .))_erigon_1 && $__maybe_sudo docker rm -f $(basename $(realpath .))_erigon_1
+    dodocker stop $(basename $(realpath .))_erigon_1 && dodocker rm -f $(basename $(realpath .))_erigon_1
     cmd stop execution && cmd rm -f execution
-    $__maybe_sudo docker volume rm $($__maybe_sudo docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
+    dodocker volume rm $(dodocker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
     echo ""
     echo "Erigon stopped and database deleted."
     echo ""
@@ -605,7 +609,7 @@ terminate() {
     done
 
     down
-    $__maybe_sudo docker volume rm $($__maybe_sudo docker volume ls -q | grep $(basename $(realpath .)))
+    dodocker volume rm $(dodocker volume ls -q | grep $(basename $(realpath .)))
     echo ""
     echo "All containers stopped and all volumes deleted"
     echo ""
@@ -1220,8 +1224,11 @@ determine_distro
 determine_compose
 handle_root
 
-if ! $__maybe_sudo docker images >/dev/null 2>&1; then
-    echo "Please ensure you can access docker before running this script.  You may pass -s or --sudo to reach docker via sudo."
+if ! dodocker images >/dev/null 2>&1; then
+    echo "Please ensure you can access $__maybe_sudo docker before running this script."
+    if [ -z "$__maybe_sudo" ]; then
+        echo "You may use ethd -s or ethd --sudo to reach docker via sudo."
+    fi
     exit 1
 fi
 
