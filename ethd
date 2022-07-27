@@ -38,10 +38,7 @@ determine_compose() {
     __compose_exe="docker-compose"
   fi
 
-  # If this user cannot access docker directly, then use sudo
-  if ! docker images >/dev/null 2>&1; then
-    __compose_exe="sudo $__compose_exe"
-  fi
+  __compose_exe="$__maybe_sudo $__compose_exe"
 }
 
 handle_root() {
@@ -1190,6 +1187,12 @@ if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     exit 0
 fi
 
+__maybe_sudo=""
+if [[ "$1" == "-s" || "$1" == "--sudo" ]]; then
+    shift
+    __maybe_sudo="sudo"
+fi
+
 cd "$(dirname "$(realpath ${BASH_SOURCE})")"
 # Use this to make sure root doesn't end up owning files
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -1217,13 +1220,13 @@ determine_distro
 determine_compose
 handle_root
 
-if ! docker images >/dev/null 2>&1 && ! sudo docker images >/dev/null 2>&1; then
-    echo "Please ensure your user can access docker before running this script"
+if ! $__maybe_sudo docker images >/dev/null 2>&1; then
+    echo "Please ensure you can access docker before running this script.  You may pass -s or --sudo to reach docker via sudo."
     exit 1
 fi
 
 if ! cmd --help >/dev/null 2>&1; then
-    echo "Please ensure your user can call $__compose_exe before running this script"
+    echo "Please ensure you can call $__maybe_sudo $__compose_exe before running this script"
     exit 1
 fi
 
