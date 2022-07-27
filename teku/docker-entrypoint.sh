@@ -19,7 +19,7 @@ fi
 
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
-    __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v1/debug/beacon/states/finalized"
+    __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
 else
     __rapid_sync=""
 fi
