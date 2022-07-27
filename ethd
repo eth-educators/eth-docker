@@ -373,7 +373,7 @@ delete_erigon() {
         return
     fi
 
-    if [ -z "$(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
+    if [ -z "$($__maybe_sudo docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
         return
     fi
 
@@ -388,9 +388,9 @@ delete_erigon() {
     done
 
     echo "Stopping Erigon container"
-    docker stop $(basename $(realpath .))_erigon_1 && docker rm -f $(basename $(realpath .))_erigon_1
+    $__maybe_sudo docker stop $(basename $(realpath .))_erigon_1 && $__maybe_sudo docker rm -f $(basename $(realpath .))_erigon_1
     cmd stop execution && cmd rm -f execution
-    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
+    $__maybe_sudo docker volume rm $($__maybe_sudo docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
     echo ""
     echo "Erigon stopped and database deleted."
     echo ""
@@ -605,7 +605,7 @@ terminate() {
     done
 
     down
-    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .)))
+    $__maybe_sudo docker volume rm $($__maybe_sudo docker volume ls -q | grep $(basename $(realpath .)))
     echo ""
     echo "All containers stopped and all volumes deleted"
     echo ""
