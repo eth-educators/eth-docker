@@ -7,7 +7,7 @@ fi
 
 if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/lodestar/consensus/setupdone" ]; then
     touch /var/lib/lodestar/consensus/setupdone
-    exec "$@ --weakSubjectivitySyncLatest=true --weakSubjectivityServerUrl=${RAPID_SYNC_URL}"
+    exec "$@" --weakSubjectivitySyncLatest=true --weakSubjectivityServerUrl=${RAPID_SYNC_URL}
 fi
 
 exec "$@"
