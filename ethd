@@ -1183,11 +1183,11 @@ printhelp() {
     echo "Be sure to run the config command as a non-root user, and all other commands"
     echo "either with sudo, or as a user who is part of the \"docker\" group"
     echo ""
-    exit 0
 }
 
 if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
+    exit 0
 fi
 
 cd $(dirname $(realpath ${BASH_SOURCE}))
