@@ -1190,7 +1190,7 @@ if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     exit 0
 fi
 
-cd $(dirname $(realpath ${BASH_SOURCE}))
+cd "$(dirname "$(realpath ${BASH_SOURCE})")"
 # Use this to make sure root doesn't end up owning files
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OWNER=$(stat -f '$Su' .)
