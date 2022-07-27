@@ -5,7 +5,11 @@ set -uo pipefail
 __compose_exe="docker-compose"
 
 cmd() {
-    $__compose_exe "$@"
+    $__maybe_sudo $__compose_exe "$@"
+}
+
+dodocker() {
+    $__maybe_sudo docker "$@"
 }
 
 determine_distro() {
@@ -29,18 +33,26 @@ determine_distro() {
     __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
 }
 
+determine_sudo() {
+    __maybe_sudo=""
+    if ! docker images >/dev/null 2>&1; then
+        echo "Will use sudo to access docker"
+        __maybe_sudo="sudo"
+    fi
+}
+
 determine_compose() {
 # This is mainly for Debian and docker-ce, where docker-compose does not exist
   type -P docker-compose >/dev/null 2>&1
   if [ $? -ne 0 ]; then
     __compose_exe="docker compose"
   else
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version [v]\?\([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version [v]\?\([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if ! [ "$__compose_version_major" -eq "$__compose_version_major" -a "$__compose_version_minor" -eq "$__compose_version_minor" ] 2> /dev/null; then
         echo "docker-compose version detection failed. Please report this output so it can be fixed."
-        docker-compose --version
+        $__maybe_sudo docker-compose --version
     elif [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Error: Outdated docker-compose version detected ($__compose_version). Please upgrade to version 1.28.0 or later." >&2
       if [[ "$__distro" = "ubuntu" ]]; then
@@ -63,17 +75,12 @@ determine_compose() {
     fi
     __compose_exe="docker-compose"
   fi
-
-  # If this user cannot access docker directly, then use sudo
-  if ! docker images >/dev/null 2>&1; then
-    __compose_exe="sudo $__compose_exe"
-  fi
 }
 
 upgrade_compose() {
   type -P docker-compose >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
@@ -82,7 +89,7 @@ upgrade_compose() {
       ${__auto_sudo} curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
       ${__auto_sudo} chmod +x /usr/bin/docker-compose
     fi
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
@@ -517,7 +524,7 @@ delete_erigon() {
         return
     fi
 
-    if [ -z "$(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
+    if [ -z "$(dodocker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
         return
     fi
 
@@ -532,9 +539,9 @@ delete_erigon() {
     done
 
     echo "Stopping Erigon container"
-    docker stop $(basename $(realpath .))_erigon_1 && docker rm -f $(basename $(realpath .))_erigon_1
+    dodocker stop $(basename $(realpath .))_erigon_1 && dodocker rm -f $(basename $(realpath .))_erigon_1
     cmd stop execution && cmd rm -f execution
-    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
+    dodocker volume rm $(dodocker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
     echo ""
     echo "Erigon stopped and database deleted."
     echo ""
@@ -769,7 +776,7 @@ terminate() {
     done
 
     down
-    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .)))
+    dodocker volume rm $(dodocker volume ls -q | grep $(basename $(realpath .)))
     echo ""
     echo "All containers stopped and all volumes deleted"
     echo ""
@@ -1378,6 +1385,7 @@ command="$1"
 shift
 
 determine_distro
+determine_sudo
 handle_root
 determine_compose
 
@@ -1390,13 +1398,13 @@ if ! type -P whiptail >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! docker images >/dev/null 2>&1 && ! sudo docker images >/dev/null 2>&1; then
-    echo "Please ensure your user can access docker before running this script"
+if ! dodocker images >/dev/null 2>&1; then
+    echo "Please ensure you can access $__maybe_sudo docker before running this script."
     exit 1
 fi
 
 if ! cmd --help >/dev/null 2>&1; then
-    echo "Please ensure your user can call $__compose_exe before running this script"
+    echo "Please ensure you can call $__maybe_sudo $__compose_exe before running this script"
     exit 1
 fi
 
