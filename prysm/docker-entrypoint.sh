@@ -41,21 +41,21 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Goerli testnet"
-      curl -L -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
+      curl -fsSL -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
     fi
     exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd} ${__mev_boost}
   elif [[ "$@" =~ --ropsten ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Ropsten testnet"
-      curl -L -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
+      curl -fsSL -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
     fi
     exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd} ${__mev_boost}
   elif [[ "$@" =~ --sepolia ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Sepolia testnet"
-      curl -L -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/sepolia/genesis.ssz
+      curl -fsSL -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/sepolia/genesis.ssz
     fi
     exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd} ${__mev_boost}
   else

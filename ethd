@@ -79,7 +79,7 @@ upgrade_compose() {
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Found docker-compose version $__compose_version_major.$__compose_version_minor, upgrading to 1.29.2"
       ${__auto_sudo} apt-get install -y curl
-      ${__auto_sudo} curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+      ${__auto_sudo} curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
       ${__auto_sudo} chmod +x /usr/bin/docker-compose
     fi
     __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
@@ -88,7 +88,7 @@ upgrade_compose() {
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Updating docker-compose failed. It is still version $__compose_version_major.$__compose_version_minor."
       echo "Please manually update docker-compose to version 1.29.2. These commands should do it:"
-      echo "sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose"
+      echo "sudo curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose"
       echo "sudo chmod +x /usr/bin/docker-compose"
     fi
   fi
