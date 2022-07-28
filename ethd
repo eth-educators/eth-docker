@@ -119,10 +119,18 @@ update() {
             echo "Pay special attention to EL_NODE, as failover is no longer supported."
 	    echo
 	    echo "Decide whether to use mev-boost. Please see MEV_BOOST in .env for details."
-	    echo
         fi
     else
         echo "No changes made to ${ENV_FILE} during migration"
+    fi
+    if [ $__el_infura -eq 1 ]; then
+        echo
+        echo "Detected use of an Infura project as an EL or failover EL. This is no longer supported with merge."
+        echo "Please adjust your EL_NODE variable manually."
+    fi
+    if [ $__el_adjusted -eq 1 ]; then
+        echo
+        echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
     fi
     echo
     echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
@@ -248,7 +256,8 @@ envmigrate() {
     fi
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
-        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        #value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
         if [ -n "${value}" -o "${var}" = "GRAFFITI" ]; then
             if [ "${var}" = "COMPOSE_FILE" ]; then
                 migrate_compose_file
@@ -262,7 +271,8 @@ envmigrate() {
     if [ $__keeptargets = "1" ]; then
       # Migrate over build targets
       for var in "${TARGET_VARS[@]}"; do
-          value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+          #value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+          value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
           if [ -n "${value}" ]; then
               sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
           fi
@@ -271,14 +281,16 @@ envmigrate() {
     # Move value from old variable name(s) to new one(s)
     for index in "${!OLD_VARS[@]}"; do
         var=${OLD_VARS[index]}
-        value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        #value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
         if [ -n "${value}" ]; then
             sed -i'.original' -e "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
     # Check for rewards
     var="FEE_RECIPIENT"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
         whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
         query_coinbase
@@ -288,7 +300,8 @@ envmigrate() {
     # Ditto do not nag if we switched branch, as the code that does
     # the check won't be accurate
     var="DISTRIBUTED"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
         rm .env.source
         rm .env.original
@@ -296,7 +309,8 @@ envmigrate() {
     fi
     # Check for CL and EL
     var="COMPOSE_FILE"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     # Case 1 ... CL, do we have an EL?
     if [[ "${value}" =~ "-base.yml" || "${value}" =~ "-cl-only.yml" ]]; then
         if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nm.yml" ]]; then
@@ -309,16 +323,18 @@ envmigrate() {
         fi
     fi
     # Adjust EL_NODE as needed
+    __el_adjusted=0
+    __el_infura=0
     var="EL_NODE"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env.source" || true)
+    #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" =~ "infura.io" ]]; then
-       echo "Detected use of an Infura project as an EL or failover EL. This is no longer supported with merge."
-       echo "Please adjust your EL_NODE variable manually."
+       __el_infura=1
     fi
     if [[ "${value}" =~ "http://execution:8545" || "${value}" =~ "ws://execution:8546" || "${value}" =~ "ws://execution:8545" ]]; then
        EL_NODE="http://execution:8551"
        set_value_in_env
-       echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
+       __el_adjusted=1
     fi
     rm .env.source
     rm .env.original
@@ -371,7 +387,8 @@ migrate_compose_file() {
 delete_erigon() {
     # Check for Erigon
     var="COMPOSE_FILE"
-    value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ ! "${value}" =~ "erigon.yml" ]]; then
         return
     fi
