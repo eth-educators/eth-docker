@@ -45,10 +45,10 @@ fi
 
 # Fetch genesis file as needed if beacon
 if [[ "$1" =~ ^(beacon-chain)$ ]]; then
-  if [[ "$@" =~ --prater ]]; then
+  if [[ "$@" =~ --prater || "$@" =~ --goerli ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
-      echo "Fetching genesis file for Prater testnet"
+      echo "Fetching genesis file for Goerli testnet"
       curl -L -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
     fi
     exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__override_ttd} ${__mev_boost}
