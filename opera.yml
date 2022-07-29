@@ -36,7 +36,10 @@ services:
       - traefik.http.routers.operawslb.rule=Host(`${EL_WS_LB}.${DOMAIN}`)
       - traefik.http.routers.operawslb.tls.certresolver=letsencrypt
       - traefik.http.services.operaws.loadbalancer.server.port=${EL_WS_PORT}
+    environment:
+      - GENESIS_FILE=${GENESIS_FILE}
     entrypoint:
+      - docker-entrypoint.sh
       - opera
       - --http
       - --http.addr
@@ -57,6 +60,8 @@ services:
       - ${EL_WS_PORT}
       - --ws.api
       - web3,eth,net
+      - --syncmode
+      - snap
   eth:
     image: tianon/true
     depends_on:
