@@ -31,5 +31,6 @@ RUN mkdir -p /var/lib/opera && chown ${USER}:${USER} /var/lib/opera
 
 # Copy executable
 COPY --from=builder /src/go-opera/build/opera /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["opera"]
