@@ -131,6 +131,10 @@ update() {
     if [ $__el_adjusted -eq 1 ]; then
         echo
         echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
+    elif [ $__pre_merge -eq 1 ]; then
+        echo
+        echo "Your EL_NODE variable has not been adjusted to use the new Engine API port, as you had a non-standard value."
+        echo "Please take a look and adjust manually."
     fi
     echo
     echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
