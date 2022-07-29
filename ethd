@@ -65,6 +65,7 @@ update() {
     fi
 
     __keeptargets=0
+    __targetcli=""
     while :
     do
         if [ -z ${1+x} ]; then
@@ -73,6 +74,7 @@ update() {
         case "$1" in
             --keep-targets)
                 __keeptargets=1
+                __targetcli="--keep-targets"
                 shift
                 ;;
             *)
@@ -94,7 +96,7 @@ update() {
         # This code has changed, run it again on the new branch
         export ETHDSECUNDO=1 #Not strictly necessary but this way we don't rely on what happens earlier
         export ETHDSWITCHED=1
-        exec "${BASH_SOURCE}" update $@
+        exec "${BASH_SOURCE}" update $__targetcli
     fi
 
     cmd build --pull
@@ -293,7 +295,7 @@ check_merge_switch() {
         __switched_branch=1
         echo "Breaking change: Goerli is in merge-getready branch for merge testing"
         echo "Switching you over to that branch automatically."
-        value=goerli
+        #value=goerli
         ${__as_owner} git fetch origin merge-getready
         ${__as_owner} git checkout merge-getready
     fi
