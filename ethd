@@ -35,6 +35,13 @@ determine_compose() {
   if [ $? -ne 0 ]; then
     __compose_exe="docker compose"
   else
+    __compose_version=$(docker-compose --version | grep -oP "version \K[\w.-]+")
+    __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
+    __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
+    if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
+      echo "Error: Outdated docker-compose version detected ($__compose_version). Please upgrade to version 1.28.0 or later." >&2
+      exit 1
+    fi
     __compose_exe="docker-compose"
   fi
 
