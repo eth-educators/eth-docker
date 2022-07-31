@@ -40,6 +40,11 @@ determine_compose() {
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Error: Outdated docker-compose version detected ($__compose_version). Please upgrade to version 1.28.0 or later." >&2
+      echo >&2
+      echo "On Ubuntu 20.04, you can do so by running:" >&2
+      echo 'sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose && sudo chmod +x /usr/bin/docker-compose' >&2
+      echo >&2
+      echo "On Debian 11, using docker-ce instead of docker.io, with the compose plugin, will work." >&2
       exit 1
     fi
     __compose_exe="docker-compose"
