@@ -14,7 +14,7 @@ determine_distro() {
     # If Linux, try to determine specific distribution
     if [ "$__uname" == "linux" ]; then
         # If available, use LSB to identify distribution
-        if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+        if [ -n "$(which lsb_release)" ]; then
             __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
         # Otherwise, use release info file
         else
@@ -145,6 +145,21 @@ install() {
             echo "Please run newgrp docker or log out and back in"
         else
             echo "Your user is already part of the docker group"
+        fi
+    elif [[ "$__distro" =~ "debian" ]]; then
+        if [ -z "$(which docker)" ]; then
+            ${__auto_sudo} apt-get update
+            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
+            ${__auto_sudo} mkdir -p /etc/apt/keyrings
+            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            ${__auto_sudo} echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            ${__auto_sudo} apt-get update
+            ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            echo "Installed docker-ce and docker-compose-plugin"
+        else
+            echo "Docker is already installed"
         fi
     else
         echo "This script cannot install docker on $__distro"
