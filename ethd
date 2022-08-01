@@ -1227,16 +1227,14 @@ config () {
     var=MEV_RELAYS
     set_value_in_env
 
-    if [[ "${EUID}" -eq 0 || -n $(id -nG $(id -u) | grep -w "docker") || "$OSTYPE" == "darwin"* ]]; then
-        cmd build --pull
-        exec 3>&1
-        exec 4>&2
-        exec 1> /dev/null
-        exec 2> /dev/null
-        cmd pull || true
-        exec 1>&3
-        exec 2>&4
-    fi
+    cmd build --pull
+    exec 3>&1
+    exec 4>&2
+    exec 1> /dev/null
+    exec 2> /dev/null
+    cmd pull || true
+    exec 1>&3
+    exec 2>&4
 }
 
 printhelp() {
