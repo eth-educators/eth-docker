@@ -1318,8 +1318,8 @@ command="$1"
 shift
 
 determine_distro
-determine_compose
 handle_root
+determine_compose
 
 if [ $command = "install" ]; then
     $command $@
