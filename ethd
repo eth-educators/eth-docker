@@ -1093,4 +1093,9 @@ determine_distro
 determine_compose
 handle_root
 
+if ! type -P whiptail >/dev/null 2>&1; then
+    echo "Please install the package whiptail or newt before running this script"
+    exit 1
+fi
+
 "$command" $@
