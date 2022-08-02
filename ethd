@@ -1087,6 +1087,9 @@ query_mev() {
             "sepolia")
                 MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@builder-relay-sepolia.flashbots.net
                 ;;
+            "goerli")
+                MEV_RELAYS=https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@builder-relay-goerli.flashbots.net
+                ;;
             *)
                 MEV_RELAYS=""
                 ;;
@@ -1164,9 +1167,7 @@ config () {
 
         query_execution_client
         query_rapid_sync
-        if [[ "${CONSENSUS_CLIENT}" =~ "prysm-" || "${CONSENSUS_CLIENT}" =~ "teku-" || "${CONSENSUS_CLIENT}" =~ "lodestar-" ]]; then
-            query_mev
-        fi
+        query_mev
         query_grafana
 	query_coinbase
 	query_override
