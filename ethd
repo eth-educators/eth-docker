@@ -129,7 +129,7 @@ install() {
             echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
         fi
         if [ -z "$(which docker)" ]; then
-            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y --install-recommends docker-compose
+            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y --install-recommends docker-compose whiptail
             ${__auto_sudo} systemctl enable docker
             echo "Installed docker.io and docker-compose"
         else
@@ -1305,11 +1305,6 @@ if [ "${OWNER}" == "root" ]; then
     exit 1
 fi
 
-if ! type -P whiptail >/dev/null 2>&1; then
-    echo "Please install the package whiptail or newt before running this script"
-    exit 1
-fi
-
 ENV_FILE=.env
 
 command="$1"
@@ -1321,6 +1316,11 @@ determine_compose
 
 if [ $command = "install" ]; then
     $command $@
+fi
+
+if ! type -P whiptail >/dev/null 2>&1; then
+    echo "Please install the package whiptail or newt before running this script"
+    exit 1
 fi
 
 if ! docker images >/dev/null 2>&1 && ! sudo docker images >/dev/null 2>&1; then
