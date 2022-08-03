@@ -70,4 +70,4 @@ case ${LOG_LEVEL} in
     ;;
 esac
 
-exec $@ ${__prune} ${__verbosity} ${__override_ttd}
+exec "$@" ${__prune} ${__verbosity} ${__override_ttd}

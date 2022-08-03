@@ -55,7 +55,7 @@ echo
 
 if [ $import -ne 0 ]; then
   echo
-  $@
+  "$@"
   echo
 fi
 
