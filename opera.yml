@@ -60,8 +60,8 @@ services:
       - ${EL_WS_PORT}
       - --ws.api
       - web3,eth,net
-      - --syncmode
-      - snap
+      - --gcmode
+      - light
   eth:
     image: tianon/true
     depends_on:
