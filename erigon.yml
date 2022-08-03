@@ -70,9 +70,9 @@ services:
       - --http.api
       - web3,eth,net,engine
       - --ws
-      - --engine.addr
+      - --authrpc.addr
       - 0.0.0.0
-      - --engine.port
+      - --authrpc.port
       - "8551"
       - --authrpc.jwtsecret
       - /var/lib/erigon/ee-secret/jwtsecret

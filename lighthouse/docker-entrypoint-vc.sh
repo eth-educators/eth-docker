@@ -23,4 +23,4 @@ else
   __beacon_stats=""
 fi
 
-exec $@ ${__mev_boost} ${__beacon_stats} ${__override_ttd}
+exec "$@" ${__mev_boost} ${__beacon_stats} ${__override_ttd}

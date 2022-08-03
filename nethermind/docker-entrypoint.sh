@@ -54,4 +54,4 @@ else
   __override_ttd=""
 fi
 
-exec $@ ${__override_ttd}
+exec "$@" ${__override_ttd}
