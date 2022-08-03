@@ -25,7 +25,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--payload-builder=http://mev-boost:18550"
+  __mev_boost="--payload-builder-enable --payload-builder-url=http://mev-boost:18550"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
