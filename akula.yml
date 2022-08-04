@@ -41,3 +41,4 @@ services:
       - --prune
 volumes:
   akula-el-data:
+  jwtsecret:

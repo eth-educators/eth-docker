@@ -23,6 +23,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   ca-certificates \
   tzdata \
   gosu \
+  libjemalloc2 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
