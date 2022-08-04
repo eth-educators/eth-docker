@@ -1020,7 +1020,7 @@ query_rapid_sync() {
     # Assume no to start
     RAPID_SYNC_URL=""
 
-    if (whiptail --title "Select Option" --yesno --defaultno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
+    if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura?" 10 60) then
         query_remote_beacon
         RAPID_SYNC_URL="${REMOTE_BEACON}"
     fi
