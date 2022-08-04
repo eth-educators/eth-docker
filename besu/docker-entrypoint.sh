@@ -26,4 +26,12 @@ else
   __override_ttd=""
 fi
 
-exec "$@" ${__override_ttd}
+# If on mainnet, force engine API. This can be removed once mainnet TTD has been announced
+if echo "$@" | grep -q '.*mainnet.*' 2>/dev/null ; then
+    __force_engine="--engine-rpc-enabled"
+    echo "Enabling Engine API on mainnet"
+else
+    __force_engine=""
+fi
+
+exec "$@" ${__override_ttd} ${__force_engine}
