@@ -298,6 +298,23 @@ check_merge_switch() {
         #value=goerli
         ${__as_owner} git fetch origin merge-getready
         ${__as_owner} git checkout merge-getready
+    elif [[ "${__merge_branch}" = 0 && "${value}" =~ "mainnet" && "${__switched_branch}" = 0 ]]; then
+        echo "eth-docker now supports a merge-ready mainnet configuration."
+        echo "This functionality is currently in testing, and there may be bugs."
+        echo
+        while true; do
+            read -rp "Do you wish to switch to a merge-ready configuration? (n/y) " yn
+            case $yn in
+                [Yy]* )
+                    echo "Switching over to merge-getready branch."
+                    __switched_branch=1
+                    ${__as_owner} git fetch origin merge-getready
+                    ${__as_owner} git checkout merge-getready
+                    break
+                    ;;
+                * ) break;;
+            esac
+        done
     fi
 }
 
