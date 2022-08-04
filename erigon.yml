@@ -74,6 +74,7 @@ services:
       - 0.0.0.0
       - --authrpc.port
       - "8551"
+      - --authrpc.vhosts=*
       - --authrpc.jwtsecret
       - /var/lib/erigon/ee-secret/jwtsecret
       # Workaround for high memory use in alpha
