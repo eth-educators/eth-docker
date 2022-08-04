@@ -396,6 +396,7 @@ envmigrate() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
         whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+        __during_update=1
         query_coinbase
         set_value_in_env
     fi
@@ -748,9 +749,9 @@ query_network() {
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 12 60 5 \
     "goerli" "Görli (né Prater) Testnet" \
-    "sepolia" "Sepolia Testnet (permissioned validators)" \
     "ropsten" "Ropsten Testnet (abandoned after mainnet merge)" \
-    "kiln" "Kiln Testnet (abandoned at mainnet merge)" \
+    "sepolia" "Sepolia Testnet (permissioned validators)" \
+    "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
@@ -765,7 +766,7 @@ query_network() {
            ;;
        *)
            echo "You chose Cancel"
-           exit 0
+           exit 1
            ;;
     esac
 }
@@ -911,11 +912,28 @@ query_custom_execution_client() {
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
-            echo "your custom execution client is:" $EL_CUSTOM_NODE
+            echo "Your custom execution client is:" $EL_CUSTOM_NODE
         else
             echo "You chose Cancel."
             exit 1
         fi
+
+        while true; do
+            JWT_SECRET=$(whiptail --title "Configure JWT secret" --inputbox "What is the JWT secret shared with the execution client? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+
+            exitstatus=$?
+            if [ $exitstatus -eq 0 ]; then
+                if [[ ${#JWT_SECRET} -eq 64 ]]; then
+                  echo "JWT Secret set. Please make sure it matches on CL and EL."
+                  break
+                else
+                  whiptail --msgbox "The JWT secret needs to be exactly 32 bytes, 64 hex characters long. You can try again or Cancel on the next screen." 10 75
+                fi
+            else
+                echo "You chose Cancel."
+                exit 1
+            fi
+        done
 }
 
 query_execution_client() {
@@ -935,7 +953,8 @@ query_execution_client() {
       "besu.yml" "Besu (Java)" \
       "geth.yml" "Geth (Go)" \
       "nm.yml" "Nethermind (.NET)" \
-      "erigon.yml" "Erigon - alpha (Go)" 3>&1 1>&2 2>&3)
+      "erigon.yml" "Erigon - alpha (Go)" \
+      "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
@@ -1021,13 +1040,15 @@ query_coinbase() {
             fi
         else
             echo "You chose Cancel."
-            echo
-            echo "Please make requested changes manually or run \"./ethd update\" again"
-            echo "before running \"./ethd restart\"."
-            echo
-            echo "For example, without a FEE_RECIPIENT set in \".env\", containers will not"
-            echo "start successfully. Already running containers will keep running with the"
-            echo "old configuration until you are ready to restart them."
+            if [ $__during_update -eq 1 ]; then
+                echo
+                echo "Please make requested changes manually or run \"./ethd update\" again"
+                echo "before running \"./ethd restart\"."
+                echo
+                echo "Without a FEE_RECIPIENT set in \".env\", containers will not"
+                echo "start successfully. Already running containers will keep running with the"
+                echo "old configuration until you are ready to restart them."
+            fi
             echo
             # If this is called by an older version of ethd, envmigrate
             # is in its own bash instance: Need to kill the ethd parent
@@ -1307,6 +1328,7 @@ if [ "${OWNER}" == "root" ]; then
 fi
 
 ENV_FILE=.env
+__during_update=0
 
 command="$1"
 shift
