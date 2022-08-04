@@ -1,15 +1,21 @@
 # Build Akula in a stock Rust build container
-FROM rust:latest as builder
+#FROM rust:latest as builder
+FROM ubuntu:jammy as builder
 
 ARG BUILD_TARGET=master
 
-RUN apt-get update && apt-get install -y cmake clang libclang-dev libext2fs-dev --no-install-recommends
-
 WORKDIR /usr/src
+
+RUN apt-get update && apt-get install -y cmake clang build-essential git curl wget ca-certificates pkg-config libclang-dev libext2fs-dev zlib1g-dev --no-install-recommends
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN bash -c "wget http://ftp.debian.org/debian/pool/main/p/protobuf/{libprotobuf-dev,libprotobuf-lite31,libprotoc31,libprotobuf31}_3.20.1-1_amd64.deb && wget http://ftp.debian.org/debian/pool/main/p/protobuf/protobuf-compiler_3.20.1-1_amd64.deb && dpkg -i {libprotobuf-dev,libprotobuf-lite31,libprotoc31,libprotobuf31}_3.20.1-1_amd64.deb && dpkg -i protobuf-compiler_3.20.1-1_amd64.deb"
+
 RUN bash -c "git clone https://github.com/akula-bft/akula && cd akula && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && cargo build --all --profile=production"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bullseye-slim
+#FROM debian:bullseye-slim
+FROM ubuntu:latest
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
