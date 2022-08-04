@@ -1,5 +1,7 @@
 # eth-docker: Docker automation for Ethereum consensus and execution clients.
 
+**This branch has been abandoned. It was used for Kiln testing and will be removed with mainnet merge**
+
 eth-docker, a docker automation project for [Ethereum](https://ethereum.org/en/eth2/) consensus and execution clients.
 
 ### Getting Started

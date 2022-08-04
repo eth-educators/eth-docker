@@ -848,6 +848,9 @@ printhelp() {
     exit 0
 }
 
+echo "This branch of eth-docker has been abandoned and will be deleted at merge."
+echo "The merge-getready branch is where merge testing is being done."
+exit 0
 if [[ "${#}" -eq 0 || "${1}" == "help" || "${1}" == "-h" || "${1}" == "--help" ]]; then
     printhelp
 fi
