@@ -77,6 +77,8 @@ services:
       - --authrpc.vhosts=*
       - --authrpc.jwtsecret
       - /var/lib/erigon/ee-secret/jwtsecret
+      - --maxpeers
+      - ${EL_MAX_PEER_COUNT:-100}
       # Workaround for high memory use in alpha
       - --batchSize
       - 128m
