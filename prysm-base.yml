@@ -149,26 +149,6 @@ services:
     command:
       - |
         sed -n 2p /var/lib/prysm/auth-token
-  validator-list:
-    profiles: ["tools"]
-    restart: "no"
-    user: prysmvalidator
-    image: prysm-validator:merge
-    volumes:
-      - prysmvalidator-data:/var/lib/prysm
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - validator
-      - --datadir
-      - /var/lib/prysm
-      - --verbosity
-      - ${LOG_LEVEL}
-      - accounts
-      - list
-      - --wallet-dir=/var/lib/prysm/
-      - --${NETWORK}
-      # If you chose not to store the wallet password during import, comment out the following line
-      - --wallet-password-file=/var/lib/prysm/password.txt
   validator-import:
     profiles: ["tools"]
     restart: "no"
@@ -216,6 +196,32 @@ services:
       - --${NETWORK}
     depends_on:
       - consensus
+  validator-list:
+    profiles: ["tools"]
+    restart: "no"
+    image: livepeerci/curl-jq
+    user: "10000"
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - validator
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        set -e
+        token=$$(sed -n 2p /var/lib/prysm/auth-token)
+        result=$$(curl -s -H "Accept: application/json" -H "Authorization: Bearer $$token" http://validator:7500/eth/v1/keystores)
+        if ! echo $$result | grep -q "data"; then
+           echo "The key manager API query failed. Output:"
+           echo $$result
+        fi
+        if [ $$(echo $$result | jq '.data | length') -eq 0 ]; then
+            echo "No keys loaded"
+        else
+          echo "Validator public keys"
+          echo $$result | jq -r '.data[].validating_pubkey'
+        fi
 volumes:
   prysmbeacon-data:
   prysmvalidator-data:
