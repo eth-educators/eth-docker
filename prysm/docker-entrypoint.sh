@@ -6,6 +6,12 @@ if [ -n "${JWT_SECRET}" ]; then
   echo "JWT secret was supplied in .env"
 fi
 
+if [[ -O "/var/lib/prysm/ee-secret/jwtsecret" ]]; then
+  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  chmod 777 /var/lib/prysm/ee-secret
+  chmod 666 /var/lib/prysm/ee-secret/jwtsecret
+fi
+
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
   __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"

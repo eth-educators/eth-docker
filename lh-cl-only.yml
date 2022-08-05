@@ -85,3 +85,4 @@ services:
       - traefik.http.services.cl.loadbalancer.server.port=5052
 volumes:
   lhconsensus-data:
+  jwtsecret:
