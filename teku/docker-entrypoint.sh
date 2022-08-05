@@ -46,4 +46,11 @@ else
   __mev_boost=""
 fi
 
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__override_ttd}
+# Check whether we should send stats to beaconcha.in
+if [ -n "${BEACON_STATS_API}" ]; then
+  __beacon_stats="--metrics-publish-endpoint=https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}"
+else
+  __beacon_stats=""
+fi
+
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__override_ttd} ${__beacon_stats}
