@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)
@@ -8,6 +8,12 @@ fi
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/nimbus/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
+fi
+
+if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
+  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  chmod 777 /var/lib/nimbus/ee-secret
+  chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
 # Check whether we should override TTD

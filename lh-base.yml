@@ -216,3 +216,4 @@ services:
 volumes:
   lhbeacon-data:
   lhvalidator-data:
+  jwtsecret:

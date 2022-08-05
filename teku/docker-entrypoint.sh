@@ -17,6 +17,12 @@ if [ -n "${JWT_SECRET}" ]; then
   echo "JWT secret was supplied in .env"
 fi
 
+if [[ -O "/var/lib/teku/ee-secret/jwtsecret" ]]; then
+  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  chmod 777 /var/lib/teku/ee-secret
+  chmod 666 /var/lib/teku/ee-secret/jwtsecret
+fi
+
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
     __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
@@ -34,7 +40,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--Xvalidators-registration-default-enabled=true --Xeb-endpoint=http://mev-boost:18550"
+  __mev_boost="--validators-builder-registration-default-enabled --builder-endpoint=http://mev-boost:18550"
   echo "MEV Boost enabled"
 else
   __mev_boost=""

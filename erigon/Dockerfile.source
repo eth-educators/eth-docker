@@ -34,7 +34,7 @@ RUN adduser \
     --ingroup "${USER}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/erigon/ee-secret && chown -R erigon:erigon /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 750 /var/lib/erigon/ee-secret
+RUN mkdir -p /var/lib/erigon/ee-secret && chown -R erigon:erigon /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
 
 # Copy executable
 COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/

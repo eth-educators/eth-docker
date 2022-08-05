@@ -49,9 +49,6 @@ services:
       - --p2p-port=${CL_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
       - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
-      - --validators-keystore-locking-enabled=true
-      - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-      - --validators-graffiti=${GRAFFITI}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
@@ -61,13 +58,6 @@ services:
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
-      - --validator-api-enabled=true
-      - --validator-api-port=${KEY_API_PORT:-7500}
-      - --validator-api-host-allowlist=*
-      - --validator-api-cors-origins=*
-      - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
-      - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
-      - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
       - --p2p-subscribe-all-subnets-enabled=true
     labels:
       - traefik.enable=true

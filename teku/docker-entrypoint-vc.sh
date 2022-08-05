@@ -14,7 +14,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--Xvalidators-registration-default-enabled=true"
+  __mev_boost="--validators-builder-registration-default-enabled"
   echo "MEV Boost enabled"
 else
   __mev_boost=""

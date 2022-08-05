@@ -46,6 +46,12 @@ if [[ ! -f /var/lib/nethermind/ee-secret/jwtsecret ]]; then
   echo -n ${__secret1}${__secret2} > /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
+if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
+  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  chmod 777 /var/lib/nethermind/ee-secret
+  chmod 666 /var/lib/nethermind/ee-secret/jwtsecret
+fi
+
 # Check whether we should override TTD
 if [ -n "${OVERRIDE_TTD}" ]; then
   __override_ttd="--Merge.TerminalTotalDifficulty ${OVERRIDE_TTD}"

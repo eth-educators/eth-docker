@@ -40,7 +40,7 @@ RUN adduser \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 750 /var/lib/prysm/ee-secret
+RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 777 /var/lib/prysm/ee-secret
 
 # Copy executable
 COPY --from=builder /go/src/prysm/bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/

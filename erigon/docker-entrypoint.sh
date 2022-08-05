@@ -18,6 +18,12 @@ if [[ ! -f /var/lib/erigon/ee-secret/jwtsecret ]]; then
   echo -n ${__secret1}${__secret2} > /var/lib/erigon/ee-secret/jwtsecret
 fi
 
+if [[ -O "/var/lib/erigon/ee-secret/jwtsecret" ]]; then
+  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  chmod 777 /var/lib/erigon/ee-secret
+  chmod 666 /var/lib/erigon/ee-secret/jwtsecret
+fi
+
 # Check whether we should override TTD
 if [ -n "${OVERRIDE_TTD}" ]; then
   __override_ttd="--override.terminaltotaldifficulty=${OVERRIDE_TTD}"

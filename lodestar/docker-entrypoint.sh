@@ -10,6 +10,12 @@ if [ -n "${JWT_SECRET}" ]; then
   echo "JWT secret was supplied in .env"
 fi
 
+if [[ -O "/var/lib/lodestar/consensus/ee-secret/jwtsecret" ]]; then
+  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  chmod 777 /var/lib/lodestar/consensus/ee-secret
+  chmod 666 /var/lib/lodestar/consensus/ee-secret/jwtsecret
+fi
+
 # Check whether we should override TTD
 if [ -n "${OVERRIDE_TTD}" ]; then
   __override_ttd="--terminal-total-difficulty-override ${OVERRIDE_TTD}"
