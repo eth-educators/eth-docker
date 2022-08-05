@@ -31,4 +31,12 @@ else
   __mev_boost=""
 fi
 
-exec "$@" ${__mev_boost} ${__override_ttd}
+# Check whether we should enable doppelganger protection
+if [ "${DOPPELGANGER}" = "true" ]; then
+  __doppel=""
+  echo "Doppelganger protection enabled, VC will pause for 2 epochs"
+else
+  __doppel="--doppelganger-detection=false"
+fi
+
+exec "$@" ${__mev_boost} ${__override_ttd} ${__doppel}
