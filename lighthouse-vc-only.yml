@@ -8,7 +8,7 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  consensus:
+  validator:
     restart: "${RESTART}"
     build:
       context: ./lighthouse
@@ -16,62 +16,6 @@ services:
       args:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse:merge
-    user: lhconsensus
-    stop_grace_period: 1m
-    volumes:
-      - lhbeacon-data:/var/lib/lighthouse
-      - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/lighthouse/beacon/ee-secret
-    environment:
-      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
-      - MEV_BOOST=${MEV_BOOST}
-      - BEACON_STATS_API=${BEACON_STATS_API}
-      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
-      - MALLOC_ARENA_MAX=4
-    ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
-    networks:
-      default:
-        aliases:
-          - eth2
-    <<: *logging
-    entrypoint:
-      - docker-entrypoint.sh
-      - lighthouse
-      - bn
-      - --disable-upnp
-      - --datadir
-      - /var/lib/lighthouse
-      - --http
-      - --http-address
-      - 0.0.0.0
-      - --http-port
-      - ${CL_REST_PORT:-5052}
-      - --network
-      - ${NETWORK}
-      - --port
-      - ${CL_P2P_PORT:-9000}
-      - --target-peers
-      - ${CL_MAX_PEER_COUNT:-80}
-      - --execution-endpoint
-      - ${EL_NODE}
-      - --execution-jwt
-      - /var/lib/lighthouse/beacon/ee-secret/jwtsecret
-      - --debug-level=${LOG_LEVEL}
-      - --metrics
-      - --metrics-address
-      - 0.0.0.0
-      - --metrics-port
-      - "8008"
-      - --validator-monitor-auto
-      - --suggested-fee-recipient
-      - ${FEE_RECIPIENT}
-  validator:
-    restart: "${RESTART}"
     image: lighthouse:merge
     user: lhvalidator
     environment:
@@ -111,8 +55,6 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-    depends_on:
-      - consensus
   get-keyapi-token:
     profiles: ["tools"]
     restart: "no"
@@ -168,52 +110,38 @@ services:
       - validator
       - exit
       - --beacon-node
-      - http://consensus:5052
+      - ${CL_NODE:-http://consensus:5052}
       - --datadir
       - /var/lib/lighthouse
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --keystore
-    depends_on:
-      - consensus
-  validator-account:
-    profiles: ["tools"]
-    restart: "no"
-    image: lighthouse:merge
-    user: lhvalidator
-    volumes:
-      - lhvalidator-data:/var/lib/lighthouse
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - lighthouse
-      - account
-      - validator
-      - --datadir
-      - /var/lib/lighthouse
-      - --network
-      - ${NETWORK}
-      - --debug-level=${LOG_LEVEL}
   validator-list:
     profiles: ["tools"]
     restart: "no"
-    image: lighthouse:merge
-    user: lhvalidator
+    image: livepeerci/curl-jq
+    user: "10000"
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
-      - ./.eth:/interchange
       - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - lighthouse
-      - account
+    depends_on:
       - validator
-      - list
-      - --datadir
-      - /var/lib/lighthouse
-      - --network
-      - ${NETWORK}
-      - --debug-level=${LOG_LEVEL}
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        set -e
+        token=$$(cat /var/lib/lighthouse/validators/api-token.txt)
+        result=$$(curl -s -H "Accept: application/json" -H "Authorization: Bearer $$token" http://validator:7500/eth/v1/keystores)
+        if ! echo $$result | grep -q "data"; then
+           echo "The key manager API query failed. Output:"
+           echo $$result
+        fi
+        if [ $$(echo $$result | jq '.data | length') -eq 0 ]; then
+            echo "No keys loaded"
+        else
+          echo "Validator public keys"
+          echo $$result | jq -r '.data[].validating_pubkey'
+        fi
 volumes:
-  lhbeacon-data:
   lhvalidator-data:
-  jwtsecret:

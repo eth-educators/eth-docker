@@ -108,20 +108,28 @@ services:
   validator-list:
     profiles: ["tools"]
     restart: "no"
-    image: lodestar:merge
-    user: lsvalidator
+    image: livepeerci/curl-jq
+    user: "10000"
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - node
-      - --max-old-space-size=4096
-      - /usr/app/node_modules/.bin/lodestar
+    depends_on:
       - validator
-      - list
-      - --rootDir
-      - /var/lib/lodestar/validators
-      - --network
-      - ${NETWORK}
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        set -e
+        token=$$(cat /var/lib/lodestar/validators/validator-db/api-token.txt)
+        result=$$(curl -s -H "Accept: application/json" -H "Authorization: Bearer $$token" http://validator:7500/eth/v1/keystores)
+        if ! echo $$result | grep -q "data"; then
+           echo "The key manager API query failed. Output:"
+           echo $$result
+        fi
+        if [ $$(echo $$result | jq '.data | length') -eq 0 ]; then
+            echo "No keys loaded"
+        else
+          echo "Validator public keys"
+          echo $$result | jq -r '.data[].validatingPubkey'
+        fi
 volumes:
   lsvalidator-data:
