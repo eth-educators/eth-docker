@@ -45,7 +45,7 @@ services:
       - --api.rest.host
       - 0.0.0.0
       - --api.rest.port
-      - "5052"
+      - ${CL_REST_PORT:-5052}
       - --network.discv5.bindAddr
       - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
       - --network.localMultiaddrs

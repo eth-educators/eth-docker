@@ -54,7 +54,7 @@ services:
       - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0
-      - --rest-port=5052
+      - --rest-port=${CL_REST_PORT:-5052}
       - --enr-auto-update=true
       - --metrics
       - --metrics-port=8008

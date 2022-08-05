@@ -50,7 +50,7 @@ services:
       - --grpc-gateway-host
       - 0.0.0.0
       - --grpc-gateway-port
-      - "5052"
+      - ${CL_REST_PORT:-5052}
       - --http-web3provider
       - ${EL_NODE}
       - --jwt-secret

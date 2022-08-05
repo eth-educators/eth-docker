@@ -45,7 +45,7 @@ services:
       - --api.rest.host
       - 0.0.0.0
       - --api.rest.port
-      - "5052"
+      - ${CL_REST_PORT:-5052}
       - --network.discv5.bindAddr
       - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
       - --network.localMultiaddrs
@@ -74,7 +74,7 @@ services:
       - traefik.http.routers.cllb.entrypoints=websecure
       - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cllb.tls.certresolver=letsencrypt
-      - traefik.http.services.cl.loadbalancer.server.port=5052
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
   lsconsensus-data:
   jwtsecret:

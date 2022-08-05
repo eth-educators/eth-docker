@@ -50,7 +50,7 @@ services:
       - --grpc-gateway-host
       - 0.0.0.0
       - --grpc-gateway-port
-      - "5052"
+      - ${CL_REST_PORT:-5052}
       - --http-web3provider
       - ${EL_NODE}
       - --jwt-secret
@@ -81,7 +81,7 @@ services:
       - traefik.http.routers.cllb.entrypoints=websecure
       - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cllb.tls.certresolver=letsencrypt
-      - traefik.http.services.cl.loadbalancer.server.port=5052
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
   prysmconsensus-data:
   jwtsecret:

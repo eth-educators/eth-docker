@@ -56,7 +56,7 @@ services:
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
       - --rest-api-interface=0.0.0.0
-      - --rest-api-port=5052
+      - --rest-api-port=${CL_REST_PORT:-5052}
       - --metrics-enabled=true
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
