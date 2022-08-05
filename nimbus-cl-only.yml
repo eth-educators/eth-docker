@@ -53,7 +53,7 @@ services:
       - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0
-      - --rest-port=5052
+      - --rest-port=${CL_REST_PORT:-5052}
       - --enr-auto-update=true
       - --doppelganger-detection=false
       - --metrics
@@ -78,7 +78,7 @@ services:
       - traefik.http.routers.cllb.entrypoints=websecure
       - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cllb.tls.certresolver=letsencrypt
-      - traefik.http.services.cl.loadbalancer.server.port=5052
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
   nimbus-consensus-data:
   jwtsecret:

@@ -70,6 +70,8 @@ services:
       - /var/lib/goethereum/ee-secret/jwtsecret
       - --authrpc.addr
       - 0.0.0.0
+      - --authrpc.port
+      - ${EE_PORT:-8551}
       - --authrpc.vhosts=*
     command: ${GETH_CACHE}
   set-prune-marker:

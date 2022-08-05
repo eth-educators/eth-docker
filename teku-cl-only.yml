@@ -53,7 +53,7 @@ services:
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
       - --rest-api-interface=0.0.0.0
-      - --rest-api-port=5052
+      - --rest-api-port=${CL_REST_PORT:-5052}
       - --metrics-enabled=true
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
@@ -69,7 +69,7 @@ services:
       - traefik.http.routers.cllb.entrypoints=websecure
       - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cllb.tls.certresolver=letsencrypt
-      - traefik.http.services.cl.loadbalancer.server.port=5052
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
   tekuconsensus-data:
   jwtsecret:

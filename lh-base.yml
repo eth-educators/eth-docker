@@ -50,7 +50,7 @@ services:
       - --http-address
       - 0.0.0.0
       - --http-port
-      - "5052"
+      - ${CL_REST_PORT:-5052}
       - --network
       - ${NETWORK}
       - --port

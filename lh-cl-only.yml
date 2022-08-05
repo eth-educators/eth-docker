@@ -50,7 +50,7 @@ services:
       - --http-address
       - 0.0.0.0
       - --http-port
-      - "5052"
+      - ${CL_REST_PORT:-5052}
       - --network
       - ${NETWORK}
       - --port
@@ -82,7 +82,7 @@ services:
       - traefik.http.routers.cllb.entrypoints=websecure
       - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
       - traefik.http.routers.cllb.tls.certresolver=letsencrypt
-      - traefik.http.services.cl.loadbalancer.server.port=5052
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
   lhconsensus-data:
   jwtsecret:

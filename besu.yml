@@ -67,7 +67,7 @@ services:
       - --host-allowlist=*
       - --engine-host-allowlist=*
       - --engine-jwt-secret=/var/lib/besu/ee-secret/jwtsecret
-      - --engine-rpc-port=8551
+      - --engine-rpc-port=${EE_PORT:-8551}
       - --logging
       - ${LOG_LEVEL}
       - --network
