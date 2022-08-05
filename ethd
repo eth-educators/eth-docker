@@ -617,7 +617,15 @@ query_network() {
         echo "You chose to run on Ethereum mainnet"
     elif [ "${NETWORK}" == "prater" ]; then
         EL_NETWORK=goerli
-        echo "You chose to run on Prater testnet"
+        echo "Breaking change: Goerli is in merge-getready branch for merge testing"
+        echo "Switching you over to that branch automatically."
+        #value=goerli
+        ${__as_owner} git fetch origin merge-getready
+        ${__as_owner} git checkout merge-getready
+        echo
+        echo "Please run ./ethd config again"
+        exit 0
+#        echo "You chose to run on Prater testnet"
     elif [ "${NETWORK}" == "gnosis" ]; then
         EL_NETWORK=xdai
         echo "You chose to run on Gnosis Beacon Chain"
