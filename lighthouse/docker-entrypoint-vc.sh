@@ -23,4 +23,12 @@ else
   __beacon_stats=""
 fi
 
-exec "$@" ${__mev_boost} ${__beacon_stats} ${__override_ttd}
+# Check whether we should enable doppelganger protection
+if [ "${DOPPELGANGER}" = "true" ]; then
+  __doppel="--enable-doppelganger-protection"
+  echo "Doppelganger protection enabled, VC will pause for 2 epochs"
+else
+  __doppel=""
+fi
+
+exec "$@" ${__mev_boost} ${__beacon_stats} ${__override_ttd} ${__doppel}

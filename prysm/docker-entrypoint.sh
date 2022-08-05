@@ -1,20 +1,6 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-# prysm-web never used the chown, fix this now. To be removed after merge.
-if [ "$(id -u)" = '0' ]; then
-  if [ "$1" = 'validator' ]; then
-    chown -R prysmvalidator:prysmvalidator /var/lib/prysm
-    exec gosu prysmvalidator "$BASH_SOURCE" "$@"
-  else
-    echo "Could not determine that this is the validator client."
-    echo "This is a bug, please report it at https://github.com/eth-educators/eth-docker/,"
-    echo "and thank you."
-    echo "Failed to match on" $1
-    exit
-  fi
-fi
-
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/prysm/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"

@@ -27,6 +27,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     entrypoint:
+      - docker-entrypoint-vc.sh
       - validator
       - --datadir
       - /var/lib/prysm

@@ -14,6 +14,7 @@ services:
     user: lsvalidator
     environment:
       - MEV_BOOST=${MEV_BOOST}
+      - DOPPELGANGER=${DOPPELGANGER}
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
