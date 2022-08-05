@@ -49,6 +49,8 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --Network.P2PPort
       - ${EL_P2P_PORT:-30303}
+      - --Network.MaxActivePeers
+      - ${EL_MAX_PEER_COUNT:-50}
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
