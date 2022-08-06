@@ -19,10 +19,10 @@ for arg do
   set -- "$@" "$arg"
 done
 
-if [ -f /val_keys/slashing_protection.json ]; then
-  echo "Found slashing protection file, it will be imported."
-  validator slashing-protection-history import --datadir /var/lib/prysm --slashing-protection-json-file  /val_keys/slashing_protection.json --accept-terms-of-use --${NETWORK}
-fi
+for file in /val_keys/slashing_protection*.json; do
+  echo "Found slashing protection file ${file}, it will be imported."
+  validator slashing-protection-history import --datadir /var/lib/prysm --slashing-protection-json-file ${file} --accept-terms-of-use --${NETWORK}
+done
 
 if [ ${__non_interactive} = 1 ]; then
   echo "${WALLET_PASSWORD}" > /var/lib/prysm/password.txt
