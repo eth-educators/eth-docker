@@ -20,11 +20,11 @@ for arg do
 done
 
 shopt -s nullglob
+set -e
 for file in /val_keys/slashing_protection*.json; do
   echo "Found slashing protection file ${file}, it will be imported."
-  echo "Pausing for 30s so consensus can start"
-  sleep 30
   node --max-old-space-size=6144 /usr/app/node_modules/.bin/lodestar validator slashing-protection import --server ${CL_NODE} --rootDir /var/lib/lodestar/validators --network ${NETWORK} --file ${file}
+  rm ${file}
 done
 
 if [ ${__non_interactive} = 1 ]; then
