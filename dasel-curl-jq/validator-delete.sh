@@ -24,7 +24,7 @@ case $status in
         file=validator_keys/slashing_protection-${3::10}.json
         echo "Validator is not actively loaded."
         echo "Slashing protection data written to .eth/$file"
-        echo $result | jq -r '.slashing_protection' > /$file
+        echo $result | jq '.slashing_protection | fromjson' > /$file
         chown 1000:1000 /$file
         chmod 644 /$file
         ;;
@@ -32,7 +32,7 @@ case $status in
         file=validator_keys/slashing_protection-${3::10}.json
         echo "Validator deleted."
         echo "Slashing protection data written to .eth/$file"
-        echo $result | jq -r '.slashing_protection' > /$file
+        echo $result | jq '.slashing_protection | fromjson' > /$file
         chown 1000:1000 /$file
         chmod 644 /$file
 esac
