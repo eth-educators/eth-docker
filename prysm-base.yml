@@ -199,29 +199,40 @@ services:
   validator-list:
     profiles: ["tools"]
     restart: "no"
-    image: livepeerci/curl-jq
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
     user: "10000"
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PRYSM="true"
     depends_on:
       - validator
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        set -e
-        token=$$(sed -n 2p /var/lib/prysm/auth-token)
-        result=$$(curl -s -H "Accept: application/json" -H "Authorization: Bearer $$token" http://validator:7500/eth/v1/keystores)
-        if ! echo $$result | grep -q "data"; then
-           echo "The key manager API query failed. Output:"
-           echo $$result
-        fi
-        if [ $$(echo $$result | jq '.data | length') -eq 0 ]; then
-            echo "No keys loaded"
-        else
-          echo "Validator public keys"
-          echo $$result | jq -r '.data[].validating_pubkey'
-        fi
+    entrypoint:
+      - validator-list.sh
+      - /var/lib/prysm/auth-token
+      - validator
+  validator-delete:
+    profiles: ["tools"]
+    restart: "no"
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
+    user: root
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - ./.eth/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PRYSM="true"
+    depends_on:
+      - validator
+    entrypoint:
+      - validator-delete.sh
+      - /var/lib/prysm/auth-token
+      - validator
 volumes:
   prysmbeacon-data:
   prysmvalidator-data:
