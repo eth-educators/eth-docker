@@ -55,20 +55,7 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-  get-keyapi-token:
-    profiles: ["tools"]
-    restart: "no"
-    image: alpine:latest
-    user: "10000"
-    volumes:
-      - lhvalidator-data:/var/lib/lighthouse
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        cat /var/lib/lighthouse/validators/api-token.txt
-        echo
+
   validator-import:
     profiles: ["tools"]
     restart: "no"
@@ -94,6 +81,7 @@ services:
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
+
   validator-exit:
     profiles: ["tools"]
     restart: "no"
@@ -117,23 +105,8 @@ services:
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --keystore
-  validator-list:
-    profiles: ["tools"]
-    restart: "no"
-    build:
-      context: ./vc-utils
-    image: vc-utils:local
-    user: "10000"
-    volumes:
-      - lhvalidator-data:/var/lib/lighthouse
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - validator
-    entrypoint:
-      - validator-list.sh
-      - /var/lib/lighthouse/validators/api-token.txt
-      - validator
-  validator-delete:
+
+  validator-keys:
     profiles: ["tools"]
     restart: "no"
     build:
@@ -147,8 +120,9 @@ services:
     depends_on:
       - validator
     entrypoint:
-      - validator-delete.sh
+      - keymanager.sh
       - /var/lib/lighthouse/validators/api-token.txt
       - validator
+
 volumes:
   lhvalidator-data:

@@ -66,19 +66,7 @@ services:
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
-  get-keyapi-token:
-    profiles: ["tools"]
-    restart: "no"
-    image: alpine:latest
-    user: "10002"
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        cat /var/lib/nimbus/api-token.txt
+
   validator-import:
     profiles: ["tools"]
     restart: "no"
@@ -99,6 +87,7 @@ services:
       - deposits
       - import
       - /val_keys
+
   validator-exit:
     profiles: ["tools"]
     restart: "no"
@@ -116,23 +105,8 @@ services:
       - exit
       - --rest-url=http://consensus:5052
       - --validator=
-  validator-list:
-    profiles: ["tools"]
-    restart: "no"
-    build:
-      context: ./vc-utils
-    image: vc-utils:local
-    user: "10002"
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - consensus
-    entrypoint:
-      - validator-list.sh
-      - /var/lib/nimbus/api-token.txt
-      - consensus
-  validator-delete:
+
+  validator-keys:
     profiles: ["tools"]
     restart: "no"
     build:
@@ -148,9 +122,10 @@ services:
     depends_on:
       - consensus
     entrypoint:
-      - validator-delete.sh
+      - keymanager.sh
       - /var/lib/nimbus/api-token.txt
       - consensus
+
 volumes:
   nimbus-data:
   jwtsecret:
