@@ -43,20 +43,7 @@ services:
       - ${NETWORK}
       - --defaultFeeRecipient
       - ${FEE_RECIPIENT}
-  get-keyapi-token:
-    profiles: ["tools"]
-    restart: "no"
-    image: alpine:latest
-    user: "10000"
-    volumes:
-      - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        cat /var/lib/lodestar/validators/validator-db/api-token.txt
-        echo
+
   validator-import:
     profiles: ["tools"]
     restart: "${RESTART}"
@@ -83,6 +70,7 @@ services:
       - /val_keys
       - --network
       - ${NETWORK}
+
   validator-exit:
     profiles: ["tools"]
     restart: "no"
@@ -105,25 +93,8 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
-  validator-list:
-    profiles: ["tools"]
-    restart: "no"
-    build:
-      context: ./vc-utils
-    image: vc-utils:local
-    user: "10000"
-    volumes:
-      - lsvalidator-data:/var/lib/lodestar/validators
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - LSBUGGED="true"
-    depends_on:
-      - validator
-    entrypoint:
-      - validator-list.sh
-      - /var/lib/lodestar/validators/validator-db/api-token.txt
-      - validator
-  validator-delete:
+
+  validator-keys:
     profiles: ["tools"]
     restart: "no"
     build:
@@ -139,8 +110,9 @@ services:
     depends_on:
       - validator
     entrypoint:
-      - validator-delete.sh
+      - keymanager.sh
       - /var/lib/lodestar/validators/validator-db/api-token.txt
       - validator
+
 volumes:
   lsvalidator-data:
