@@ -143,5 +143,22 @@ services:
           echo "Validator public keys"
           echo $$result | jq -r '.data[].validating_pubkey'
         fi
+  validator-delete:
+    profiles: ["tools"]
+    restart: "no"
+    build:
+      context: ./dasel-curl-jq
+    image: dasel-curl-jq:local
+    user: root
+    volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ./.eth/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - validator
+    entrypoint:
+      - validator-delete.sh
+      - /var/lib/lighthouse/validators/api-token.txt
+      - validator
 volumes:
   lhvalidator-data:
