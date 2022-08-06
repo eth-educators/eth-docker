@@ -19,11 +19,11 @@ for arg do
   set -- "$@" "$arg"
 done
 
-if [ -f /val_keys/slashing_protection.json ]; then
-  echo "Found slashing protection file, it will be imported."
-  /usr/local/bin/nimbus_beacon_node --data-dir=/var/lib/nimbus --network=${NETWORK} slashingdb import /val_keys/slashing_protection.json
-  rm /val_keys/slashing_protection.json
-fi
+for file in /val_keys/slashing_protection*.json; do
+  echo "Found slashing protection file ${file}, it will be imported."
+  /usr/local/bin/nimbus_beacon_node --data-dir=/var/lib/nimbus --network=${NETWORK} slashingdb import ${file}
+  rm ${file}
+done
 
 if [ ${__non_interactive} = 1 ]; then
   echo ${KEYSTORE_PASSWORD} | $@

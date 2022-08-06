@@ -26,10 +26,10 @@ for arg do
   set -- "$@" "$arg"
 done
 
-if [ -f /val_keys/slashing_protection.json ]; then
-  echo "Found slashing protection file, it will be imported."
-  /opt/teku/bin/teku slashing-protection import --data-path=/var/lib/teku --from=/val_keys/slashing_protection.json
-fi
+for file in /val_keys/slashing_protection*.json; do
+  echo "Found slashing protection file ${file}, it will be imported."
+  /opt/teku/bin/teku slashing-protection import --data-path=/var/lib/teku --from=${file}
+done
 
 if [ ${__non_interactive} = 1 ]; then
   for file in /var/lib/teku/validator-keys/keystore-*.json ; do

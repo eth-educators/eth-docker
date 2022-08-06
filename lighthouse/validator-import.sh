@@ -19,10 +19,10 @@ for arg do
   set -- "$@" "$arg"
 done
 
-if [ -f /val_keys/slashing_protection.json ]; then
-  echo "Found slashing protection file, it will be imported."
-  lighthouse account_manager validator slashing-protection import --datadir /var/lib/lighthouse --network ${NETWORK} /val_keys/slashing_protection.json
-fi
+for file in /val_keys/slashing_protection*.json; do
+  echo "Found slashing protection file ${file}, it will be imported."
+  lighthouse account_manager validator slashing-protection import --datadir /var/lib/lighthouse --network ${NETWORK} ${file}
+done
 
 if [ ${__non_interactive} = 1 ]; then
   echo "${KEYSTORE_PASSWORD}" > /tmp/keystorepassword.txt
