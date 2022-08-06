@@ -19,6 +19,7 @@ for arg do
   set -- "$@" "$arg"
 done
 
+shopt -s nullglob
 for file in /val_keys/slashing_protection*.json; do
   echo "Found slashing protection file ${file}, it will be imported."
   /usr/local/bin/nimbus_beacon_node --data-dir=/var/lib/nimbus --network=${NETWORK} slashingdb import ${file}

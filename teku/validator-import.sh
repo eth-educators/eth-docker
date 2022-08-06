@@ -26,6 +26,7 @@ for arg do
   set -- "$@" "$arg"
 done
 
+shopt -s nullglob
 for file in /val_keys/slashing_protection*.json; do
   echo "Found slashing protection file ${file}, it will be imported."
   /opt/teku/bin/teku slashing-protection import --data-path=/var/lib/teku --from=${file}
