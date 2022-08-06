@@ -45,10 +45,10 @@ determine_compose() {
         if [ ${__major_version} -lt 22 ]; then
           echo
           while true; do
-            read -rp "Do you want to update docker-compose to v1.29.2? (no/yes) " yn
+            read -rp "Do you want to update docker-compose to v1.29.2? (yes/no) " yn
             case $yn in
-              [Yy]* ) upgrade_compose; break;;
-              * ) exit 1;;
+              [Nn]* ) echo "Please be sure to update docker-compose yourself!"; exit 1;;
+              * ) upgrade_compose; break;;
             esac
           done
         fi
@@ -79,7 +79,7 @@ upgrade_compose() {
       ${__auto_sudo} curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
       ${__auto_sudo} chmod +x /usr/bin/docker-compose
     fi
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([1-9.-]*\).*/\1/p")
+    __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
@@ -221,6 +221,7 @@ update() {
     fi
 
     cmd build --pull
+    cmd --profile tools build --pull
     exec 3>&1
     exec 4>&2
     exec 1> /dev/null
@@ -1259,6 +1260,7 @@ config () {
     set_value_in_env
 
     cmd build --pull
+    cmd --profile tools build --pull
     exec 3>&1
     exec 4>&2
     exec 1> /dev/null
