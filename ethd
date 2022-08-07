@@ -623,7 +623,7 @@ query_network() {
         ${__as_owner} git fetch origin merge-getready
         ${__as_owner} git checkout merge-getready
         echo
-        echo "Please run ./ethd config again"
+        echo "Please run ./ethd update so .env gets updated, then ./ethd config again"
         exit 0
 #        echo "You chose to run on Prater testnet"
     elif [ "${NETWORK}" == "gnosis" ]; then
