@@ -362,7 +362,7 @@ validator-import() {
                 echo "Proceeding without slashing protection."
         fi
         __keystore_json=$(cat $__keyfile)
-        if [ -n ${__protectfile:+x} ]; then
+        if [ "$__do_a_protec" -eq 1 ]; then
             __protect_json=$(cat $__protectfile | jq "select(.data[].pubkey==\"$__pubkey\") | tojson")
         else
             __protect_json=""
