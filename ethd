@@ -637,7 +637,7 @@ the \"Compacting database\" stage it may not output logs for an hour or so, that
     echo ""
 }
 
-keyimport() {
+prep-keyimport() {
     set -Eeuo pipefail
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
@@ -686,7 +686,7 @@ keyimport() {
                     echo "KEYSTORE_PASSWORD not set, aborting"
                     exit 1
                 fi
-                if [ ${__prysm} = 1 ]; then
+                if [ ${__oldskool:-} = 1 -a ${__prysm} = 1 ]; then
                     if [ -z ${WALLET_PASSWORD+x} ]; then
                         echo "Using Prysm and WALLET_PASSWORD not set, aborting"
                         exit 1
@@ -701,6 +701,11 @@ keyimport() {
                 ;;
         esac
     done
+}
+
+keyimport() {
+    __oldskool=1
+    prep-keyimport "$@"
     if [ ${__non_interactive} = 1 ]; then
         cmd run --rm validator-import --non-interactive
     else
@@ -709,7 +714,18 @@ keyimport() {
 }
 
 keys() {
-    cmd run --rm validator-keys "$@"
+    __oldskool=0
+    if [ "${1:-}" = "import" ]; then
+        shift
+        prep-keyimport "$@"
+        if [ ${__non_interactive} = 1 ]; then
+            cmd run --rm validator-keys import --non-interactive
+        else
+            cmd run --rm validator-keys import
+        fi
+    else
+        cmd run --rm validator-keys "$@"
+    fi
 }
 
 upgrade() {
@@ -1359,7 +1375,7 @@ handle_root
 determine_compose
 
 if [ $command = "install" ]; then
-    $command $@
+    $command "$@"
 fi
 
 if ! type -P whiptail >/dev/null 2>&1; then
@@ -1377,4 +1393,4 @@ if ! cmd --help >/dev/null 2>&1; then
     exit 1
 fi
 
-"$command" $@
+$command "$@"

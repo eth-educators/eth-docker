@@ -109,6 +109,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - TLS="true"
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
     depends_on:
       - consensus
     entrypoint:
