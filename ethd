@@ -403,15 +403,22 @@ envmigrate() {
             sed -i'.original' -e "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
-    # Check for rewards
-    var="FEE_RECIPIENT"
+    # Check whether we run a CL or VC, if so nag about FEE_RECIPIENT
+    var="COMPOSE_FILE"
     #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-    if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-        whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
-        __during_update=1
-        query_coinbase
-        set_value_in_env
+    # It's CL&VC, CL-only, or VC-only
+    if [[ "${value}" =~ "-base.yml" || "${value}" =~ "-cl-only.yml" || "${value}" =~ "-vc-only.yml" ]]; then
+        # Check for rewards
+        var="FEE_RECIPIENT"
+        #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
+            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+            __during_update=1
+            query_coinbase
+            set_value_in_env
+        fi
     fi
     # User signals it's a distributed setup and not to nag
     # Ditto do not nag if we switched branch, as the code that does
@@ -424,7 +431,7 @@ envmigrate() {
         rm .env.original
         return
     fi
-    # Check for CL and EL
+    # Check for CL and EL, nag if we have only one without the other
     var="COMPOSE_FILE"
     #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
