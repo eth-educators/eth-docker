@@ -3,10 +3,10 @@
 call_api() {
     set +e
     if [ -z "${TLS:+x}" ]; then
-        __result=$(curl -m 10 -s -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+        __code=$(curl -m 10 -s -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
             --data "${__api_data}" http://${__api_container}:7500/${__api_path})
     else
-        __result=$(curl -k -m 10 -s -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+        __code=$(curl -k -m 10 -s -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
             --data "${__api_data}" https://${__api_container}:7500/${__api_path})
     fi
     __return=$?
@@ -17,6 +17,7 @@ call_api() {
         exit $__return
     fi
     set -e
+    __result=$(cat /tmp/result.txt)
 }
 
 get-token() {
@@ -30,6 +31,72 @@ get-token() {
 print-api-token() {
     get-token
     echo $__token
+}
+
+recipient-set() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    if [ -z "$__address" ]; then
+      echo "Please specify a fee recipient address"
+      exit 0
+    fi
+
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/feerecipient
+    __api_data="{\"ethaddress\": \"$__address\" }"
+    __http_method=POST
+    call_api
+    case $__code in
+        202) echo "The fee recipient for the validator with public key $__pubkey was updated." ;;
+        400) echo "The pubkey or address was formatted wrong. Error: $(echo $__result | jq -r '.message')";;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')";;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')";;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')";;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')";;
+        *) echo "Unexpected return code. Result: $(echo $__result)"
+    esac
+}
+
+recipient-get() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/feerecipient
+    __api_data=""
+    __http_method=GET
+    call_api
+    case $__code in
+        200) echo "The fee recipient for the validator with public key $__pubkey is:"; echo $__result | jq -r '.data.ethaddress' ;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')";;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')";;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')";;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')";;
+        *) echo "Unexpected return code. Result: $(echo $__result)"
+    esac
+}
+
+recipient-delete() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/feerecipient
+    __api_data=""
+    __http_method=DELETE
+    call_api
+    case $__code in
+        204) echo "The fee recipient for the validator with public key $__pubkey was set back to default." ;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')";;
+        403) echo "A mapping was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')";;
+        404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')";;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')";;
+        *) echo "Unexpected return code. Result: $(echo $__result)"
+    esac
 }
 
 validator-list() {
@@ -57,7 +124,7 @@ validator-list() {
 validator-delete() {
     if [ -z "$__pubkey" ]; then
       echo "Please specify a validator public key to delete"
-      exit 1
+      exit 0
     fi
     get-token
     __api_path=eth/v1/keystores
@@ -267,6 +334,13 @@ usage() {
     echo "  import"
     echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
     echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
+    echo "  get-recipient 0xPUBKEY"
+    echo "      List fee recipient set for the validator with public key 0xPUBKEY"
+    echo "      Validators will use FEE_RECIPIENT in .env by default, if not set individually"
+    echo "  set-recipient 0xPUBKEY 0xADDRESS"
+    echo "      Set individual fee recipient for the validator with public key 0xPUBKEY"
+    echo "  delete-recipient 0xPUBKEY"
+    echo "      Delete individual fee recipient for the validator with public key 0xPUBKEY"
     echo "  get-api-token"
     echo "      Print the token for the keymanager API running on port 7500."
     echo "      This is also the token for the Prysm Web UI"
@@ -288,6 +362,19 @@ case "$3" in
         ;;
     import)
         validator-import
+        ;;
+    get-recipient)
+        __pubkey=$4
+        recipient-get
+        ;;
+    set-recipient)
+        __pubkey=$4
+        __address=$5
+        recipient-set
+        ;;
+    delete-recipient)
+        __pubkey=$4
+        recipient-delete
         ;;
     get-api-token)
         print-api-token
