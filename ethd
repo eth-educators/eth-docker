@@ -38,7 +38,10 @@ determine_compose() {
     __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
-    if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
+    if ! [ "$__compose_version_major" -eq "$__compose_version_major" -a "$__compose_version_minor" -eq "$__compose_version_minor" ] 2> /dev/null; then
+        echo "docker-compose version detection failed. Please report this output so it can be fixed."
+        docker-compose --version
+    elif [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Error: Outdated docker-compose version detected ($__compose_version). Please upgrade to version 1.28.0 or later." >&2
       if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
@@ -705,6 +708,10 @@ keyimport() {
     fi
 }
 
+keys() {
+    cmd run --rm validator-keys "$@"
+}
+
 upgrade() {
   update
 }
@@ -1281,15 +1288,18 @@ printhelp() {
     echo "subcommands:"
     echo "  install"
     echo "     attempts to install docker and docker-compose for you"
-    echo "  config "
+    echo "  config"
     echo "     configures eth-docker with your choice of Ethereum clients"
-    echo "  keyimport [--non-interactive | --path ] "
-    echo "     import validator keys from .eth/validator_keys "
-    echo "     --path specifies an alternate import path "
-    echo "     --non-interactive is for use from another script, "
-    echo "       in which case KEYSTORE_PASSWORD must be set to the password "
-    echo "       shared by all keystore-m json files, and in the case of Prysm, "
-    echo "       WALLET_PASSWORD must be set to the password for Prysm's wallet "
+    echo "  keyimport [--non-interactive | --path ]"
+    echo "     import validator keys from .eth/validator_keys"
+    echo "     --path specifies an alternate import path"
+    echo "     --non-interactive is for use from another script,"
+    echo "       in which case KEYSTORE_PASSWORD must be set to the password"
+    echo "       shared by all keystore-m json files, and in the case of Prysm,"
+    echo "       WALLET_PASSWORD must be set to the password for Prysm's wallet"
+    echo "  keys ACTION"
+    echo "     list, delete, import keys; their fee recipients; and gas fees"
+    echo "     Run without ACTION to get help text"
     echo "  update [--keep-targets] "
     echo "     updates all client versions and eth-docker itself"
     echo "     --keep-targets will keep your custom build targets in .env"
