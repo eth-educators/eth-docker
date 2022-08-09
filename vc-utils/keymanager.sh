@@ -33,6 +33,15 @@ print-api-token() {
     echo $__token
 }
 
+get-prysm-wallet() {
+    if [ -f /var/lib/prysm/password.txt ]; then
+        echo "The password for the Prysm wallet is:"
+        cat /var/lib/prysm/password.txt
+    else
+        echo "No stored password found for a Prysm wallet."
+    fi
+}
+
 recipient-get() {
     if [ -z "$__pubkey" ]; then
       echo "Please specify a validator public key"
@@ -48,7 +57,7 @@ recipient-get() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
@@ -73,7 +82,7 @@ recipient-set() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
@@ -93,7 +102,7 @@ recipient-delete() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "A fee recipient was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')"; exit 0;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
@@ -114,7 +123,7 @@ gas-get() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 0;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
@@ -139,7 +148,7 @@ gas-set() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 0;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
@@ -160,7 +169,7 @@ gas-delete() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "A gas limit was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')"; exit 0;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
@@ -175,7 +184,7 @@ validator-list() {
         200);;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
     if [ $(echo $__result | jq '.data | length') -eq 0 ]; then
@@ -204,7 +213,7 @@ validator-delete() {
         400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 
@@ -268,6 +277,7 @@ validator-import() {
 
     if [ ${__non_interactive} = 1 ]; then
         __password="${KEYSTORE_PASSWORD}"
+        __justone=1
     else
         echo "WARNING - imported keys are immediately live. If these keys exist elsewhere,"
         echo "you WILL get slashed. If it has been less than 15 minutes since you deleted them elsewhere,"
@@ -334,14 +344,21 @@ validator-import() {
         for __protectfile in /validator_keys/slashing_protection*.json; do
             [ -f "$__protectfile" ] || continue
             if cat $__protectfile | grep -q "$__pubkey"; then
-                __do_a_protec=1
                 echo "Found slashing protection import file $__protectfile for $__pubkey"
-                echo "It will be imported"
+                if [ $(cat $__protectfile | jq ".data[] | select(.pubkey==\"$__pubkey\") | .signed_blocks | length") -gt 0 \
+                    -o $(cat $__protectfile | jq ".data[] | select(.pubkey==\"$__pubkey\") | .signed_attestations | length") -gt 0 ]; then
+                    __do_a_protec=1
+                    echo "It will be imported"
+                else
+                    echo "WARNING: The file does not contain importable data and will be skipped."
+                    echo "Your validator will be imported WITHOUT slashing protection data."
+                    echo
+                fi
                 break
             fi
         done
         if [ "$__do_a_protec" -eq 0 ]; then
-                echo "No slashing protection import file found for $__pubkey"
+                echo "No viable slashing protection import file found for $__pubkey"
                 echo "Proceeding without slashing protection."
         fi
         __keystore_json=$(cat $__keyfile)
@@ -361,7 +378,7 @@ validator-import() {
         400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
         if ! echo $__result | grep -q "data"; then
@@ -436,6 +453,8 @@ usage() {
     echo "      Print the token for the keymanager API running on port 7500."
     echo "      This is also the token for the Prysm Web UI"
     echo
+    echo " get-prysm-wallet"
+    echo "      Print Prysm's wallet password"
 }
 
 set -e
@@ -452,7 +471,8 @@ case "$3" in
         validator-delete
         ;;
     import)
-        validator-import
+        shift 3
+        validator-import "$@"
         ;;
     get-recipient)
         __pubkey=$4
@@ -482,6 +502,9 @@ case "$3" in
         ;;
     get-api-token)
         print-api-token
+        ;;
+    get-prysm-wallet)
+        get-prysm-wallet
         ;;
     *)
         usage

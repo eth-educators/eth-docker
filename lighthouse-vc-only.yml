@@ -117,6 +117,8 @@ services:
       - lhvalidator-data:/var/lib/lighthouse
       - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
     depends_on:
       - validator
     entrypoint:
