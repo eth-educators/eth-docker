@@ -325,7 +325,7 @@ validator-import() {
 }
 
 usage() {
-    echo "Call validator-keys as \"docker-compose run --rm validator-keys ACTION\", where ACTION is one of:"
+    echo "Call keymanager with an ACTION, one of:"
     echo "  list"
     echo "     Lists all validator public keys currently loaded into your validator client"
     echo "  delete 0xPUBKEY"
