@@ -33,32 +33,6 @@ print-api-token() {
     echo $__token
 }
 
-recipient-set() {
-    if [ -z "$__pubkey" ]; then
-      echo "Please specify a validator public key"
-      exit 0
-    fi
-    if [ -z "$__address" ]; then
-      echo "Please specify a fee recipient address"
-      exit 0
-    fi
-
-    get-token
-    __api_path=eth/v1/validator/$__pubkey/feerecipient
-    __api_data="{\"ethaddress\": \"$__address\" }"
-    __http_method=POST
-    call_api
-    case $__code in
-        202) echo "The fee recipient for the validator with public key $__pubkey was updated." ;;
-        400) echo "The pubkey or address was formatted wrong. Error: $(echo $__result | jq -r '.message')";;
-        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')";;
-        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')";;
-        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')";;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')";;
-        *) echo "Unexpected return code. Result: $(echo $__result)"
-    esac
-}
-
 recipient-get() {
     if [ -z "$__pubkey" ]; then
       echo "Please specify a validator public key"
@@ -70,12 +44,37 @@ recipient-get() {
     __http_method=GET
     call_api
     case $__code in
-        200) echo "The fee recipient for the validator with public key $__pubkey is:"; echo $__result | jq -r '.data.ethaddress' ;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')";;
-        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')";;
-        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')";;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')";;
-        *) echo "Unexpected return code. Result: $(echo $__result)"
+        200) echo "The fee recipient for the validator with public key $__pubkey is:"; echo $__result | jq -r '.data.ethaddress'; exit 0;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
+}
+
+recipient-set() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    if [ -z "$__address" ]; then
+      echo "Please specify a fee recipient address"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/feerecipient
+    __api_data="{\"ethaddress\": \"$__address\" }"
+    __http_method=POST
+    call_api
+    case $__code in
+        202) echo "The fee recipient for the validator with public key $__pubkey was updated."; exit 0;;
+        400) echo "The pubkey or address was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -90,12 +89,79 @@ recipient-delete() {
     __http_method=DELETE
     call_api
     case $__code in
-        204) echo "The fee recipient for the validator with public key $__pubkey was set back to default." ;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')";;
-        403) echo "A mapping was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')";;
-        404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')";;
-        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')";;
-        *) echo "Unexpected return code. Result: $(echo $__result)"
+        204) echo "The fee recipient for the validator with public key $__pubkey was set back to default."; exit 0;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "A fee recipient was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')"; exit 0;;
+        404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
+}
+
+gas-get() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/gas_limit
+    __api_data=""
+    __http_method=GET
+    call_api
+    case $__code in
+        200) echo "The execution gas limit for the validator with public key $__pubkey is:"; echo $__result | jq -r '.data.gas_limit'; exit 0;;
+        400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
+}
+
+gas-set() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    if [ -z "$__limit" ]; then
+      echo "Please specify a gas limit"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/gas_limit
+    __api_data="{\"gas_limit\": \"$__limit\" }"
+    __http_method=POST
+    call_api
+    case $__code in
+        202) echo "The gas limit for the validator with public key $__pubkey was updated."; exit 0;;
+        400) echo "The pubkey or limit was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
+}
+
+gas-delete() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/gas_limit
+    __api_data=""
+    __http_method=DELETE
+    call_api
+    case $__code in
+        204) echo "The gas limit for the validator with public key $__pubkey was set back to default."; exit 0;;
+        400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "A gas limit was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')"; exit 0;;
+        404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -105,11 +171,13 @@ validator-list() {
     __api_data=""
     __http_method=GET
     call_api
-    if ! echo $__result | grep -q "data"; then
-        echo "The key manager API query failed. Output:"
-        echo $__result
-        exit 1
-    fi
+    case $__code in
+        200);;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
     if [ $(echo $__result | jq '.data | length') -eq 0 ]; then
         echo "No keys loaded"
     elif [ -n "${LSBUGGED:+x}" ]; then
@@ -131,11 +199,15 @@ validator-delete() {
     __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
     __http_method=DELETE
     call_api
-    if ! echo $__result | grep -q "data"; then
-       echo "The key manager API query failed. Output:"
-       echo $__result
-       exit 1
-    fi
+    case $__code in
+        200) ;;
+        400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
+
     __status=$(echo $__result | jq -r '.data[].status')
     case ${__status,,} in
         error)
@@ -284,6 +356,14 @@ validator-import() {
         __api_path=eth/v1/keystores
         __http_method=POST
         call_api
+    case $__code in
+        200) ;;
+        400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        500) echo "Internal server error. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+    esac
         if ! echo $__result | grep -q "data"; then
            echo "The key manager API query failed. Output:"
            echo $__result
@@ -334,6 +414,7 @@ usage() {
     echo "  import"
     echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
     echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
+    echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
     echo "      Validators will use FEE_RECIPIENT in .env by default, if not set individually"
@@ -341,6 +422,16 @@ usage() {
     echo "      Set individual fee recipient for the validator with public key 0xPUBKEY"
     echo "  delete-recipient 0xPUBKEY"
     echo "      Delete individual fee recipient for the validator with public key 0xPUBKEY"
+    echo
+    echo "  get-gas 0xPUBKEY"
+    echo "      List execution gas limit set for the validator with public key 0xPUBKEY"
+    echo "      Validators will use the client's default, if not set individually"
+    echo "  set-gas 0xPUBKEY amount"
+    echo "      Set individual execution gas limit for the validator with public key 0xPUBKEY"
+    echo "      Example: 'set-gas 0xPUBKEY 30000000' to set it to the default of 30 million gwei"
+    echo "  delete-gas 0xPUBKEY"
+    echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
+    echo
     echo "  get-api-token"
     echo "      Print the token for the keymanager API running on port 7500."
     echo "      This is also the token for the Prysm Web UI"
@@ -375,6 +466,19 @@ case "$3" in
     delete-recipient)
         __pubkey=$4
         recipient-delete
+        ;;
+    get-gas)
+        __pubkey=$4
+        gas-get
+        ;;
+    set-gas)
+        __pubkey=$4
+        __limit=$5
+        gas-set
+        ;;
+    delete-gas)
+        __pubkey=$4
+        gas-delete
         ;;
     get-api-token)
         print-api-token
