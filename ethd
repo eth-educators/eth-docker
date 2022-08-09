@@ -1216,7 +1216,7 @@ config () {
     esac
 
     MEV_BOOST=false
-    if [[ ! "${CONSENSUS_CLIENT}" =~ "-validator.yml" ]]; then
+    if [[ ! "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" ]]; then
         CL_NODE="http://consensus:5052"
 
         query_execution_client
