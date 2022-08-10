@@ -1399,12 +1399,12 @@ if ! type -P whiptail >/dev/null 2>&1; then
 fi
 
 if ! dodocker images >/dev/null 2>&1; then
-    echo "Please ensure you can access $__maybe_sudo docker before running this script."
+    echo "Please ensure you can call ${__maybe_sudo:+$__maybe_sudo }docker before running this script."
     exit 1
 fi
 
 if ! cmd --help >/dev/null 2>&1; then
-    echo "Please ensure you can call $__maybe_sudo $__compose_exe before running this script"
+    echo "Please ensure you can call ${__maybe_sudo:+$__maybe_sudo }$__compose_exe before running this script"
     exit 1
 fi
 
