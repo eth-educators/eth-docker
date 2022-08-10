@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   consensus:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./teku
       args:

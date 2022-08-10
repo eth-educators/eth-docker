@@ -10,7 +10,7 @@ x-logging: &logging
 services:
   traefik:
     image: traefik:latest
-    restart: ${RESTART}
+    restart: "unless-stopped"
     command:
 #      - --log.level=DEBUG
 #      - --accesslog=true
@@ -43,7 +43,7 @@ services:
       - cf-ddns
   cf-ddns:
     image: oznu/cloudflare-ddns:latest
-    restart: ${RESTART}
+    restart: "unless-stopped"
     environment:
       - API_KEY=${CF_API_TOKEN}
       - ZONE=${DOMAIN}

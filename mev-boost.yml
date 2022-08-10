@@ -8,7 +8,7 @@ x-logging: &logging
 
 services:
   mev-boost:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./flashbots
       dockerfile: ${MEV_DOCKERFILE}

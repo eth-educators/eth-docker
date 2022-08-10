@@ -12,7 +12,7 @@ services:
     image: traefik-aws
     build:
       context: ./traefik
-    restart: ${RESTART}
+    restart: "unless-stopped"
     command:
 #      - --log.level=DEBUG
 #      - --accesslog=true

@@ -16,7 +16,7 @@ x-build: &prysm-build
 
 services:
   validator:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       target: validator
       <<: *prysm-build
@@ -139,6 +139,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=${KEY_API_PORT:-7500}
       - PRYSM="true"
     depends_on:
       - validator

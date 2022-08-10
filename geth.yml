@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   execution:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./geth
       dockerfile: ${GETH_DOCKERFILE}

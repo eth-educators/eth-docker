@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   alertmanager:
-    restart: ${RESTART}
+    restart: "unless-stopped"
     image: prom/alertmanager
     volumes:
       - alertmanager-data:/alertmanager

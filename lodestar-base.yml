@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   consensus:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./lodestar
       dockerfile: ${LS_DOCKERFILE}
@@ -66,7 +66,7 @@ services:
       - ${FEE_RECIPIENT}
 
   validator:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     image: lodestar:merge
     user: lsvalidator
     environment:
@@ -105,7 +105,7 @@ services:
 
   validator-import:
     profiles: ["tools"]
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     image: lodestar:merge
     user: root
     volumes:
@@ -169,6 +169,7 @@ services:
     environment:
       - LSBUGGED="true"
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=${KEY_API_PORT:-7500}
     depends_on:
       - validator
     entrypoint:
