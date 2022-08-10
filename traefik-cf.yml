@@ -29,8 +29,8 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.websecure.address=:${TRAEFIK_WEB_PORT}
     ports:
-      - ${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
-      - ${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
+      - ${HOST_IP}:${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
+      - ${HOST_IP}:${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
       - CLOUDFLARE_EMAIL=${CF_EMAIL}
       - CLOUDFLARE_DNS_API_TOKEN=${CF_API_TOKEN}

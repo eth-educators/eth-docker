@@ -25,8 +25,8 @@ services:
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
     ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh

@@ -26,8 +26,8 @@ services:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - MALLOC_ARENA_MAX=4
     ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:

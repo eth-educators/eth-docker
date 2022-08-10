@@ -29,8 +29,8 @@ services:
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
     ports:
-      - ${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - ${HOST_IP}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
+      - ${HOST_IP}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     networks:
       default:
         aliases:

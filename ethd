@@ -189,7 +189,7 @@ envmigrate() {
             CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL CF_EMAIL \
             CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED \
             PROM_HOST PRYSM_HOST EL_HOST EL_WS_HOST DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
-            CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
+            CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE HOST_IP EL_P2P_PORT CL_P2P_PORT PRYSM_PORT  \
             PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             EL_RPC_PORT EL_WS_PORT RESTART LOG_LEVEL GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
@@ -203,7 +203,7 @@ envmigrate() {
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE EC_FALLBACK_NODE1 EC_FALLBACK_NODE2 EC_NETWORK \
 	        EC_HOST EC_WS_HOST EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT REWARDS_TO )
     NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE EL_FALLBACK_NODE1 EL_FALLBACK_NODE2 EL_NETWORK \
-	        EL_HOST EL_WS_HOST EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT FEE_RECIPIENT )
+	        EL_HOST EL_WS_HOST HOST_IP EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT FEE_RECIPIENT )
 
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
@@ -868,6 +868,18 @@ query_graffiti() {
     fi
 }
 
+query_host_ip() {
+    HOST_IP=$(whiptail --title "Set IPv4 address" --inputbox "What is the IP of the host" 10 37 "eth-docker" 3>&1 1>&2 2>&3)
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "your IP is:" "${HOST_IP}"
+    else
+        echo "You chose Cancel."
+        exit 1
+    fi
+}
+
 query_rapid_sync() {
     # Assume no to start
     RAPID_SYNC_URL=""
@@ -953,6 +965,7 @@ config () {
         fi
     fi
 
+    query_host_ip
     query_network
     query_deployment
     case "${__deployment}" in
@@ -1010,9 +1023,12 @@ config () {
 
     echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
 
+
     var=FEE_RECIPIENT
     set_value_in_env
     var=GRAFFITI
+    set_value_in_env
+    var=HOST_IP
     set_value_in_env
     var=CL_NODE
     set_value_in_env

@@ -24,8 +24,8 @@ services:
     volumes:
       - nm-eth1-data:/var/lib/nethermind
     ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
