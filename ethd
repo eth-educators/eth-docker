@@ -869,7 +869,7 @@ query_graffiti() {
 }
 
 query_host_ip() {
-    HOST_IP=$(whiptail --title "Set IPv4 address" --inputbox "What is the IP of the host" 10 37 "eth-docker" 3>&1 1>&2 2>&3)
+    HOST_IP=$(whiptail --title "Set IPv4 address" --inputbox "What is the IP of the host" "0.0.0.0" 10 37 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
