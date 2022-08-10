@@ -4,19 +4,19 @@ call_api() {
     set +e
     if [ -z "${TLS:+x}" ]; then
         __code=$(curl -m 10 -s -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
-            --data "${__api_data}" http://${__api_container}:7500/${__api_path})
+            --data "${__api_data}" http://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
     else
         __code=$(curl -k -m 10 -s -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
-            --data "${__api_data}" https://${__api_container}:7500/${__api_path})
+            --data "${__api_data}" https://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
     fi
+    set +x
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to call the keymanager API via curl."
-        echo "Please make sure ${__api_container} is up and shows the key manager API, port 7500, enabled."
+        echo "Please make sure ${__api_container} is up and shows the key manager API, port ${KEY_API_PORT:-7500}, enabled."
         echo "Error code $__return"
         exit $__return
     fi
-    set -e
     __result=$(cat /tmp/result.txt)
 }
 
@@ -368,7 +368,11 @@ validator-import() {
             __protect_json=""
         fi
         echo $__protect_json > /tmp/protect.json
-        jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" --slurpfile protect_value /tmp/protect.json '. | .keystores += [$keystore_value] | .passwords += [$password_value] | . += {slashing_protection: $protect_value[0]}' <<< '{}' >/tmp/apidata.txt
+#        if [ "$__do_a_protec" -eq 0 ]; then
+ #           jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" --slurpfile protect_value /tmp/protect.json '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}' >/tmp/apidata.txt
+ #       else
+            jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" --slurpfile protect_value /tmp/protect.json '. | .keystores += [$keystore_value] | .passwords += [$password_value] | . += {slashing_protection: $protect_value[0]}' <<< '{}' >/tmp/apidata.txt
+  #      fi
         __api_data=@/tmp/apidata.txt
         __api_path=eth/v1/keystores
         __http_method=POST
@@ -450,7 +454,7 @@ usage() {
     echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
     echo
     echo "  get-api-token"
-    echo "      Print the token for the keymanager API running on port 7500."
+    echo "      Print the token for the keymanager API running on port ${KEY_API_PORT:-7500}."
     echo "      This is also the token for the Prysm Web UI"
     echo
     echo " get-prysm-wallet"

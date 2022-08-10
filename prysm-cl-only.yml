@@ -16,7 +16,7 @@ x-build: &prysm-build
 
 services:
   consensus:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       target: consensus
       <<: *prysm-build

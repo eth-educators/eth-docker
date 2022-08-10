@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   prometheus:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./prometheus
     image: prometheus:local
@@ -46,7 +46,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
   blackbox-exporter:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     image: prom/blackbox-exporter:master
     volumes:
       - ./prometheus/blackbox.yml:/config/blackbox.yml
@@ -55,7 +55,7 @@ services:
     command:
       - --config.file=/config/blackbox.yml
   json-exporter:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     image: quay.io/prometheuscommunity/json-exporter
     volumes:
       - ./prometheus/json.yml:/config/json.yml
@@ -65,7 +65,7 @@ services:
       - --config.file
       - /config/json.yml
   cryptowat-exporter:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     image: nbarrientos/cryptowat_exporter
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -85,7 +85,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command:
       - '--config.file=/etc/promtail/promtail.yml'
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     depends_on:
       - loki
     <<: *logging
@@ -96,10 +96,10 @@ services:
       - ./loki:/etc/loki
     command:
       - '--config.file=/etc/loki/loki.yml'
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     <<: *logging
   grafana:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./grafana
     image: grafana:local
