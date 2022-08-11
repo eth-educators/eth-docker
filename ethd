@@ -79,7 +79,7 @@ upgrade_compose() {
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Found docker-compose version $__compose_version_major.$__compose_version_minor, upgrading to 1.29.2"
       ${__auto_sudo} apt-get install -y curl
-      ${__auto_sudo} curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+      ${__auto_sudo} curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
       ${__auto_sudo} chmod +x /usr/bin/docker-compose
     fi
     __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
@@ -88,7 +88,7 @@ upgrade_compose() {
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Updating docker-compose failed. It is still version $__compose_version_major.$__compose_version_minor."
       echo "Please manually update docker-compose to version 1.29.2. These commands should do it:"
-      echo "sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose"
+      echo "sudo curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose"
       echo "sudo chmod +x /usr/bin/docker-compose"
     fi
   fi
@@ -1351,14 +1351,14 @@ printhelp() {
     echo "Be sure to run the config command as a non-root user, and all other commands"
     echo "either with sudo, or as a user who is part of the \"docker\" group"
     echo ""
-    exit 0
 }
 
 if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
+    exit 0
 fi
 
-cd $(dirname $(realpath ${BASH_SOURCE}))
+cd "$(dirname "$(realpath ${BASH_SOURCE})")"
 # Use this to make sure root doesn't end up owning files
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OWNER=$(stat -f '$Su' .)
