@@ -23,8 +23,8 @@ services:
       - erigon-ec-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${HOST_IP}:${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/tcp
-      - ${HOST_IP}:${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:

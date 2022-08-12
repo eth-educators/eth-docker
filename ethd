@@ -868,18 +868,6 @@ query_graffiti() {
     fi
 }
 
-query_host_ip() {
-    HOST_IP=$(whiptail --title "Set IPv4 address" --inputbox "What is the IP of the host" "0.0.0.0" 10 37 3>&1 1>&2 2>&3)
-
-    exitstatus=$?
-    if [ $exitstatus -eq 0 ]; then
-        echo "your IP is:" "${HOST_IP}"
-    else
-        echo "You chose Cancel."
-        exit 1
-    fi
-}
-
 query_rapid_sync() {
     # Assume no to start
     RAPID_SYNC_URL=""
@@ -965,7 +953,6 @@ config () {
         fi
     fi
 
-    query_host_ip
     query_network
     query_deployment
     case "${__deployment}" in

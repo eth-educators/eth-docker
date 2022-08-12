@@ -23,8 +23,8 @@ services:
       - akula-el-data:/var/lib/akula
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${HOST_IP}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${HOST_IP}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     <<: *logging
     entrypoint:
       - akula
