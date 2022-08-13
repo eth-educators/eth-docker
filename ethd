@@ -119,7 +119,7 @@ check_for_snap() {
         echo "and then a reboot, and as needed install docker.io or docker-ce with apt,"
         echo "re-import keys and restart eth-docker."
         echo
-        echo "Do join us on EthStaker Discord to work through this emergency."
+        echo "Do join us on EthStaker Discord to work through this issue."
         echo
         echo "Aborting, this is not safe"
         exit 1
@@ -272,7 +272,7 @@ find the original contents in ${ENV_FILE}.bak."
 been migrated, please recreate these changes yourself."
     fi
     echo
-    echo "An ./ethd restart command will start using the new images and configuration."
+    echo "An ./ethd up command will start using the new images and configuration."
     if [[ "$__distro" = "ubuntu" ]]; then
       __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
       if [ ${__major_version} -lt 20 ]; then
@@ -414,7 +414,7 @@ envmigrate() {
         #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
             __during_update=1
             query_coinbase
             set_value_in_env
@@ -1083,7 +1083,7 @@ query_coinbase() {
             if [ $__during_update -eq 1 ]; then
                 echo
                 echo "Please make requested changes manually or run \"./ethd update\" again"
-                echo "before running \"./ethd restart\"."
+                echo "before running \"./ethd up\"."
                 echo
                 echo "Without a FEE_RECIPIENT set in \".env\", containers will not"
                 echo "start successfully. Already running containers will keep running with the"
