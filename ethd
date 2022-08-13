@@ -119,7 +119,7 @@ check_for_snap() {
         echo "and then a reboot, and as needed install docker.io or docker-ce with apt,"
         echo "re-import keys and restart eth-docker."
         echo
-        echo "Do join us on EthStaker Discord to work through this emergency."
+        echo "Do join us on EthStaker Discord to work through this issue."
         echo
         echo "Aborting, this is not safe"
         exit 1
@@ -197,6 +197,7 @@ update() {
     fi
 
     __keeptargets=0
+    __targetcli=""
     while :
     do
         if [ -z ${1+x} ]; then
@@ -205,6 +206,7 @@ update() {
         case "$1" in
             --keep-targets)
                 __keeptargets=1
+                __targetcli="--keep-targets"
                 shift
                 ;;
             *)
@@ -220,7 +222,7 @@ update() {
         # This code has changed, run it again on the new branch
         export ETHDSECUNDO=1 #Not strictly necessary but this way we don't rely on what happens earlier
         export ETHDSWITCHED=1
-        exec "${BASH_SOURCE}" update $@
+        exec "${BASH_SOURCE}" update $__targetcli
     fi
 
     cmd build --pull
@@ -272,7 +274,7 @@ find the original contents in ${ENV_FILE}.bak."
 been migrated, please recreate these changes yourself."
     fi
     echo
-    echo "An ./ethd restart command will start using the new images and configuration."
+    echo "An ./ethd up command will start using the new images and configuration."
     if [[ "$__distro" = "ubuntu" ]]; then
       __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
       if [ ${__major_version} -lt 20 ]; then
@@ -414,7 +416,7 @@ envmigrate() {
         #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd restart\" will fail if no valid address is set" 16 75
+            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
             __during_update=1
             query_coinbase
             set_value_in_env
@@ -465,6 +467,7 @@ envmigrate() {
 }
 
 migrate_compose_file() {
+# When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
     FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml )
     TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
@@ -1083,7 +1086,7 @@ query_coinbase() {
             if [ $__during_update -eq 1 ]; then
                 echo
                 echo "Please make requested changes manually or run \"./ethd update\" again"
-                echo "before running \"./ethd restart\"."
+                echo "before running \"./ethd up\"."
                 echo
                 echo "Without a FEE_RECIPIENT set in \".env\", containers will not"
                 echo "start successfully. Already running containers will keep running with the"
