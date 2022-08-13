@@ -1122,6 +1122,9 @@ query_override() {
         "goerli")
             OVERRIDE_TTD=10790000
             ;;
+        "mainnet")
+            OVERRIDE_TTD=58750000000000000000000
+            ;;
         *)
             OVERRIDE_TTD=100000000000000000000000
             ;;
