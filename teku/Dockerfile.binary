@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 
-FROM consensys/teku:${DOCKER_TAG}
+FROM gnosischain/teku:${DOCKER_TAG}
 
 #Next two are unused but included to avoid warnings
 ARG BUILD_TARGET
