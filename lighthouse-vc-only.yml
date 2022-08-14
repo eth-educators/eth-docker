@@ -78,8 +78,8 @@ services:
       - /var/lib/lighthouse
       - --directory
       - /val_keys
-      - --network
-      - ${NETWORK}
+      - --testnet-dir
+      - /usr/testnet_data
       - --debug-level=${LOG_LEVEL}
 
   validator-exit:
@@ -101,8 +101,8 @@ services:
       - ${CL_NODE:-http://consensus:5052}
       - --datadir
       - /var/lib/lighthouse
-      - --network
-      - ${NETWORK}
+      - --testnet-dir
+      - /usr/testnet_data
       - --debug-level=${LOG_LEVEL}
       - --keystore
 

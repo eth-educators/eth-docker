@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 
-FROM chainsafe/lodestar:${DOCKER_TAG}
+FROM gnosischain/lodestar-beacon:${DOCKER_TAG}
 
 # Here only to avoid build-time errors
 ARG BUILD_TARGET
