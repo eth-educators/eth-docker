@@ -38,8 +38,8 @@ services:
       - ${CL_NODE:-http://consensus:5052}
       - --graffiti
       - ${GRAFFITI}
-      - --network
-      - ${NETWORK}
+      - --testnet-dir
+      - /usr/testnet_data
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address

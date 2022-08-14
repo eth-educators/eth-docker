@@ -70,7 +70,9 @@ services:
       - --Metrics.ExposePort
       - "6060"
       - --config
-      - ${NETWORK}
+      - /usr/config.cfg
+      - --Init.ChainSpecPath
+      - /usr/genesis.json
       - --Pruning.Enabled
       - "true"
       - --Pruning.CacheMb
