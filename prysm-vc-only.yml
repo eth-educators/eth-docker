@@ -39,7 +39,7 @@ services:
       - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
+      - --chain-config-file=/usr/config.yaml
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0
@@ -103,7 +103,7 @@ services:
       - import
       - --wallet-dir=/var/lib/prysm/
       - --keys-dir=/val_keys
-      - --${NETWORK}
+      - --chain-config-file=/usr/config.yaml
 
   validator-exit:
     profiles: ["tools"]
@@ -124,7 +124,7 @@ services:
       - --wallet-dir=/var/lib/prysm/
       - --beacon-rpc-provider=${CL_NODE:-http://consensus:4000}
       - --wallet-password-file=/var/lib/prysm/password.txt
-      - --${NETWORK}
+      - --chain-config-file=/usr/config.yaml
 
   validator-keys:
     profiles: ["tools"]
