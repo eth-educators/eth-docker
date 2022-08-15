@@ -35,6 +35,8 @@ RUN adduser \
 RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 777 /var/lib/prysm/ee-secret
 
 COPY --from=ccsource /app/cmd/beacon-chain/beacon-chain /usr/local/bin/
+COPY --from=ccsource /usr/config.yaml /usr/
+COPY --from=ccsource /usr/genesis.ssz /usr/
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER ${USER}
@@ -43,7 +45,19 @@ ENTRYPOINT ["beacon-chain"]
 
 FROM gnosischain/prysm-validator:${DOCKER_TAG} as vcsource
 
-FROM consensus as validator
+FROM debian:bullseye-slim as validator
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+  ca-certificates curl bash tzdata \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+        apt-get update; \
+        apt-get install -y gosu; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
 
 ARG USER=prysmvalidator
 ARG UID=10000
@@ -63,6 +77,7 @@ RUN adduser \
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
 COPY --from=vcsource /app/cmd/validator/validator /usr/local/bin/
+COPY --from=vcsource /usr/config.yaml /usr/
 COPY ./validator-import.sh /usr/local/bin/
 COPY ./create-wallet.sh /usr/local/bin/
 COPY ./docker-entrypoint-vc.sh /usr/local/bin/
