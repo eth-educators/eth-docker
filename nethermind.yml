@@ -71,10 +71,10 @@ services:
       - "6060"
       - --config
       - ${NETWORK}
-      - --Pruning.Enabled
-      - "true"
-      - --Pruning.CacheMb
-      - "4096"
+      - --Pruning.FullPruningMaxDegreeOfParallelism
+      - "2"
+      - --Pruning.FullPruningTrigger
+      - "VolumeFreeSpace"
       - --Sync.AncientBodiesBarrier
       - "1"
       - --Sync.AncientReceiptsBarrier
