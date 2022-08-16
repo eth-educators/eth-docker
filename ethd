@@ -422,6 +422,13 @@ envmigrate() {
             set_value_in_env
         fi
     fi
+    # Check for Blox SSV 1 and offer migration
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    if [[ "${value}" =~ "blox-ssv.yml" ]]; then
+        query_blox_switch
+    fi
+
     # User signals it's a distributed setup and not to nag
     # Ditto do not nag if we switched branch, as the code that does
     # the check won't be accurate
@@ -541,6 +548,35 @@ delete_erigon() {
     echo ""
     echo "Erigon stopped and database deleted."
     echo ""
+}
+
+query_blox_switch() {
+    echo "Detected SSV Node v1. SSV v2 testnet is the new hotness."
+    echo
+    while true; do
+        read -rp "Do you wish to switch to SSV v2? (Y/n) " yn
+        case $yn in
+            [Nn]o | [Nn]  ) echo "No changes made"; return;;
+            * ) break;;
+        esac
+    done
+    echo "Stopping SSV Node container"
+    docker stop $(basename $(realpath .))_ssv-node_1 && docker rm -f $(basename $(realpath .))_ssv-node_1
+    cmd stop ssv-node && cmd rm -f ssv-node
+    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .))_ssv-data)
+    echo ""
+    echo "SSV Node stopped and database deleted."
+    echo ""
+    cp blox-ssv-config.yaml blox-ssv-config.yaml.bak
+    echo "Backup copy blox-ssv-config.yaml.bak created"
+    echo "Making changes to blox-ssv-config.yaml"
+    sed -i 's/blox-ssv.yml/blox-ssv2.yml/' .env
+    sed -i '/RegistryContractAddr/d' blox-ssv-config.yaml
+    sed -i '/RegistryContractABI/d' blox-ssv-config.yaml
+    sed -i '/ETH1SyncOffset/d' blox-ssv-config.yaml
+    sed -i '/AbiVersion/d' blox-ssv-config.yaml
+    sed -i '/Bootnodes/d' blox-ssv-config.yaml
+    sed -i '/NetworkID/d' blox-ssv-config.yaml
 }
 
 prune-geth() {
@@ -1256,7 +1292,7 @@ config () {
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
     fi
     if [ "${__deployment}" = "blox" ]; then
-        COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv.yml"
+        COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv2.yml"
     fi
     if [ "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
