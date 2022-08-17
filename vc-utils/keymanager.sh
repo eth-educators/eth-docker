@@ -3,13 +3,12 @@
 call_api() {
     set +e
     if [ -z "${TLS:+x}" ]; then
-        __code=$(curl -m 10 -s -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+        __code=$(curl -m 10 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
             --data "${__api_data}" http://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
     else
-        __code=$(curl -k -m 10 -s -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+        __code=$(curl -k -m 10 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
             --data "${__api_data}" https://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
     fi
-    set +x
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to call the keymanager API via curl."
@@ -17,7 +16,13 @@ call_api() {
         echo "Error code $__return"
         exit $__return
     fi
-    __result=$(cat /tmp/result.txt)
+    if [ -f /tmp/result.txt ]; then
+        __result=$(cat /tmp/result.txt)
+    else
+        echo "Error encountered while trying to call the keymanager API via curl."
+        echo "HTTP code: ${__code}"
+        exit 1
+    fi
 }
 
 get-token() {
@@ -252,7 +257,20 @@ validator-delete() {
             echo "Slashing protection data written to .eth/$__file"
             ;;
         not_found)
-            echo "The key was not found in the keystore, no slashing protection data returned."
+            if [ -n "${NIMBUGGED:+x}" ]; then
+                if [[ "$__result" =~ "slashing_protection" ]]; then
+                    __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
+                    echo $__result | jq '.slashing_protection' > /$__file
+                    echo "The key was not found in the keystore."
+                    chown 1000:1000 /$__file
+                    chmod 644 /$__file
+                    echo "Slashing protection data written to .eth/$__file"
+                else
+                    echo "The key was not found in the keystore, no slashing protection data returned."
+                fi
+            else
+                echo "The key was not found in the keystore, no slashing protection data returned."
+            fi
             ;;
         * )
             echo "Unexpected status $__status. This may be a bug"
@@ -368,11 +386,11 @@ validator-import() {
             __protect_json=""
         fi
         echo $__protect_json > /tmp/protect.json
-#        if [ "$__do_a_protec" -eq 0 ]; then
- #           jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" --slurpfile protect_value /tmp/protect.json '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}' >/tmp/apidata.txt
- #       else
+        if [ "$__do_a_protec" -eq 0 ]; then
+            jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}' >/tmp/apidata.txt
+        else
             jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" --slurpfile protect_value /tmp/protect.json '. | .keystores += [$keystore_value] | .passwords += [$password_value] | . += {slashing_protection: $protect_value[0]}' <<< '{}' >/tmp/apidata.txt
-  #      fi
+        fi
         __api_data=@/tmp/apidata.txt
         __api_path=eth/v1/keystores
         __http_method=POST
