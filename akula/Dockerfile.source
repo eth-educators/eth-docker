@@ -49,10 +49,11 @@ RUN adduser \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/akula && chown ${USER}:${USER} /var/lib/akula && chmod 700 /var/lib/akula
+RUN mkdir -p /var/lib/akula/ee-secret && chown -R ${USER}:${USER} /var/lib/akula && chmod -R 700 /var/lib/akula && chmod 777 /var/lib/akula/ee-secret
 
 # Copy executable
 COPY --from=builder /usr/src/akula/target/production/akula /usr/src/akula/target/production/akula-rpc /usr/src/akula/target/production/akula-sentry /usr/src/akula/target/production/akula-toolbox /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER akula
 
