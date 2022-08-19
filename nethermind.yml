@@ -71,10 +71,11 @@ services:
       - "6060"
       - --config
       - ${NETWORK}
-      - --Pruning.FullPruningMaxDegreeOfParallelism
-      - "2"
-      - --Pruning.FullPruningTrigger
-      - "VolumeFreeSpace"
+# Potentially unsafe to auto-prune
+#      - --Pruning.FullPruningMaxDegreeOfParallelism
+#      - "2"
+#      - --Pruning.FullPruningTrigger
+#      - "VolumeFreeSpace"
       - --Sync.AncientBodiesBarrier
       - "1"
       - --Sync.AncientReceiptsBarrier
