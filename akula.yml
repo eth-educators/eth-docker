@@ -54,7 +54,8 @@ services:
       - ${EL_MIN_PEER_COUNT:-25}
       - --chain
       - ${NETWORK:-mainnet}
-      - --prune
+# For now only Archive node works, as we need the eth_getLogs back to deposit contract deployment
+#      - --prune
 volumes:
   akula-el-data:
   jwtsecret:
