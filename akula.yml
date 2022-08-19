@@ -22,11 +22,17 @@ services:
     volumes:
       - akula-el-data:/var/lib/akula
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/akula/ee-secret
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - LOG_LEVEL=${LOG_LEVEL}
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - akula
       - --datadir
       - /var/lib/akula
@@ -36,10 +42,18 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --rpc-listen-address
       - 0.0.0.0:${EL_RPC_PORT:-8545}
+      - --websocket-listen-address
+      - 0.0.0.0:${EL_WS_PORT:-8546}
       - --engine-listen-address
-      - 0.0.0.0:8851
+      - 0.0.0.0:${EE_PORT:-8851}
+      - --jwt-secret-path
+      - /var/lib/akula/ee-secret/jwtsecret
+      - --max-peers
+      - ${EL_MAX_PEER_COUNT:-100}
+      - --min-peers
+      - ${EL_MIN_PEER_COUNT:-25}
       - --chain
-      - ${EL_NETWORK:-mainnet}
+      - ${NETWORK:-mainnet}
       - --prune
 volumes:
   akula-el-data:
