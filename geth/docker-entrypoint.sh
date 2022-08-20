@@ -17,9 +17,11 @@ if [[ ! -f /var/lib/goethereum/ee-secret/jwtsecret ]]; then
   echo -n ${__secret1}${__secret2} > /var/lib/goethereum/ee-secret/jwtsecret
 fi
 
-if [[ -O "/var/lib/goethereum/ee-secret/jwtsecret" ]]; then
+if [[ -O "/var/lib/goethereum/ee-secret" ]]; then
   # In case someone specificies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/goethereum/ee-secret
+fi
+if [[ -O "/var/lib/goethereum/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/goethereum/ee-secret/jwtsecret
 fi
 

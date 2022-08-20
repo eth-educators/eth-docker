@@ -18,9 +18,11 @@ if [[ ! -f /var/lib/akula/ee-secret/jwtsecret ]]; then
   echo -n ${__secret1}${__secret2} > /var/lib/akula/ee-secret/jwtsecret
 fi
 
-if [[ -O "/var/lib/akula/ee-secret/jwtsecret" ]]; then
+if [[ -O "/var/lib/akula/ee-secret" ]]; then
   # In case someone specificies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/akula/ee-secret
+fi
+if [[ -O "/var/lib/akula/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/akula/ee-secret/jwtsecret
 fi
 
