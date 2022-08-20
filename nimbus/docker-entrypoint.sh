@@ -10,9 +10,11 @@ if [ -n "${JWT_SECRET}" ]; then
   echo "JWT secret was supplied in .env"
 fi
 
-if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
+if [[ -O "/var/lib/nimbus/ee-secret" ]]; then
   # In case someone specificies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/nimbus/ee-secret
+fi
+if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 

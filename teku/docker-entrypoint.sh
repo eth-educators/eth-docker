@@ -17,9 +17,11 @@ if [ -n "${JWT_SECRET}" ]; then
   echo "JWT secret was supplied in .env"
 fi
 
-if [[ -O "/var/lib/teku/ee-secret/jwtsecret" ]]; then
+if [[ -O "/var/lib/teku/ee-secret" ]]; then
   # In case someone specificies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/teku/ee-secret
+fi
+if [[ -O "/var/lib/teku/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/teku/ee-secret/jwtsecret
 fi
 

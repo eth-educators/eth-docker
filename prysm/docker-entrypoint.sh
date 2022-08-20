@@ -6,9 +6,11 @@ if [ -n "${JWT_SECRET}" ]; then
   echo "JWT secret was supplied in .env"
 fi
 
-if [[ -O "/var/lib/prysm/ee-secret/jwtsecret" ]]; then
+if [[ -O "/var/lib/prysm/ee-secret" ]]; then
   # In case someone specificies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/prysm/ee-secret
+fi
+if [[ -O "/var/lib/prysm/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/prysm/ee-secret/jwtsecret
 fi
 
