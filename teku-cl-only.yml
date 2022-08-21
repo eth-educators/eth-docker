@@ -1,0 +1,75 @@
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  consensus:
+    restart: "${RESTART}"
+    build:
+      context: ./teku
+      args:
+        - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${TEKU_DOCKER_TAG}
+      dockerfile: ${TEKU_DOCKERFILE}
+    image: teku:merge
+    user: teku
+    stop_grace_period: 1m
+    volumes:
+      - tekuconsensus-data:/var/lib/teku
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/teku/ee-secret
+    environment:
+      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+    ports:
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - /opt/teku/bin/teku
+      - --data-path=/var/lib/teku
+      - --log-destination=CONSOLE
+      - --network=${NETWORK}
+      - --ee-endpoint=${EL_NODE}
+      - --ee-jwt-secret-file
+      - /var/lib/teku/ee-secret/jwtsecret
+      - --p2p-port=${CL_P2P_PORT:-9000}
+      - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
+      - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
+      - --logging=${LOG_LEVEL}
+      - --rest-api-host-allowlist=*
+      - --rest-api-enabled=true
+      - --rest-api-interface=0.0.0.0
+      - --rest-api-port=${CL_REST_PORT:-5052}
+      - --metrics-enabled=true
+      - --metrics-port=8008
+      - --metrics-interface=0.0.0.0
+      - --metrics-host-allowlist=*
+      - --p2p-subscribe-all-subnets-enabled=true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
+volumes:
+  tekuconsensus-data:
+  jwtsecret:
