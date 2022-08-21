@@ -30,8 +30,8 @@ services:
       - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
     ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
