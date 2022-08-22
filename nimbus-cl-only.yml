@@ -1,0 +1,84 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  consensus:
+    restart: "unless-stopped"
+    build:
+      context: ./nimbus
+      args:
+        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${NIM_DOCKER_TAG}
+      dockerfile: ${NIM_DOCKERFILE}
+    image: nimbus:local
+    user: user
+    stop_grace_period: 1m
+    volumes:
+      - nimbus-consensus-data:/var/lib/nimbus
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/nimbus/ee-secret
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - NETWORK=${NETWORK}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+    ports:
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - /usr/local/bin/nimbus_beacon_node
+      - --data-dir=/var/lib/nimbus
+      - --non-interactive
+      - --status-bar=false
+      - --tcp-port=${CL_P2P_PORT:-9000}
+      - --udp-port=${CL_P2P_PORT:-9000}
+      - --max-peers=${CL_MAX_PEER_COUNT:-160}
+      - --network=${NETWORK}
+      - --web3-url=${EL_NODE}
+      - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
+      - --graffiti=${GRAFFITI}
+      - --log-level=${LOG_LEVEL}
+      - --rest
+      - --rest-address=0.0.0.0
+      - --rest-port=${CL_REST_PORT:-5052}
+      - --enr-auto-update=true
+      - --doppelganger-detection=false
+      - --metrics
+      - --metrics-port=8008
+      - --metrics-address=0.0.0.0
+      - --validator-monitor-totals
+      - --keymanager
+      - --keymanager-port=${KEY_API_PORT:-7500}
+      - --keymanager-address=0.0.0.0
+      - --keymanager-allow-origin=*
+      - --keymanager-token-file=/var/lib/nimbus/api-token.txt
+      - --suggested-fee-recipient=${FEE_RECIPIENT}
+      - --subscribe-all-subnets
+      - --in-process-validators=false
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
+volumes:
+  nimbus-consensus-data:
+  jwtsecret:

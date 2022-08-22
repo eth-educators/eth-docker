@@ -6,12 +6,14 @@ FROM thorax/erigon:${DOCKER_TAG}
 ARG BUILD_TARGET
 
 ARG UID=10001
+# GID 10002 is deliberate so it can exchange secret with CL
+ARG GID=10002
 
 USER root
 
-RUN apk --no-cache add shadow bash && groupmod -g "${UID}" erigon && usermod -u "${UID}" -g "${UID}" erigon
+RUN apk --no-cache add shadow bash su-exec && groupmod -g "${GID}" erigon && usermod -u "${UID}" -g "${GID}" erigon
 
-RUN mkdir -p /var/lib/erigon && chown -R erigon:erigon /var/lib/erigon
+RUN mkdir -p /var/lib/erigon/ee-secret && chown -R erigon:erigon /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 

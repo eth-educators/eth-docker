@@ -1,0 +1,88 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  consensus:
+    restart: "unless-stopped"
+    build:
+      context: ./lighthouse
+      dockerfile: ${LH_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${LH_DOCKER_TAG}
+    image: lighthouse:local
+    user: lhconsensus
+    stop_grace_period: 1m
+    volumes:
+      - lhconsensus-data:/var/lib/lighthouse
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/lighthouse/beacon/ee-secret
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
+      - MALLOC_ARENA_MAX=4
+    ports:
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - lighthouse
+      - bn
+      - --disable-upnp
+      - --datadir
+      - /var/lib/lighthouse
+      - --http
+      - --http-address
+      - 0.0.0.0
+      - --http-port
+      - ${CL_REST_PORT:-5052}
+      - --network
+      - ${NETWORK}
+      - --port
+      - ${CL_P2P_PORT:-9000}
+      - --target-peers
+      - ${CL_MAX_PEER_COUNT:-80}
+      - --execution-endpoint
+      - ${EL_NODE}
+      - --execution-jwt
+      - /var/lib/lighthouse/beacon/ee-secret/jwtsecret
+      - --debug-level=${LOG_LEVEL}
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
+      - --metrics-port
+      - "8008"
+      - --validator-monitor-auto
+      - --suggested-fee-recipient
+      - ${FEE_RECIPIENT}
+      - --subscribe-all-subnets
+      - --import-all-attestations
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
+volumes:
+  lhconsensus-data:
+  jwtsecret:

@@ -9,8 +9,7 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y build-essential git libpcre3-dev ca-certificates
 
 WORKDIR /usr/src
-RUN bash -c "git clone https://github.com/status-im/nim-beacon-chain && cd nim-beacon-chain && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && \
-	make -j$(nproc) nimbus_beacon_node"
+RUN bash -c "git clone https://github.com/status-im/nim-beacon-chain && cd nim-beacon-chain && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) nimbus_beacon_node"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bullseye-slim
@@ -40,7 +39,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus
+RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
 # Copy executable
 COPY --from=builder /usr/src/nim-beacon-chain/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node

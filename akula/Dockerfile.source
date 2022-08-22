@@ -1,15 +1,21 @@
-# Build Lighthouse in a stock Rust build container
-FROM rust:latest as builder
+# Build Akula in a stock Rust build container
+#FROM rust:latest as builder
+FROM ubuntu:jammy as builder
 
 ARG BUILD_TARGET=master
 
-RUN apt-get update && apt-get install -y cmake libclang-dev clang libext2fs-dev --no-install-recommends
-
 WORKDIR /usr/src
+
+RUN apt-get update && apt-get install -y cmake clang build-essential git curl wget ca-certificates pkg-config libclang-dev libext2fs-dev zlib1g-dev --no-install-recommends
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN bash -c "wget http://ftp.debian.org/debian/pool/main/p/protobuf/{libprotobuf-dev,libprotobuf-lite31,libprotoc31,libprotobuf31,protobuf-compiler}_3.20.1-1_amd64.deb && dpkg -i {libprotobuf-dev,libprotobuf-lite31,libprotoc31,libprotobuf31,protobuf-compiler}_3.20.1-1_amd64.deb"
+
 RUN bash -c "git clone https://github.com/akula-bft/akula && cd akula && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && cargo build --all --profile=production"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bullseye-slim
+#FROM debian:bullseye-slim
+FROM ubuntu:latest
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
@@ -31,6 +37,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
 
 ARG USER=akula
 ARG UID=10000
+# GID 10002 is deliberate so it can exchange secret with CL
+ARG GID=10002
+
+RUN addgroup \
+    --gid "${GID}" \
+    "${USER}"
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -40,13 +52,15 @@ RUN adduser \
     --shell "/sbin/nologin" \
     --no-create-home \
     --uid "${UID}" \
+    --ingroup "${USER}" \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/akula && chown ${USER}:${USER} /var/lib/akula && chmod 700 /var/lib/akula
+RUN mkdir -p /var/lib/akula/ee-secret && chown -R ${USER}:${USER} /var/lib/akula && chmod -R 700 /var/lib/akula && chmod 777 /var/lib/akula/ee-secret
 
 # Copy executable
 COPY --from=builder /usr/src/akula/target/production/akula /usr/src/akula/target/production/akula-rpc /usr/src/akula/target/production/akula-sentry /usr/src/akula/target/production/akula-toolbox /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER akula
 

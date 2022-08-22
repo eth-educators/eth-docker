@@ -1,0 +1,87 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+x-build: &prysm-build
+  context: ./prysm
+  dockerfile: ${PRYSM_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+
+services:
+  consensus:
+    restart: "unless-stopped"
+    build:
+      target: consensus
+      <<: *prysm-build
+    image: prysm-consensus:local
+    user: prysmconsensus
+    stop_grace_period: 1m
+    volumes:
+      - prysmconsensus-data:/var/lib/prysm
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/prysm/ee-secret
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+    ports:
+      - ${HOST_IP:-0.0.0.0}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
+      - ${HOST_IP:-0.0.0.0}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - beacon-chain
+      - --datadir
+      - /var/lib/prysm/
+      - --rpc-host
+      - 0.0.0.0
+      - --grpc-gateway-host
+      - 0.0.0.0
+      - --grpc-gateway-port
+      - ${CL_REST_PORT:-5052}
+      - --http-web3provider
+      - ${EL_NODE}
+      - --jwt-secret
+      - /var/lib/prysm/ee-secret/jwtsecret
+      - --p2p-tcp-port
+      - ${PRYSM_PORT}
+      - --p2p-udp-port
+      - ${PRYSM_UDP_PORT}
+      - --p2p-max-peers
+      - ${CL_MAX_PEER_COUNT:-45}
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --${NETWORK}
+      - --accept-terms-of-use
+      - --monitoring-host
+      - 0.0.0.0
+      - --monitoring-port
+      - "8008"
+      - --suggested-fee-recipient
+      - ${FEE_RECIPIENT}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
+volumes:
+  prysmconsensus-data:
+  jwtsecret:
