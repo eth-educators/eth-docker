@@ -9,6 +9,12 @@ ARG BUILD_TARGET
 
 ARG USER=nethermind
 ARG UID=10001
+# GID 10002 is deliberate so it can exchange secret with CL
+ARG GID=10002
+
+RUN addgroup \
+    --gid "${GID}" \
+    "${USER}"
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -18,6 +24,7 @@ RUN adduser \
     --shell "/sbin/nologin" \
     --no-create-home \
     --uid "${UID}" \
+    --ingroup "${USER}" \
     "${USER}"
 
 RUN set -eux; \
@@ -29,7 +36,7 @@ RUN set -eux; \
 
 # This only goes so far. keystore, logs and nethermind_db are volumes and need to be chown'd in the entrypoint
 RUN chown -R ${USER}:${USER} /nethermind
-RUN mkdir -p /var/lib/nethermind && chown -R ${USER}:${USER} /var/lib/nethermind
+RUN mkdir -p /var/lib/nethermind/ee-secret && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 777 /var/lib/nethermind/ee-secret
 
 COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/

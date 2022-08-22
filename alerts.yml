@@ -1,7 +1,7 @@
-version: "3.4"
+version: "3.9"
 services:
   alertmanager:
-    restart: ${RESTART}
+    restart: "unless-stopped"
     image: prom/alertmanager
     volumes:
       - alertmanager-data:/alertmanager
@@ -17,10 +17,6 @@ services:
       - 9093:9093/tcp
     depends_on:
       - prometheus
-
-  eth:
-    depends_on:
-      - alertmanager
 
 volumes:
   alertmanager-data:

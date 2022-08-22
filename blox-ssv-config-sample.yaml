@@ -10,7 +10,6 @@ eth2:
   Network: prater
 eth1:
   ETH1Addr: ws://execution:8546
-  RegistryContractAddr: 0x687fb596F3892904F879118e2113e1EEe8746C2E
 OperatorPrivateKey: YOURPRIVATEKEYHERE
 MetricsAPIPort: 15000
 global:

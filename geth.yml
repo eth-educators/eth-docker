@@ -1,15 +1,15 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   execution:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./geth
       dockerfile: ${GETH_DOCKERFILE}
@@ -18,13 +18,20 @@ services:
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_grace_period: 3m
     image: geth:local
-    user: geth
+# Root so a chown can happen for the secret, then su-exec into geth. This can become geth again
+# after merge
+    user: root
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/goethereum/ee-secret
     ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
@@ -53,14 +60,24 @@ services:
       - ${EL_WS_PORT:-8546}
       - --ws.api
       - web3,eth,net
-      - --${EL_NETWORK:-goerli}
+      - --${NETWORK}
       - --metrics
       - --metrics.expensive
       - --pprof
       - --pprof.addr
       - 0.0.0.0
+      - --authrpc.jwtsecret
+      - /var/lib/goethereum/ee-secret/jwtsecret
+      - --authrpc.addr
+      - 0.0.0.0
+      - --authrpc.port
+      - ${EE_PORT:-8551}
+      - --authrpc.vhosts=*
+      - --maxpeers
+      - ${EL_MAX_PEER_COUNT:-50}
     command: ${GETH_CACHE}
   set-prune-marker:
+    profiles: ["tools"]
     image: alpine:latest
     user: "10001:10001"
     restart: "no"
@@ -68,8 +85,6 @@ services:
       - geth-eth1-data:/var/lib/goethereum
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
-  eth:
-    depends_on:
-      - execution
 volumes:
   geth-eth1-data:
+  jwtsecret:

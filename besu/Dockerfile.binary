@@ -6,10 +6,12 @@ FROM hyperledger/besu:${DOCKER_TAG}
 ARG BUILD_TARGET
 
 ARG UID=10001
+# GID 10002 is deliberate so it can exchange secret with CL
+ARG GID=10002
 
 USER root
 
-RUN groupmod -g "${UID}" besu && usermod -u "${UID}" -g "${UID}" besu
+RUN groupmod -g "${GID}" besu && usermod -u "${UID}" -g "${GID}" besu
 
 RUN set -eux; \
         apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y gosu ca-certificates tzdata; \
@@ -18,7 +20,9 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/besu && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu
+RUN mkdir -p /var/lib/besu/ee-secret && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
+
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 USER besu
 

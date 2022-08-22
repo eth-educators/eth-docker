@@ -1,5 +1,5 @@
 # Send client stats to beaconcha.in service
-version: "3.4"
+version: "3.9"
 services:
   consensus:
     command:
@@ -21,6 +21,3 @@ services:
       - http://consensus:8080/metrics
       - --clientstats-api-url
       - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}
-  eth:
-    depends_on:
-      - client-stats

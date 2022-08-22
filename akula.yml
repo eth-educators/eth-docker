@@ -1,15 +1,15 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   execution:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./akula
       dockerfile: ${AKULA_DOCKERFILE}
@@ -22,11 +22,17 @@ services:
     volumes:
       - akula-el-data:/var/lib/akula
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/akula/ee-secret
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - LOG_LEVEL=${LOG_LEVEL}
     ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - akula
       - --datadir
       - /var/lib/akula
@@ -36,11 +42,20 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --rpc-listen-address
       - 0.0.0.0:${EL_RPC_PORT:-8545}
+      - --websocket-listen-address
+      - 0.0.0.0:${EL_WS_PORT:-8546}
+      - --engine-listen-address
+      - 0.0.0.0:${EE_PORT:-8851}
+      - --jwt-secret-path
+      - /var/lib/akula/ee-secret/jwtsecret
+      - --max-peers
+      - ${EL_MAX_PEER_COUNT:-100}
+      - --min-peers
+      - ${EL_MIN_PEER_COUNT:-25}
       - --chain
-      - ${EL_NETWORK:-mainnet}
-      - --prune
-  eth:
-    depends_on:
-      - execution
+      - ${NETWORK:-mainnet}
+# For now only Archive node works, as we need the eth_getLogs back to deposit contract deployment
+#      - --prune
 volumes:
   akula-el-data:
+  jwtsecret:

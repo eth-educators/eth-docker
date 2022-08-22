@@ -1,15 +1,15 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   consensus:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./teku
       args:
@@ -22,12 +22,16 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/teku/ee-secret
     environment:
       - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
     ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -39,8 +43,9 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=${NETWORK}
-      - --eth1-endpoints=${EL_NODE:-http://execution:8545}
-      - --eth1-deposit-contract-max-request-size=150
+      - --ee-endpoint=${EL_NODE}
+      - --ee-jwt-secret-file
+      - /var/lib/teku/ee-secret/jwtsecret
       - --p2p-port=${CL_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
       - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
@@ -51,7 +56,7 @@ services:
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true
       - --rest-api-interface=0.0.0.0
-      - --rest-api-port=5052
+      - --rest-api-port=${CL_REST_PORT:-5052}
       - --metrics-enabled=true
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
@@ -63,20 +68,9 @@ services:
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
-  get-keyapi-token:
-    restart: "no"
-    image: alpine:latest
-    user: "10002"
-    volumes:
-      - teku-data:/var/lib/teku
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        cat var/lib/teku/validator/key-manager/validator-api-bearer
-        echo
+
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: teku:local
     user: root
@@ -87,7 +81,9 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
     entrypoint: validator-import.sh
+
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: teku:local
     user: teku
@@ -99,25 +95,29 @@ services:
       - voluntary-exit
       - --beacon-node-api-endpoint=http://consensus:5052
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-  validator-list:
+
+  validator-keys:
+    profiles: ["tools"]
     restart: "no"
-    image: teku:local
-    user: teku
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
+    user: root
     volumes:
       - teku-data:/var/lib/teku
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        for file in /var/lib/teku/validator-keys/*; do
-          echo -n "0x"
-          cat $${file} | jq -r .pubkey
-        done
-  eth:
-    image: tianon/true
-    restart: "no"
+    environment:
+      - TLS="true"
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=${KEY_API_PORT:-7500}
     depends_on:
       - consensus
+    entrypoint:
+      - keymanager.sh
+      - /var/lib/teku/validator/key-manager/validator-api-bearer
+      - consensus
+
 volumes:
   teku-data:
+  jwtsecret:

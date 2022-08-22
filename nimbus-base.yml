@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   consensus:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     build:
       context: ./nimbus
       args:
@@ -22,12 +22,17 @@ services:
     volumes:
       - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - NETWORK=${NETWORK}
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - MEV_BOOST=${MEV_BOOST}
+      - DOPPELGANGER=${DOPPELGANGER}
     ports:
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -43,16 +48,14 @@ services:
       - --udp-port=${CL_P2P_PORT:-9000}
       - --max-peers=${CL_MAX_PEER_COUNT:-160}
       - --network=${NETWORK}
-      - --web3-url=${EL_NODE:-ws://execution:8546}
-      - --web3-url=${EL_FALLBACK_NODE1:-ws://execution:8546}
-      - --web3-url=${EL_FALLBACK_NODE2:-ws://execution:8546}
+      - --web3-url=${EL_NODE}
+      - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
       - --graffiti=${GRAFFITI}
       - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0
-      - --rest-port=5052
+      - --rest-port=${CL_REST_PORT:-5052}
       - --enr-auto-update=true
-      - --doppelganger-detection=false
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
@@ -63,19 +66,9 @@ services:
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
-  get-keyapi-token:
-    restart: "no"
-    image: alpine:latest
-    user: "10002"
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        cat /var/lib/nimbus/api-token.txt
+
   validator-import:
+    profiles: ["tools"]
     restart: "no"
     image: nimbus:local
     user: root
@@ -94,7 +87,9 @@ services:
       - deposits
       - import
       - /val_keys
+
   validator-exit:
+    profiles: ["tools"]
     restart: "no"
     image: nimbus:local
     user: user
@@ -110,24 +105,29 @@ services:
       - exit
       - --rest-url=http://consensus:5052
       - --validator=
-  validator-list:
+
+  validator-keys:
+    profiles: ["tools"]
     restart: "no"
-    image: nimbus:local
-    user: user
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
+    user: root
     volumes:
       - nimbus-data:/var/lib/nimbus
+      - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    entrypoint: ["/bin/sh","-c"]
-    command:
-      - |
-        for dir in /var/lib/nimbus/validators/*; do
-          echo $$(basename $${dir})
-        done
-  eth:
-    image: tianon/true
-    restart: "no"
+    environment:
+      - NIMBUGGED="true"
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=${KEY_API_PORT:-7500}
     depends_on:
       - consensus
+    entrypoint:
+      - keymanager.sh
+      - /var/lib/nimbus/api-token.txt
+      - consensus
+
 volumes:
   nimbus-data:
+  jwtsecret:
