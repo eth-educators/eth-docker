@@ -189,6 +189,7 @@ update() {
         fi
         # Do not track changes to ext-network.yml
         ${__as_owner} git update-index --assume-unchanged ext-network.yml
+        ${__as_owner} git config pull.rebase false
         ${__as_owner} git pull
         # BASH_SOURCE so newer code gets to do the update. Use an ENV var
         # to avoid infinite loop
