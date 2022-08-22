@@ -1545,13 +1545,13 @@ var="COMPOSE_FILE"
 value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
 # Bor,  HECO or Fantom stay; switch everything else
 if [[ ! "${value}" =~ "bor.yml" && ! "${value}" =~ "heco.yml" && ! "${value}" =~ "opera.yml" ]]; then
-  echo "This branch of eth-docker is only used for Polygon, HECO and Fantom now."
-  echo "Switching you over to the main branch."
   __switched_branch=1
   ${__as_owner} git pull
   ${__as_owner} git fetch origin main
   ${__as_owner} git checkout main
   ${__as_owner} git pull
+  echo "This branch of eth-docker is only used for Polygon, HECO and Fantom now."
+  echo "Switched you over to the main branch."
   echo
   echo "Please fix any git errors manually"
   echo "Then run ./ethd update"
