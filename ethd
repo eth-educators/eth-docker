@@ -263,11 +263,6 @@ been migrated, please recreate these changes yourself."
             echo "No changes made to ${ENV_FILE} during migration"
         fi
     fi
-    if [ $__el_infura -eq 1 ]; then
-        echo
-        echo "Detected use of an Infura project as an EL or failover EL. This is no longer supported with merge."
-        echo "Please adjust your EL_NODE variable manually."
-    fi
     if [ $__el_adjusted -eq 1 ]; then
         echo
         echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
