@@ -1,6 +1,6 @@
 # To be used in conjunction with erigon.yml, nethermind.yml, besu.yml or geth.yml
 # For distributed setups only. Please be very cautious when exposing your engine API
-version: "3.4"
+version: "3.9"
 services:
   execution:
     ports:
