@@ -779,7 +779,7 @@ upgrade() {
 }
 
 start() {
-    cmd up -d
+    cmd up -d --remove-orphans
 }
 
 up() {
