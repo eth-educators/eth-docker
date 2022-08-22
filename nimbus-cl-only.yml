@@ -20,7 +20,7 @@ services:
     user: user
     stop_grace_period: 1m
     volumes:
-      - nimbus-data:/var/lib/nimbus
+      - nimbus-consensus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
@@ -29,7 +29,6 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
-      - DOPPELGANGER=${DOPPELGANGER}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -56,78 +55,30 @@ services:
       - --rest-address=0.0.0.0
       - --rest-port=${CL_REST_PORT:-5052}
       - --enr-auto-update=true
+      - --doppelganger-detection=false
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
-      - --validator-monitor-auto
+      - --validator-monitor-totals
       - --keymanager
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
-
-  validator-import:
-    profiles: ["tools"]
-    restart: "no"
-    image: nimbus:local
-    user: root
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - ./.eth/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
-      - NETWORK=${NETWORK}
-    entrypoint:
-      - validator-import.sh
-      - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
-      - deposits
-      - import
-      - /val_keys
-
-  validator-exit:
-    profiles: ["tools"]
-    restart: "no"
-    image: nimbus:local
-    user: user
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
-      - --log-level=${LOG_LEVEL}
-      - deposits
-      - exit
-      - --rest-url=http://consensus:5052
-      - --validator=
-
-  validator-keys:
-    profiles: ["tools"]
-    restart: "no"
-    build:
-      context: ./vc-utils
-    image: vc-utils:local
-    user: root
-    volumes:
-      - nimbus-data:/var/lib/nimbus
-      - ./.eth/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - NIMBUGGED="true"
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
-      - KEY_API_PORT=${KEY_API_PORT:-7500}
-    depends_on:
-      - consensus
-    entrypoint:
-      - keymanager.sh
-      - /var/lib/nimbus/api-token.txt
-      - consensus
-
+      - --subscribe-all-subnets
+      - --in-process-validators=false
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cl.service=cl
+      - traefik.http.routers.cl.entrypoints=websecure
+      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
+      - traefik.http.routers.cl.tls.certresolver=letsencrypt
+      - traefik.http.routers.cllb.service=cl
+      - traefik.http.routers.cllb.entrypoints=websecure
+      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
+      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
+      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
-  nimbus-data:
+  nimbus-consensus-data:
   jwtsecret:

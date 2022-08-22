@@ -1,15 +1,15 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   execution:
-    restart: "${RESTART}"
+    restart: "unless-stopped"
     stop_grace_period: 3m
     stop_signal: SIGINT
     build:
@@ -19,13 +19,19 @@ services:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local
-# Root so we can chown the volumes in /nethermind. Gosu to nethermind after
+# Root so a chown can happen for the secret, then gosu into nethermind. This can become nethermind again
+# after merge
     user: root
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/nethermind/ee-secret
     ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
@@ -43,6 +49,8 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --Network.P2PPort
       - ${EL_P2P_PORT:-30303}
+      - --Network.MaxActivePeers
+      - ${EL_MAX_PEER_COUNT:-50}
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.EnabledModules
@@ -53,26 +61,27 @@ services:
       - ${EL_RPC_PORT:-8545}
       - --JsonRpc.WebSocketsPort
       - ${EL_WS_PORT:-8546}
-      - --Sync.FastSync
+      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:${EE_PORT:-8551}|http;ws|engine;eth;subscribe
+      - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
+      - --Sync.SnapSync
       - "true"
       - --Metrics.Enabled
       - "true"
       - --Metrics.ExposePort
       - "6060"
       - --config
-      - ${EL_NETWORK:-goerli}
-      - --Pruning.Enabled
-      - "true"
-      - --Pruning.CacheMb
-      - "4096"
+      - ${NETWORK}
+# Potentially unsafe to auto-prune
+#      - --Pruning.FullPruningMaxDegreeOfParallelism
+#      - "2"
+#      - --Pruning.FullPruningTrigger
+#      - "VolumeFreeSpace"
       - --Sync.AncientBodiesBarrier
       - "1"
       - --Sync.AncientReceiptsBarrier
       - "1"
       - --log
       - ${LOG_LEVEL}
-  eth:
-    depends_on:
-      - execution
 volumes:
   nm-eth1-data:
+  jwtsecret:

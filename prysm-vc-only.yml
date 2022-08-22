@@ -15,63 +15,6 @@ x-build: &prysm-build
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
 
 services:
-  consensus:
-    restart: "unless-stopped"
-    build:
-      target: consensus
-      <<: *prysm-build
-    image: prysm-consensus:local
-    user: prysmconsensus
-    stop_grace_period: 1m
-    volumes:
-      - prysmbeacon-data:/var/lib/prysm
-      - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/prysm/ee-secret
-    environment:
-      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
-      - MEV_BOOST=${MEV_BOOST}
-    ports:
-      - ${HOST_IP:-0.0.0.0}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${HOST_IP:-0.0.0.0}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
-    networks:
-      default:
-        aliases:
-          - eth2
-    <<: *logging
-    entrypoint:
-      - docker-entrypoint.sh
-      - beacon-chain
-      - --datadir
-      - /var/lib/prysm/
-      - --rpc-host
-      - 0.0.0.0
-      - --grpc-gateway-host
-      - 0.0.0.0
-      - --grpc-gateway-port
-      - ${CL_REST_PORT:-5052}
-      - --http-web3provider
-      - ${EL_NODE}
-      - --jwt-secret
-      - /var/lib/prysm/ee-secret/jwtsecret
-      - --p2p-tcp-port
-      - ${PRYSM_PORT}
-      - --p2p-udp-port
-      - ${PRYSM_UDP_PORT}
-      - --p2p-max-peers
-      - ${CL_MAX_PEER_COUNT:-45}
-      - --verbosity
-      - ${LOG_LEVEL}
-      - --${NETWORK}
-      - --accept-terms-of-use
-      - --monitoring-host
-      - 0.0.0.0
-      - --monitoring-port
-      - "8008"
-      - --suggested-fee-recipient
-      - ${FEE_RECIPIENT}
-
   validator:
     restart: "unless-stopped"
     build:
@@ -82,9 +25,6 @@ services:
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
-    environment:
-      - MEV_BOOST=${MEV_BOOST}
-      - DOPPELGANGER=${DOPPELGANGER}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -94,7 +34,7 @@ services:
       - --wallet-dir
       - /var/lib/prysm/
       - --beacon-rpc-provider
-      - consensus:4000
+      - ${CL_NODE:-http://consensus:4000}
       - --graffiti
       - ${GRAFFITI}
       - --verbosity
@@ -115,11 +55,10 @@ services:
       - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+      - --enable-builder
       # If you chose not to store the wallet password during import, comment out the two following lines
       - --wallet-password-file
       - /var/lib/prysm/password.txt
-    depends_on:
-      - consensus
     labels:
       - traefik.enable=true
       - traefik.http.routers.prysm.entrypoints=web,websecure
@@ -146,8 +85,8 @@ services:
     user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
-      - jwtsecret:/var/lib/prysm/ee-secret
       - ./.eth/validator_keys:/validator_keys
+      - jwtsecret:/var/lib/prysm/ee-secret
       - /etc/localtime:/etc/localtime:ro
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
@@ -183,11 +122,9 @@ services:
       - accounts
       - voluntary-exit
       - --wallet-dir=/var/lib/prysm/
-      - --beacon-rpc-provider=consensus:4000
+      - --beacon-rpc-provider=${CL_NODE:-http://consensus:4000}
       - --wallet-password-file=/var/lib/prysm/password.txt
       - --${NETWORK}
-    depends_on:
-      - consensus
 
   validator-keys:
     profiles: ["tools"]
@@ -212,6 +149,5 @@ services:
       - validator
 
 volumes:
-  prysmbeacon-data:
   prysmvalidator-data:
   jwtsecret:

@@ -1,9 +1,0 @@
-# Send client stats to beaconcha.in service
-version: "3.4"
-services:
-  consensus:
-    command: --monitoring-endpoint=https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}
-  validator:
-    command:
-      - --monitoring-endpoint
-      -  https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}

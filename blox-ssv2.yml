@@ -1,4 +1,3 @@
-#Deprecated v1 testnet, will eventually be removed or changed
 version: "3.9"
 x-logging: &logging
   logging:
@@ -9,17 +8,17 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  ssv-node:
+  ssv2-node:
     restart: "unless-stopped"
-    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
+    image: bloxstaking/ssv-node-shifu:${SSV2_NODE_TAG:-latest}
     user: 12000:12000
     volumes:
       - ./blox-ssv-config.yaml:/config.yaml
-      - ssv-data:/tmp
+      - ssv2-data:/tmp
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${HOST_IP:-0.0.0.0}:${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
-      - ${HOST_IP:-0.0.0.0}:${SSV_P2P_PORT_UDP}:${SSV_P2P_PORT_UDP}/udp
+      - ${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
+      - ${SSV_P2P_PORT_UDP}:${SSV_P2P_PORT_UDP}/udp
     <<: *logging
     environment:
       - CONFIG_PATH=/config.yaml
@@ -28,7 +27,7 @@ services:
   ssv-generate-keys:
     profiles: ["tools"]
     restart: "no"
-    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
+    image: bloxstaking/ssv-node-shifu:${SSV2_NODE_TAG:-v0.3.0-rc.1}
     command: /go/bin/ssvnode generate-operator-keys
 volumes:
-  ssv-data:
+  ssv2-data:

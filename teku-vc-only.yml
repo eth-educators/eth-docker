@@ -8,7 +8,7 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  consensus:
+  validator:
     restart: "unless-stopped"
     build:
       context: ./teku
@@ -18,49 +18,22 @@ services:
       dockerfile: ${TEKU_DOCKERFILE}
     image: teku:local
     user: teku
-    stop_grace_period: 1m
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/teku/ee-secret
-    environment:
-      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
-      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
-      - MEV_BOOST=${MEV_BOOST}
-    ports:
-      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
-    networks:
-      default:
-        aliases:
-          - eth2
     <<: *logging
     entrypoint:
-      - docker-entrypoint.sh
+      - docker-entrypoint-vc.sh
       - /opt/teku/bin/teku
+      - validator-client
+      - --beacon-node-api-endpoints=${CL_NODE:-http://consensus:5052}
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
-      - --network=${NETWORK}
-      - --ee-endpoint=${EL_NODE}
-      - --ee-jwt-secret-file
-      - /var/lib/teku/ee-secret/jwtsecret
-      - --p2p-port=${CL_P2P_PORT:-9000}
-      - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
-      - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
+      - --network=auto
       - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
-      - --logging=${LOG_LEVEL}
-      - --rest-api-host-allowlist=*
-      - --rest-api-enabled=true
-      - --rest-api-interface=0.0.0.0
-      - --rest-api-port=${CL_REST_PORT:-5052}
-      - --metrics-enabled=true
-      - --metrics-port=8008
-      - --metrics-interface=0.0.0.0
-      - --metrics-host-allowlist=*
+      - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
       - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*
@@ -93,7 +66,7 @@ services:
     entrypoint:
       - /opt/teku/bin/teku
       - voluntary-exit
-      - --beacon-node-api-endpoint=http://consensus:5052
+      - --beacon-node-api-endpoint=${CL_NODE:-http://consensus:5052}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
 
   validator-keys:
@@ -112,12 +85,11 @@ services:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - KEY_API_PORT=${KEY_API_PORT:-7500}
     depends_on:
-      - consensus
+      - validator
     entrypoint:
       - keymanager.sh
       - /var/lib/teku/validator/key-manager/validator-api-bearer
-      - consensus
+      - validator
 
 volumes:
   teku-data:
-  jwtsecret:
