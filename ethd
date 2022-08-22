@@ -1423,11 +1423,18 @@ determine_distro
 handle_root
 determine_compose
 
-echo "This branch of eth-docker has been abandoned and will be deleted after merge."
-echo "Switching you over to the main branch."
 __switched_branch=1
+${__as_owner} git pull
 ${__as_owner} git fetch origin main
 ${__as_owner} git checkout main
+${__as_owner} git pull
+
+echo "This branch of eth-docker has been abandoned and will be deleted after merge."
+echo "Switched you over to the main branch."
+echo
+echo "Please ensure there were no git errors, fix any that occurred"
+echo "Then run ./ethd update"
+exit 0
 
 if [ $command = "install" ]; then
     $command "$@"
