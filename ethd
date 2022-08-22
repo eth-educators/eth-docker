@@ -1551,6 +1551,7 @@ if [[ ! "${value}" =~ "bor.yml" && ! "${value}" =~ "heco.yml" && ! "${value}" =~
   ${__as_owner} git pull
   ${__as_owner} git fetch origin main
   ${__as_owner} git checkout main
+  ${__as_owner} git pull
   echo
   echo "Please fix any git errors manually"
   echo "Then run ./ethd update"
