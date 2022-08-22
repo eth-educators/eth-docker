@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse:merge
+    image: lighthouse:local
     user: lhconsensus
     stop_grace_period: 1m
     volumes:
@@ -73,7 +73,7 @@ services:
 
   validator:
     restart: "unless-stopped"
-    image: lighthouse:merge
+    image: lighthouse:local
     user: lhvalidator
     environment:
       - OVERRIDE_TTD=${OVERRIDE_TTD}
@@ -118,7 +118,7 @@ services:
   validator-import:
     profiles: ["tools"]
     restart: "no"
-    image: lighthouse:merge
+    image: lighthouse:local
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -144,7 +144,7 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    image: lighthouse:merge
+    image: lighthouse:local
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse

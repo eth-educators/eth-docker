@@ -17,7 +17,7 @@ services:
         - BUILD_TARGET=${AKULA_SRC_BUILD_TARGET}
         - DOCKER_TAG=${AKULA_DOCKER_TAG}
     stop_grace_period: 3m
-    image: akula:merge
+    image: akula:local
     user: akula
     volumes:
       - akula-el-data:/var/lib/akula

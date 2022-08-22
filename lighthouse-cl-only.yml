@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LH_DOCKER_TAG}
-    image: lighthouse:merge
+    image: lighthouse:local
     user: lhconsensus
     stop_grace_period: 1m
     volumes:

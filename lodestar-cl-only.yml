@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
         - DOCKER_TAG=${LS_DOCKER_TAG}
-    image: lodestar:merge
+    image: lodestar:local
     user: lsconsensus
     stop_grace_period: 1m
     volumes:

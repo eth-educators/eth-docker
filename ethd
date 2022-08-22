@@ -840,7 +840,7 @@ query_network() {
        "gnosis")
            echo "You chose to run on Gnosis Beacon Chain"
            ;;
-       "goerli" | "ropsten" | "sepolia" | "kiln")
+       "goerli" | "ropsten" | "sepolia" )
            echo "You chose to run on ${NETWORK} testnet"
            ;;
        *)

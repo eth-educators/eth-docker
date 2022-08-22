@@ -16,7 +16,7 @@ services:
         - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
-    image: teku:merge
+    image: teku:local
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -45,7 +45,7 @@ services:
   validator-import:
     profiles: ["tools"]
     restart: "no"
-    image: teku:merge
+    image: teku:local
     user: root
     volumes:
       - teku-data:/var/lib/teku
@@ -58,7 +58,7 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    image: teku:merge
+    image: teku:local
     user: teku
     volumes:
       - teku-data:/var/lib/teku

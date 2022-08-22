@@ -20,7 +20,7 @@ services:
     build:
       target: consensus
       <<: *prysm-build
-    image: prysm-consensus:merge
+    image: prysm-consensus:local
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
@@ -77,7 +77,7 @@ services:
     build:
       target: validator
       <<: *prysm-build
-    image: prysm-validator:merge
+    image: prysm-validator:local
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -130,7 +130,7 @@ services:
   create-wallet:
     profiles: ["tools"]
     restart: "no"
-    image: prysm-validator:merge
+    image: prysm-validator:local
     user: prysmvalidator
     environment:
       - NETWORK=${NETWORK}
@@ -142,7 +142,7 @@ services:
   validator-import:
     profiles: ["tools"]
     restart: "no"
-    image: prysm-validator:merge
+    image: prysm-validator:local
     user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -170,7 +170,7 @@ services:
     profiles: ["tools"]
     restart: "no"
     user: prysmvalidator
-    image: prysm-validator:merge
+    image: prysm-validator:local
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro

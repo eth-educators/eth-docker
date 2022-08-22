@@ -17,7 +17,7 @@ services:
         - BUILD_TARGET=${GETH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_grace_period: 3m
-    image: geth:merge
+    image: geth:local
 # Root so a chown can happen for the secret, then su-exec into geth. This can become geth again
 # after merge
     user: root

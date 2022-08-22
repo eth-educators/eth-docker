@@ -16,7 +16,7 @@ services:
         - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${TEKU_DOCKER_TAG}
       dockerfile: ${TEKU_DOCKERFILE}
-    image: teku:merge
+    image: teku:local
     user: teku
     stop_grace_period: 1m
     volumes:

@@ -18,7 +18,7 @@ services:
       args:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
-    image: nethermind:merge
+    image: nethermind:local
 # Root so a chown can happen for the secret, then gosu into nethermind. This can become nethermind again
 # after merge
     user: root

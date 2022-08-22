@@ -14,7 +14,7 @@ services:
       dockerfile: ${MEV_DOCKERFILE}
       args:
         - DOCKER_TAG=${MEV_DOCKER_TAG}
-    image: mev-boost:merge
+    image: mev-boost:local
     entrypoint:
       - /app/mev-boost
       - -addr

@@ -16,7 +16,7 @@ services:
         - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NIM_DOCKER_TAG}
       dockerfile: ${NIM_DOCKERFILE}
-    image: nimbus:merge
+    image: nimbus:local
     user: user
     stop_grace_period: 1m
     volumes:

@@ -10,7 +10,7 @@ x-logging: &logging
 services:
   validator:
     restart: "unless-stopped"
-    image: lodestar:merge
+    image: lodestar:local
     user: lsvalidator
     environment:
       - MEV_BOOST=${MEV_BOOST}
@@ -47,7 +47,7 @@ services:
   validator-import:
     profiles: ["tools"]
     restart: "unless-stopped"
-    image: lodestar:merge
+    image: lodestar:local
     user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -74,7 +74,7 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    image: lodestar:merge
+    image: lodestar:local
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators

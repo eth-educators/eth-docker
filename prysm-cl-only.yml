@@ -20,7 +20,7 @@ services:
     build:
       target: consensus
       <<: *prysm-build
-    image: prysm-consensus:merge
+    image: prysm-consensus:local
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
