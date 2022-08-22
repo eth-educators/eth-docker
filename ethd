@@ -1174,6 +1174,18 @@ determine_distro
 determine_compose
 handle_root
 
+# Check for alt L1
+var="COMPOSE_FILE"
+value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
+# Bor,  HECO or Fantom stay; switch everything else
+if [[ ! "${value}" =~ "bor.yml" && ! "${value}" =~ "heco.yml" && ! "${value}" =~ "opera.yml" ]]; then
+  echo "This branch of eth-docker is only used for Polygon, HECO and Fantom now."
+  echo "Switching you over to the main branch."
+  __switched_branch=1
+  ${__as_owner} git fetch origin main
+  ${__as_owner} git checkout main
+fi
+
 if ! type -P whiptail >/dev/null 2>&1; then
     echo "Please install the package whiptail or newt before running this script"
     exit 1
