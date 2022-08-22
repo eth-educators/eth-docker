@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
