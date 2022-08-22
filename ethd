@@ -1423,6 +1423,12 @@ determine_distro
 handle_root
 determine_compose
 
+echo "This branch of eth-docker has been abandoned and will be deleted after merge."
+echo "Switching you over to the main branch."
+__switched_branch=1
+${__as_owner} git fetch origin main
+${__as_owner} git checkout main
+
 if [ $command = "install" ]; then
     $command "$@"
 fi
