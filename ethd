@@ -1184,6 +1184,10 @@ if [[ ! "${value}" =~ "bor.yml" && ! "${value}" =~ "heco.yml" && ! "${value}" =~
   __switched_branch=1
   ${__as_owner} git fetch origin main
   ${__as_owner} git checkout main
+  echo
+  echo "Please fix any git errors manually"
+  echo "Then run ./ethd update"
+  exit 0
 fi
 
 if ! type -P whiptail >/dev/null 2>&1; then
