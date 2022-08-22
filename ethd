@@ -1548,6 +1548,7 @@ if [[ ! "${value}" =~ "bor.yml" && ! "${value}" =~ "heco.yml" && ! "${value}" =~
   echo "This branch of eth-docker is only used for Polygon, HECO and Fantom now."
   echo "Switching you over to the main branch."
   __switched_branch=1
+  ${__as_owner} git pull
   ${__as_owner} git fetch origin main
   ${__as_owner} git checkout main
   echo
