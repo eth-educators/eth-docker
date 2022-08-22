@@ -19,7 +19,7 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/nimbus && chown -R user:user /var/lib/nimbus && chmod 700 /var/lib/nimbus
+RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R user:user /var/lib/nimbus && chmod -R 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
 # Copy beacon_node into $PATH
 RUN cp /home/user/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node

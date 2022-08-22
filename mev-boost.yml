@@ -1,0 +1,25 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+
+services:
+  mev-boost:
+    restart: "unless-stopped"
+    build:
+      context: ./flashbots
+      dockerfile: ${MEV_DOCKERFILE}
+      args:
+        - DOCKER_TAG=${MEV_DOCKER_TAG}
+    image: mev-boost:local
+    entrypoint:
+      - /app/mev-boost
+      - -addr
+      - 0.0.0.0:18550
+      - -${NETWORK}
+      - -relays
+      - ${MEV_RELAYS}
+    <<: *logging

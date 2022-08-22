@@ -1,16 +1,16 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 10m
+      max-size: 100m
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
   traefik:
     image: traefik:latest
-    restart: ${RESTART}
+    restart: "unless-stopped"
     command:
 #      - --log.level=DEBUG
 #      - --accesslog=true
@@ -29,8 +29,8 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.websecure.address=:${TRAEFIK_WEB_PORT}
     ports:
-      - ${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
-      - ${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
+      - ${HOST_IP:-0.0.0.0}:${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
+      - ${HOST_IP:-0.0.0.0}:${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
       - CLOUDFLARE_EMAIL=${CF_EMAIL}
       - CLOUDFLARE_DNS_API_TOKEN=${CF_API_TOKEN}
@@ -43,7 +43,7 @@ services:
       - cf-ddns
   cf-ddns:
     image: oznu/cloudflare-ddns:latest
-    restart: ${RESTART}
+    restart: "unless-stopped"
     environment:
       - API_KEY=${CF_API_TOKEN}
       - ZONE=${DOMAIN}
@@ -52,8 +52,5 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
-  eth:
-    depends_on:
-      - traefik
 volumes:
   certs:

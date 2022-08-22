@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -8,8 +8,8 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  erigon:
-    restart: "${RESTART}"
+  execution:
+    restart: "unless-stopped"
     build:
       context: ./erigon
       dockerfile: ${ERIGON_DOCKERFILE}
@@ -18,13 +18,23 @@ services:
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 5m
     image: erigon:local
-    user: erigon
+# Root so a chown can happen for the secret, then su-exec into erigon. This can become erigon again
+# after merge
+    user: root
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - erigon-ec-data:/var/lib/erigon
+      - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/erigon/ee-secret
     ports:
-      - ${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT-30303}:${EL_P2P_PORT:-30303}/udp
+      # torrent ports
+      - ${HOST_IP:-0.0.0.0}:${ERIGON_TORRENT_PORT:-42069}:${ERIGON_TORRENT_PORT:-42069}/tcp
+      - ${HOST_IP:-0.0.0.0}:${ERIGON_TORRENT_PORT:-42069}:${ERIGON_TORRENT_PORT:-42069}/udp
     networks:
       default:
         aliases:
@@ -39,44 +49,39 @@ services:
       - /var/lib/erigon
       - --port
       - ${EL_P2P_PORT:-30303}
+      - --torrent.port
+      - ${ERIGON_TORRENT_PORT:-42069}
       - --nat
       - any
       - --chain
-      - ${EL_NETWORK:-goerli}
+      - ${NETWORK}
       - --prune=htc
       - --metrics
       - --metrics.addr
       - 0.0.0.0
       - --metrics.expensive
-  execution:
-    restart: "${RESTART}"
-    image: erigon:local
-    user: erigon
-    volumes:
-      - erigon-ec-data:/var/lib/erigon
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - erigon
-    pid: service:erigon # Use erigon's PID namespace. It's required to open Erigon's DB from another process (RPCDaemon local-mode)
-    entrypoint:
-      - rpcdaemon
-      - --datadir
-      - /var/lib/erigon
-      - --private.api.addr
-      - erigon:9090
-      - --txpool.api.addr
-      - erigon:9090
+      - --http
       - --http.addr
       - 0.0.0.0
+      - --http.port
+      - ${EL_RPC_PORT}
       - --http.vhosts=*
       - --http.corsdomain=*
       - --http.api
-      - web3,eth,net
-      - --http.port
-      - ${EL_RPC_PORT:-8545}
+      - web3,eth,net,engine
       - --ws
-  eth:
-    depends_on:
-      - execution
+      - --authrpc.addr
+      - 0.0.0.0
+      - --authrpc.port
+      - ${EE_PORT:-8551}
+      - --authrpc.vhosts=*
+      - --authrpc.jwtsecret
+      - /var/lib/erigon/ee-secret/jwtsecret
+      - --maxpeers
+      - ${EL_MAX_PEER_COUNT:-100}
+      # Workaround for high memory use in alpha
+      - --batchSize
+      - 128m
 volumes:
-  erigon-ec-data:
+  erigon-el-data:
+  jwtsecret:

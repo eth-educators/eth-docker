@@ -1,5 +1,5 @@
-# To be used in conjunction with erigon.yml, nm.yml, besu.yml or geth.yml
-version: "3.4"
+# To be used in conjunction with erigon.yml, nethermind.yml, besu.yml or geth.yml
+version: "3.9"
 services:
   execution:
     labels:
@@ -22,5 +22,3 @@ services:
       - traefik.http.routers.elwslb.rule=Host(`${EL_WS_LB:-elws-lb}.${DOMAIN}`)
       - traefik.http.routers.elwslb.tls.certresolver=letsencrypt
       - traefik.http.services.elws.loadbalancer.server.port=${EL_WS_PORT:-8546}
-  eth:
-    image: tianon/true
