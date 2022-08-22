@@ -350,7 +350,7 @@ envmigrate() {
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO \
             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
     NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT \
-            EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT HOST_IP)
+            EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
@@ -1313,8 +1313,6 @@ config () {
     var=FEE_RECIPIENT
     set_value_in_env
     var=GRAFFITI
-    set_value_in_env
-    var=HOST_IP
     set_value_in_env
     var=CL_NODE
     set_value_in_env
