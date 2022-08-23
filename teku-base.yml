@@ -62,6 +62,7 @@ services:
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
       - --validator-api-enabled=true
+      - --validator-api-interface=0.0.0.0
       - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*
       - --validator-api-cors-origins=*
