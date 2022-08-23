@@ -3,10 +3,10 @@
 call_api() {
     set +e
     if [ -z "${TLS:+x}" ]; then
-        __code=$(curl -m 10 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+        __code=$(curl -m 30 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
             --data "${__api_data}" http://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
     else
-        __code=$(curl -k -m 10 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+        __code=$(curl -k -m 30 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
             --data "${__api_data}" https://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
     fi
     __return=$?
@@ -194,9 +194,6 @@ validator-list() {
     esac
     if [ $(echo $__result | jq '.data | length') -eq 0 ]; then
         echo "No keys loaded"
-    elif [ -n "${LSBUGGED:+x}" ]; then
-        echo "Validator public keys"
-        echo $__result | jq -r '.data[].validatingPubkey'
     else
         echo "Validator public keys"
         echo $__result | jq -r '.data[].validating_pubkey'
@@ -231,13 +228,7 @@ validator-delete() {
         not_active)
             __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
             echo "Validator is not actively loaded."
-            if [ -n "${NIMBUGGED:+x}" ]; then
-                echo $__result | jq '.slashing_protection' > /$__file
-            elif [ -n "${LSBUGGED:+x}" ]; then
-                echo $__result | jq '.slashingProtection | fromjson' > /$__file
-            else
-                echo $__result | jq '.slashing_protection | fromjson' > /$__file
-            fi
+            echo $__result | jq '.slashing_protection | fromjson' > /$__file
             chown 1000:1000 /$__file
             chmod 644 /$__file
             echo "Slashing protection data written to .eth/$__file"
@@ -245,13 +236,7 @@ validator-delete() {
         deleted)
             __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
             echo "Validator deleted."
-            if [ -n "${NIMBUGGED:+x}" ]; then
-                echo $__result | jq '.slashing_protection' > /$__file
-            elif [ -n "${LSBUGGED:+x}" ]; then
-                echo $__result | jq '.slashingProtection | fromjson' > /$__file
-            else
-                echo $__result | jq '.slashing_protection | fromjson' > /$__file
-            fi
+            echo $__result | jq '.slashing_protection | fromjson' > /$__file
             chown 1000:1000 /$__file
             chmod 644 /$__file
             echo "Slashing protection data written to .eth/$__file"
@@ -260,7 +245,7 @@ validator-delete() {
             if [ -n "${NIMBUGGED:+x}" ]; then
                 if [[ "$__result" =~ "slashing_protection" ]]; then
                     __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
-                    echo $__result | jq '.slashing_protection' > /$__file
+                    echo $__result | jq '.slashing_protection | fromjson' > /$__file
                     echo "The key was not found in the keystore."
                     chown 1000:1000 /$__file
                     chmod 644 /$__file

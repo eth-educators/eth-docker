@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--builder.enabled"
+  __mev_boost="--builder"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
