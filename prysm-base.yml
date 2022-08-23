@@ -51,7 +51,7 @@ services:
       - 0.0.0.0
       - --grpc-gateway-port
       - ${CL_REST_PORT:-5052}
-      - --http-web3provider
+      - --execution-endpoint
       - ${EL_NODE}
       - --jwt-secret
       - /var/lib/prysm/ee-secret/jwtsecret
