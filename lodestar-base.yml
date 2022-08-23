@@ -116,9 +116,9 @@ services:
       - /usr/app/node_modules/.bin/lodestar
       - validator
       - import
-      - --rootDir
+      - --dataDir
       - /var/lib/lodestar/validators
-      - --directory
+      - --importKeystores
       - /val_keys
       - --network
       - ${NETWORK}
@@ -139,7 +139,7 @@ services:
       - /usr/app/node_modules/.bin/lodestar
       - validator
       - voluntary-exit
-      - --rootDir
+      - --dataDir
       - /var/lib/lodestar/validators
       - --server
       - http://consensus:5052
