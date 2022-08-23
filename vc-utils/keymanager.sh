@@ -431,13 +431,13 @@ validator-import() {
 usage() {
     echo "Call keymanager with an ACTION, one of:"
     echo "  list"
-    echo "     Lists all validator public keys currently loaded into your validator client"
-    echo "  delete 0xPUBKEY"
-    echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
-    echo "      slashing protection database"
+    echo "     Lists the public keys of all validators currently loaded into your validator client"
     echo "  import"
     echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
     echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
+    echo "  delete 0xPUBKEY"
+    echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
+    echo "      slashing protection database"
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
@@ -452,7 +452,6 @@ usage() {
     echo "      Validators will use the client's default, if not set individually"
     echo "  set-gas 0xPUBKEY amount"
     echo "      Set individual execution gas limit for the validator with public key 0xPUBKEY"
-    echo "      Example: 'set-gas 0xPUBKEY 30000000' to set it to the default of 30 million gwei"
     echo "  delete-gas 0xPUBKEY"
     echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
     echo
