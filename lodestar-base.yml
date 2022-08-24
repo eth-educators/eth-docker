@@ -128,25 +128,32 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    image: lodestar:local
-    user: lsvalidator
+#    image: lodestar:local
+    image: alpine:latest
+#    user: lsvalidator
+    user: 10000:10000
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - node
-      - --max-old-space-size=4096
-      - /usr/app/node_modules/.bin/lodestar
-      - validator
-      - voluntary-exit
-      - --dataDir
-      - /var/lib/lodestar/validators
-      - --server
-      - http://consensus:5052
-      -  --logLevel
-      - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        echo "Lodestar v1.0 has removed voluntary exit functionality"
+        echo "Please follow https://github.com/ChainSafe/lodestar/issues/4472 for updates"
+#    entrypoint:
+#      - node
+#      - --max-old-space-size=4096
+#      - /usr/app/node_modules/.bin/lodestar
+#      - validator
+#      - voluntary-exit
+#      - --dataDir
+#      - /var/lib/lodestar/validators
+#      - --server
+#      - http://consensus:5052
+#      -  --logLevel
+#      - ${LOG_LEVEL}
+#      - --network
+#      - ${NETWORK}
 
   validator-keys:
     profiles: ["tools"]
