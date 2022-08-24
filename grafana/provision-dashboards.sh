@@ -51,7 +51,7 @@ case "$CLIENT" in
     #  nimbus_dashboard
     __url='https://raw.githubusercontent.com/status-im/nimbus-eth2/master/grafana/beacon_nodes_Grafana_dashboard.json'
     __file='/etc/grafana/provisioning/dashboards/nimbus_dashboard.json'
-    wget -qcO - $__url | jq '.title = "nimbus_dashboard"' >$__file
+    wget -qcO - $__url | jq '.title = "nimbus_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
   *geth* )
     # geth_dashboard
