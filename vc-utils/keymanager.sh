@@ -26,11 +26,19 @@ call_api() {
 }
 
 get-token() {
+set +e
     if [ -z "${PRYSM:+x}" ]; then
         __token=$(cat $__token_file)
     else
         __token=$(sed -n 2p $__token_file)
     fi
+    __return=$?
+    if [ $__return -ne 0 ]; then
+        echo "Error encountered while trying to get the keymanager API token."
+        echo "Please make sure ${__api_container} is up and shows the key manager API, port ${KEY_API_PORT:-7500}, enabled."
+        exit $__return
+    fi
+set -e
 }
 
 print-api-token() {
