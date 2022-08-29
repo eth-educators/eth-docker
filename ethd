@@ -717,14 +717,27 @@ prep-keyimport() {
                     echo "$2 is not a directory"
                     exit 1
                 fi
+                if [ $(realpath "$2") = $(realpath ".eth/validator_keys") ]; then
+                    echo "$2 is the default path, doing nothing special"
+                    shift 2
+                    continue
+                fi
                 IFS=$'\n'
-                files=$(find $2 -name '*.json')
+                files=$(find $2 -maxdepth 1 -name '*.json')
                 unset IFS
                 if [ -z "$files" ]; then
                     echo "No .json files found in $2, aborting"
                     exit 1
                 fi
-                rm -f ./.eth/validator_keys/*
+                IFS=$'\n'
+                files=$(find ./.eth/validator_keys -maxdepth 1 -name '*.json')
+                unset IFS
+                if [ -n "$files" ]; then
+                    mkdir -p ./.eth/validator_keys/keybackup
+                    mv -uf ./.eth/validator_keys/*.json ./.eth/validator_keys/keybackup
+                    rm -f ./.eth/validator_keys/*.json
+                    echo "Moved existing json files to .eth/validator_keys/keybackup"
+                fi
                 cp $2/*.json .eth/validator_keys/
                 shift 2
                 ;;
