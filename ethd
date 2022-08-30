@@ -19,7 +19,7 @@ determine_distro() {
     # If Linux, try to determine specific distribution
     if [ "$__uname" == "linux" ]; then
         # If available, use LSB to identify distribution
-        if [ -n "$(which lsb_release)" ]; then
+        if [ -n "$(which lsb_release 2>/dev/null)" ]; then
             __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
         # Otherwise, use release info file
         else
