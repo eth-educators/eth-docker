@@ -10,7 +10,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--private-tx-proposals"
+  __mev_boost="--builder-proposals"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
