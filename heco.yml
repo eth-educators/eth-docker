@@ -44,10 +44,5 @@ services:
       - traefik.http.routers.hecowslb.tls.certresolver=letsencrypt
       - traefik.http.services.hecows.loadbalancer.server.port=8546
 
-  eth:
-    image: tianon/true
-    depends_on:
-      - heco
-
 volumes:
   heco-ec-data:

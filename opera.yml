@@ -62,9 +62,5 @@ services:
       - web3,eth,net
       - --gcmode
       - light
-  eth:
-    image: tianon/true
-    depends_on:
-      - opera
 volumes:
   opera-ec-data:

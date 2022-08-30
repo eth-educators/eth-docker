@@ -64,6 +64,7 @@ services:
       - --node=tcp://heimdalld:26657
 
   prune-bor:
+    profiles: ["tools"]
     image: bor:local
     restart: "no"
     stop_grace_period: 3m
@@ -178,6 +179,7 @@ services:
       - traefik.http.services.borws.loadbalancer.server.port=${BOR_WS_PORT}
 
   set-prune-marker:
+    profiles: ["tools"]
     image: alpine:latest
     user: "10001:10001"
     restart: "no"
@@ -185,12 +187,6 @@ services:
       - bor-data:/var/lib/bor
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
-
-  eth:
-    image: tianon/true
-    depends_on:
-      - heimdallr
-      - bor
 
 volumes:
   bor-data:
