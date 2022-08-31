@@ -17,6 +17,7 @@ fi
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
   __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
+  echo "Checkpoint sync enabled"
 else
   __rapid_sync=""
 fi
