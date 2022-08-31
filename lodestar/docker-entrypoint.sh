@@ -28,6 +28,7 @@ fi
 
 if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/lodestar/consensus/setupdone" ]; then
     touch /var/lib/lodestar/consensus/setupdone
+    echo "Checkpoint sync enabled"
     exec "$@" --weakSubjectivitySyncLatest=true --weakSubjectivityServerUrl=${RAPID_SYNC_URL} ${__override_ttd}
 fi
 

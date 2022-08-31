@@ -28,6 +28,7 @@ fi
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
     __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
+    echo "Checkpoint sync enabled"
 else
     __rapid_sync=""
 fi
@@ -51,6 +52,7 @@ fi
 # Check whether we should send stats to beaconcha.in
 if [ -n "${BEACON_STATS_API}" ]; then
   __beacon_stats="--metrics-publish-endpoint=https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}"
+  echo "Beacon stats API enabled"
 else
   __beacon_stats=""
 fi
