@@ -194,7 +194,7 @@ install() {
     else
         echo "This script cannot install docker on $__distro"
     fi
-    exit 0
+    return 0
 }
 
 update() {
@@ -1477,6 +1477,7 @@ determine_compose
 
 if [ $command = "install" ]; then
     $command "$@"
+    exit "$?"
 fi
 
 if ! type -P whiptail >/dev/null 2>&1; then
