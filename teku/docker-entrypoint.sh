@@ -27,7 +27,7 @@ fi
 
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
-    __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
+    __rapid_sync="--initial-state=${RAPID_SYNC_URL}"
     echo "Checkpoint sync enabled"
 else
     __rapid_sync=""
@@ -43,7 +43,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--validators-builder-registration-default-enabled --builder-endpoint=http://mev-boost:18550"
+  __mev_boost="--validators-builder-registration-default-enabled --builder-endpoint=${MEV_NODE:-http://mev-boost:18550}"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
