@@ -20,6 +20,7 @@ services:
       - -addr
       - 0.0.0.0:18550
       - -${NETWORK}
+      - -relay-check
       - -relays
       - ${MEV_RELAYS}
     <<: *logging
