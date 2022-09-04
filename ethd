@@ -841,10 +841,10 @@ query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 12 60 5 \
+    "mainnet" "Ethereum Mainnet" \
     "goerli" "Görli (né Prater) Testnet" \
     "ropsten" "Ropsten Testnet (abandoned after mainnet merge)" \
     "sepolia" "Sepolia Testnet (permissioned validators)" \
-    "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
