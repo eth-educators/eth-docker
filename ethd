@@ -842,19 +842,18 @@ query_network() {
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 12 60 5 \
     "goerli" "Görli (né Prater) Testnet" \
-    "ropsten" "Ropsten Testnet (abandoned after mainnet merge)" \
-    "sepolia" "Sepolia Testnet (permissioned validators)" \
     "mainnet" "Ethereum Mainnet" \
-    "gnosis" "Gnosis Chain (né xDai)" 3>&1 1>&2 2>&3)
+    "gnosis" "Gnosis Chain (né xDai)" \
+    "sepolia" "Sepolia Testnet (permissioned validators)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
        "mainnet")
            echo "You chose to run on Ethereum mainnet"
            ;;
        "gnosis")
-           echo "You chose to run on Gnosis Beacon Chain"
+           echo "You chose to run on Gnosis Chain"
            ;;
-       "goerli" | "ropsten" | "sepolia" )
+       "goerli" | "sepolia" )
            echo "You chose to run on ${NETWORK} testnet"
            ;;
        *)
@@ -1044,8 +1043,8 @@ query_execution_client() {
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 12 60 5 \
       "besu.yml" "Besu (Java)" \
-      "geth.yml" "Geth (Go)" \
       "nethermind.yml" "Nethermind (.NET)" \
+      "geth.yml" "Geth (Go)" \
       "erigon.yml" "Erigon - alpha (Go)" \
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     fi
@@ -1171,14 +1170,8 @@ query_override() {
     fi
 
     case "${NETWORK}" in
-        "ropsten")
-            OVERRIDE_TTD=50000000000000000
-            ;;
         "sepolia")
             OVERRIDE_TTD=17000000000000000
-            ;;
-        "kiln")
-            OVERRIDE_TTD=20000000000000
             ;;
         "goerli")
             OVERRIDE_TTD=10790000
@@ -1206,9 +1199,6 @@ query_mev() {
     if (whiptail --title "Select Option" --yesno "Do you want to use MEV Boost?" 10 60) then
         MEV_BOOST="true"
         case "${NETWORK}" in
-            "ropsten")
-                MEV_RELAYS=https://0xb124d80a00b80815397b4e7f1f05377ccc83aeeceb6be87963ba3649f1e6efa32ca870a88845917ec3f26a8e2aa25c77@builder-relay-ropsten.flashbots.net,http://0xb8a0bad3f3a4f0b35418c03357c6d42017582437924a1e1ca6aee2072d5c38d321d1f8b22cd36c50b0c29187b6543b6e@builder-relay.virginia.ropsten.blxrbdn.com
-                ;;
             "sepolia")
                 MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@builder-relay-sepolia.flashbots.net
                 ;;
@@ -1233,7 +1223,7 @@ query_mev() {
         fi
     else
         MEV_BOOST="false"
-        MEV_RELAYS=https://0xb124d80a00b80815397b4e7f1f05377ccc83aeeceb6be87963ba3649f1e6efa32ca870a88845917ec3f26a8e2aa25c77@builder-relay-ropsten.flashbots.net
+        MEV_RELAYS=""
     fi
 }
 
@@ -1325,7 +1315,7 @@ config () {
     if [ "${MEV_BOOST}" = "true" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
     fi
-    if [ "${NETWORK}" = "ropsten" -o "${NETWORK}" = "goerli" -o "${NETWORK}" = "sepolia" -o "${NETWORK}" = "kiln" ]; then
+    if [ "${NETWORK}" = "goerli" -o "${NETWORK}" = "sepolia" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
     if [ "${__deployment}" = "rocket" ]; then
