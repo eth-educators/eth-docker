@@ -62,8 +62,6 @@ services:
       - ${EL_WS_PORT:-8546}
       - --max-peers
       - ${EL_MAX_PEER_COUNT:-25}
-      - --fast-sync-min-peers
-      - ${EL_MIN_PEER_COUNT:-5}
       - --host-allowlist=*
       - --engine-host-allowlist=*
       - --engine-jwt-secret=/var/lib/besu/ee-secret/jwtsecret
