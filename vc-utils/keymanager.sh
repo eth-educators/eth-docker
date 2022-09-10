@@ -250,20 +250,7 @@ validator-delete() {
             echo "Slashing protection data written to .eth/$__file"
             ;;
         not_found)
-            if [ -n "${NIMBUGGED:+x}" ]; then
-                if [[ "$__result" =~ "slashing_protection" ]]; then
-                    __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
-                    echo $__result | jq '.slashing_protection | fromjson' > /$__file
-                    echo "The key was not found in the keystore."
-                    chown 1000:1000 /$__file
-                    chmod 644 /$__file
-                    echo "Slashing protection data written to .eth/$__file"
-                else
-                    echo "The key was not found in the keystore, no slashing protection data returned."
-                fi
-            else
-                echo "The key was not found in the keystore, no slashing protection data returned."
-            fi
+            echo "The key was not found in the keystore, no slashing protection data returned."
             ;;
         * )
             echo "Unexpected status $__status. This may be a bug"
