@@ -119,7 +119,6 @@ services:
       - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - NIMBUGGED="true"
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - KEY_API_PORT=${KEY_API_PORT:-7500}
     depends_on:
