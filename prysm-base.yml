@@ -190,6 +190,31 @@ services:
     depends_on:
       - consensus
 
+  validator-backup:
+    profiles: ["tools"]
+    restart: "no"
+    user: root
+    image: prysm-validator:local
+    volumes:
+      - prysmvalidator-data:/var/lib/prysm
+      - ./.eth/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - validator
+      - --verbosity
+      - ${LOG_LEVEL}
+      - --datadir
+      - /var/lib/prysm
+      - accounts
+      - backup
+      - --wallet-dir=/var/lib/prysm/
+      - --wallet-password-file=/var/lib/prysm/password.txt
+      - --${NETWORK}
+      - --backup-dir=/validator_keys
+      - --backup-password-file=/var/lib/prysm/password.txt
+    depends_on:
+      - consensus
+
   validator-keys:
     profiles: ["tools"]
     restart: "no"
