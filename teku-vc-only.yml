@@ -69,6 +69,7 @@ services:
       - voluntary-exit
       - --beacon-node-api-endpoint=${CL_NODE:-http://consensus:5052}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validator-keys=/var/lib/teku/validator/key-manager/local:/var/lib/teku/validator/key-manager/local-passwords
 
   validator-keys:
     profiles: ["tools"]
