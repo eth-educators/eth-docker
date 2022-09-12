@@ -477,8 +477,8 @@ envmigrate() {
 migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
@@ -1097,7 +1097,22 @@ query_remote_beacon() {
 }
 
 query_checkpoint_beacon() {
-    RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint consensus client" --inputbox "What is the URL for your checkpoint consensus client? E.g. Infura eth2 project (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    case "${NETWORK}" in
+        "sepolia")
+            RAPID_SYNC_URL="https://sepolia.beaconstate.info"
+            ;;
+        "goerli")
+            RAPID_SYNC_URL="https://goerli.beaconstate.info"
+            ;;
+        "mainnet")
+            RAPID_SYNC_URL="https://beaconstate.info"
+            ;;
+        *)
+            RAPID_SYNC_URL=""
+            ;;
+    esac
+
+    RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint consensus client" --inputbox "What is the URL for your checkpoint consensus client? (right-click to paste)" 10 60 ${RAPID_SYNC_URL} 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
@@ -1121,10 +1136,8 @@ query_graffiti() {
 }
 
 query_rapid_sync() {
-    # Assume no to start
     RAPID_SYNC_URL=""
-
-    if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint, e.g. Infura eth2 project?" 10 60) then
+    if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 60) then
         query_checkpoint_beacon
     fi
 }
@@ -1206,7 +1219,7 @@ query_mev() {
                 MEV_RELAYS=https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@builder-relay-goerli.flashbots.net,https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com,https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-goerli.blocknative.com
                 ;;
             "mainnet")
-                MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com
+                MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com,https://0x9000009807ed12c1f08bf4e81c6da3ba8e3fc3d953898ce0102433094e5f22f21102ec057841fcb81978ed1ea0fa8246@builder-relay-mainnet.blocknative.com
                 ;;
             *)
                 MEV_RELAYS=""
