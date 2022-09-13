@@ -108,6 +108,7 @@ upgrade_compose() {
       echo "Please manually update docker-compose to version 1.29.2. These commands should do it:"
       echo "sudo curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose"
       echo "sudo chmod +x /usr/bin/docker-compose"
+      exit 1
     fi
   fi
 }
