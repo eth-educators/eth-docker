@@ -2,9 +2,14 @@
 #set -euo pipefail
 set -uo pipefail
 
+__docker_exe="docker"
 __compose_exe="docker-compose"
 
-cmd() {
+dodocker() {
+    $__docker_exe "$@"
+}
+
+docompose() {
     $__compose_exe "$@"
 }
 
@@ -14,7 +19,7 @@ determine_distro() {
     # If Linux, try to determine specific distribution
     if [ "$__uname" == "linux" ]; then
         # If available, use LSB to identify distribution
-        if [ -n "$(which lsb_release)" ]; then
+        if [ -n "$(which lsb_release 2>/dev/null)" ]; then
             __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
         # Otherwise, use release info file
         else
@@ -29,18 +34,32 @@ determine_distro() {
     __distro=$(echo $__distro | tr "[:upper:]" "[:lower:]")
 }
 
+determine_sudo() {
+    __maybe_sudo=""
+    if ! docker images >/dev/null 2>&1; then
+        echo "Will use sudo to access docker"
+        __maybe_sudo="sudo"
+    fi
+}
+
+determine_docker() {
+    if [ -n "$__maybe_sudo" ]; then
+        __docker_exe="sudo $__docker_exe"
+    fi
+}
+
 determine_compose() {
 # This is mainly for Debian and docker-ce, where docker-compose does not exist
   type -P docker-compose >/dev/null 2>&1
   if [ $? -ne 0 ]; then
     __compose_exe="docker compose"
   else
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version [v]\?\([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version [v]\?\([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if ! [ "$__compose_version_major" -eq "$__compose_version_major" -a "$__compose_version_minor" -eq "$__compose_version_minor" ] 2> /dev/null; then
         echo "docker-compose version detection failed. Please report this output so it can be fixed."
-        docker-compose --version
+        $__maybe_sudo docker-compose --version
     elif [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
       echo "Error: Outdated docker-compose version detected ($__compose_version). Please upgrade to version 1.28.0 or later." >&2
       if [[ "$__distro" = "ubuntu" ]]; then
@@ -64,8 +83,7 @@ determine_compose() {
     __compose_exe="docker-compose"
   fi
 
-  # If this user cannot access docker directly, then use sudo
-  if ! docker images >/dev/null 2>&1; then
+  if [ -n "$__maybe_sudo" ]; then
     __compose_exe="sudo $__compose_exe"
   fi
 }
@@ -73,7 +91,7 @@ determine_compose() {
 upgrade_compose() {
   type -P docker-compose >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
@@ -82,7 +100,7 @@ upgrade_compose() {
       ${__auto_sudo} curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
       ${__auto_sudo} chmod +x /usr/bin/docker-compose
     fi
-    __compose_version=$(docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
     __compose_version_major=$(echo $__compose_version | cut -f1 -d.)
     __compose_version_minor=$(echo $__compose_version | cut -f2 -d.)
     if [ "$__compose_version_major" -eq 1 -a "$__compose_version_minor" -lt 28 ]; then
@@ -90,6 +108,7 @@ upgrade_compose() {
       echo "Please manually update docker-compose to version 1.29.2. These commands should do it:"
       echo "sudo curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose"
       echo "sudo chmod +x /usr/bin/docker-compose"
+      exit 1
     fi
   fi
 }
@@ -176,7 +195,7 @@ install() {
     else
         echo "This script cannot install docker on $__distro"
     fi
-    exit 0
+    return 0
 }
 
 update() {
@@ -226,13 +245,13 @@ update() {
         exec "${BASH_SOURCE}" update $__targetcli
     fi
 
-    cmd build --pull
-    cmd --profile tools build --pull
+    docompose build --pull
+    docompose --profile tools build --pull
     exec 3>&1
     exec 4>&2
     exec 1> /dev/null
     exec 2> /dev/null
-    cmd pull || true
+    docompose pull || true
     exec 1>&3
     exec 2>&4
 
@@ -528,7 +547,7 @@ delete_erigon() {
         return
     fi
 
-    if [ -z "$(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
+    if [ -z "$(dodocker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)" ]; then
         return
     fi
 
@@ -543,9 +562,9 @@ delete_erigon() {
     done
 
     echo "Stopping Erigon container"
-    docker stop $(basename $(realpath .))_erigon_1 && docker rm -f $(basename $(realpath .))_erigon_1
-    cmd stop execution && cmd rm -f execution
-    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
+    dodocker stop $(basename $(realpath .))_erigon_1 && dodocker rm -f $(basename $(realpath .))_erigon_1
+    docompose stop execution && docompose rm -f execution
+    dodocker volume rm $(dodocker volume ls -q | grep $(basename $(realpath .))_erigon-ec-data)
     echo ""
     echo "Erigon stopped and database deleted."
     echo ""
@@ -563,7 +582,7 @@ query_blox_switch() {
     done
     echo "Stopping SSV Node container"
     docker stop $(basename $(realpath .))_ssv-node_1 && docker rm -f $(basename $(realpath .))_ssv-node_1
-    cmd stop ssv-node && cmd rm -f ssv-node
+    docompose stop ssv-node && docompose rm -f ssv-node
     docker volume rm $(docker volume ls -q | grep $(basename $(realpath .))_ssv-data)
     echo ""
     echo "SSV Node stopped and database deleted."
@@ -626,7 +645,7 @@ prune-geth() {
         rpc_port="${BASH_REMATCH[1]}"
     fi
 
-    sync_status=$(cmd exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+    sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
         echo "Unable to connect to Geth: Is it running? Aborting."
@@ -641,7 +660,7 @@ prune-geth() {
         exit 1
     fi
 
-    node_logs=$(cmd logs --no-color --tail 1000 execution)
+    node_logs=$(docompose logs --no-color --tail 1000 execution)
     if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
         echo "Geth has not finished generating a state snapshot yet, aborting."
         exit 1
@@ -670,8 +689,8 @@ prune-geth() {
     echo ""
     echo "Starting Geth prune"
     echo ""
-    cmd run --rm set-prune-marker "touch /var/lib/goethereum/prune-marker"
-    cmd stop execution && cmd rm -f execution
+    docompose run --rm set-prune-marker "touch /var/lib/goethereum/prune-marker"
+    docompose stop execution && docompose rm -f execution
     start
     echo ""
     echo "Prune is running, you can observe it with 'sudo ./ethd logs -f execution'"
@@ -767,9 +786,9 @@ keyimport() {
     __oldskool=1
     prep-keyimport "$@"
     if [ ${__non_interactive} = 1 ]; then
-        cmd run --rm validator-import --non-interactive
+        docompose run --rm validator-import --non-interactive
     else
-        cmd run --rm validator-import
+        docompose run --rm validator-import
     fi
 }
 
@@ -779,12 +798,12 @@ keys() {
         shift
         prep-keyimport "$@"
         if [ ${__non_interactive} = 1 ]; then
-            cmd run --rm validator-keys import --non-interactive
+            docompose run --rm validator-keys import --non-interactive
         else
-            cmd run --rm validator-keys import
+            docompose run --rm validator-keys import
         fi
     else
-        cmd run --rm validator-keys "$@"
+        docompose run --rm validator-keys "$@"
     fi
 }
 
@@ -793,7 +812,7 @@ upgrade() {
 }
 
 start() {
-    cmd up -d --remove-orphans
+    docompose up -d --remove-orphans
 }
 
 up() {
@@ -805,7 +824,7 @@ run() {
 }
 
 stop() {
-    cmd down --remove-orphans
+    docompose down --remove-orphans
 }
 
 down() {
@@ -822,7 +841,7 @@ terminate() {
     done
 
     down
-    docker volume rm $(docker volume ls -q | grep $(basename $(realpath .)))
+    dodocker volume rm $(dodocker volume ls -q | grep $(basename $(realpath .)))
     echo ""
     echo "All containers stopped and all volumes deleted"
     echo ""
@@ -834,7 +853,11 @@ restart() {
 }
 
 logs() {
-    cmd logs $@
+    docompose logs $@
+}
+
+cmd() {
+    docompose "$@"
 }
 
 query_network() {
@@ -1359,13 +1382,13 @@ config () {
     var=MEV_RELAYS
     set_value_in_env
 
-    cmd build --pull
-    cmd --profile tools build --pull
+    docompose build --pull
+    docompose --profile tools build --pull
     exec 3>&1
     exec 4>&2
     exec 1> /dev/null
     exec 2> /dev/null
-    cmd pull || true
+    docompose pull || true
     exec 1>&3
     exec 2>&4
 }
@@ -1448,11 +1471,14 @@ command="$1"
 shift
 
 determine_distro
+determine_sudo
 handle_root
+determine_docker
 determine_compose
 
 if [ $command = "install" ]; then
     $command "$@"
+    exit "$?"
 fi
 
 if ! type -P whiptail >/dev/null 2>&1; then
@@ -1460,13 +1486,13 @@ if ! type -P whiptail >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! docker images >/dev/null 2>&1 && ! sudo docker images >/dev/null 2>&1; then
-    echo "Please ensure your user can access docker before running this script"
+if ! dodocker images >/dev/null 2>&1; then
+    echo "Please ensure you can call $__docker_exe before running this script."
     exit 1
 fi
 
-if ! cmd --help >/dev/null 2>&1; then
-    echo "Please ensure your user can call $__compose_exe before running this script"
+if ! docompose --help >/dev/null 2>&1; then
+    echo "Please ensure you can call $__compose_exe before running this script"
     exit 1
 fi
 
