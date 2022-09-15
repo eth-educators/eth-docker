@@ -484,8 +484,12 @@ envmigrate() {
     if [[ "${value}" =~ "infura.io" ]]; then
        __el_infura=1
     fi
-    if [[ "${value}" =~ "http://execution:8545" || "${value}" =~ "ws://execution:8546" || "${value}" =~ "ws://execution:8545" ]]; then
+    if [[ "${value}" =~ "http://execution:8545" ]]; then
        EL_NODE="http://execution:8551"
+       set_value_in_env
+       __el_adjusted=1
+    elif [[ "${value}" =~ "ws://execution:8546" || "${value}" =~ "ws://execution:8545" ]]; then
+       EL_NODE="ws://execution:8551"
        set_value_in_env
        __el_adjusted=1
     fi
