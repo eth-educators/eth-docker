@@ -29,4 +29,8 @@ case "$CLIENT" in
   *blox-ssv* ) cat /etc/prometheus/blox-ssv-prom.yml >> /etc/prometheus/prometheus.yml ;;
 esac
 
+case "$CLIENT" in
+  *traefik-* ) cat /etc/prometheus/traefik-prom.yml >> /etc/prometheus/prometheus.yml;;
+esac
+
 exec "$@" --config.file=/etc/prometheus/prometheus.yml
