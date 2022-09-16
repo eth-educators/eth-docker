@@ -75,7 +75,8 @@ services:
       - --authrpc.vhosts=*
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-50}
-    command: ${GETH_CACHE}
+      - --cache
+      - ${GETH_CACHE}
   set-prune-marker:
     profiles: ["tools"]
     image: alpine:latest
