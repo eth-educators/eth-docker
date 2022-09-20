@@ -1,3 +1,4 @@
+# To be used with one of the yml files that start a CL client
 version: "3.9"
 services:
   ethdo:
@@ -9,3 +10,5 @@ services:
       -  --connection
       - http://consensus:5052
       - --allow-insecure-connections
+    depends_on:
+      - consensus
