@@ -430,7 +430,8 @@ envmigrate() {
     #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     # It's CL&VC, CL-only, or VC-only
-    if [[ "${value}" =~ "-base.yml" || "${value}" =~ "-cl-only.yml" || "${value}" =~ "-vc-only.yml" ]]; then
+    if [[ "${value}" =~ "prysm.yml" || "${value}" =~ "lighthouse.yml" || "${value}" =~ "teku.yml" || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || \
+        "${value}" =~ "-cl-only.yml" || "${value}" =~ "-vc-only.yml" ]]; then
         # Check for rewards
         var="FEE_RECIPIENT"
         #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
@@ -465,13 +466,13 @@ envmigrate() {
     #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     # Case 1 ... CL, do we have an EL?
-    if [[ "${value}" =~ "-base.yml" || "${value}" =~ "-cl-only.yml" ]]; then
+    if [[ "${value}" =~ "prysm.yml" || "${value}" =~ "lighthouse.yml" || "${value}" =~ "teku.yml" || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || "${value}" =~ "-cl-only.yml" ]]; then
         if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nethermind.yml" && ! "${value}" =~ "akula.yml" ]]; then
             whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, as Infura will no longer be usable as an EL after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
         fi
     # Case 2 ... EL, do we have a CL?
     elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nethermind.yml" || "${value}" =~ "akula.yml" ]]; then
-        if [[ ! "${value}" =~ "-base.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
+        if [[ ! "${value}" =~ "prysm.yml"  && ! "${value}" =~ "lighthouse.yml"  && ! "${value}" =~ "teku.yml"  && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
             whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
         fi
     fi
@@ -500,8 +501,8 @@ envmigrate() {
 migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
@@ -965,24 +966,24 @@ query_consensus_client() {
     if [ ${NETWORK} = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
-      "lighthouse-base.yml" "Lighthouse (Rust) - consensus and validator client" \
-      "teku-base.yml" "Teku (Java) - consensus and validator client" \
-      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" 3>&1 1>&2 2>&3)
+      "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
+      "teku.yml" "Teku (Java) - consensus and validator client" \
+      "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
-      "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
-      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" \
-      "lighthouse-base.yml" "Lighthouse (Rust) - consensus and validator client" \
-      "teku-base.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
+      "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+      "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
+      "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
+      "teku.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 12 65 5 \
-      "teku-base.yml" "Teku (Java) - consensus and validator client" \
-      "lighthouse-base.yml" "Lighthouse (Rust) - consensus and validator client" \
-      "nimbus-base.yml" "Nimbus (Nim) - consensus and validator client" \
-      "lodestar-base.yml" "Lodestar (Javascript) - consensus and validator client" \
-      "prysm-base.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
+      "teku.yml" "Teku (Java) - consensus and validator client" \
+      "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
+      "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+      "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
+      "prysm.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
     fi
 
     exitstatus=$?
