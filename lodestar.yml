@@ -47,6 +47,12 @@ services:
       - ${CL_REST_PORT:-5052}
       - --port
       - ${CL_P2P_PORT:-9000}
+      - --metrics
+      - true
+      - --metrics.port
+      - "8008"
+      - --metrics.address
+      - 0.0.0.0
       - --execution.urls
       - ${EL_NODE}
       - --jwt-secret
@@ -88,6 +94,12 @@ services:
       - 0.0.0.0
       - --keymanager.port
       - ${KEY_API_PORT:-7500}
+      - --metrics
+      - true
+      - --metrics.port
+      - "8009"
+      - --metrics.address
+      - 0.0.0.0
       - --graffiti
       - ${GRAFFITI}
       - --logLevel

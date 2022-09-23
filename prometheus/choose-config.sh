@@ -4,14 +4,16 @@
 # Expects a full prometheus command with parameters as argument(s)
 
 case "$CLIENT" in
-  *lighthouse-base* ) conffile=lh-prom.yml ;;
+  *lighthouse.yml* ) conffile=lh-prom.yml ;;
   *lighthouse-cl-only* ) conffile=lhcc-prom.yml ;;
-  *prysm-base* ) conffile=prysm-prom.yml ;;
-  *prysm-consensus* ) conffile=prysmcc-prom.yml ;;
-  *nimbus-base* ) conffile=nimbus-prom.yml ;;
-  *nimbus-consensus* ) conffile=nimbus-prom.yml ;;
-  *teku-base* ) conffile=teku-prom.yml ;;
-  *teku-consensus* ) conffile=teku-prom.yml ;;
+  *prysm.yml* ) conffile=prysm-prom.yml ;;
+  *prysm-cl-only* ) conffile=prysmcc-prom.yml ;;
+  *nimbus.yml* ) conffile=nimbus-prom.yml ;;
+  *nimbus-cl-only* ) conffile=nimbus-prom.yml ;;
+  *teku.yml* ) conffile=teku-prom.yml ;;
+  *teku-cl-only* ) conffile=teku-prom.yml ;;
+  *lodestar.yml* ) conffile=ls-prom.yml ;;
+  *lodestar-cl-only* ) conffile=lscc-prom.yml ;;
   * ) conffile=none.yml ;;
 esac
 
