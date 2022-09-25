@@ -1403,25 +1403,82 @@ version() {
     echo ""
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-    # EL version
-    if [[ "${value}" =~ "geth.yml" ]]; then
-        cmd exec execution geth version
-    else
-        echo "Command version is unsupported for your EL client"
-    fi
-    echo ""
-    # CL version
-    if [[ "${value}" =~ "lighthouse.yml" ]]; then
-        cmd exec consensus lighthouse --version
-    else
-        echo "Command version is unsupported for your CL client"
-    fi
-    echo ""
-    # others
-    if [[ "${value}" =~ "mev-boost.yml" ]]; then
-        cmd exec mev-boost /app/mev-boost -version
-    fi
-    echo ""
+    # Client versions
+    case "${value}" in
+        *geth.yml* )
+            docompose exec execution geth version
+            echo
+            ;;&
+        *besu.yml* )
+            docompose exec execution /opt/besu/bin/besu --version
+            echo
+            ;;&
+        *nethermind.yml* )
+            docompose exec execution dotnet /nethermind/Nethermind.Runner.dll --version
+            echo
+            ;;&
+        *erigon.yml* )
+            docompose exec execution erigon --version
+            echo
+            ;;&
+        *akula.yml* )
+            echo "eth-docker does not know how to display Akula's version"
+            echo
+            ;;&
+        *lighthouse.yml* | *lighthouse-cl-only* )
+            docompose exec consensus lighthouse --version
+            echo
+            ;;&
+        *lighthouse-vc-only* )
+            docompose exec validator lighthouse --version
+            echo
+            ;;&
+        *lodestar.yml* | *lodestar-cl-only* )
+            docompose exec consensus node /usr/app/node_modules/.bin/lodestar --version
+            echo
+            ;;&
+        *lodestar-vc-only* )
+            docompose exec validator node /usr/app/node_modules/.bin/lodestar --version
+            echo
+            ;;&
+        *prysm.yml* )
+            docompose exec consensus beacon-chain --version
+            echo
+            docompose exec validator validator --version
+            echo
+            ;;&
+        *prysm-cl-only* )
+            docompose exec consensus beacon-chain --version
+            echo
+            ;;&
+        *prysm-vc-only* )
+            docompose exec validator validator --version
+            echo
+            ;;&
+        *nimbus.yml* | *nimbus-cl-only* )
+            docompose exec consensus nimbus_beacon_node --version
+            echo
+            ;;&
+        *teku.yml* | *teku-cl-only* )
+            docompose exec consensus /opt/teku/bin/teku --version
+            echo
+            ;;&
+        *teku-vc-only* )
+            docompose exec validator /opt/teku/bin/teku --version
+            echo
+            ;;&
+        *mev-boost.yml* )
+            docompose exec mev-boost /app/mev-boost -version
+            echo
+            ;;&
+        *grafana.yml* )
+            docompose exec prometheus /bin/prometheus --version
+            echo
+            echo -n "Grafana "
+            docompose exec grafana /run.sh -v
+            echo
+            ;;&
+    esac
 }
 
 printhelp() {
