@@ -48,7 +48,7 @@ services:
       - --port
       - ${CL_P2P_PORT:-9000}
       - --metrics
-      - true
+      - "true"
       - --metrics.port
       - "8008"
       - --metrics.address
@@ -95,7 +95,7 @@ services:
       - --keymanager.port
       - ${KEY_API_PORT:-7500}
       - --metrics
-      - true
+      - "true"
       - --metrics.port
       - "8009"
       - --metrics.address

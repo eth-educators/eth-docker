@@ -22,7 +22,7 @@ case "$CLIENT" in
     __file='/etc/grafana/provisioning/dashboards/prysm_ynager.json'
     wget -qcO - $__url | jq '.title = "prysm_ynager"' >$__file
     ;;&
-  *lh* )
+  *lighthouse* )
     #  lighthouse_summary
     __url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/Summary.json'
     __file='/etc/grafana/provisioning/dashboards/lighthouse_summary.json'
@@ -52,6 +52,13 @@ case "$CLIENT" in
     __url='https://raw.githubusercontent.com/status-im/nimbus-eth2/master/grafana/beacon_nodes_Grafana_dashboard.json'
     __file='/etc/grafana/provisioning/dashboards/nimbus_dashboard.json'
     wget -qcO - $__url | jq '.title = "nimbus_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
+    ;;&
+  *lodestar* )
+    #  lodestar summary
+    __url='https://raw.githubusercontent.com/ChainSafe/lodestar/stable/dashboards/lodestar_summary.json'
+    __file='/etc/grafana/provisioning/dashboards/lodestar_summary.json'
+    wget -qcO - $__url | jq '.title = "lodestar_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' | \
+        jq 'walk(if . == "prometheus_local" then "Prometheus" else . end)' >$__file
     ;;&
   *geth* )
     # geth_dashboard

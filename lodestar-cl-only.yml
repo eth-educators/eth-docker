@@ -48,7 +48,7 @@ services:
       - --port
       - ${CL_P2P_PORT:-9000}
       - --metrics
-      - true
+      - "true"
       - --metrics.port
       - "8008"
       - --metrics.address
