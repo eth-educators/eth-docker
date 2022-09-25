@@ -1397,6 +1397,33 @@ config () {
     exec 2>&4
 }
 
+version() {
+    # ethd version
+    grep "^This is" README.md
+    echo ""
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    # EL version
+    if [[ "${value}" =~ "geth.yml" ]]; then
+        cmd exec execution geth version
+    else
+        echo "Command version is unsupported for your EL client"
+    fi
+    echo ""
+    # CL version
+    if [[ "${value}" =~ "lighthouse.yml" ]]; then
+        cmd exec consensus lighthouse --version
+    else
+        echo "Command version is unsupported for your CL client"
+    fi
+    echo ""
+    # others
+    if [[ "${value}" =~ "mev-boost.yml" ]]; then
+        cmd exec mev-boost /app/mev-boost -version
+    fi
+    echo ""
+}
+
 printhelp() {
     me=$(basename "${BASH_SOURCE}")
     echo "usage: ${me} [help|-h|--help] <subcommand>"
