@@ -78,6 +78,7 @@ services:
       - --data-storage-format=BONSAI
 #      - --sync-mode=X_CHECKPOINT
       - --sync-mode=X_SNAP
+    command: ${EL_EXTRAS}
 volumes:
   besu-eth1-data:
   jwtsecret:

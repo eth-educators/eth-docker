@@ -73,6 +73,7 @@ services:
       - ${FEE_RECIPIENT}
       - --subscribe-all-subnets
       - --import-all-attestations
+    command: ${CL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

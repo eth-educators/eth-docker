@@ -358,7 +358,8 @@ envmigrate() {
             PROM_HOST HOST_IP PRYSM_HOST EE_HOST EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN DDNS_PROXY RAPID_SYNC_URL \
             CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT PRYSM_PORT DOPPELGANGER \
             PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT CL_REST_PORT \
-            EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET GETH_CACHE SSV_P2P_PORT SSV_P2P_PORT_UDP )
+            EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET EL_EXTRAS CL_EXTRAS \
+            VC_EXTRAS SSV_P2P_PORT SSV_P2P_PORT_UDP )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
                 PRYSM_DOCKER_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG ERIGON_DOCKERFILE \
@@ -367,9 +368,9 @@ envmigrate() {
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
                 BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG SSV2_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO \
+    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE \
             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
-    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT \
+    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS \
             EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     if [ "${EUID}" -eq 0 ]; then
@@ -1244,10 +1245,10 @@ query_mev() {
                 MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@builder-relay-sepolia.flashbots.net
                 ;;
             "goerli")
-                MEV_RELAYS=https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@builder-relay-goerli.flashbots.net,https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com,https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-goerli.blocknative.com,https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-goerli.edennetwork.io
+                MEV_RELAYS=https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@builder-relay-goerli.flashbots.net,https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com,https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-goerli.blocknative.com,https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-goerli.edennetwork.io,https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com/
                 ;;
             "mainnet")
-                MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com,https://0x9000009807ed12c1f08bf4e81c6da3ba8e3fc3d953898ce0102433094e5f22f21102ec057841fcb81978ed1ea0fa8246@builder-relay-mainnet.blocknative.com,https://0xb3ee7afcf27f1f1259ac1787876318c6584ee353097a50ed84f51a1f21a323b3736f271a895c7ce918c038e4265918be@relay.edennetwork.io
+                MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com,https://0x9000009807ed12c1f08bf4e81c6da3ba8e3fc3d953898ce0102433094e5f22f21102ec057841fcb81978ed1ea0fa8246@builder-relay-mainnet.blocknative.com,https://0xb3ee7afcf27f1f1259ac1787876318c6584ee353097a50ed84f51a1f21a323b3736f271a895c7ce918c038e4265918be@relay.edennetwork.io,https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1eea11168503240ac35d101c9135@mainnet-relay.securerpc.com
                 ;;
             *)
                 MEV_RELAYS=""
@@ -1494,31 +1495,27 @@ printhelp() {
     echo "     attempts to install docker and docker-compose for you"
     echo "  config"
     echo "     configures eth-docker with your choice of Ethereum clients"
-    echo "  keyimport [--non-interactive | --path ]"
-    echo "     import validator keys from .eth/validator_keys"
-    echo "     --path specifies an alternate import path"
-    echo "     --non-interactive is for use from another script,"
-    echo "       in which case KEYSTORE_PASSWORD must be set to the password"
-    echo "       shared by all keystore-m json files, and in the case of Prysm,"
-    echo "       WALLET_PASSWORD must be set to the password for Prysm's wallet"
     echo "  keys ACTION"
     echo "     list, delete, import keys; their fee recipients; and gas fees"
     echo "     Run without ACTION to get help text"
     echo "  update [--keep-targets] "
     echo "     updates all client versions and eth-docker itself"
     echo "     --keep-targets will keep your custom build targets in .env"
-    echo "  start"
-    echo "     starts the Ethereum node software"
-    echo "  stop"
-    echo "     stops the Ethereum node software"
+    echo "  up (or start)"
+    echo "     starts the Ethereum node, or restarts containers that had their image or"
+    echo "     configuration changed"
+    echo "  down (or stop)"
+    echo "     stops the Ethereum node"
     echo "  restart"
-    echo "     restarts the Ethereum node software, a combination of stop and start"
+    echo "     restarts the Ethereum node, a combination of down and up"
+    echo "  version"
+    echo "     prints the version(s) of currently running client(s)"
     echo "  logs"
     echo "     shows logs"
     echo "  cmd <command>"
     echo "     executes an arbitrary docker-compose command. Use \"cmd help\" to list them"
     echo "  terminate"
-    echo "     stops the Ethereum node software and destroys all data stores"
+    echo "     stops the Ethereum node and destroys all data stores"
     echo "  prune-geth"
     echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
     echo ""
@@ -1529,8 +1526,8 @@ printhelp() {
     echo "    shows logs only for execution service"
     echo ""
     echo ""
-    echo "Be sure to run the config command as a non-root user, and all other commands"
-    echo "either with sudo, or as a user who is part of the \"docker\" group"
+    echo "Be sure to run the config command as a non-root user"
+    echo "$me will attempt to use sudo as needed for docker commands"
     echo ""
 }
 

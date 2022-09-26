@@ -82,6 +82,7 @@ services:
       - "1"
       - --log
       - ${LOG_LEVEL}
+    command: ${EL_EXTRAS}
 volumes:
   nm-eth1-data:
   jwtsecret:

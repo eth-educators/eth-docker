@@ -55,6 +55,7 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+    command: ${VC_EXTRAS}
 
   validator-import:
     profiles: ["tools"]

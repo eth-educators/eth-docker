@@ -67,6 +67,7 @@ services:
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
+    command: ${CL_EXTRAS}
 
   validator-import:
     profiles: ["tools"]
