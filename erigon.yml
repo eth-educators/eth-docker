@@ -82,6 +82,7 @@ services:
       # Workaround for high memory use in alpha
       - --batchSize
       - 128m
+    command: ${EL_EXTRAS}
 volumes:
   erigon-el-data:
   jwtsecret:

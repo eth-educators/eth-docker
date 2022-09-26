@@ -64,6 +64,7 @@ services:
       - --metrics-host-allowlist=*
       - --p2p-subscribe-all-subnets-enabled=true
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
+    command: ${CL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

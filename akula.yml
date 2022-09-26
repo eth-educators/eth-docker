@@ -56,6 +56,7 @@ services:
       - ${NETWORK:-mainnet}
 # For now only Archive node works, as we need the eth_getLogs back to deposit contract deployment
 #      - --prune
+    command: ${EL_EXTRAS}
 volumes:
   akula-el-data:
   jwtsecret:

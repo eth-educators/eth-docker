@@ -69,6 +69,7 @@ services:
       - --suggested-fee-recipient=${FEE_RECIPIENT}
       - --subscribe-all-subnets
       - --in-process-validators=false
+    command: ${CL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

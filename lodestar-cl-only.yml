@@ -65,6 +65,7 @@ services:
       - ${NETWORK}
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
+    command: ${CL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl
