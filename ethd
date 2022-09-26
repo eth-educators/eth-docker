@@ -366,7 +366,7 @@ envmigrate() {
                 AKULA_SRC_BUILD_TARGET AKULA_DOCKER_TAG AKULA_DOCKERFILE MEV_DOCKERFILE MEV_DOCKER_TAG \
                 LS_SRC_BUILD_TARGET LS_DOCKER_TAG LS_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG \
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
-                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG SSV2_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG \
+                BESU_DOCKER_TAG BESU_DOCKERFILE SSV2_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG \
                 NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE \
             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
@@ -444,7 +444,7 @@ envmigrate() {
             set_value_in_env
         fi
     fi
-    # Check for Blox SSV 1 and offer migration
+    # Check for Blox SSV 1 and auto migrate
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" =~ "blox-ssv.yml" ]]; then
@@ -579,13 +579,6 @@ delete_erigon() {
 query_blox_switch() {
     echo "Detected SSV Node v1. SSV v2 testnet is the new hotness."
     echo
-    while true; do
-        read -rp "Do you wish to switch to SSV v2? (Y/n) " yn
-        case $yn in
-            [Nn]o | [Nn]  ) echo "No changes made"; return;;
-            * ) break;;
-        esac
-    done
     echo "Stopping SSV Node container"
     docker stop $(basename $(realpath .))_ssv-node_1 && docker rm -f $(basename $(realpath .))_ssv-node_1
     docompose stop ssv-node && docompose rm -f ssv-node
