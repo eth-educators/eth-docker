@@ -444,7 +444,7 @@ envmigrate() {
             set_value_in_env
         fi
     fi
-    # Check for Blox SSV 1 and offer migration
+    # Check for Blox SSV 1 and auto migrate
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" =~ "blox-ssv.yml" ]]; then
@@ -579,13 +579,6 @@ delete_erigon() {
 query_blox_switch() {
     echo "Detected SSV Node v1. SSV v2 testnet is the new hotness."
     echo
-    while true; do
-        read -rp "Do you wish to switch to SSV v2? (Y/n) " yn
-        case $yn in
-            [Nn]o | [Nn]  ) echo "No changes made"; return;;
-            * ) break;;
-        esac
-    done
     echo "Stopping SSV Node container"
     docker stop $(basename $(realpath .))_ssv-node_1 && docker rm -f $(basename $(realpath .))_ssv-node_1
     docompose stop ssv-node && docompose rm -f ssv-node
