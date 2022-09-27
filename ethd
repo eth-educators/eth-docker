@@ -1399,24 +1399,8 @@ version() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     # Client versions
     case "${value}" in
-        *geth.yml* )
-            docompose exec execution geth version
-            echo
-            ;;&
-        *besu.yml* )
-            docompose exec execution /opt/besu/bin/besu --version
-            echo
-            ;;&
-        *nethermind.yml* )
-            docompose exec execution dotnet /nethermind/Nethermind.Runner.dll --version
-            echo
-            ;;&
-        *erigon.yml* )
-            docompose exec execution erigon --version
-            echo
-            ;;&
-        *akula.yml* )
-            echo "eth-docker does not know how to display Akula's version"
+        *blox-ssv2.yml* )
+            docompose exec ssv2-node /go/bin/ssvnode --version
             echo
             ;;&
         *lighthouse.yml* | *lighthouse-cl-only* )
@@ -1459,6 +1443,26 @@ version() {
             ;;&
         *teku-vc-only* )
             docompose exec validator /opt/teku/bin/teku --version
+            echo
+            ;;&
+        *geth.yml* )
+            docompose exec execution geth version
+            echo
+            ;;&
+        *besu.yml* )
+            docompose exec execution /opt/besu/bin/besu --version
+            echo
+            ;;&
+        *nethermind.yml* )
+            docompose exec execution dotnet /nethermind/Nethermind.Runner.dll --version
+            echo
+            ;;&
+        *erigon.yml* )
+            docompose exec execution erigon --version
+            echo
+            ;;&
+        *akula.yml* )
+            echo "eth-docker does not know how to display Akula's version"
             echo
             ;;&
         *mev-boost.yml* )
