@@ -27,6 +27,21 @@ services:
       - blackbox-exporter
       - json-exporter
       - cryptowat-exporter
+      - cadvisor
+      - ethereum-metrics-exporter
+
+  ethereum-metrics-exporter:
+    restart: "unless-stopped"
+    build:
+      context: ./eth-metrics
+    image: ethereum-metrics-exporter:local
+    environment:
+      - CLIENT=${COMPOSE_FILE}
+    entrypoint:
+      - docker-entrypoint.sh
+      - /ethereum-metrics-exporter
+    <<: *logging
+
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
     command:
@@ -45,6 +60,7 @@ services:
       - /sys:/host/sys:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
+
   blackbox-exporter:
     restart: "unless-stopped"
     image: prom/blackbox-exporter:master
@@ -54,6 +70,7 @@ services:
     <<: *logging
     command:
       - --config.file=/config/blackbox.yml
+
   json-exporter:
     restart: "unless-stopped"
     image: quay.io/prometheuscommunity/json-exporter
@@ -64,6 +81,7 @@ services:
     command:
       - --config.file
       - /config/json.yml
+
   cryptowat-exporter:
     restart: "unless-stopped"
     image: nbarrientos/cryptowat_exporter
@@ -75,6 +93,19 @@ services:
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     <<: *logging
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    command:
+      - --docker_only
+    <<: *logging
+
   promtail:
     image: grafana/promtail:latest
     user: root
@@ -89,6 +120,7 @@ services:
     depends_on:
       - loki
     <<: *logging
+
   loki:
     image: grafana/loki:latest
     volumes:
@@ -98,6 +130,7 @@ services:
       - '--config.file=/etc/loki/loki.yml'
     restart: "unless-stopped"
     <<: *logging
+
   grafana:
     restart: "unless-stopped"
     build:
@@ -123,6 +156,7 @@ services:
       - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
       - traefik.http.routers.grafana.tls.certresolver=letsencrypt
       - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
+
 volumes:
   grafana-data:
   grafana-config:

@@ -4,20 +4,18 @@
 # Expects a full prometheus command with parameters as argument(s)
 
 case "$CLIENT" in
-  *lighthouse.yml* ) conffile=lh-prom.yml ;;
-  *lighthouse-cl-only* ) conffile=lhcc-prom.yml ;;
-  *prysm.yml* ) conffile=prysm-prom.yml ;;
-  *prysm-cl-only* ) conffile=prysmcc-prom.yml ;;
-  *nimbus.yml* ) conffile=nimbus-prom.yml ;;
-  *nimbus-cl-only* ) conffile=nimbus-prom.yml ;;
-  *teku.yml* ) conffile=teku-prom.yml ;;
-  *teku-cl-only* ) conffile=teku-prom.yml ;;
-  *lodestar.yml* ) conffile=ls-prom.yml ;;
-  *lodestar-cl-only* ) conffile=lscc-prom.yml ;;
-  * ) conffile=none.yml ;;
+  *lighthouse.yml* )  cat /etc/prometheus/lh-prom.yml  >> /etc/prometheus/prometheus.yml;;
+  *lighthouse-cl-only* ) cat /etc/prometheus/lhcc-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *prysm.yml* ) cat /etc/prometheus/prysm-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *prysm-cl-only* ) cat /etc/prometheus/prysmcc-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *nimbus.yml* ) cat /etc/prometheus/nimbus-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *nimbus-cl-only* ) cat /etc/prometheus/nimbus-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *teku.yml* ) cat /etc/prometheus/teku-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *teku-cl-only* ) cat /etc/prometheus/teku-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *lodestar.yml* ) cat /etc/prometheus/ls-prom.yml >> /etc/prometheus/prometheus.yml;;
+  *lodestar-cl-only* ) cat /etc/prometheus/lscc-prom.yml >> /etc/prometheus/prometheus.yml;;
+  * ) ;;
 esac
-
-cp /etc/prometheus/$conffile /etc/prometheus/prometheus.yml
 
 case "$CLIENT" in
   *geth* ) cat /etc/prometheus/geth-prom.yml >> /etc/prometheus/prometheus.yml ;;
@@ -33,6 +31,11 @@ esac
 
 case "$CLIENT" in
   *traefik-* ) cat /etc/prometheus/traefik-prom.yml >> /etc/prometheus/prometheus.yml;;
+esac
+
+# This needs to come last, as it has global level entries
+case "$CLIENT" in
+  *alert* ) cat /etc/prometheus/alert-prom.yml >> /etc/prometheus/prometheus.yml;;
 esac
 
 exec "$@" --config.file=/etc/prometheus/prometheus.yml
