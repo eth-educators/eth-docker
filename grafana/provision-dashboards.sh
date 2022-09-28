@@ -78,6 +78,13 @@ case "$CLIENT" in
     __file='/etc/grafana/provisioning/dashboards/besu_dashboard.json'
     wget -qcO - $__url | jq '.title = "besu_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
+  *nethermind* )
+    # nethermind_dashboard
+#    __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/dashboards/nethermind.json'
+    __file='/etc/grafana/provisioning/dashboards/nethermind_dashboard.json'
+#    wget -qcO - $__url | jq '.title = "nethermind_dashboard"' >$__file
+    cp /tmp/nethermind_dashboard.json $__file
+    ;;&
   *blox-ssv* )
     # Blox SSV Operator Dashboard
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator.json'
@@ -87,7 +94,16 @@ case "$CLIENT" in
     __file='/etc/grafana/provisioning/dashboards/blox_ssv_validator_dashboard.json'
     wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
-  * ) ;;
+  * )
+    # Ethereum Metrics Exporter Dashboard
+    __url='https://grafana.com/api/dashboards/16277/revisions/13/download'
+    __file='/etc/grafana/provisioning/dashboards/ethereum-metrics-exporter-single.json'
+    wget -qcO - $__url | jq 'walk(if . == "${DS_VICTORIAMETRICS}" then "Prometheus" else . end)' >$__file
+    # cadvisor and node exporter dashboard
+    __url='https://grafana.com/api/dashboards/10619/revisions/1/download'
+    __file='/etc/grafana/provisioning/dashboards/docker-host-container-overview.json'
+    wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
+    ;;
 esac
 
 tree /etc/grafana/provisioning/
