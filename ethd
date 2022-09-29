@@ -156,18 +156,21 @@ install() {
     done
     if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-        if [ ${__major_version} -lt 20 ]; then
+        if [ ${__major_version} -lt 18 ]; then
             echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
         fi
         if [ -z "$(which docker)" ]; then
-            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y --install-recommends docker-compose whiptail
-            ${__auto_sudo} systemctl enable docker
-            echo "Installed docker.io and docker-compose"
+            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail
+            ${__auto_sudo} mkdir -p /etc/apt/keyrings
+            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            ${__auto_sudo} echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+                $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
+            ${__auto_sudo} apt-get update
+            ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            echo "Installed docker-ce and docker-compose-plugin"
         else
             echo "Docker is already installed"
-        fi
-        if [ ${__major_version} -lt 22 ]; then
-            upgrade_compose
         fi
         __groups=$(${__as_owner} groups)
         if [[ ! "$__groups" =~ "docker" ]]; then
@@ -180,12 +183,12 @@ install() {
     elif [[ "$__distro" =~ "debian" ]]; then
         if [ -z "$(which docker)" ]; then
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
+            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
-            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
                 "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+                $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
             ${__auto_sudo} apt-get update
             ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
             echo "Installed docker-ce and docker-compose-plugin"
@@ -193,7 +196,7 @@ install() {
             echo "Docker is already installed"
         fi
     else
-        echo "This script cannot install docker on $__distro"
+        echo "This script does not know how to install docker on $__distro"
     fi
     return 0
 }
