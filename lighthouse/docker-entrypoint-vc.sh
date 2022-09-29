@@ -1,6 +1,11 @@
 #!/bin/bash
 set -Eeuo pipefail
 
+if [ "$(id -u)" = '0' ]; then
+  chown -R lhvalidator:lhvalidator /var/lib/lighthouse
+  exec gosu lhvalidator docker-entrypoint.sh "$@"
+fi
+
 # Check whether we should flag override TTD in VC logs
 if [ -n "${OVERRIDE_TTD}" ]; then
   __override_ttd="--terminal-total-difficulty-override=${OVERRIDE_TTD}"

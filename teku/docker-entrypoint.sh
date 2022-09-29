@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+if [ "$(id -u)" = '0' ]; then
+  chown -R teku:teku /var/lib/teku
+  exec gosu teku docker-entrypoint.sh "$@"
+fi
 
 if [[ -f /var/lib/teku/teku-keyapi.keystore && $(date +%s -r /var/lib/teku/teku-keyapi.keystore) -lt $(date +%s --date="300 days ago") ]]; then
     rm /var/lib/teku/teku-keyapi.keystore

@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+if [ "$(id -u)" = '0' ]; then
+  chown -R lsconsensus:lsconsensus /var/lib/lodestar
+  exec su-exec lsconsensus docker-entrypoint.sh "$@"
+fi
 
 if [ ! -f /var/lib/lodestar/consensus/api-token.txt ]; then
     __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)

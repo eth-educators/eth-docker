@@ -1,5 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -Eeuo pipefail
+
+if [ "$(id -u)" = '0' ]; then
+  chown -R lhconsensus:lhconsensus /var/lib/lighthouse
+  exec gosu lhconsensus docker-entrypoint.sh "$@"
+fi
 
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/lighthouse/beacon/ee-secret/jwtsecret
