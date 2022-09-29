@@ -1,5 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -Eeuo pipefail
+
+if [ "$(id -u)" = '0' ]; then
+  chown -R prysmconsensus:prysmconsensus /var/lib/prysm
+  exec gosu prysmconsensus docker-entrypoint.sh "$@"
+fi
 
 if [ -n "${JWT_SECRET}" ]; then
   echo -n ${JWT_SECRET} > /var/lib/prysm/ee-secret/jwtsecret

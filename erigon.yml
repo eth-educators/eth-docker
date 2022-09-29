@@ -18,9 +18,7 @@ services:
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 5m
     image: erigon:local
-# Root so a chown can happen for the secret, then su-exec into erigon. This can become erigon again
-# after merge
-    user: root
+    user: erigon
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - OVERRIDE_TTD=${OVERRIDE_TTD}

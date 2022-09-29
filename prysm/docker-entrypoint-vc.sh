@@ -1,5 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -Eeuo pipefail
+
+if [ "$(id -u)" = '0' ]; then
+  chown -R prysmvalidator:prysmvalidator /var/lib/prysm
+  exec gosu prysmvalidator docker-entrypoint.sh "$@"
+fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
