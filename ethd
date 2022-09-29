@@ -202,6 +202,11 @@ install() {
 }
 
 update() {
+    if [[ `${__as_owner} git status --porcelain` ]]; then
+        __dirty=1
+    else
+        __dirty=0
+    fi
     if [ -z "${ETHDSECUNDO-}" ]; then
         if ${__as_owner} git branch | grep -q master; then
             ${__as_owner} git branch -m master main
@@ -326,6 +331,16 @@ been migrated, please recreate these changes yourself."
         kill $PPID
     fi
     check_for_snap
+    if [ "${__dirty}" -eq 1 ]; then
+        echo
+        echo "WARNING"
+        echo
+        echo "You have uncommitted local changes to eth-docker, which keeps updates from coming in."
+        echo "Please undo these changes or \"git commit\" them."
+        echo "These are the files with local changes:"
+        echo
+        ${__as_owner} git status --porcelain
+    fi
 }
 
 envmigrate() {
