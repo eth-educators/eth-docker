@@ -1,4 +1,3 @@
-scrape_configs:
   - job_name: "teku-dev"
     scrape_timeout: 10s
     metrics_path: /metrics
