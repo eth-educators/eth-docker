@@ -414,7 +414,7 @@ envmigrate() {
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
-        if [ -n "${value}" -o "${var}" = "GRAFFITI" ]; then
+        if [ -n "${value}" -o "${var}" = "GRAFFITI" -o "${var}" = "MEV_RELAYS" ]; then
             if [ "${var}" = "COMPOSE_FILE" ]; then
                 migrate_compose_file
             fi
