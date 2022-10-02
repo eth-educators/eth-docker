@@ -21,6 +21,9 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
+      - MEV_BOOST=${MEV_BOOST}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
