@@ -1,5 +1,5 @@
 # Build Prysm in a stock Go build container
-FROM golang:1.18-buster as builder
+FROM golang:1.19-bullseye as builder
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
@@ -9,7 +9,7 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y cmake libtinfo5 libgmp-dev npm && npm install -g @bazel/bazelisk && bazel version
 
 WORKDIR /go/src
-RUN bash -c "git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //beacon-chain:beacon-chain && bazel build --config=release //validator:validator && bazel build --config=release //cmd/client-stats:client-stats"
+RUN bash -c "git clone https://github.com/prysmaticlabs/prysm.git && cd prysm && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && bazel build --config=release //cmd/beacon-chain:beacon-chain && bazel build --config=release //cmd/validator:validator && bazel build --config=release //cmd/client-stats:client-stats"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bullseye-slim as consensus
