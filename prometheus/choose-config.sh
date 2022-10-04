@@ -3,6 +3,9 @@
 # Prometheus config we need.
 # Expects a full prometheus command with parameters as argument(s)
 
+# Start fresh every time
+cp /etc/prometheus/global.yml /etc/prometheus/prometheus.yml
+
 case "$CLIENT" in
   *lighthouse.yml* )  cat /etc/prometheus/lh-prom.yml  >> /etc/prometheus/prometheus.yml;;
   *lighthouse-cl-only* ) cat /etc/prometheus/lhcc-prom.yml >> /etc/prometheus/prometheus.yml;;
