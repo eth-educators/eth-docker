@@ -114,6 +114,13 @@ services:
       - --ws.origins=*
       - --port
       - ${BOR_P2P_PORT}
+      - --metrics
+      - --metrics.expensive
+      - --metrics.addr
+      - 0.0.0.0
+      - --pprof
+      - --pprof.addr
+      - 0.0.0.0
       - --txpool.locals
       - ${TX_LOCAL_ADDR}
       - --txpool.globalslots
