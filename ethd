@@ -1484,6 +1484,10 @@ version() {
             docompose exec consensus nimbus_beacon_node --version
             echo
             ;;&
+        *nimbus-vc-only* )
+            docompose exec validator nimbus_validator_client --version
+            echo
+            ;;&
         *teku.yml* | *teku-cl-only* )
             docompose exec consensus /opt/teku/bin/teku --version
             echo
