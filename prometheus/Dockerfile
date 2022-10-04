@@ -1,7 +1,7 @@
 FROM prom/prometheus
 
 COPY ./*-prom.yml /etc/prometheus/
-COPY ./prometheus.yml /etc/prometheus
+COPY ./global.yml /etc/prometheus
 COPY ./choose-config.sh /usr/local/bin/choose-config.sh
 USER root
 RUN chown nobody:nobody /etc/prometheus/*.yml

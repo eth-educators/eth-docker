@@ -67,6 +67,8 @@ services:
       - "true"
       - --Metrics.ExposePort
       - "6060"
+      - --Metrics.IntervalSeconds
+      - "999999"
       - --config
       - ${NETWORK}
 # Potentially unsafe to auto-prune
