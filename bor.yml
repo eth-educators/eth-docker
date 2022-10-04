@@ -116,8 +116,6 @@ services:
       - ${BOR_P2P_PORT}
       - --metrics
       - --metrics.expensive
-      - --metrics.addr
-      - 0.0.0.0
       - --pprof
       - --pprof.addr
       - 0.0.0.0
