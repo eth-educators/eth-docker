@@ -27,7 +27,6 @@ services:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - NETWORK=${NETWORK}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
     ports:

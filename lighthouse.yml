@@ -26,7 +26,6 @@ services:
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
       - BEACON_STATS_API=${BEACON_STATS_API}
@@ -78,7 +77,6 @@ services:
     image: lighthouse:local
     user: lhvalidator
     environment:
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}

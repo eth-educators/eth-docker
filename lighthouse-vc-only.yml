@@ -19,7 +19,6 @@ services:
     image: lighthouse:local
     user: lhvalidator
     environment:
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}

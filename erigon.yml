@@ -21,7 +21,6 @@ services:
     user: erigon
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - erigon-el-data:/var/lib/erigon
@@ -77,7 +76,7 @@ services:
       - /var/lib/erigon/ee-secret/jwtsecret
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-100}
-      # Workaround for high memory use in alpha
+      # Reduce memory use so it fits into 16 GiB machines
       - --batchSize
       - 128m
     command: ${EL_EXTRAS}

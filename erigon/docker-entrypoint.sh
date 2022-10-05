@@ -26,14 +26,6 @@ if [[ -O "/var/lib/erigon/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/erigon/ee-secret/jwtsecret
 fi
 
-# Check whether we should override TTD
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--override.terminaltotaldifficulty=${OVERRIDE_TTD}"
-  echo "Overriding TTD to ${OVERRIDE_TTD}"
-else
-  __override_ttd=""
-fi
-
 # Check for network, and set prune accordingly
 
 if [[ "$@" =~ "--chain mainnet" ]]; then
@@ -78,4 +70,4 @@ case ${LOG_LEVEL} in
     ;;
 esac
 
-exec "$@" ${__prune} ${__verbosity} ${__override_ttd}
+exec "$@" ${__prune} ${__verbosity}

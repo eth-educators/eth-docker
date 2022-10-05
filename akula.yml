@@ -25,7 +25,6 @@ services:
       - jwtsecret:/var/lib/akula/ee-secret
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - LOG_LEVEL=${LOG_LEVEL}
     ports:
       - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp

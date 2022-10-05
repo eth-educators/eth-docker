@@ -21,7 +21,6 @@ services:
     user: geth
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - geth-eth1-data:/var/lib/goethereum

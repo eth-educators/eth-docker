@@ -27,14 +27,6 @@ else
   __rapid_sync=""
 fi
 
-# Check whether we should override TTD
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--terminal-total-difficulty-override=${OVERRIDE_TTD}"
-  echo "Overriding TTD to ${OVERRIDE_TTD}"
-else
-  __override_ttd=""
-fi
-
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
   __mev_boost="--builder ${MEV_NODE:-http://mev-boost:18550}"
@@ -51,4 +43,4 @@ else
   __beacon_stats=""
 fi
 
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats} ${__override_ttd}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats}

@@ -22,7 +22,6 @@ services:
     user: nethermind
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro

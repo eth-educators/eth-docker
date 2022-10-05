@@ -23,14 +23,6 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
-# Check whether we should override TTD
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--terminal-total-difficulty-override=${OVERRIDE_TTD}"
-  echo "Overriding TTD to ${OVERRIDE_TTD}"
-else
-  __override_ttd=""
-fi
-
 if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
     echo "Starting checkpoint sync. Nimbus will restart when done."
     /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL} ${__override_ttd}
@@ -53,4 +45,4 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
-exec "$@" ${__mev_boost} ${__override_ttd} ${__doppel}
+exec "$@" ${__mev_boost} ${__doppel}

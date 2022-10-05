@@ -27,7 +27,6 @@ services:
       - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
       - BEACON_STATS_API=${BEACON_STATS_API}
