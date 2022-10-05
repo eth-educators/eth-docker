@@ -22,7 +22,6 @@ services:
     environment:
       - JAVA_OPTS=${BESU_HEAP:--XX:SoftMaxHeapSize=3g -Xmx5g}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro

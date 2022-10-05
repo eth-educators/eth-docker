@@ -370,7 +370,7 @@ envmigrate() {
         return
     fi
 
-    ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_NODE OVERRIDE_TTD \
+    ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_NODE \
             CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP \
             PROM_HOST HOST_IP PRYSM_HOST EE_HOST EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN \
@@ -1233,38 +1233,6 @@ query_coinbase() {
     done
 }
 
-query_override() {
-    if ! (whiptail --title "Select Option" --yesno --defaultno "Do you want to set an Override TTD?" 10 60) then
-        OVERRIDE_TTD=""
-        return
-    fi
-
-    case "${NETWORK}" in
-        "sepolia")
-            OVERRIDE_TTD=17000000000000000
-            ;;
-        "goerli")
-            OVERRIDE_TTD=10790000
-            ;;
-        "mainnet")
-            OVERRIDE_TTD=58750000000000000000000
-            ;;
-        *)
-            OVERRIDE_TTD=100000000000000000000000
-            ;;
-    esac
-
-    OVERRIDE_TTD=$(whiptail --title "Configure Override TTD" --inputbox "What is the override TTD for the ${NETWORK} network? Set as EMPTY to use the client default (right-click to paste)" 10 60 ${OVERRIDE_TTD} 3>&1 1>&2 2>&3)
-
-    exitstatus=$?
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your override TTD for ${NETWORK} is:" $OVERRIDE_TTD
-    else
-        echo "You chose Cancel."
-        exit 0
-    fi
-}
-
 query_mev() {
     var="MEV_BOOST"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
@@ -1419,8 +1387,6 @@ config() {
     var=EL_NODE
     set_value_in_env
     var=NETWORK
-    set_value_in_env
-    var=OVERRIDE_TTD
     set_value_in_env
     var=MEV_BOOST
     set_value_in_env

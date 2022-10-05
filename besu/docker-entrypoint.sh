@@ -26,12 +26,4 @@ if [[ -O "/var/lib/besu/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/besu/ee-secret/jwtsecret
 fi
 
-# Check whether we should override TTD
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--override-genesis-config=terminalTotalDifficulty=${OVERRIDE_TTD}"
-  echo "Overriding TTD to ${OVERRIDE_TTD}"
-else
-  __override_ttd=""
-fi
-
-exec "$@" ${__override_ttd}
+exec "$@"

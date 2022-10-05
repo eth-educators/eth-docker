@@ -26,15 +26,6 @@ if [[ -O "/var/lib/akula/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/akula/ee-secret/jwtsecret
 fi
 
-# Check whether we should override TTD
-# This is not possible in Akula presently!
-#if [ -n "${OVERRIDE_TTD}" ]; then
-#  __override_ttd="--override.terminaltotaldifficulty=${OVERRIDE_TTD}"
-#  echo "Overriding TTD to ${OVERRIDE_TTD}"
-#else
-#  __override_ttd=""
-#fi
-
 # Check for network, and set prune accordingly
 # This is not possible in Akula presently!
 if false; then
@@ -84,5 +75,5 @@ case ${LOG_LEVEL} in
 esac
 fi
 
-#exec "$@" ${__prune} ${__verbosity} ${__override_ttd}
+#exec "$@" ${__prune} ${__verbosity}
 exec "$@"
