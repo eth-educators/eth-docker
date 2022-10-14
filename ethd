@@ -929,32 +929,37 @@ query_deployment() {
 query_validator_client() {
     if [ ${NETWORK} = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-      "Which validator client do you want to run?" 9 65 2 \
+      "Which validator client do you want to run?" 9 65 3 \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
-      "teku-vc-only.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+      "teku-vc-only.yml" "Teku validator client" \
+      "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
     elif [ "${__deployment}" = "rocket" ]; then
         if uname -a | grep -q aarch64; then
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-          "Which validator client do you want to run?" 9 65 2 \
+          "Which validator client do you want to run?" 9 65 3 \
           "lighthouse-vc-only.yml" "Lighthouse validator client" \
-          "teku-vc-only.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+          "teku-vc-only.yml" "Teku validator client" \
+          "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
         else
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-          "Which validator client do you want to run?" 9 65 2 \
+          "Which validator client do you want to run?" 9 65 3 \
           "teku-vc-only.yml" "Teku validator client" \
-          "lighthouse-vc-only.yml" "Lighthouse validator client" 3>&1 1>&2 2>&3)
+          "lighthouse-vc-only.yml" "Lighthouse validator client" \
+          "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
         fi
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-      "Which validator client do you want to run?" 9 65 2 \
+      "Which validator client do you want to run?" 9 65 3 \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
-      "teku-vc-only.yml" "Teku validator client" 3>&1 1>&2 2>&3)
+      "teku-vc-only.yml" "Teku validator client" \
+      "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-      "Which validator client do you want to run?" 11 65 4 \
+      "Which validator client do you want to run?" 11 65 5 \
       "teku-vc-only.yml" "Teku validator client" \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
       "lodestar-vc-only.yml" "Lodestar validator client" \
+      "nimbus-vc-only.yml" "Nimbus validator client" \
       "prysm-vc-only.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
     fi
 
