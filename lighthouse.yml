@@ -31,6 +31,7 @@ services:
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - MALLOC_ARENA_MAX=4
+      - CL_EXTRAS=${CL_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -70,7 +71,6 @@ services:
       - --validator-monitor-auto
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-    command: ${CL_EXTRAS}
 
   validator:
     restart: "unless-stopped"
@@ -81,6 +81,7 @@ services:
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - DOPPELGANGER=${DOPPELGANGER}
+      - VC_EXTRAS=${VC_EXTRAS:-}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
@@ -112,7 +113,6 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-    command: ${VC_EXTRAS}
     depends_on:
       - consensus
 

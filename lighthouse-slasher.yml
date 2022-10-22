@@ -1,6 +1,0 @@
-version: "3.9"
-services:
-  consensus:
-    command:
-      - --slasher
-      - --slasher-broadcast

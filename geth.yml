@@ -22,6 +22,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - LOG_LEVEL=${LOG_LEVEL}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
@@ -72,7 +73,6 @@ services:
       - --authrpc.vhosts=*
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-50}
-    command: ${EL_EXTRAS}
   set-prune-marker:
     profiles: ["tools"]
     image: alpine:latest

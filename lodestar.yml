@@ -28,6 +28,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -64,7 +65,6 @@ services:
       - ${NETWORK}
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
-    command: ${CL_EXTRAS}
 
   validator:
     restart: "unless-stopped"
@@ -73,6 +73,7 @@ services:
     environment:
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
+      - VC_EXTRAS=${VC_EXTRAS:-}
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
@@ -108,7 +109,6 @@ services:
       - ${NETWORK}
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
-    command: ${VC_EXTRAS}
 
   validator-import:
     profiles: ["tools"]

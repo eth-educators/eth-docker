@@ -22,6 +22,7 @@ services:
     user: nethermind
     environment:
       - JWT_SECRET=${JWT_SECRET}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro
@@ -81,7 +82,6 @@ services:
       - "1"
       - --log
       - ${LOG_LEVEL}
-    command: ${EL_EXTRAS}
 volumes:
   nm-eth1-data:
   jwtsecret:

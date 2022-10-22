@@ -18,4 +18,4 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
-exec "$@" ${__doppel}
+exec "$@" ${__doppel} ${VC_EXTRAS}

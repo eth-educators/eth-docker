@@ -26,6 +26,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - LOG_LEVEL=${LOG_LEVEL}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
@@ -55,7 +56,6 @@ services:
       - ${NETWORK:-mainnet}
 # For now only Archive node works, as we need the eth_getLogs back to deposit contract deployment
 #      - --prune
-    command: ${EL_EXTRAS}
 volumes:
   akula-el-data:
   jwtsecret:

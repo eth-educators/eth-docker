@@ -39,4 +39,4 @@ else
   __rapid_sync=""
 fi
 
-exec "$@" ${__mev_boost} ${__rapid_sync}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${CL_EXTRAS}

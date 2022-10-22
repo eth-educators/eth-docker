@@ -22,4 +22,4 @@ else
   __doppel=""
 fi
 
-exec "$@" ${__mev_boost} ${__doppel}
+exec "$@" ${__mev_boost} ${__doppel} ${VC_EXTRAS}

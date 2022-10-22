@@ -43,23 +43,23 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
       echo "Fetching genesis file for Goerli testnet"
       curl -fsSL -o "$GENESIS" https://github.com/eth-clients/eth2-networks/raw/master/shared/prater/genesis.ssz
     fi
-    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost}
+    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
   elif [[ "$@" =~ --ropsten ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Ropsten testnet"
       curl -fsSL -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
     fi
-    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost}
+    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
   elif [[ "$@" =~ --sepolia ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
       echo "Fetching genesis file for Sepolia testnet"
       curl -fsSL -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/sepolia/genesis.ssz
     fi
-    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost}
+    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
   else
-    exec "$@" ${__rapid_sync} ${__mev_boost}
+    exec "$@" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
   fi
 else # Not the CL / beacon
   exec "$@"

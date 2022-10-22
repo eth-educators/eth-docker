@@ -31,6 +31,8 @@ services:
       - MEV_NODE=${MEV_NODE}
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
+      - VC_EXTRAS=
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -63,7 +65,6 @@ services:
       - --metrics-host-allowlist=*
       - --p2p-subscribe-all-subnets-enabled=true
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
-    command: ${CL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

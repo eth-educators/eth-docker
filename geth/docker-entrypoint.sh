@@ -50,8 +50,8 @@ case ${LOG_LEVEL} in
 esac
 
 if [ -f /var/lib/goethereum/prune-marker ]; then
-  "$@" snapshot prune-state
+  "$@" ${EL_EXTRAS} snapshot prune-state
   rm -f /var/lib/goethereum/prune-marker
 else
-  exec "$@" ${__verbosity}
+  exec "$@" ${__verbosity} ${EL_EXTRAS}
 fi
