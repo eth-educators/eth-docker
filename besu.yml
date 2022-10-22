@@ -22,6 +22,7 @@ services:
     environment:
       - JAVA_OPTS=${BESU_HEAP:--XX:SoftMaxHeapSize=3g -Xmx5g}
       - JWT_SECRET=${JWT_SECRET}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
@@ -75,7 +76,6 @@ services:
       - --data-storage-format=BONSAI
 #      - --sync-mode=X_CHECKPOINT
       - --sync-mode=X_SNAP
-    command: ${EL_EXTRAS}
 volumes:
   besu-eth1-data:
   jwtsecret:

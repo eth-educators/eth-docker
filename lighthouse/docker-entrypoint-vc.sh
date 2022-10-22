@@ -29,4 +29,4 @@ else
   __doppel=""
 fi
 
-exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel}
+exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}

@@ -26,4 +26,4 @@ if [[ -O "/var/lib/besu/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/besu/ee-secret/jwtsecret
 fi
 
-exec "$@"
+exec "$@" ${EL_EXTRAS}

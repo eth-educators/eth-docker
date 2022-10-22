@@ -30,6 +30,8 @@ services:
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
       - DOPPELGANGER=${DOPPELGANGER}
+      - CL_EXTRAS=${CL_EXTRAS:-}
+      - VC_EXTRAS=${VC_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -66,7 +68,6 @@ services:
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
-    command: ${CL_EXTRAS}
 
   validator-import:
     profiles: ["tools"]

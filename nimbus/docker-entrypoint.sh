@@ -45,4 +45,4 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
-exec "$@" ${__mev_boost} ${__doppel}
+exec "$@" ${__mev_boost} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}

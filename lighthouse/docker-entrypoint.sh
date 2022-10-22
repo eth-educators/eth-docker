@@ -43,4 +43,4 @@ else
   __beacon_stats=""
 fi
 
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats} ${CL_EXTRAS}

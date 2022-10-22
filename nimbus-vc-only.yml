@@ -25,6 +25,7 @@ services:
     environment:
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
+      - VC_EXTRAS=${VC_EXTRAS:-}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -43,7 +44,6 @@ services:
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus-vc/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
-    command: ${VC_EXTRAS}
 
   validator-import:
     profiles: ["tools"]

@@ -54,4 +54,4 @@ if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
-exec "$@"
+exec "$@" ${EL_EXTRAS}

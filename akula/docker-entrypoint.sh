@@ -75,5 +75,5 @@ case ${LOG_LEVEL} in
 esac
 fi
 
-#exec "$@" ${__prune} ${__verbosity}
-exec "$@"
+#exec "$@" ${__prune} ${__verbosity} ${EL_EXTRAS}
+exec "$@" ${EL_EXTRAS}

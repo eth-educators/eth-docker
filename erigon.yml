@@ -22,6 +22,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - LOG_LEVEL=${LOG_LEVEL}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
@@ -83,7 +84,6 @@ services:
       # Memory use reduction. Not needed with 32G and does not help with 16G
       #- --batchSize
       #- 64m
-    command: ${EL_EXTRAS}
 volumes:
   erigon-el-data:
   jwtsecret:

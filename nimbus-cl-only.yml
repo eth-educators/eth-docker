@@ -29,6 +29,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
+      - VC_EXTRAS=
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -68,7 +70,6 @@ services:
       - --suggested-fee-recipient=${FEE_RECIPIENT}
       - --subscribe-all-subnets
       - --in-process-validators=false
-    command: ${CL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl
