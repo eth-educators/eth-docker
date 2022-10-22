@@ -104,6 +104,7 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
     command:
       - --docker_only
+      - --housekeeping_interval=30s
     <<: *logging
 
   promtail:

@@ -57,6 +57,7 @@ services:
       - --metrics.addr
       - 0.0.0.0
       - --metrics.expensive
+      - --pprof
       - --http
       - --http.addr
       - 0.0.0.0
@@ -76,9 +77,12 @@ services:
       - /var/lib/erigon/ee-secret/jwtsecret
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-100}
-      # Reduce memory use so it fits into 16 GiB machines
-      - --batchSize
-      - 64m
+      # To assist with recordsize 16k in ZFS
+      - --db.pagesize
+      - 16K
+      # Memory use reduction. Not needed with 32G and does not help with 16G
+      #- --batchSize
+      #- 64m
     command: ${EL_EXTRAS}
 volumes:
   erigon-el-data:

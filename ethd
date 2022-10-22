@@ -160,7 +160,7 @@ install() {
             echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
         fi
         if [ -z "$(which docker)" ]; then
-            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail
+            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail bc
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
@@ -183,7 +183,7 @@ install() {
     elif [[ "$__distro" =~ "debian" ]]; then
         if [ -z "$(which docker)" ]; then
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail
+            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
@@ -919,7 +919,7 @@ query_deployment() {
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
-        echo "Your deployment choice is:" "${__deployment}"
+        echo "Your deployment choice is: ${__deployment}"
     else
         echo "You chose Cancel."
         exit 1
@@ -1325,7 +1325,13 @@ config() {
       "validator" | "rocket")
         query_validator_client
         ;;
-      "blox" | "rpc")
+      "blox")
+        if [ ! -f "./blox-ssv-config.yaml" ]; then
+            cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
+        fi
+        query_consensus_only_client
+        ;;
+      "rpc")
         query_consensus_only_client
         ;;
       *)
