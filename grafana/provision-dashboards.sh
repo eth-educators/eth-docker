@@ -12,7 +12,7 @@ case "$CLIENT" in
     #  prysm_less_10
     __url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json'
     __file='/etc/grafana/provisioning/dashboards/prysm_less_10.json'
-    RUN wget -qcO - $__url | jq '.title = "prysm_less_10"' >$__file
+    wget -qcO - $__url | jq '.title = "prysm_less_10"' >$__file
     #  prysm_more_10
     __url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json'
     __file='/etc/grafana/provisioning/dashboards/prysm_more_10.json'
