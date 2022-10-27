@@ -8,5 +8,6 @@ ext-network.yml.original
 !.eth/keymanagertoken/.empty
 *.swp
 alertmanager/config.yml
+prometheus/custom-prom.yml
 blox-ssv-config.yaml
 blox-ssv-config.yaml.bak
