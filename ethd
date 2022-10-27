@@ -113,6 +113,13 @@ upgrade_compose() {
   fi
 }
 
+prep_prometheus() {
+# Create custom-prom.yml if it doesn't exist
+    if [ ! -f "./prometheus/custom-prom.yml" ]; then
+        $__as_owner touch "./prometheus/custom-prom.yml"
+    fi
+}
+
 handle_root() {
     if [ "${EUID}" -eq 0 ]; then
         __as_owner="sudo -u ${OWNER}"
@@ -1538,7 +1545,7 @@ printhelp() {
     echo "  logs"
     echo "     shows logs"
     echo "  cmd <command>"
-    echo "     executes an arbitrary docker-compose command. Use \"cmd help\" to list them"
+    echo "     executes an arbitrary docker compose command. Use \"cmd help\" to list them"
     echo "  terminate"
     echo "     stops the Ethereum node and destroys all data stores"
     echo "  prune-geth"
@@ -1547,7 +1554,7 @@ printhelp() {
     echo ""
     echo "The logs subcommand can be appended by flags and specify the container(s). example: "
     echo ""
-    echo "  $me logs -f --tail 500 execution"
+    echo "  $me logs -f --tail 50 execution"
     echo "    shows logs only for execution service"
     echo ""
     echo ""
@@ -1585,6 +1592,7 @@ determine_sudo
 handle_root
 determine_docker
 determine_compose
+prep_prometheus
 
 if [ $command = "install" ]; then
     $command "$@"
