@@ -71,8 +71,6 @@ services:
       - --validator-monitor-auto
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --subscribe-all-subnets
-      - --import-all-attestations
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl
