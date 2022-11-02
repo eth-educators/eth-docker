@@ -82,6 +82,15 @@ services:
       - "1"
       - --log
       - ${LOG_LEVEL}
+  set-prune-marker:
+    profiles: ["tools"]
+    image: curlimages/curl:latest
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - nm-eth1-data:/var/lib/nethermind
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
 volumes:
   nm-eth1-data:
   jwtsecret:
