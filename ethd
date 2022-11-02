@@ -788,7 +788,19 @@ prune-nethermind() {
     docompose run --rm set-prune-marker "touch /var/lib/nethermind/prune-marker"
     docompose stop execution && docompose rm -f execution
     start
-    docompose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545"
+    echo "Waiting 10 seconds for Nethermind to be up"
+    sleep 10
+    prune_result=docompose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545"
+    exitstatus=$?
+    if [ $exitstatus -ne 0 ]; then
+        echo "Unable to start prune. This is likely a bug."
+        exit 1
+    fi
+    echo Nethermind returns ${prune_result}
+    if [[ ! "${prune_result}" =~ "Starting" ]]; then
+        echo "Unable to start prune. This is likely a bug."
+        exit 1
+    fi
     echo ""
     echo "Prune is running, you can observe it with './ethd logs -f execution'"
     echo ""
@@ -1628,6 +1640,8 @@ printhelp() {
     echo "     stops the Ethereum node and destroys all data stores"
     echo "  prune-geth"
     echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
+    echo "  prune-nethermind"
+    echo "     restarts the Nethermind execution client and prunes its DB."
     echo ""
     echo ""
     echo "The logs subcommand can be appended by flags and specify the container(s). example: "

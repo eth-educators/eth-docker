@@ -51,8 +51,6 @@ services:
       - ${EL_MAX_PEER_COUNT:-50}
       - --JsonRpc.Enabled
       - "true"
-      - --JsonRpc.EnabledModules
-      - "Web3,Eth,Subscribe,Net"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
