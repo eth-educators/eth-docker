@@ -54,4 +54,10 @@ if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
-exec "$@" ${EL_EXTRAS}
+__cores=$(($(nproc)/2))
+if [ -f /var/lib/nethermind/prune-marker ]; then
+  rm -f /var/lib/nethermind/prune-marker
+  exec "$@" ${EL_EXTRAS} --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Admin" --Pruning.FullPruningMaxDegreeOfParallelism $__cores --Pruning.FullPruningCompletionBehavior ShutdownOnSuccess
+else
+  exec "$@" ${EL_EXTRAS}
+fi
