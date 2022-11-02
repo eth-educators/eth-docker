@@ -57,7 +57,7 @@ fi
 __cores=$(($(nproc)/2))
 if [ -f /var/lib/nethermind/prune-marker ]; then
   rm -f /var/lib/nethermind/prune-marker
-  exec "$@" ${EL_EXTRAS} --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Admin" --Pruning.FullPruningMaxDegreeOfParallelism $__cores --Pruning.FullPruningCompletionBehavior ShutdownOnSuccess
+  exec "$@" --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Admin" --Pruning.FullPruningMaxDegreeOfParallelism $__cores --Pruning.FullPruningCompletionBehavior ShutdownOnSuccess ${EL_EXTRAS}
 else
-  exec "$@" ${EL_EXTRAS}
+  exec "$@" --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net" ${EL_EXTRAS}
 fi
