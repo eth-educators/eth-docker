@@ -788,13 +788,15 @@ prune-nethermind() {
     docompose run --rm set-prune-marker "touch /var/lib/nethermind/prune-marker"
     docompose stop execution && docompose rm -f execution
     start
-    echo "Waiting 10 seconds for Nethermind to be up"
-    sleep 10
+    echo "Waiting 20 seconds for Nethermind to be up"
+    sleep 20
     prune_result=$(docompose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545")
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
-        echo "Unable to start prune. This is likely a bug."
-        exit 1
+        echo "Unable to start prune, error code ${exitstatus}. This is likely a bug."
+        echo "An attempt to run it returned this: ${prune_result}"
+        echo 'The command attempted was: docker-compose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545"'
+        exit ${exitstatus}
     fi
     echo Nethermind returns ${prune_result}
     if [[ ! "${prune_result}" =~ "Starting" ]]; then
