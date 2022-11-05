@@ -47,27 +47,4 @@ else
   __prune=""
 fi
 
-shopt -s nocasematch
-case ${LOG_LEVEL} in
-  error)
-    __verbosity="--verbosity 1"
-    ;;
-  warn)
-    __verbosity="--verbosity 2"
-    ;;
-  info)
-    __verbosity="--verbosity 3"
-    ;;
-  debug)
-    __verbosity="--verbosity 4"
-    ;;
-  trace)
-    __verbosity="--verbosity 5"
-    ;;
-  *)
-    echo "LOG_LEVEL ${LOG_LEVEL} not recognized"
-    __verbosity=""
-    ;;
-esac
-
-exec "$@" ${__prune} ${__verbosity} ${EL_EXTRAS}
+exec "$@" ${__prune} ${EL_EXTRAS}
