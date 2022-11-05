@@ -21,7 +21,6 @@ services:
     user: erigon
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - LOG_LEVEL=${LOG_LEVEL}
       - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - erigon-el-data:/var/lib/erigon
@@ -53,6 +52,8 @@ services:
       - any
       - --chain
       - ${NETWORK}
+      - --log.console.verbosity
+      - ${LOG_LEVEL}
       - --prune=htc
       - --metrics
       - --metrics.addr
