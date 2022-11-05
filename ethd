@@ -788,8 +788,28 @@ prune-nethermind() {
     docompose run --rm set-prune-marker "touch /var/lib/nethermind/prune-marker"
     docompose stop execution && docompose rm -f execution
     start
-    echo "Waiting 20 seconds for Nethermind to be up"
-    sleep 20
+
+    echo "Waiting for Nethermind to be up"
+    __nethermind_active=0
+    for ((t=1; t<=3; t++)); do
+        docompose exec -T execution wget -T 1 -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'
+        exitstatus=$?
+        if [[ ${exitstatus} -ne 0 ]]; then
+            echo "Nethermind is not active yet."
+        else
+            echo
+            echo "Nethermind active, sending prune command."
+            __nethermind_active=1
+            break
+        fi
+    done
+
+    if [[ ${__nethermind_active} -eq 0 ]]; then
+        echo "Nethermind did not become active in time. Please try running the following command manually, then check Nethermind logs."
+        echo 'docker-compose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545"'
+        exit 1
+    fi
+
     prune_result=$(docompose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545")
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
