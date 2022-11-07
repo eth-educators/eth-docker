@@ -665,7 +665,9 @@ prune-geth() {
     sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
-        echo "Unable to connect to Geth: Is it running? Aborting."
+        echo "Unable to connect to Geth: Is it running?"
+        echo "Output: ${sync_status}"
+        echo "Aborting."
         exit 1
     fi
 
@@ -748,6 +750,14 @@ prune-nethermind() {
         exit 1
     fi
 
+    if [ $(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}') -lt 131072000 ]; then
+        echo "You do not have enough free disk space. Make sure this reads at least 125G free (Avail):"
+        df -h /var/lib/docker
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+
     rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
     regex='^EL_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
@@ -760,7 +770,9 @@ prune-nethermind() {
     sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
-        echo "Unable to connect to Nethermind: Is it running? Aborting."
+        echo "Unable to connect to Nethermind: Is it running?"
+        echo "Output: ${sync_status}"
+        echo "Aborting."
         exit 1
     fi
 
