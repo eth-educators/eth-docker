@@ -41,7 +41,7 @@ case "$CLIENT" in
   *alert* ) cat /etc/prometheus/alert-prom.yml >> /etc/prometheus/prometheus.yml;;
 esac
 
-if [ -e "./prometheus/custom-prom.yml" ]; then
+if [ -e /etc/prometheus/custom-prom.yml ]; then
     cat /etc/prometheus/custom-prom.yml >> /etc/prometheus/prometheus.yml
 fi
 
