@@ -59,7 +59,6 @@ services:
       - --metrics.addr
       - 0.0.0.0
       - --metrics.expensive
-      - --pprof
       - --http
       - --http.addr
       - 0.0.0.0
@@ -77,6 +76,7 @@ services:
       - --authrpc.vhosts=*
       - --authrpc.jwtsecret
       - /var/lib/erigon/ee-secret/jwtsecret
+      - --externalcl
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-100}
       # To assist with recordsize 16k in ZFS
