@@ -49,6 +49,10 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --Network.MaxActivePeers
       - ${EL_MAX_PEER_COUNT:-50}
+      - --HealthChecks.Enabled
+      - "true"
+      - --HealthChecks.UIEnabled
+      - "true"
       - --JsonRpc.Enabled
       - "true"
       - --JsonRpc.Host
@@ -69,11 +73,6 @@ services:
       - "999999"
       - --config
       - ${NETWORK}
-# Potentially unsafe to auto-prune
-#      - --Pruning.FullPruningMaxDegreeOfParallelism
-#      - "2"
-#      - --Pruning.FullPruningTrigger
-#      - "VolumeFreeSpace"
       - --Sync.AncientBodiesBarrier
       - "1"
       - --Sync.AncientReceiptsBarrier
