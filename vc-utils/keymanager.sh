@@ -2,12 +2,22 @@
 
 call_api() {
     set +e
-    if [ -z "${TLS:+x}" ]; then
-        __code=$(curl -m 30 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
-            --data "${__api_data}" http://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
+    if [ -z "${__api_data}" ]; then
+        if [ -z "${TLS:+x}" ]; then
+            __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Authorization: Bearer $__token" \
+                http://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
+        else
+            __code=$(curl -k -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Authorization: Bearer $__token" \
+                https://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
+        fi
     else
-        __code=$(curl -k -m 30 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
-            --data "${__api_data}" https://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
+        if [ -z "${TLS:+x}" ]; then
+            __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+                --data "${__api_data}" http://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
+        else
+            __code=$(curl -k -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X ${__http_method} -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+                --data "${__api_data}" https://${__api_container}:${KEY_API_PORT:-7500}/${__api_path})
+        fi
     fi
     __return=$?
     if [ $__return -ne 0 ]; then
@@ -90,13 +100,14 @@ recipient-set() {
     __http_method=POST
     call_api
     case $__code in
-        202) echo "The fee recipient for the validator with public key $__pubkey was updated."; exit 0;;
+#200 is not valid, but Lodestar does that
+        202|200) echo "The fee recipient for the validator with public key $__pubkey was updated."; exit 0;;
         400) echo "The pubkey or address was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -111,12 +122,13 @@ recipient-delete() {
     __http_method=DELETE
     call_api
     case $__code in
-        204) echo "The fee recipient for the validator with public key $__pubkey was set back to default."; exit 0;;
+#200 is not valid, but Lodestar does that
+        204|200) echo "The fee recipient for the validator with public key $__pubkey was set back to default."; exit 0;;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "A fee recipient was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -156,13 +168,14 @@ gas-set() {
     __http_method=POST
     call_api
     case $__code in
-        202) echo "The gas limit for the validator with public key $__pubkey was updated."; exit 0;;
+#200 is not valid, but Lodestar does that
+        202|200) echo "The gas limit for the validator with public key $__pubkey was updated."; exit 0;;
         400) echo "The pubkey or limit was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -177,13 +190,14 @@ gas-delete() {
     __http_method=DELETE
     call_api
     case $__code in
-        204) echo "The gas limit for the validator with public key $__pubkey was set back to default."; exit 0;;
+#200 is not valid, but Lodestar does that
+        204|200) echo "The gas limit for the validator with public key $__pubkey was set back to default."; exit 0;;
         400) echo "The pubkey was formatted wrong. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "A gas limit was found, but cannot be deleted. It may be in a configuration file. Message: $(echo $__result | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo $__result | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
