@@ -81,7 +81,7 @@ recipient-get() {
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -149,7 +149,7 @@ gas-get() {
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo $__result | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 }
 
@@ -212,7 +212,7 @@ validator-list() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
     if [ $(echo $__result | jq '.data | length') -eq 0 ]; then
         echo "No keys loaded"
@@ -238,7 +238,7 @@ validator-delete() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
 
     __status=$(echo $__result | jq -r '.data[].status')
@@ -395,7 +395,7 @@ validator-import() {
         401) echo "No authorization token found. This is a bug. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo $__result | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo $__result | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code. Result: $(echo $__result)"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $(echo $__result)"; exit 1;;
     esac
         if ! echo $__result | grep -q "data"; then
            echo "The key manager API query failed. Output:"
