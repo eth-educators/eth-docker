@@ -926,6 +926,10 @@ prep-keyimport() {
 keyimport() {
     __oldskool=1
     prep-keyimport "$@"
+    echo
+    echo "The legacy ./ethd keyimport function will be removed in early 2023 in preparation for a security audit."
+    echo "Consider using ./ethd keys import instead."
+    echo
     if [ ${__non_interactive} = 1 ]; then
         docompose run --rm validator-import --non-interactive
     else
@@ -935,16 +939,17 @@ keyimport() {
 
 keys() {
     __oldskool=0
+    __owner_uid=$(id -u ${OWNER})
     if [ "${1:-}" = "import" ]; then
         shift
         prep-keyimport "$@"
         if [ ${__non_interactive} = 1 ]; then
-            docompose run --rm validator-keys import --non-interactive
+            docompose run --rm -e OWNER_UID=${__owner_uid} validator-keys import --non-interactive
         else
-            docompose run --rm validator-keys import
+            docompose run --rm -e OWNER_UID=${__owner_uid} validator-keys import
         fi
     else
-        docompose run --rm validator-keys "$@"
+        docompose run --rm -e OWNER_UID=${__owner_uid} validator-keys "$@"
     fi
 }
 

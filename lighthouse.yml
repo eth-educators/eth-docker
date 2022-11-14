@@ -146,6 +146,8 @@ services:
     profiles: ["tools"]
     restart: "no"
     image: lighthouse:local
+    # Keys have 440 permissions. Root copies and chowns them,
+    # then switches to user lhvalidator
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -174,6 +176,10 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    # The API token has 640 permissions. Root copies it,
+    # then switches to the local user's UID or if not provided,
+    # 1000. The UID has to be able to write .eth/validator_keys
+    # for the "keys delete" command.
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
