@@ -7,11 +7,11 @@ fi
 
 if [ ! -f /var/lib/lodestar/consensus/api-token.txt ]; then
     __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)
-    echo $__token > /var/lib/lodestar/consensus/api-token.txt
+    echo "$__token" > /var/lib/lodestar/consensus/api-token.txt
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/lodestar/consensus/ee-secret/jwtsecret
+  echo -n "${JWT_SECRET}" > /var/lib/lodestar/consensus/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
@@ -39,4 +39,6 @@ else
   __rapid_sync=""
 fi
 
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
 exec "$@" ${__mev_boost} ${__rapid_sync} ${CL_EXTRAS}

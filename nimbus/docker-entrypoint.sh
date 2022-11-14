@@ -7,11 +7,11 @@ fi
 
 if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)
-    echo $__token > /var/lib/nimbus/api-token.txt
+    echo "$__token" > /var/lib/nimbus/api-token.txt
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/nimbus/ee-secret/jwtsecret
+  echo -n "${JWT_SECRET}" > /var/lib/nimbus/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
@@ -23,9 +23,9 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
-if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
+if [ -n "${RAPID_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
     echo "Starting checkpoint sync. Nimbus will restart when done."
-    /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL} ${__override_ttd}
+    /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network="${NETWORK}" --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
     touch /var/lib/nimbus/setupdone
 fi
 
@@ -45,4 +45,6 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
 exec "$@" ${__mev_boost} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}

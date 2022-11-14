@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 if [ "$(id -u)" = '0' ]; then
   chown -R nethermind:nethermind /var/lib/nethermind
-  exec gosu nethermind "$BASH_SOURCE" "$@"
+  exec gosu nethermind "${BASH_SOURCE[0]}" "$@"
 fi
 
 # Replace gnosis with xdai, until/unless Nethermind gets an alias
@@ -35,7 +35,7 @@ dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.
 dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"*","-minlevel":"Info","-writeTo":"auto-colored-console-async"}'
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/nethermind/ee-secret/jwtsecret
+  echo -n "${JWT_SECRET}" > /var/lib/nethermind/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
@@ -43,7 +43,7 @@ if [[ ! -f /var/lib/nethermind/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
   __secret1=$(echo $RANDOM | md5sum | head -c 32)
   __secret2=$(echo $RANDOM | md5sum | head -c 32)
-  echo -n ${__secret1}${__secret2} > /var/lib/nethermind/ee-secret/jwtsecret
+  echo -n "${__secret1}""${__secret2}" > /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
 if [[ -O "/var/lib/nethermind/ee-secret" ]]; then
@@ -57,7 +57,11 @@ fi
 __cores=$(($(nproc)/2))
 if [ -f /var/lib/nethermind/prune-marker ]; then
   rm -f /var/lib/nethermind/prune-marker
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
   exec "$@" --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool,Admin" --Pruning.FullPruningMaxDegreeOfParallelism $__cores --Pruning.FullPruningCompletionBehavior ShutdownOnSuccess ${EL_EXTRAS}
 else
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
   exec "$@" --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool" ${EL_EXTRAS}
 fi

@@ -7,7 +7,7 @@ if [ "$(id -u)" = '0' ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/lighthouse/beacon/ee-secret/jwtsecret
+  echo -n "${JWT_SECRET}" > /var/lib/lighthouse/beacon/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
@@ -43,4 +43,6 @@ else
   __beacon_stats=""
 fi
 
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
 exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats} ${CL_EXTRAS}

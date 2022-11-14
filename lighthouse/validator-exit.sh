@@ -6,7 +6,7 @@ if [ "$(id -u)" = '0' ]; then
   mkdir /keys
   cp /validator_keys/* /keys/
   chown lhvalidator:lhvalidator /keys/*
-  exec gosu lhvalidator "$BASH_SOURCE" "$@"
+  exec gosu lhvalidator "${BASH_SOURCE[0]}" "$@"
 fi
 
 exec "$@"
