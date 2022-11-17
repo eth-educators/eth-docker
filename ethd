@@ -767,8 +767,8 @@ prune-nethermind() {
         exit 1
     fi
 
-    if [ "$(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}')" -lt 131072000 ]; then
-        echo "You do not have enough free disk space. Make sure this reads at least 125G free (Avail):"
+    if [ "$(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}')" -lt 262144000 ]; then
+        echo "You do not have enough free disk space. Make sure this reads at least 250G free (Avail):"
         df -h /var/lib/docker
         echo ""
         echo "Aborting."
