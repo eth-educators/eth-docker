@@ -633,6 +633,20 @@ query_blox_switch() {
     sed -i '/NetworkID/d' blox-ssv-config.yaml
 }
 
+attach-geth() {
+    if [ ! -f "./${ENV_FILE}" ]; then
+        echo "${ENV_FILE} configuration file not found, aborting."
+        exit 1
+    fi
+
+    if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
+        echo "You do not appear to be using Geth, aborting."
+        exit 1
+    fi
+
+    docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
+}
+
 prune-geth() {
     __non_interactive=0
     while :
@@ -1705,6 +1719,8 @@ printhelp() {
     echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
     echo "  prune-nethermind"
     echo "     restarts the Nethermind execution client and prunes its DB."
+    echo "  attach-geth"
+    echo "     launches an interactive geth attach repl"
     echo ""
     echo ""
     echo "The logs subcommand can be appended by flags and specify the container(s). example: "
