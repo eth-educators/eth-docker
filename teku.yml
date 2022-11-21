@@ -24,11 +24,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/teku/ee-secret
     environment:
-      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
+      - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
+      - MEV_NODE=${MEV_NODE}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
+      - VC_EXTRAS=${VC_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -46,10 +50,10 @@ services:
       - --ee-endpoint=${EL_NODE}
       - --ee-jwt-secret-file
       - /var/lib/teku/ee-secret/jwtsecret
+      - --eth1-deposit-contract-max-request-size=1000
       - --p2p-port=${CL_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
       - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
-      - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
       - --logging=${LOG_LEVEL}
@@ -62,12 +66,14 @@ services:
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
       - --validator-api-enabled=true
+      - --validator-api-interface=0.0.0.0
       - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*
       - --validator-api-cors-origins=*
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
+      - --validators-keystore-locking-enabled=false
 
   validator-import:
     profiles: ["tools"]
@@ -95,6 +101,8 @@ services:
       - voluntary-exit
       - --beacon-node-api-endpoint=http://consensus:5052
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validator-keys=/var/lib/teku/validator/key-manager/local:/var/lib/teku/validator/key-manager/local-passwords
+      - --include-keymanager-keys=true
 
   validator-keys:
     profiles: ["tools"]

@@ -18,13 +18,11 @@ services:
         - DOCKER_TAG=${GETH_DOCKER_TAG}
     stop_grace_period: 3m
     image: geth:local
-# Root so a chown can happen for the secret, then su-exec into geth. This can become geth again
-# after merge
-    user: root
+    user: geth
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - LOG_LEVEL=${LOG_LEVEL}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro
@@ -75,7 +73,6 @@ services:
       - --authrpc.vhosts=*
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-50}
-    command: ${GETH_CACHE}
   set-prune-marker:
     profiles: ["tools"]
     image: alpine:latest

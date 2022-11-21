@@ -21,11 +21,29 @@ RUN set -eux; \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R user:user /var/lib/nimbus && chmod -R 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
+ARG USER=vc-user
+ARG UID=10000
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/nimbus-vc && chown -R vc-user:vc-user /var/lib/nimbus-vc && chmod -R 700 /var/lib/nimbus-vc
+
 # Copy beacon_node into $PATH
 RUN cp /home/user/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
+RUN cp /home/user/nimbus-eth2/build/nimbus_validator_client /usr/local/bin/nimbus_validator_client
 # Scripts for privilege change and validator import
 COPY ./validator-import.sh /usr/local/bin/
 COPY ./docker-entrypoint.sh /usr/local/bin/
+COPY ./docker-entrypoint-vc.sh /usr/local/bin/
 
 USER user
 

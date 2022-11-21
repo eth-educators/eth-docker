@@ -1,4 +1,4 @@
-  - job_name: erigon
+  - job_name: bor
     metrics_path: /debug/metrics/prometheus
     scheme: http
     static_configs:

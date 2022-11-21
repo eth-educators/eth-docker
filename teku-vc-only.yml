@@ -21,6 +21,10 @@ services:
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
+      - MEV_BOOST=${MEV_BOOST}
+      - VC_EXTRAS=${VC_EXTRAS:-}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -30,17 +34,18 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --network=auto
-      - --validators-keystore-locking-enabled=true
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-graffiti=${GRAFFITI}
       - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
+      - --validator-api-interface=0.0.0.0
       - --validator-api-port=${KEY_API_PORT:-7500}
       - --validator-api-host-allowlist=*
       - --validator-api-cors-origins=*
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
+      - --validators-keystore-locking-enabled=false
 
   validator-import:
     profiles: ["tools"]
@@ -68,6 +73,7 @@ services:
       - voluntary-exit
       - --beacon-node-api-endpoint=${CL_NODE:-http://consensus:5052}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validator-keys=/var/lib/teku/validator/key-manager/local:/var/lib/teku/validator/key-manager/local-passwords
 
   validator-keys:
     profiles: ["tools"]

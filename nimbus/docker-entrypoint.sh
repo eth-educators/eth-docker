@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
+if [ "$(id -u)" = '0' ]; then
+  chown -R user:user /var/lib/nimbus
+  exec gosu user docker-entrypoint.sh "$@"
+fi
+
 if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)
-    echo $__token > /var/lib/nimbus/api-token.txt
+    echo "$__token" > /var/lib/nimbus/api-token.txt
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/nimbus/ee-secret/jwtsecret
+  echo -n "${JWT_SECRET}" > /var/lib/nimbus/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
@@ -18,22 +23,15 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
-# Check whether we should override TTD
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--terminal-total-difficulty-override=${OVERRIDE_TTD}"
-  echo "Overriding TTD to ${OVERRIDE_TTD}"
-else
-  __override_ttd=""
-fi
-
-if [ -n "${RAPID_SYNC_URL:+x}" -a ! -f "/var/lib/nimbus/setupdone" ]; then
+if [ -n "${RAPID_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
+    echo "Starting checkpoint sync. Nimbus will restart when done."
+    /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network="${NETWORK}" --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
     touch /var/lib/nimbus/setupdone
-    exec /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network=${NETWORK} --data-dir=/var/lib/nimbus --trusted-node-url=${RAPID_SYNC_URL} ${__override_ttd}
 fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--payload-builder-enable --payload-builder-url=http://mev-boost:18550"
+  __mev_boost="--payload-builder=true --payload-builder-url=${MEV_NODE:-http://mev-boost:18550}"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
@@ -47,4 +45,6 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
-exec "$@" ${__mev_boost} ${__override_ttd} ${__doppel}
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+exec "$@" ${__mev_boost} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}

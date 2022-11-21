@@ -1,0 +1,14 @@
+# To be used with one of the yml files that start a CL client
+version: "3.9"
+services:
+  ethdo:
+    profiles: ["tools"]
+    restart: "no"
+    image: wealdtech/ethdo:latest
+    entrypoint:
+      - /app/ethdo
+      -  --connection
+      - http://consensus:5052
+      - --allow-insecure-connections
+    depends_on:
+      - consensus

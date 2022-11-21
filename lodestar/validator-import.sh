@@ -23,14 +23,14 @@ shopt -s nullglob
 set -e
 for file in /val_keys/slashing_protection*.json; do
   echo "Found slashing protection file ${file}, it will be imported."
-  node --max-old-space-size=6144 /usr/app/node_modules/.bin/lodestar validator slashing-protection import --server ${CL_NODE} --rootDir /var/lib/lodestar/validators --network ${NETWORK} --file ${file}
+  node --max-old-space-size=6144 /usr/app/node_modules/.bin/lodestar validator slashing-protection import --server ${CL_NODE} --dataDir /var/lib/lodestar/validators --network ${NETWORK} --file ${file}
   rm ${file}
 done
 
 if [ ${__non_interactive} = 1 ]; then
   echo "${KEYSTORE_PASSWORD}" > /tmp/keystorepassword.txt
   chmod 600 /tmp/keystorepassword.txt
-  exec "$@" --passphraseFile /tmp/keystorepassword.txt
+  exec "$@" --importKeystoresPassword /tmp/keystorepassword.txt
 fi
 
 # Only reached in interactive mode

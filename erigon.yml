@@ -18,13 +18,10 @@ services:
         - DOCKER_TAG=${ERIGON_DOCKER_TAG}
     stop_grace_period: 5m
     image: erigon:local
-# Root so a chown can happen for the secret, then su-exec into erigon. This can become erigon again
-# after merge
-    user: root
+    user: erigon
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
-      - LOG_LEVEL=${LOG_LEVEL}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
@@ -55,6 +52,8 @@ services:
       - any
       - --chain
       - ${NETWORK}
+      - --log.console.verbosity
+      - ${LOG_LEVEL}
       - --prune=htc
       - --metrics
       - --metrics.addr
@@ -77,11 +76,15 @@ services:
       - --authrpc.vhosts=*
       - --authrpc.jwtsecret
       - /var/lib/erigon/ee-secret/jwtsecret
+      - --externalcl
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-100}
-      # Workaround for high memory use in alpha
-      - --batchSize
-      - 128m
+      # To assist with recordsize 16k in ZFS
+      - --db.pagesize
+      - 16K
+      # Memory use reduction. Not needed with 32G and does not help with 16G
+      #- --batchSize
+      #- 64m
 volumes:
   erigon-el-data:
   jwtsecret:

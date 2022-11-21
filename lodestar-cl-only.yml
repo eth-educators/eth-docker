@@ -26,8 +26,9 @@ services:
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
+      - MEV_NODE=${MEV_NODE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -38,31 +39,31 @@ services:
       - --max-old-space-size=4096
       - /usr/app/node_modules/.bin/lodestar
       - beacon
-      - --rootDir
+      - --dataDir
       - /var/lib/lodestar/consensus
-      - --api.rest.enabled
-      - "true"
-      - --api.rest.host
+      - --rest.address
       - 0.0.0.0
-      - --api.rest.port
+      - --rest.port
       - ${CL_REST_PORT:-5052}
-      - --network.discv5.bindAddr
-      - "/ip4/0.0.0.0/udp/${CL_P2P_PORT:-9000}"
-      - --network.localMultiaddrs
-      - "/ip4/0.0.0.0/tcp/${CL_P2P_PORT:-9000}"
+      - --port
+      - ${CL_P2P_PORT:-9000}
+      - --metrics
+      - "true"
+      - --metrics.port
+      - "8008"
+      - --metrics.address
+      - 0.0.0.0
       - --execution.urls
       - ${EL_NODE}
       - --jwt-secret
       - /var/lib/lodestar/consensus/ee-secret/jwtsecret
-      - --network.maxPeers
-      - ${CL_MAX_PEER_COUNT:-55}
-      - --network.targetPeers
+      - --targetPeers
       - ${CL_MIN_PEER_COUNT:-50}
       - --logLevel
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
-      - --chain.defaultFeeRecipient
+      - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
     labels:
       - traefik.enable=true

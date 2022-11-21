@@ -30,8 +30,9 @@ services:
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
+      - MEV_NODE=${MEV_NODE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${HOST_IP:-0.0.0.0}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
@@ -51,7 +52,7 @@ services:
       - 0.0.0.0
       - --grpc-gateway-port
       - ${CL_REST_PORT:-5052}
-      - --http-web3provider
+      - --execution-endpoint
       - ${EL_NODE}
       - --jwt-secret
       - /var/lib/prysm/ee-secret/jwtsecret

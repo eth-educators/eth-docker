@@ -1,3 +1,12 @@
+# Custom Prometheus rules. Use prometheus/custom-prom.yml which will be appended to
+# /etc/prometheus/prometheus.yml inside the prometheus container. It will be appended after
+# the last scrape target that the entrypoint script adds.
+#
+# You could add additonal scrape targets as well as additional global sections such as remote-write.
+# This file is called grafana-cloud.yml as adding a remote write to Grafana Cloud is likely a
+# common use case. It properly is a Prometheus without Grafana and the ability to add custom
+# content to prometheus.yml
+
 version: "3.9"
 x-logging: &logging
   logging:
@@ -16,6 +25,7 @@ services:
     volumes:
       - prom-data:/prometheus
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
@@ -123,44 +133,16 @@ services:
     <<: *logging
 
   loki:
+    restart: "unless-stopped"
     image: grafana/loki:latest
     volumes:
       - loki-data:/tmp
       - ./loki:/etc/loki
     command:
       - '--config.file=/etc/loki/loki.yml'
-    restart: "unless-stopped"
     <<: *logging
-
-  grafana:
-    restart: "unless-stopped"
-    build:
-      context: ./grafana
-    image: grafana:local
-    environment:
-      - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
-      - CLIENT=${COMPOSE_FILE}
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - grafana-config:/etc/grafana
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - prometheus
-      - loki
-      - promtail
-    entrypoint: ["provision-dashboards.sh"]
-    command: /run.sh
-    <<: *logging
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.grafana.entrypoints=web,websecure
-      - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}.${DOMAIN}`)
-      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
-      - traefik.http.services.grafana.loadbalancer.server.port=${GRAFANA_PORT}
 
 volumes:
-  grafana-data:
-  grafana-config:
   prom-data:
   loki-data:
   promtail-data:
