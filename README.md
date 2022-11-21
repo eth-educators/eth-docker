@@ -10,8 +10,8 @@ Please see the [official documentation](https://eth-docker.net).
 
 For a quick testnet start, you can install prerequisites and configure eth-docker, as a non-root user:
 
-* `sudo apt install -y docker-compose  && sudo systemctl enable --now docker`
 * `cd ~ && git clone https://github.com/eth-educators/eth-docker.git && cd eth-docker`
+* `./ethd install`
 * `./ethd config`
 
 ## License
@@ -20,4 +20,4 @@ For a quick testnet start, you can install prerequisites and configure eth-docke
 
 # Version
 
-This is eth-docker v2.0.0
+This is eth-docker v2.2.3.1

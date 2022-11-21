@@ -1,23 +1,32 @@
-# Send client stats to beaconcha.in service
+# Send client stats to beaconcha.in service using client-metrics-exporter
 version: "3.9"
 services:
-  consensus:
-    command:
-      - --monitoring-host
-      - 0.0.0.0
-  validator:
-    command:
-      - --monitoring-host
-      - 0.0.0.0
   client-stats:
-    image: prysm-consensus:local
+    image: gobitfly/eth2-client-metrics-exporter:latest
     volumes:
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
-      - client-stats
-      - --validator-metrics-url
-      - http://validator:8081/metrics
-      - --beacon-node-metrics-url
-      - http://consensus:8080/metrics
-      - --clientstats-api-url
+      - /bin/eth2-client-metrics-exporter
+      - --beaconnode.type
+      - prysm
+      - --beaconnode.address
+      - http://consensus:8008/metrics
+      - --validator.type
+      - prysm
+      - --validator.address
+      - http://validator:8009/metrics
+      - --server.address
       - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}
+# As of Nov 2022 Prysm's own client-stats would require source build. Using beaconcha.in's instead
+#  client-stats:
+#    image: prysm-consensus:local
+#    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+#    entrypoint:
+#      - client-stats
+#      - --validator-metrics-url
+#      - http://validator:8009/metrics
+#      - --beacon-node-metrics-url
+#      - http://consensus:8008/metrics
+#      - --clientstats-api-url
+#      - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}

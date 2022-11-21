@@ -19,12 +19,10 @@ services:
         - BUILD_TARGET=${NM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NM_DOCKER_TAG}
     image: nethermind:local
-# Root so a chown can happen for the secret, then gosu into nethermind. This can become nethermind again
-# after merge
-    user: root
+    user: nethermind
     environment:
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro
@@ -51,10 +49,12 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --Network.MaxActivePeers
       - ${EL_MAX_PEER_COUNT:-50}
+      - --HealthChecks.Enabled
+      - "true"
+      - --HealthChecks.UIEnabled
+      - "true"
       - --JsonRpc.Enabled
       - "true"
-      - --JsonRpc.EnabledModules
-      - "Web3,Eth,Subscribe,Net"
       - --JsonRpc.Host
       - 0.0.0.0
       - --JsonRpc.Port
@@ -69,19 +69,25 @@ services:
       - "true"
       - --Metrics.ExposePort
       - "6060"
+      - --Metrics.IntervalSeconds
+      - "999999"
       - --config
       - ${NETWORK}
-# Potentially unsafe to auto-prune
-#      - --Pruning.FullPruningMaxDegreeOfParallelism
-#      - "2"
-#      - --Pruning.FullPruningTrigger
-#      - "VolumeFreeSpace"
       - --Sync.AncientBodiesBarrier
       - "1"
       - --Sync.AncientReceiptsBarrier
       - "1"
       - --log
       - ${LOG_LEVEL}
+  set-prune-marker:
+    profiles: ["tools"]
+    image: curlimages/curl:latest
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - nm-eth1-data:/var/lib/nethermind
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
 volumes:
   nm-eth1-data:
   jwtsecret:

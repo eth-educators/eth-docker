@@ -24,11 +24,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/teku/ee-secret
     environment:
-      - JAVA_OPTS=-XX:SoftMaxHeapSize=2g -Xmx4g
+      - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
       - MEV_BOOST=${MEV_BOOST}
+      - MEV_NODE=${MEV_NODE}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
+      - VC_EXTRAS=
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -46,6 +50,7 @@ services:
       - --ee-endpoint=${EL_NODE}
       - --ee-jwt-secret-file
       - /var/lib/teku/ee-secret/jwtsecret
+      - --eth1-deposit-contract-max-request-size=1000
       - --p2p-port=${CL_P2P_PORT:-9000}
       - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
       - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
@@ -58,7 +63,7 @@ services:
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
       - --metrics-host-allowlist=*
-      - --p2p-subscribe-all-subnets-enabled=true
+      - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
     labels:
       - traefik.enable=true
       - traefik.http.routers.cl.service=cl

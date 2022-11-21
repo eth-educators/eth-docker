@@ -1,0 +1,17 @@
+# Send client stats to beaconcha.in service using client-metrics-exporter
+version: "3.9"
+services:
+  client-stats:
+    image: gobitfly/eth2-client-metrics-exporter:latest
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint:
+      - /bin/eth2-client-metrics-exporter
+      - --beaconnode.type
+      - nimbus
+      - --beaconnode.address
+      - http://consensus:8008/metrics
+      - --validator.type
+      - nimbus
+      - --server.address
+      - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}

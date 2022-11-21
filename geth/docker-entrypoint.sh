@@ -6,7 +6,7 @@ if [ "$(id -u)" = '0' ]; then
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
-  echo -n ${JWT_SECRET} > /var/lib/goethereum/ee-secret/jwtsecret
+  echo -n "${JWT_SECRET}" > /var/lib/goethereum/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
 fi
 
@@ -14,7 +14,7 @@ if [[ ! -f /var/lib/goethereum/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
   __secret1=$(echo $RANDOM | md5sum | head -c 32)
   __secret2=$(echo $RANDOM | md5sum | head -c 32)
-  echo -n ${__secret1}${__secret2} > /var/lib/goethereum/ee-secret/jwtsecret
+  echo -n "${__secret1}""${__secret2}" > /var/lib/goethereum/ee-secret/jwtsecret
 fi
 
 if [[ -O "/var/lib/goethereum/ee-secret" ]]; then
@@ -23,14 +23,6 @@ if [[ -O "/var/lib/goethereum/ee-secret" ]]; then
 fi
 if [[ -O "/var/lib/goethereum/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/goethereum/ee-secret/jwtsecret
-fi
-
-# Check whether we should override TTD
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--override.terminaltotaldifficulty=${OVERRIDE_TTD}"
-  echo "Overriding TTD to ${OVERRIDE_TTD}"
-else
-  __override_ttd=""
 fi
 
 # Set verbosity
@@ -58,8 +50,12 @@ case ${LOG_LEVEL} in
 esac
 
 if [ -f /var/lib/goethereum/prune-marker ]; then
-  "$@" snapshot prune-state
   rm -f /var/lib/goethereum/prune-marker
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" ${EL_EXTRAS} snapshot prune-state
 else
-  exec "$@" ${__override_ttd} ${__verbosity}
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" ${__verbosity} ${EL_EXTRAS}
 fi

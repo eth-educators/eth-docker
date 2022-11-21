@@ -1,16 +1,14 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-# Check whether we should flag override TTD in VC logs
-if [ -n "${OVERRIDE_TTD}" ]; then
-  __override_ttd="--terminal-total-difficulty-override=${OVERRIDE_TTD}"
-else
-  __override_ttd=""
+if [ "$(id -u)" = '0' ]; then
+  chown -R lhvalidator:lhvalidator /var/lib/lighthouse
+  exec gosu lhvalidator docker-entrypoint.sh "$@"
 fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--private-tx-proposals"
+  __mev_boost="--builder-proposals"
   echo "MEV Boost enabled"
 else
   __mev_boost=""
@@ -31,4 +29,6 @@ else
   __doppel=""
 fi
 
-exec "$@" ${__mev_boost} ${__beacon_stats} ${__override_ttd} ${__doppel}
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}

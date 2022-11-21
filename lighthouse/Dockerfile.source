@@ -8,7 +8,7 @@ ENV FEATURES malloc_utils/mallinfo2,modern,gnosis
 
 #RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y cmake libclang-dev
 # Need a bit more in Ubuntu
-RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y cmake libclang-dev build-essential git curl
+RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y cmake libclang-dev build-essential git curl protobuf-compiler
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"

@@ -18,13 +18,11 @@ services:
         - BUILD_TARGET=${BESU_SRC_BUILD_TARGET}
         - DOCKER_TAG=${BESU_DOCKER_TAG}
     image: besu:local
-# Root so a chown can happen for the secret, then gosu into besu. This can become besu again
-# after merge
-    user: root
+    user: besu
     environment:
-      - JAVA_OPTS=-Xmx4g
+      - JAVA_OPTS=${BESU_HEAP:--XX:SoftMaxHeapSize=3g -Xmx5g}
       - JWT_SECRET=${JWT_SECRET}
-      - OVERRIDE_TTD=${OVERRIDE_TTD}
+      - EL_EXTRAS=${EL_EXTRAS:-}
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
@@ -62,8 +60,6 @@ services:
       - ${EL_WS_PORT:-8546}
       - --max-peers
       - ${EL_MAX_PEER_COUNT:-25}
-      - --fast-sync-min-peers
-      - ${EL_MIN_PEER_COUNT:-5}
       - --host-allowlist=*
       - --engine-host-allowlist=*
       - --engine-jwt-secret=/var/lib/besu/ee-secret/jwtsecret
@@ -78,8 +74,9 @@ services:
       - --metrics-port
       - "6060"
       - --data-storage-format=BONSAI
-      - --sync-mode=X_CHECKPOINT
-#      - --sync-mode=X_SNAP
+      - --Xbonsai-use-snapshots=true
+#      - --sync-mode=X_CHECKPOINT
+      - --sync-mode=X_SNAP
 volumes:
   besu-eth1-data:
   jwtsecret:
