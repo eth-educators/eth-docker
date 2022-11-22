@@ -15,7 +15,6 @@ services:
     image: prometheus:local
     volumes:
       - prom-data:/prometheus
-      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
       - /etc/localtime:/etc/localtime:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
