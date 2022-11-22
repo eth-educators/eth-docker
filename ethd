@@ -817,7 +817,7 @@ prune-nethermind() {
 
     if [ $__non_interactive = 0 ]; then
       while true; do
-          read -rp "WARNING - this will restart Nethermind and prune its database in the background. Do you wish to continue? (No/Yes) " yn
+          read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
           case $yn in
               [Yy]es ) break;;
               * ) echo "Aborting, no changes made"; exit 1;;
@@ -828,32 +828,8 @@ prune-nethermind() {
     echo ""
     echo "Starting Nethermind prune"
     echo ""
-    docompose run --rm set-prune-marker "touch /var/lib/nethermind/prune-marker"
-    docompose stop execution && docompose rm -f execution
-    start
 
-    echo "Waiting for Nethermind to be up"
-    __nethermind_active=0
-    for ((t=1; t<=3; t++)); do
-        docompose exec -T execution wget -T 1 -qO- "http://localhost:$rpc_port" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'
-        exitstatus=$?
-        if [[ ${exitstatus} -ne 0 ]]; then
-            echo "Nethermind is not active yet."
-        else
-            echo
-            echo "Nethermind active, sending prune command."
-            __nethermind_active=1
-            break
-        fi
-    done
-
-    if [[ ${__nethermind_active} -eq 0 ]]; then
-        echo "Nethermind did not become active in time. Please try running the following command manually, then check Nethermind logs."
-        echo 'docker-compose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545"'
-        exit 1
-    fi
-
-    prune_result=$(docompose run --rm set-prune-marker "curl -s --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} -H Content-Type:\ application/json http://execution:8545")
+    prune_result=$(docompose exec -T execution wget -qO- "http://localhost:1337" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"admin_prune","params":[],"id":1}')
     exitstatus=$?
     if [ $exitstatus -ne 0 ]; then
         echo "Unable to start prune, error code ${exitstatus}. This is likely a bug."
@@ -867,7 +843,7 @@ prune-nethermind() {
         exit 1
     fi
     echo ""
-    echo "Prune is running, you can observe it with './ethd logs -f execution'"
+    echo "Prune is running, you can observe it with './ethd logs -f --tail 50 execution'"
     echo ""
     echo "Please do not restart the node or restart Nethermind until prune is done."
     echo ""
