@@ -61,7 +61,10 @@ services:
       - ${EL_RPC_PORT:-8545}
       - --JsonRpc.WebSocketsPort
       - ${EL_WS_PORT:-8546}
-      - --JsonRpc.AdditionalRpcUrls=http://0.0.0.0:${EE_PORT:-8551}|http;ws|engine;eth;subscribe
+      - --JsonRpc.EngineHost
+      - 0.0.0.0
+      - --JsonRpc.EnginePort
+      - ${EE_PORT:-8551}
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
       - --Sync.SnapSync
       - "true"
