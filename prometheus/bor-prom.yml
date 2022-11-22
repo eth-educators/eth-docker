@@ -3,4 +3,4 @@
     scheme: http
     static_configs:
     - targets:
-      - execution:6060
+      - bor:6060

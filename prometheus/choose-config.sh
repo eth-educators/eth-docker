@@ -41,9 +41,4 @@ if [ -f "/etc/prometheus/custom-prom.yml" ]; then
     cat /etc/prometheus/custom-prom.yml >> /etc/prometheus/prometheus.yml
 fi
 
-# This needs to come last, as it has global level entries
-case "$CLIENT" in
-  *alert* ) cat /etc/prometheus/alert-prom.yml >> /etc/prometheus/prometheus.yml;;
-esac
-
 exec "$@" --config.file=/etc/prometheus/prometheus.yml
