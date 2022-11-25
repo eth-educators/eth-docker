@@ -65,6 +65,9 @@ services:
       - 0.0.0.0
       - --JsonRpc.EnginePort
       - ${EE_PORT:-8551}
+      - --JsonRpc.EnabledModules
+      - "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool"
+      - --JsonRpc.AdditionalRpcUrls=http://127.0.0.1:1337|http|admin
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
       - --Metrics.Enabled
       - "true"
@@ -78,17 +81,12 @@ services:
       - "1"
       - --Sync.AncientReceiptsBarrier
       - "1"
+      - --Pruning.FullPruningMaxDegreeOfParallelism
+      - "2"
+      - --Pruning.FullPruningCompletionBehavior
+      - ShutdownOnSuccess
       - --log
       - ${LOG_LEVEL}
-  set-prune-marker:
-    profiles: ["tools"]
-    image: curlimages/curl:latest
-    user: "10001:10001"
-    restart: "no"
-    volumes:
-      - nm-eth1-data:/var/lib/nethermind
-    entrypoint: ["/bin/sh","-c"]
-    command: /bin/sh
 volumes:
   nm-eth1-data:
   jwtsecret:

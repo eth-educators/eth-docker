@@ -54,14 +54,6 @@ if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
-__cores=$(($(nproc)/2))
-if [ -f /var/lib/nethermind/prune-marker ]; then
-  rm -f /var/lib/nethermind/prune-marker
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool,Admin" --Pruning.FullPruningMaxDegreeOfParallelism $__cores --Pruning.FullPruningCompletionBehavior ShutdownOnSuccess ${EL_EXTRAS}
-else
-# Word splitting is desired for the command line parameters
-# shellcheck disable=SC2086
-  exec "$@" --JsonRpc.EnabledModules "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool" ${EL_EXTRAS}
-fi
+exec "$@" ${EL_EXTRAS}
