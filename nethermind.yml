@@ -66,8 +66,6 @@ services:
       - --JsonRpc.EnginePort
       - ${EE_PORT:-8551}
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
-      - --Sync.SnapSync
-      - "true"
       - --Metrics.Enabled
       - "true"
       - --Metrics.ExposePort
