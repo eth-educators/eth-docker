@@ -1123,7 +1123,8 @@ query_consensus_client() {
       "Which consensus client do you want to run?" 10 65 3 \
       "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
       "teku.yml" "Teku (Java) - consensus and validator client" \
-      "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" 3>&1 1>&2 2>&3)
+      "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
+      "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
