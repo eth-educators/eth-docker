@@ -19,7 +19,7 @@ determine_distro() {
     # If Linux, try to determine specific distribution
     if [ "$__uname" == "linux" ]; then
         # If available, use LSB to identify distribution
-        if [ -n "$(which lsb_release 2>/dev/null)" ]; then
+        if [ -n "$(command -v lsb_release 2>/dev/null)" ]; then
             __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
         # Otherwise, use release info file
         else
@@ -130,7 +130,7 @@ handle_root() {
 }
 
 check_for_snap() {
-    if [[ "$__distro" = "ubuntu" && -n "$(which snap)" ]] && snap list 2>/dev/null | grep -qw 'docker'; then
+    if [[ "$__distro" = "ubuntu" && -n "$(command -v snap)" ]] && snap list 2>/dev/null | grep -qw 'docker'; then
         echo
         echo "WARNING! Snap docker package detected. This WILL result in issues."
         echo "Removing the package will delete volumes and require a resync,"
@@ -165,7 +165,7 @@ install() {
         if [ "${__major_version}" -lt 18 ]; then
             echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
         fi
-        if [ -z "$(which docker)" ]; then
+        if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail bc
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -187,7 +187,7 @@ install() {
             echo "Your user is already part of the docker group"
         fi
     elif [[ "$__distro" =~ "debian" ]]; then
-        if [ -z "$(which docker)" ]; then
+        if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
             ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
