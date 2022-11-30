@@ -269,7 +269,7 @@ update() {
     exec 4>&2
     exec 1> /dev/null
     exec 2> /dev/null
-    docompose pull || true
+    docompose pull --ignore-pull-failures || true
     exec 1>&3
     exec 2>&4
 
