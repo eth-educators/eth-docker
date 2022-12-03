@@ -75,7 +75,7 @@ services:
       - ${EL_MAX_PEER_COUNT:-50}
   set-prune-marker:
     profiles: ["tools"]
-    image: alpine:latest
+    image: alpine:3
     user: "10001:10001"
     restart: "no"
     volumes:
