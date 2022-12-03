@@ -12,7 +12,7 @@ WORKDIR /src
 RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon && make rpcdaemon"
 
 # Pull all binaries into a second stage deploy container
-FROM alpine:latest
+FROM alpine:3
 
 ARG USER=erigon
 ARG UID=10001

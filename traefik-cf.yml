@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:v2.9
     restart: "unless-stopped"
     command:
 #      - --log.level=DEBUG
