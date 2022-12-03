@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 
-FROM ghcr.io/tomwright/dasel:latest as dasel
+FROM ghcr.io/tomwright/dasel:v1.27.3-alpine as dasel
 
 FROM nethermindeth/nethermind:${DOCKER_TAG}
 
