@@ -1,0 +1,67 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  execution:
+    restart: "unless-stopped"
+    build:
+      context: ./nimbus-el
+      dockerfile: ${NIMEL_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${NIMEL_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${NIMEL_DOCKER_TAG}
+    stop_grace_period: 3m
+    image: nimbus-el:local
+    user: user
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - EL_EXTRAS=${EL_EXTRAS:-}
+    volumes:
+      - nimbus-el-data:/var/lib/nimbus
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/nimbus/ee-secret
+    ports:
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+    networks:
+      default:
+        aliases:
+          - eth1
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - nimbus
+      - --rpc
+      - --rpc-address=0.0.0.0
+      - --rpc-port=${EL_RPC_PORT:-8545}
+      - --rpc-api=eth
+      - --data-dir=/var/lib/nimbus
+      - --key-store=/var/lib/nimbus/nimbus/keystore
+      - --tcp-port=${EL_P2P_PORT:-30303}
+      - --ws
+      - --ws-address=0.0.0.0
+      - --ws-port=${EL_WS_PORT:-8546}
+      - --ws-api=eth
+      - --network=${NETWORK}
+      - --metrics
+      - --metrics-port=6060
+      - --metrics-address=0.0.0.0
+      - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
+      - --engine-api
+      - --engine-api-port=${EE_PORT:-8551}
+      - --engine-api-address=0.0.0.0
+      - --engine-api-ws
+      - --engine-api-ws-port=8552
+      - --engine-api-ws-address=0.0.0.0
+      - --max-peers=${EL_MAX_PEER_COUNT:-25}
+      - --log-level=${LOG_LEVEL}
+      - --sync-mode=snapCtx
+volumes:
+  nimbus-el-data:
+  jwtsecret:
