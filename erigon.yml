@@ -58,7 +58,6 @@ services:
       - --metrics
       - --metrics.addr
       - 0.0.0.0
-      - --metrics.expensive
       - --http
       - --http.addr
       - 0.0.0.0
