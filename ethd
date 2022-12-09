@@ -1854,24 +1854,6 @@ if [ "$command" = "install" ]; then
     exit "$?"
 fi
 
-# Check for alt L1
-var="COMPOSE_FILE"
-value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
-# Bor,  HECO or Fantom stay; switch everything else
-if [[ ! "${value}" =~ "bor.yml" && ! "${value}" =~ "heco.yml" && ! "${value}" =~ "opera.yml" ]]; then
-  __switched_branch=1
-  ${__as_owner} git pull
-  ${__as_owner} git fetch origin main
-  ${__as_owner} git checkout main
-  ${__as_owner} git pull
-  echo "This branch of eth-docker is only used for Polygon, HECO and Fantom now."
-  echo "Switched you over to the main branch."
-  echo
-  echo "Please fix any git errors manually"
-  echo "Then run ./ethd update"
-  exit 0
-fi
-
 if ! type -P whiptail >/dev/null 2>&1; then
     echo "Please install the package whiptail or newt before running this script"
     exit 1
@@ -1886,5 +1868,15 @@ if ! docompose --help >/dev/null 2>&1; then
     echo "Please ensure you can call $__compose_exe before running this script"
     exit 1
 fi
+if [ "$command" = "update" ] || [ "$command" = "upgrade" ]; then
+    echo "This branch of eth-docker has been deprecated."
+    echo "Aborting."
+    exit 1
+fi
 
 $command "$@"
+
+echo "This branch of eth-docker has been deprecated."
+echo "Please migrate to the polygon-docker project if you are using Polygon."
+echo "Fantom will be moved to fantom-docker in due time."
+echo "Heco support has been discontinued."
