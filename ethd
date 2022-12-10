@@ -1868,11 +1868,12 @@ if ! docompose --help >/dev/null 2>&1; then
     echo "Please ensure you can call $__compose_exe before running this script"
     exit 1
 fi
-if [ "$command" = "update" ] || [ "$command" = "upgrade" ]; then
-    echo "This branch of eth-docker has been deprecated."
-    echo "Aborting."
-    exit 1
-fi
+#if [ "$command" = "update" ] || [ "$command" = "upgrade" ]; then
+#    echo "This branch of eth-docker has been deprecated."
+#    echo "Aborting."
+#    exit 1
+#fi
+
 
 $command "$@"
 

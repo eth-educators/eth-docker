@@ -14,6 +14,7 @@ if [ ! -f /var/lib/heimdall/config/config.toml ]; then
   heimdalld init --home /var/lib/heimdall --chain-id ${HEIMDALL_CHAIN_ID}
   wget -q -O - "${HEIMDALL_SNAPSHOT_FILE}" | tar xzvf - -C /var/lib/heimdall/data/
 fi
+touch /var/lib/heimdall/setupdone
 wget -O /var/lib/heimdall/config/genesis.json ${HEIMDALL_GENESIS_URL} -P /var/lib/heimdall/config
 SERVER_IP=$(curl -s ifconfig.me)
 sed -i "/seeds =/c\seeds = \"${HEIMDALL_SEEDS}\"" /var/lib/heimdall/config/config.toml
