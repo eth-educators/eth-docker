@@ -73,7 +73,7 @@ services:
       - --validator-api-keystore-file=/var/lib/teku/teku-keyapi.keystore
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
-      - --validators-keystore-locking-enabled=false
+      - --validators-keystore-locking-enabled=true
 
   validator-import:
     profiles: ["tools"]
