@@ -73,8 +73,6 @@ services:
       - "true"
       - --Metrics.ExposePort
       - "6060"
-      - --Metrics.IntervalSeconds
-      - "999999"
       - --config
       - ${NETWORK}
       - --Sync.AncientBodiesBarrier
