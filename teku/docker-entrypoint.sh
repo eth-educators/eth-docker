@@ -12,7 +12,7 @@ fi
 if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
     __password=$(echo $RANDOM | md5sum | head -c 32)
     echo "$__password" > /var/lib/teku/teku-keyapi.password
-    openssl req -new --newkey rsa:2048 -nodes -keyout /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.csr -subj "/CN=127.0.0.1"
+    openssl req -new --newkey rsa:2048 -nodes -keyout /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.csr -subj "/CN=consensus"
     openssl x509 -req -days 365 -in  /var/lib/teku/teku-keyapi.csr -signkey  /var/lib/teku/teku-keyapi.key -out  /var/lib/teku/teku-keyapi.crt
     openssl pkcs12 -export -in /var/lib/teku/teku-keyapi.crt -inkey /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.keystore -name teku-keyapi -passout pass:"$__password"
 fi
