@@ -475,6 +475,7 @@ set -e
 
 if [ "$(id -u)" = '0' ]; then
     __token_file=$1
+    __api_container=$2
     case "$3" in
         get-api-token)
             print-api-token
@@ -485,9 +486,14 @@ if [ "$(id -u)" = '0' ]; then
             exit 0
             ;;
     esac
-    cp "$__token_file" /tmp/api-token.txt
-    chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
-    exec su-exec "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
+    if [ -f "$__token_file" ]; then
+        cp "$__token_file" /tmp/api-token.txt
+        chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
+        exec su-exec "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
+    else
+        echo "File $__token_file not found."
+        echo "The $__api_container service may not be fully started yet."
+    fi
 fi
 
 __token_file=/tmp/api-token.txt
