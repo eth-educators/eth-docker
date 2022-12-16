@@ -493,6 +493,7 @@ if [ "$(id -u)" = '0' ]; then
     else
         echo "File $__token_file not found."
         echo "The $__api_container service may not be fully started yet."
+        exit 1
     fi
 fi
 
