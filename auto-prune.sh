@@ -1,6 +1,6 @@
 #!/bin/bash
 __percent_threshold=10
-__byte_threshold=104857600
+__kbyte_threshold=104857600
 
 if [ "$(dpkg-query -W -f='${Status}' bc 2>/dev/null | grep -c "ok installed")" = "0" ] || [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
   echo "This script requires the bc and jq packages, please install them via 'sudo apt install bc jq'"
@@ -27,11 +27,11 @@ for (( i=1; i<=$#; i++ )); do
   fi
   if [ "$var" = "--threshold" ]; then
     j=$((i+1))
-    __byte_threshold=${!j}
+    __kbyte_threshold=${!j}
     __threshold_override=1
     re='^[0-9]+$'
-    if [ -z "$__byte_threshold" ] || [[ ! "$__byte_threshold" =~ $re ]]; then
-      echo "--threshold requires a size in bytes"
+    if [ -z "$__kbyte_threshold" ] || [[ ! "$__kbyte_threshold" =~ $re ]]; then
+      echo "--threshold requires a size in kbytes"
       exit 1
     fi
   fi
@@ -42,8 +42,8 @@ for (( i=1; i<=$#; i++ )); do
     echo
     echo "--dry-run"
     echo "  Run and alert on diskspace, but do not start a prune"
-    echo "--threshold <bytes>"
-    echo "  Disk free threshold in bytes at which to alert"
+    echo "--threshold <kbytes>"
+    echo "  Disk free threshold in kbytes at which to alert"
     exit 0
   fi
 done
@@ -60,17 +60,17 @@ value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 if [[ "${value}" =~ "geth.yml" ]]; then
   __el=geth
   if [ "$__threshold_override" -eq 0 ]; then
-    __byte_threshold=104857600
+    __kbyte_threshold=104857600
   fi
 elif [[ "${value}" =~ "nethermind.yml" ]]; then
   __el=nethermind
   if [ "$__threshold_override" -eq 0 ]; then
-    __byte_threshold=262144000
+    __kbyte_threshold=262144000
   fi
 fi
 
-# If under byte threshold or 10% free, alert
-if [ "$FREE_DISK" -lt "${__byte_threshold}" ] || [ "$PERCENT_FREE" -lt "${__percent_threshold}" ]; then
+# If under kbyte threshold or 10% free, alert
+if [ "$FREE_DISK" -lt "${__kbyte_threshold}" ] || [ "$PERCENT_FREE" -lt "${__percent_threshold}" ]; then
   if [ "$__dryrun" -eq 0 ]; then
     if  [ "$__el" = "geth" ] || [ "$__el" = "nethermind" ]; then
       if [ ! -f "./ethd" ]; then
