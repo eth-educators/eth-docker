@@ -51,6 +51,7 @@ services:
       - ${EL_RPC_PORT:-8545}
       - --rpc-http-cors-origins=*
       - --rpc-http-max-active-connections=65536
+      - --rpc-max-logs-range=65536
       - --rpc-ws-enabled
       - --rpc-ws-api
       - "WEB3,ETH,NET"
