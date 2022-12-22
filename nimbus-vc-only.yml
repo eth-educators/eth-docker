@@ -11,30 +11,32 @@ services:
   validator:
     restart: "unless-stopped"
     build:
+      target: validator
       context: ./nimbus
       args:
         - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NIM_DOCKER_TAG}
+        - DOCKER_VC_TAG=${NIM_DOCKER_VC_TAG}
       dockerfile: ${NIM_DOCKERFILE}
-    image: nimbus:local
-    user: vc-user
+    image: nimbus-validator:local
+    user: user
     volumes:
-      - nimbus-vc-data:/var/lib/nimbus-vc
+      - nimbus-vc-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
+      - LOG_LEVEL=${LOG_LEVEL}
       - VC_EXTRAS=${VC_EXTRAS:-}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
       - /usr/local/bin/nimbus_validator_client
-      - --data-dir=/var/lib/nimbus-vc
+      - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --beacon-node=${CL_NODE}
       - --graffiti=${GRAFFITI}
-      - --log-level=${LOG_LEVEL}
       - --metrics
       - --metrics-port=8009
       - --metrics-address=0.0.0.0
@@ -42,16 +44,16 @@ services:
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0
       - --keymanager-allow-origin=*
-      - --keymanager-token-file=/var/lib/nimbus-vc/api-token.txt
+      - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
 
   validator-import:
     profiles: ["tools"]
     restart: "no"
-    image: nimbus:local
+    image: nimbus-validator:local
     user: root
     volumes:
-      - nimbus-vc-data:/var/lib/nimbus-vc
+      - nimbus-vc-data:/var/lib/nimbus
       - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
@@ -60,7 +62,7 @@ services:
     entrypoint:
       - validator-import.sh
       - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus-vc
+      - --data-dir=/var/lib/nimbus
       - --network=${NETWORK}
       - deposits
       - import
@@ -69,14 +71,14 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    image: nimbus:local
-    user: vc-user
+    image: nimbus-validator:local
+    user: user
     volumes:
-      - nimbus-vc-data:/var/lib/nimbus-vc
+      - nimbus-vc-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus-vc
+      - --data-dir=/var/lib/nimbus
       - --network=${NETWORK}
       - --log-level=${LOG_LEVEL}
       - deposits
@@ -92,7 +94,7 @@ services:
     image: vc-utils:local
     user: root
     volumes:
-      - nimbus-vc-data:/var/lib/nimbus-vc
+      - nimbus-vc-data:/var/lib/nimbus
       - ./.eth/validator_keys:/validator_keys
       - /etc/localtime:/etc/localtime:ro
     environment:
@@ -102,7 +104,7 @@ services:
       - validator
     entrypoint:
       - keymanager.sh
-      - /var/lib/nimbus-vc/api-token.txt
+      - /var/lib/nimbus/api-token.txt
       - validator
 
 volumes:
