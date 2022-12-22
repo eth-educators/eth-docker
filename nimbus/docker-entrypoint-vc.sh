@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 if [ "$(id -u)" = '0' ]; then
-  chown -R vc-user:vc-user /var/lib/nimbus-vc
-  exec gosu vc-user docker-entrypoint-vc.sh "$@"
+  chown -R user:user /var/lib/nimbus
+  exec gosu user docker-entrypoint-vc.sh "$@"
 fi
 
-if [ ! -f /var/lib/nimbus-vc/api-token.txt ]; then
+if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)
-    echo "$__token" > /var/lib/nimbus-vc/api-token.txt
+    echo "$__token" > /var/lib/nimbus/api-token.txt
 fi
 
 # Check whether we should enable doppelganger protection
@@ -18,6 +18,8 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
+__log_level="--log-level=${LOG_LEVEL^^}"
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__doppel} ${VC_EXTRAS}
+exec "$@" ${__log_level} ${__doppel} ${VC_EXTRAS}

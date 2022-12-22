@@ -13,6 +13,7 @@ x-build: &prysm-build
   args:
     - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET}
     - DOCKER_TAG=${PRYSM_DOCKER_TAG}
+    - DOCKER_VC_TAG=${PRYSM_DOCKER_VC_TAG}
 
 services:
   consensus:

@@ -11,10 +11,12 @@ services:
   consensus:
     restart: "unless-stopped"
     build:
+      target: consensus
       context: ./nimbus
       args:
         - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NIM_DOCKER_TAG}
+        - DOCKER_VC_TAG=${NIM_DOCKER_VC_TAG}
       dockerfile: ${NIM_DOCKERFILE}
     image: nimbus:local
     user: user
@@ -29,6 +31,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - DOPPELGANGER=false
       - CL_EXTRAS=${CL_EXTRAS:-}
       - VC_EXTRAS=
     ports:
@@ -52,12 +56,10 @@ services:
       - --web3-url=${EL_NODE}
       - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
       - --graffiti=${GRAFFITI}
-      - --log-level=${LOG_LEVEL}
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=${CL_REST_PORT:-5052}
       - --enr-auto-update=true
-      - --doppelganger-detection=false
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
