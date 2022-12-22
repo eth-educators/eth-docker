@@ -6,13 +6,13 @@ ARG DOCKER_TAG
 
 ARG BUILD_TARGET
 
-RUN apt-get update && apt-get install -y build-essential git libpcre3-dev ca-certificates
+RUN apt-get update && apt-get install -y build-essential git ca-certificates
 
 WORKDIR /usr/src
-RUN bash -c "git clone https://github.com/status-im/nim-beacon-chain && cd nim-beacon-chain && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) nimbus_beacon_node nimbus_validator_client"
+RUN bash -c "git clone https://github.com/status-im/nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) update && make -j$(nproc) nimbus_beacon_node nimbus_validator_client"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bullseye-slim
+FROM debian:bullseye-slim as consensus
 
 ARG USER=user
 ARG UID=10002
@@ -41,7 +41,18 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
-ARG USER=vc-user
+# Copy executable
+COPY --from=builder /usr/src/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
+# Scripts for privilege change
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
+USER ${USER}
+
+ENTRYPOINT ["nimbus_beacon_node"]
+
+FROM debian:bullseye-slim as validator
+
+ARG USER=user
 ARG UID=10000
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
@@ -55,16 +66,14 @@ RUN adduser \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/nimbus-vc && chown -R vc-user:vc-user /var/lib/nimbus-vc && chmod -R 700 /var/lib/nimbus-vc
+RUN mkdir -p /var/lib/nimbus && chown -R user:user /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
 
 # Copy executable
-COPY --from=builder /usr/src/nim-beacon-chain/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
-COPY --from=builder /usr/src/nim-beacon-chain/build/nimbus_validator_client /usr/local/bin/nimbus_validator_client
+COPY --from=builder /usr/src/nimbus-eth2/build/nimbus_validator_client /usr/local/bin/nimbus_validator_client
 # Scripts for privilege change and validator import
 COPY ./validator-import.sh /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
 COPY ./docker-entrypoint-vc.sh /usr/local/bin/
 
 USER ${USER}
 
-ENTRYPOINT ["nimbus_beacon_node"]
+ENTRYPOINT ["nimbus_validator_client"]

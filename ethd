@@ -189,7 +189,7 @@ install() {
     elif [[ "$__distro" =~ "debian" ]]; then
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc
+            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc jq
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
@@ -263,13 +263,12 @@ update() {
         exec "${BASH_SOURCE[0]}" update $__targetcli
     fi
 
-    docompose build --pull
     docompose --profile tools build --pull
     exec 3>&1
     exec 4>&2
     exec 1> /dev/null
     exec 2> /dev/null
-    docompose pull --ignore-pull-failures || true
+    docompose --profile tools pull --ignore-pull-failures || true
     exec 1>&3
     exec 2>&4
 
@@ -676,9 +675,21 @@ prune-geth() {
         exit 1
     fi
 
-    if [ "$(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}')" -lt 41943040 ]; then
+    __docker_dir="/var/lib/docker"
+    if [ -f "/etc/docker/daemon.json" ]; then
+        if [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
+            echo "This script requires the jq package to parse /etc/docker/daemon.json, please install it via 'sudo apt install jq'"
+            exit 1
+        fi
+        __dir=$(jq '."data-root"' /etc/docker/daemon.json)
+        if [ ! "$__dir" = "null" ]; then
+            __docker_dir="$__dir"
+        fi
+    fi
+
+    if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 41943040 ]; then
         echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
-        df -h /var/lib/docker
+        df -h "${__docker_dir}"
         echo ""
         echo "Aborting."
         exit 1
@@ -781,9 +792,21 @@ prune-nethermind() {
         exit 1
     fi
 
-    if [ "$(df -P /var/lib/docker | awk '/[0-9]%/{print $(NF-2)}')" -lt 262144000 ]; then
+    __docker_dir="/var/lib/docker"
+    if [ -f "/etc/docker/daemon.json" ]; then
+        if [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
+            echo "This script requires the jq package to parse /etc/docker/daemon.json, please install it via 'sudo apt install jq'"
+            exit 1
+        fi
+        __dir=$(jq '."data-root"' /etc/docker/daemon.json)
+        if [ ! "$__dir" = "null" ]; then
+            __docker_dir="$__dir"
+        fi
+    fi
+
+    if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 262144000 ]; then
         echo "You do not have enough free disk space. Make sure this reads at least 250G free (Avail):"
-        df -h /var/lib/docker
+        df -h "${__docker_dir}"
         echo ""
         echo "Aborting."
         exit 1
