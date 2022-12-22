@@ -2,8 +2,8 @@
 __percent_threshold=10
 __kbyte_threshold=104857600
 
-if [ "$(dpkg-query -W -f='${Status}' bc 2>/dev/null | grep -c "ok installed")" = "0" ] || [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
-  echo "This script requires the bc and jq packages, please install them via 'sudo apt install bc jq'"
+if [ "$(dpkg-query -W -f='${Status}' bc 2>/dev/null | grep -c "ok installed")" = "0" ]; then
+  echo "This script requires the bc package, please install it via 'sudo apt install bc'"
   exit 1
 fi
 
@@ -12,6 +12,10 @@ cd "$(dirname "$0")" || exit 1
 
 __docker_dir="/var/lib/docker"
 if [ -f "/etc/docker/daemon.json" ]; then
+  if [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
+    echo "This script requires the jq package to parse /etc/docker/daemon.json, please install it via 'sudo apt install jq'"
+    exit 1
+  fi
   __dir=$(jq '."data-root"' /etc/docker/daemon.json)
   if [ ! "$__dir" = "null" ]; then
     __docker_dir="$__dir"
