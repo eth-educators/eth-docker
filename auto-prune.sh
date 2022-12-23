@@ -16,7 +16,7 @@ if [ -f "/etc/docker/daemon.json" ]; then
     echo "This script requires the jq package to parse /etc/docker/daemon.json, please install it via 'sudo apt install jq'"
     exit 1
   fi
-  __dir=$(jq '."data-root"' /etc/docker/daemon.json)
+  __dir=$(jq --raw-output '."data-root"' /etc/docker/daemon.json)
   if [ ! "$__dir" = "null" ]; then
     __docker_dir="$__dir"
   fi
