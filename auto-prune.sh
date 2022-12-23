@@ -10,18 +10,7 @@ fi
 cd "$(dirname "$0")" || exit 1
 
 
-__docker_dir="/var/lib/docker"
-if [ -f "/etc/docker/daemon.json" ]; then
-  if [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
-    echo "This script requires the jq package to parse /etc/docker/daemon.json, please install it via 'sudo apt install jq'"
-    exit 1
-  fi
-  __dir=$(jq --raw-output '."data-root"' /etc/docker/daemon.json)
-  if [ ! "$__dir" = "null" ]; then
-    __docker_dir="$__dir"
-  fi
-fi
-
+__docker_dir=$(docker system info --format '{{json .DockerRootDir}}' | tr -d '"')
 __dryrun=0
 __threshold_override=0
 for (( i=1; i<=$#; i++ )); do
