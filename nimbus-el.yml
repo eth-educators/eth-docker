@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${NIMEL_SRC_BUILD_TARGET}
         - DOCKER_TAG=${NIMEL_DOCKER_TAG}
-    stop_grace_period: 3m
+    stop_grace_period: 5m
     stop_signal: SIGINT
     image: nimbus-el:local
     user: user
