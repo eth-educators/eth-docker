@@ -10,7 +10,7 @@ fi
 cd "$(dirname "$0")" || exit 1
 
 
-__docker_dir=$(docker system info --format '{{json .DockerRootDir}}' | tr -d '"')
+__docker_dir=$(docker system info --format '{{.DockerRootDir}}')
 __dryrun=0
 __threshold_override=0
 for (( i=1; i<=$#; i++ )); do

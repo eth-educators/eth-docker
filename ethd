@@ -675,7 +675,7 @@ prune-geth() {
         exit 1
     fi
 
-    __docker_dir=$(docker system info --format '{{json .DockerRootDir}}' | tr -d '"')
+    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
 
     if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 41943040 ]; then
         echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
@@ -783,7 +783,7 @@ prune-nethermind() {
     fi
 
 
-    __docker_dir=$(docker system info --format '{{json .DockerRootDir}}' | tr -d '"')
+    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
 
     if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 262144000 ]; then
         echo "You do not have enough free disk space. Make sure this reads at least 250G free (Avail):"
