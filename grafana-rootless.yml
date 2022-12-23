@@ -23,11 +23,9 @@ services:
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     <<: *logging
     depends_on:
-      - node-exporter
       - blackbox-exporter
       - json-exporter
       - cryptowat-exporter
-      - cadvisor
       - ethereum-metrics-exporter
 
   ethereum-metrics-exporter:
@@ -89,8 +87,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
-      - loki
-      - promtail
     entrypoint: ["provision-dashboards.sh"]
     command: /run.sh
     <<: *logging
