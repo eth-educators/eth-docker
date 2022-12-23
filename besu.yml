@@ -10,7 +10,7 @@ x-logging: &logging
 services:
   execution:
     restart: "unless-stopped"
-    stop_grace_period: 3m
+    stop_grace_period: 5m
     build:
       context: ./besu
       dockerfile: ${BESU_DOCKERFILE}

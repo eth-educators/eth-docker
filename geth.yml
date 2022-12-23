@@ -16,7 +16,7 @@ services:
       args:
         - BUILD_TARGET=${GETH_SRC_BUILD_TARGET}
         - DOCKER_TAG=${GETH_DOCKER_TAG}
-    stop_grace_period: 3m
+    stop_grace_period: 5m
     image: geth:local
     user: geth
     environment:
