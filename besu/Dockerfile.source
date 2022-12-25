@@ -44,9 +44,11 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/besu/ee-secret && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
 
-# Copy executable
-COPY --from=builder /usr/src/besu/build/install/besu/. /opt/besu/
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /usr/src/besu/build/install/besu/. /opt/besu/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

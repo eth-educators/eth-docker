@@ -54,7 +54,10 @@ RUN adduser \
 
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/lighthouse/beacon/ee-secret && chown -R ${USER}:${USER} /var/lib/lighthouse/beacon && chmod -R 700 /var/lib/lighthouse/beacon && chmod 777 /var/lib/lighthouse/beacon/ee-secret
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 ARG USER=lhvalidator
 ARG UID=10000
@@ -72,14 +75,13 @@ RUN adduser \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/lighthouse/validators && chown ${USER}:${USER} /var/lib/lighthouse/validators && chmod 700 /var/lib/lighthouse/validators
 
-# Copy executable
-#COPY --from=builder /usr/local/cargo/bin/lighthouse /usr/local/bin/
-COPY --from=builder /root/.cargo/bin/lighthouse /usr/local/bin/
-
-# Scripts that handle permissions
-COPY ./validator-import.sh /usr/local/bin/
-COPY ./validator-exit.sh /usr/local/bin/
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /root/.cargo/bin/lighthouse /usr/local/bin/
+COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./validator-exit.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 # For voluntary exit
 ENV KEYSTORE=nonesuch

@@ -5,18 +5,22 @@ FROM thorax/erigon:${DOCKER_TAG}
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
 
+ARG USER=erigon
 ARG UID=10001
 # GID 10002 is deliberate so it can exchange secret with CL
 ARG GID=10002
 
 USER root
 
-RUN apk --no-cache add shadow bash su-exec && groupmod -g "${GID}" erigon && usermod -u "${UID}" -g "${GID}" erigon
+RUN apk --no-cache add shadow bash su-exec && groupmod -g "${GID}" ${USER} && usermod -u "${UID}" -g "${GID}" ${USER}
 
-RUN mkdir -p /var/lib/erigon/ee-secret && chown -R erigon:erigon /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
+RUN mkdir -p /var/lib/erigon/ee-secret && chown -R ${USER}:${USER} /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
-USER erigon
+USER ${USER}
 
 ENTRYPOINT ["erigon"]

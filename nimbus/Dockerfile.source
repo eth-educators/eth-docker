@@ -41,10 +41,11 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
-# Copy executable
-COPY --from=builder /usr/src/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
-# Scripts for privilege change
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
@@ -66,13 +67,14 @@ RUN adduser \
     "${USER}"
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/nimbus && chown -R user:user /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
+RUN mkdir -p /var/lib/nimbus && chown -R ${USER}:${USER} /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
 
-# Copy executable
-COPY --from=builder /usr/src/nimbus-eth2/build/nimbus_validator_client /usr/local/bin/nimbus_validator_client
-# Scripts for privilege change and validator import
-COPY ./validator-import.sh /usr/local/bin/
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth2/build/nimbus_validator_client /usr/local/bin/
+COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

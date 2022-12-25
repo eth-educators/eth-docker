@@ -25,6 +25,11 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/lodestar/consensus/ee-secret && chown -R ${USER}:${USER} /var/lib/lodestar/consensus && chmod -R 700 /var/lib/lodestar/consensus && chmod 777 /var/lib/lodestar/consensus/ee-secret
 
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
+
 ARG USER=lsvalidator
 ARG UID=10000
 
@@ -40,7 +45,10 @@ RUN adduser \
 
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/lodestar/validators && chown -R ${USER}:${USER} /var/lib/lodestar/validators && chmod 700 /var/lib/lodestar/validators
-COPY ./docker-entrypoint.sh /usr/local/bin/
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
+
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 ENTRYPOINT ["node", "--max-old-space-size=6144", "/usr/app/node_modules/.bin/lodestar"]

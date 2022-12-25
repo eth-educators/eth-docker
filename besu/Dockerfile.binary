@@ -22,7 +22,10 @@ RUN set -eux; \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/besu/ee-secret && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER besu
 

@@ -6,11 +6,12 @@ FROM statusim/nimbus-eth2:${DOCKER_TAG} as consensus
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET
 
+ARG USER=user
 ARG UID=10002
 
 USER root
 
-RUN groupmod -g "${UID}" user && usermod -u "${UID}" -g "${UID}" user
+RUN groupmod -g "${UID}" ${USER} && usermod -u "${UID}" -g "${UID}" ${USER}
 
 RUN set -eux; \
         apt-get update; \
@@ -20,12 +21,16 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R user:user /var/lib/nimbus && chmod -R 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
+RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R ${USER}:${USER} /var/lib/nimbus && chmod -R 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
-# Copy beacon_node into $PATH
-RUN cp /home/user/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
-COPY ./docker-entrypoint.sh /usr/local/bin/
-USER user
+RUN cp /home/user/nimbus_beacon_node /usr/local/bin/
+RUN chown ${USER}:${USER} /usr/local/bin/nimbus_beacon_node
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
+
+USER ${USER}
 
 ENTRYPOINT ["nimbus_beacon_node"]
 
@@ -34,11 +39,12 @@ FROM statusim/nimbus-validator-client:${DOCKER_VC_TAG} as validator
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET
 
+ARG USER=user
 ARG UID=10000
 
 USER root
 
-RUN groupmod -g "${UID}" user && usermod -u "${UID}" -g "${UID}" user
+RUN groupmod -g "${UID}" ${USER} && usermod -u "${UID}" -g "${UID}" ${USER}
 
 RUN set -eux; \
         apt-get update; \
@@ -48,13 +54,15 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/nimbus && chown -R user:user /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
+RUN mkdir -p /var/lib/nimbus && chown -R ${USER}:${USER} /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
 
-# Copy nimbus_validator_client into $PATH
-RUN cp /home/user/nimbus_validator_client /usr/local/bin/nimbus_validator_client
-# Scripts for privilege change and validator import
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
-COPY ./validator-import.sh /usr/local/bin/
+RUN cp /home/user/nimbus_validator_client /usr/local/bin/
+RUN chown ${USER}:${USER} /usr/local/bin/nimbus_validator_client
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER user
 
