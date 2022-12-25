@@ -9,7 +9,13 @@ ARG BUILD_TARGET
 RUN apt-get update && apt-get install -y ca-certificates git
 
 WORKDIR /usr/src
-RUN bash -c "git clone https://github.com/ConsenSys/teku.git && cd teku && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && ./gradlew installDist"
+RUN bash -c "git clone https://github.com/ConsenSys/teku.git \
+  && cd teku \
+  && git config advice.detachedHead false \
+  && git fetch --all --tags \
+  && git checkout ${BUILD_TARGET} \
+  && git submodule update --init --recursive \
+  && ./gradlew installDist"
 
 # Pull all binaries into a second stage deploy Ubuntu container
 FROM eclipse-temurin:17-jammy
@@ -42,12 +48,13 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && mkdir -p /var/lib/teku/ee-secret && chown -R ${USER}:${USER} /var/lib/teku && chmod -R 700 /var/lib/teku && chmod 777 /var/lib/teku/ee-secret
 
-# Copy executable
-COPY --from=builder /usr/src/teku/build/install/teku/. /opt/teku/
-# Script to query and store validator key passwords
-COPY ./validator-import.sh /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /usr/src/teku/build/install/teku/. /opt/teku/
+COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

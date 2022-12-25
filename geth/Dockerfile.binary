@@ -27,7 +27,10 @@ RUN adduser \
 
 RUN mkdir -p /var/lib/goethereum/ee-secret && chown -R ${USER}:${USER} /var/lib/goethereum && chmod -R 700 /var/lib/goethereum && chmod 777 /var/lib/goethereum/ee-secret
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

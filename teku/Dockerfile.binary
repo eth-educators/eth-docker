@@ -5,11 +5,12 @@ FROM consensys/teku:${DOCKER_TAG}
 #Next two are unused but included to avoid warnings
 ARG BUILD_TARGET
 
+ARG USER=teku
 ARG UID=10002
 
 USER root
 
-RUN groupmod -g "${UID}" teku && usermod -u "${UID}" -g "${UID}" teku
+RUN groupmod -g "${UID}" ${USER} && usermod -u "${UID}" -g "${UID}" ${USER}
 
 RUN set -eux; \
         apt-get update; \
@@ -19,11 +20,13 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && mkdir -p /var/lib/teku/ee-secret && chown -R teku:teku /var/lib/teku && chmod -R 700 /var/lib/teku && chmod 777 /var/lib/teku/ee-secret
-# Script to query and store validator key passwords
-COPY ./validator-import.sh /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
+RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-passwords && mkdir -p /var/lib/teku/ee-secret && chown -R ${USER}:${USER} /var/lib/teku && chmod -R 700 /var/lib/teku && chmod 777 /var/lib/teku/ee-secret
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

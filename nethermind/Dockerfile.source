@@ -43,13 +43,17 @@ RUN adduser \
 
 WORKDIR /nethermind
 
-COPY --from=build /nethermind/out .
+# Cannot assume buildkit, hence no chmod
+COPY --from=build --chown=${USER}:${USER} /nethermind/out .
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind/ee-secret && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 777 /var/lib/nethermind/ee-secret
 
-COPY --from=dasel /usr/local/bin/dasel /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=dasel --chown=${USER}:${USER} /usr/local/bin/dasel /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

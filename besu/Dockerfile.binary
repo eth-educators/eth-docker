@@ -5,6 +5,7 @@ FROM hyperledger/besu:${DOCKER_TAG}
 # Unused but included to avoid warnings
 ARG BUILD_TARGET
 
+ARG USER=besu
 ARG UID=10001
 # GID 10002 is deliberate so it can exchange secret with CL
 ARG GID=10002
@@ -20,10 +21,13 @@ RUN set -eux; \
         gosu nobody true
 
 # Create data mount point with permissions
-RUN mkdir -p /var/lib/besu/ee-secret && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
+RUN mkdir -p /var/lib/besu/ee-secret && chown -R ${USER}:${USER} /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
 
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
-USER besu
+USER ${USER}
 
 ENTRYPOINT ["/opt/besu/bin/besu"]

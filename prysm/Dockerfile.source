@@ -42,11 +42,13 @@ RUN adduser \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 777 /var/lib/prysm/ee-secret
 
-# Copy executable
-COPY --from=builder /go/src/prysm/bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/cmd/validator/validator_/validator /usr/local/bin/
-COPY --from=builder /go/src/prysm/bazel-bin/cmd/client-stats/client-stats_/client-stats /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /go/src/prysm/bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain /usr/local/bin/
+COPY --from=builder --chown=${USER}:${USER} /go/src/prysm/bazel-bin/cmd/validator/validator_/validator /usr/local/bin/
+COPY --from=builder --chown=${USER}:${USER} /go/src/prysm/bazel-bin/cmd/client-stats/client-stats_/client-stats /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
@@ -71,9 +73,12 @@ RUN adduser \
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm && chown ${USER}:${USER} /var/lib/prysm && chmod 700 /var/lib/prysm
 
-COPY ./validator-import.sh /usr/local/bin/
-COPY ./create-wallet.sh /usr/local/bin/
-COPY ./docker-entrypoint-vc.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./create-wallet.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 

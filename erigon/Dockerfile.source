@@ -9,7 +9,7 @@ ARG BUILD_TARGET
 RUN apk update && apk add --no-cache make gcc g++ musl-dev linux-headers git bash
 
 WORKDIR /src
-RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon && make rpcdaemon"
+RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon"
 
 # Pull all binaries into a second stage deploy container
 FROM alpine:3
@@ -34,12 +34,13 @@ RUN adduser \
     --ingroup "${USER}" \
     "${USER}"
 
-RUN mkdir -p /var/lib/erigon/ee-secret && chown -R erigon:erigon /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
+RUN mkdir -p /var/lib/erigon/ee-secret && chown -R ${USER}:${USER} /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
 
-# Copy executable
-COPY --from=builder /src/erigon/build/bin/erigon /usr/local/bin/
-COPY --from=builder /src/erigon/build/bin/rpcdaemon /usr/local/bin/
-COPY ./docker-entrypoint.sh /usr/local/bin/
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /src/erigon/build/bin/erigon /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
