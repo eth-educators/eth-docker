@@ -2,7 +2,7 @@
 # /etc/prometheus/prometheus.yml inside the prometheus container. It will be appended after
 # the last scrape target that the entrypoint script adds.
 #
-# You could add additonal scrape targets as well as additional global sections such as remote-write.
+# You could add additional scrape targets as well as additional global sections such as remote-write.
 # This file is called grafana-cloud.yml as adding a remote write to Grafana Cloud is likely a
 # common use case. It properly is a Prometheus without Grafana and the ability to add custom
 # content to prometheus.yml
