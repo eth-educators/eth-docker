@@ -7,7 +7,7 @@ RUN mkdir -p /etc/grafana/provisioning/dashboards/
 RUN mkdir -p /etc/grafana/provisioning/datasources/
 COPY ./dashboard.yml /etc/grafana/provisioning/dashboards/
 COPY ./datasource.yml /etc/grafana/provisioning/datasources/
-COPY --chown=grafana:grafana ./provision-dashboards.sh /usr/local/bin/
+COPY ./provision-dashboards.sh /usr/local/bin/
 COPY ./nethermind_dashboard.json /tmp/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
