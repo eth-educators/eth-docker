@@ -3,6 +3,12 @@
 # without deleting the grafana docker volume
 # Expects a full grafana command with parameters as argument(s)
 
+if [ "$(id -u)" = '0' ]; then
+  chown -R grafana:root /var/lib/grafana
+  chown -R grafana:root /etc/grafana
+  exec su-exec grafana "$0" "$@"
+fi
+
 case "$CLIENT" in
   *prysm* )
     #  prysm_metanull
