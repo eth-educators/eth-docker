@@ -78,6 +78,7 @@ services:
 #      - --Xbonsai-use-snapshots=true
 #      - --sync-mode=X_CHECKPOINT
       - --sync-mode=X_SNAP
+      - --nat-method=DOCKER
 volumes:
   besu-eth1-data:
   jwtsecret:
