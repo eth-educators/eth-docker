@@ -1,4 +1,4 @@
-  - job_name: 'nodes'
+  - job_name: 'beacon'
     static_configs:
       - targets: ['consensus:8008']
   - job_name: 'validator'
