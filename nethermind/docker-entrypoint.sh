@@ -24,15 +24,16 @@ fi
 #sed -e "${LOG_LINE} i \    <logger name=\"JsonRpc\.\*\" final=\"true\"/>\\n" -i /nethermind/NLog.config
 #sed -e "${LOG_LINE} i \    <logger name=\"JsonRpc\.\*\" minlevel=\"Warn\" writeTo=\"auto-colored-console-async\" final=\"true\"/>" -i /nethermind/NLog.config
 #sed -e "${LOG_LINE} i \    <logger name=\"JsonRpc\.\*\" minlevel=\"Warn\" writeTo=\"file-async\" final=\"true\"\/>" -i /nethermind/NLog.config
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger' '{"-name":"JsonWebAPI.Microsoft.Extensions.Diagnostics.HealthChecks.DefaultHealthCheckService","-maxlevel":"Error","-final":"true"}{"-name":"JsonWebAPI*","-minlevel":"Error","-writeTo":"file-async","-final":"true"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonWebAPI*","-minlevel":"Error","-writeTo":"auto-colored-console-async","-final":"true"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonWebAPI*","-final":"true"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-minlevel":"Warn","-writeTo":"file-async","-final":"true"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-minlevel":"Warn","-writeTo":"auto-colored-console-async","-final":"true"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"JsonRpc.*","-final":"true"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"*","-minlevel":"Off","-writeTo":"seq"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"*","-minlevel":"Info","-writeTo":"file-async"}'
-dasel put document -f /nethermind/NLog.config -p xml -d json 'nlog.rules.logger.[]' '{"-name":"*","-minlevel":"Info","-writeTo":"auto-colored-console-async"}'
+# dasel 2.x syntax
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger' -v '{"-name":"JsonWebAPI.Microsoft.Extensions.Diagnostics.HealthChecks.DefaultHealthCheckService","-maxlevel":"Error","-final":"true"}{"-name":"JsonWebAPI*","-minlevel":"Error","-writeTo":"file-async","-final":"true"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"JsonWebAPI*","-minlevel":"Error","-writeTo":"auto-colored-console-async","-final":"true"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"JsonWebAPI*","-final":"true"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"JsonRpc.*","-minlevel":"Warn","-writeTo":"file-async","-final":"true"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"JsonRpc.*","-minlevel":"Warn","-writeTo":"auto-colored-console-async","-final":"true"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"JsonRpc.*","-final":"true"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"*","-minlevel":"Off","-writeTo":"seq"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"*","-minlevel":"Info","-writeTo":"file-async"}'
+dasel put -f /nethermind/NLog.config -r xml -w xml -t json 'nlog.rules.logger.[]' -v '{"-name":"*","-minlevel":"Info","-writeTo":"auto-colored-console-async"}'
 
 if [ -n "${JWT_SECRET}" ]; then
   echo -n "${JWT_SECRET}" > /var/lib/nethermind/ee-secret/jwtsecret

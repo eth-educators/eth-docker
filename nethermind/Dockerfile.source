@@ -17,7 +17,7 @@ RUN bash -c "\
     git submodule update --init --recursive && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
-FROM ghcr.io/tomwright/dasel:v1.27.3-alpine as dasel
+FROM ghcr.io/tomwright/dasel:v2.0.2-alpine as dasel
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 
