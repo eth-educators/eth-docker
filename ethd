@@ -1273,7 +1273,12 @@ query_execution_client() {
 
 query_grafana() {
     if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
-        GRAFANA_CLIENT="grafana.yml:grafana-shared.yml"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS doesn't do well with / bind mount - leave node-exporter, cadvisor and loki/promtail off by default
+            GRAFANA_CLIENT="grafana-rootless.yml:grafana-shared.yml"
+        else
+            GRAFANA_CLIENT="grafana.yml:grafana-shared.yml"
+        fi
     else
         unset GRAFANA_CLIENT
     fi
