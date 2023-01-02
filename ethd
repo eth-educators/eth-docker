@@ -54,7 +54,7 @@ determine_compose() {
   if ! type -P docker-compose >/dev/null 2>&1; then
     __compose_exe="docker compose"
   else
-    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version [v]\?\([0-9.-]*\).*/\1/p")
+    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
     __compose_version_major=$(echo "$__compose_version" | cut -f1 -d.)
     __compose_version_minor=$(echo "$__compose_version" | cut -f2 -d.)
     if ! [ "$__compose_version_major" -eq "$__compose_version_major" ] && [ "$__compose_version_minor" -eq "$__compose_version_minor" ] 2> /dev/null; then
