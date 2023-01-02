@@ -102,11 +102,13 @@ case "$CLIENT" in
     ;;&
   * )
     # Ethereum Metrics Exporter Dashboard
-    __url='https://grafana.com/api/dashboards/16277/revisions/13/download'
+    __revision=$(wget -q -O - https://grafana.com/api/dashboards/16277 | jq .revision)
+    __url="https://grafana.com/api/dashboards/16277/revisions/${__revision}/download"
     __file='/etc/grafana/provisioning/dashboards/ethereum-metrics-exporter-single.json'
     wget -qcO - $__url | jq 'walk(if . == "${DS_VICTORIAMETRICS}" then "Prometheus" else . end)' >$__file
     # cadvisor and node exporter dashboard
-    __url='https://grafana.com/api/dashboards/10619/revisions/1/download'
+    __revision=$(wget -q -O - https://grafana.com/api/dashboards/10619 | jq .revision)
+    __url="https://grafana.com/api/dashboards/10619/revisions/${__revision}/download"
     __file='/etc/grafana/provisioning/dashboards/docker-host-container-overview.json'
     wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;
