@@ -232,7 +232,7 @@ update() {
         exec "${BASH_SOURCE[0]}" update "$@"
     fi
 
-    __keeptargets=0
+    __keeptargets=1
     __targetcli=""
     while :
     do
@@ -241,8 +241,21 @@ update() {
         fi
         case "$1" in
             --keep-targets)
+                if [ -n "${__targetcli}" ]; then
+                    echo "Error: --keep-targets and --refresh-targets cannot be used together; use either option once only"
+                    exit 1
+                fi
                 __keeptargets=1
                 __targetcli="--keep-targets"
+                shift
+                ;;
+            --refresh-targets)
+                if [ -n "${__targetcli}" ]; then
+                    echo "Error: --keep-targets and --refresh-targets cannot be used together; use either option once only"
+                    exit 1
+                fi
+                __keeptargets=0
+                __targetcli="--refresh-targets"
                 shift
                 ;;
             *)
@@ -306,8 +319,8 @@ update() {
     echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${ENV_FILE}.bak."
     if [ $__keeptargets = "0" ]; then
-      echo "NB: If you made changes to the source or binary build targets, these have NOT \
-been migrated, please recreate these changes yourself."
+      echo "NB: If you made changes to the source or binary build targets, these have been \
+reset to defaults."
     fi
     echo
     echo "An ./ethd up command will start using the new images and configuration."
@@ -959,6 +972,11 @@ keys() {
         else
             docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import
         fi
+    elif [ "${1:-}" = "create-prysm-wallet" ]; then
+        docompose run --rm create-wallet
+        docompose stop validator
+        docompose rm --force validator
+        up
     else
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
@@ -1680,9 +1698,9 @@ printhelp() {
     echo "  keys ACTION"
     echo "     list, delete, import keys; their fee recipients; and gas fees"
     echo "     Run without ACTION to get help text"
-    echo "  update [--keep-targets] "
+    echo "  update [--refresh-targets] "
     echo "     updates all client versions and eth-docker itself"
-    echo "     --keep-targets will keep your custom build targets in .env"
+    echo "     --refresh-targets will reset your custom build targets in .env to defaults"
     echo "  up (or start)"
     echo "     starts the Ethereum node, or restarts containers that had their image or"
     echo "     configuration changed"

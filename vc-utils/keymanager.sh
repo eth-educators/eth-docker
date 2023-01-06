@@ -101,8 +101,7 @@ recipient-set() {
     __http_method=POST
     call_api
     case $__code in
-#200 is not valid, but Lodestar does that
-        202|200) echo "The fee recipient for the validator with public key $__pubkey was updated."; exit 0;;
+        202) echo "The fee recipient for the validator with public key $__pubkey was updated."; exit 0;;
         400) echo "The pubkey or address was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -123,8 +122,7 @@ recipient-delete() {
     __http_method=DELETE
     call_api
     case $__code in
-#200 is not valid, but Lodestar does that
-        204|200) echo "The fee recipient for the validator with public key $__pubkey was set back to default."; exit 0;;
+        204) echo "The fee recipient for the validator with public key $__pubkey was set back to default."; exit 0;;
         401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         403) echo "A fee recipient was found, but cannot be deleted. It may be in a configuration file. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
@@ -169,8 +167,7 @@ gas-set() {
     __http_method=POST
     call_api
     case $__code in
-#200 is not valid, but Lodestar does that
-        202|200) echo "The gas limit for the validator with public key $__pubkey was updated."; exit 0;;
+        202) echo "The gas limit for the validator with public key $__pubkey was updated."; exit 0;;
         400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -191,8 +188,7 @@ gas-delete() {
     __http_method=DELETE
     call_api
     case $__code in
-#200 is not valid, but Lodestar does that
-        204|200) echo "The gas limit for the validator with public key $__pubkey was set back to default."; exit 0;;
+        204) echo "The gas limit for the validator with public key $__pubkey was set back to default."; exit 0;;
         400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         403) echo "A gas limit was found, but cannot be deleted. It may be in a configuration file. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
@@ -467,6 +463,8 @@ usage() {
     echo "      Print the token for the keymanager API running on port ${KEY_API_PORT:-7500}."
     echo "      This is also the token for the Prysm Web UI"
     echo
+    echo "  create-prysm-wallet"
+    echo "      Create a new Prysm wallet to store keys in"
     echo "  get-prysm-wallet"
     echo "      Print Prysm's wallet password"
 }
@@ -480,6 +478,10 @@ if [ "$(id -u)" = '0' ]; then
         get-api-token)
             print-api-token
             exit 0
+            ;;
+        create-prysm-wallet)
+            echo "There's a bug in ethd; this command should have been handled one level higher. Please report this."
+            exit 1
             ;;
         get-prysm-wallet)
             get-prysm-wallet
