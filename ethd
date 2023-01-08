@@ -1145,7 +1145,6 @@ query_consensus_client() {
       "Which consensus client do you want to run?" 10 65 3 \
       "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
       "teku.yml" "Teku (Java) - consensus and validator client" \
-      "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
       "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
@@ -1178,7 +1177,8 @@ query_consensus_only_client() {
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
       "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
-      "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
+      "teku-cl-only.yml" "Teku (Java) - consensus client" \
+      "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
@@ -1337,6 +1337,9 @@ query_checkpoint_beacon() {
                 ;;
             "mainnet")
                 RAPID_SYNC_URL="https://beaconstate.info"
+                ;;
+            "gnosis")
+                RAPID_SYNC_URL="https://checkpoint.gnosischain.com/"
                 ;;
             *)
                 RAPID_SYNC_URL=""
@@ -1583,6 +1586,11 @@ config() {
     set_value_in_env
     var=MEV_RELAYS
     set_value_in_env
+    if [[ "${NETWORK}" = "gnosis" ]] && [[ "${CONSENSUS_CLIENT}" =~ "nimbus" ]] ; then
+        NIM_DOCKERFILE=Dockerfile.sourcegnosis
+        var=NIM_DOCKERFILE
+        set_value_in_env
+    fi
 
     docompose --profile tools build --pull
     exec 3>&1
