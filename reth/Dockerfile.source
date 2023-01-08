@@ -1,0 +1,48 @@
+# Build reth in a stock rust container
+FROM rust:bullseye as builder
+
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
+
+ARG BUILD_TARGET
+
+RUN apt-get update && apt-get install -y libclang-dev
+
+WORKDIR /src
+RUN bash -c "git clone --recurse-submodules -j8 https://github.com/paradigmxyz/reth.git && cd reth \
+    && git config advice.detachedHead false && git fetch --all --tags \
+    && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:reth-pr; git checkout reth-pr; else git checkout ${BUILD_TARGET}; fi \
+    && cargo build --release"
+
+# Pull all binaries into a second stage deploy debian container
+FROM debian:bullseye-slim
+
+ARG USER=reth
+ARG UID=10001
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+  ca-certificates \
+  tzdata \
+  gosu \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /var/lib/reth/ee-secret && chown -R ${USER}:${USER} /var/lib/reth && chmod -R 700 /var/lib/reth && chmod 777 /var/lib/reth/ee-secret
+
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /src/reth/target/release/reth /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
+
+USER ${USER}
+
+ENTRYPOINT ["reth", "node"]

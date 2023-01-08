@@ -1,0 +1,53 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  execution:
+    restart: "unless-stopped"
+    build:
+      context: ./reth
+      dockerfile: ${RETH_DOCKERFILE}
+      args:
+        - BUILD_TARGET=${RETH_SRC_BUILD_TARGET}
+        - DOCKER_TAG=${RETH_DOCKER_TAG}
+    stop_grace_period: 5m
+    stop_signal: SIGINT
+    image: reth:local
+    user: reth
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - EL_EXTRAS=${EL_EXTRAS:-}
+    volumes:
+      - reth-el-data:/var/lib/reth
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/reth/ee-secret
+    ports:
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+    networks:
+      default:
+        aliases:
+          - eth1
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - reth
+      - node
+      - --db
+      - /var/lib/reth
+      - --chain
+      - ${NETWORK}
+      - --metrics
+      - 0.0.0.0:6060
+      - --verbose
+      - --config
+      - /var/lib/reth/reth.toml
+volumes:
+  reth-el-data:
+  jwtsecret:
