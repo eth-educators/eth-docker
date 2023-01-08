@@ -5,7 +5,7 @@ ext-network.yml.original
 .eth/*
 !.eth/README.md
 !.eth/validator_keys/.empty
-!.eth/keymanagertoken/.empty
+!.eth/ethdo/.empty
 *.swp
 alertmanager/config.yml
 prometheus/custom-prom.yml
