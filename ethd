@@ -401,7 +401,7 @@ envmigrate() {
             DDNS_PROXY RAPID_SYNC_URL CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT \
             PRYSM_PORT DOPPELGANGER PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET EL_EXTRAS CL_EXTRAS \
-            VC_EXTRAS SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 ERIGON_P2P_PORT_3 )
+            VC_EXTRAS ARCHIVE_MODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 ERIGON_P2P_PORT_3 )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
                 PRYSM_DOCKER_TAG PRYSM_DOCKER_VC_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG \
@@ -688,6 +688,14 @@ prune-geth() {
         exit 1
     fi
 
+    # Check for archive mode
+    var="ARCHIVE_MODE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    if [[ "${value}" = "true" ]]; then
+        echo "Geth is in archive mode: Aborting."
+        return
+    fi
+
     __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
 
     if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 41943040 ]; then
@@ -795,6 +803,13 @@ prune-nethermind() {
         exit 1
     fi
 
+    # Check for archive mode
+    var="ARCHIVE_MODE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    if [[ "${value}" = "true" ]]; then
+        echo "Nethermind is in archive mode: Aborting."
+        return
+    fi
 
     __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
 

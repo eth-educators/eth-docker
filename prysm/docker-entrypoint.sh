@@ -35,6 +35,13 @@ else
   __mev_boost=""
 fi
 
+if [ "${ARCHIVE_MODE}" = "true" ]; then
+  echo "Prysm archive mode without pruning"
+  __prune="--slots-per-archive-point=32"
+else
+  __prune=""
+fi
+
 # Fetch genesis file as needed if beacon
 if [[ "$1" =~ ^(beacon-chain)$ ]]; then
   if [[ "$*" =~ --prater || "$*" =~ --goerli ]]; then
@@ -45,16 +52,7 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
     fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
-  elif [[ "$*" =~ --ropsten ]]; then
-    GENESIS=/var/lib/prysm/genesis.ssz
-    if [ ! -f "$GENESIS" ]; then
-      echo "Fetching genesis file for Ropsten testnet"
-      curl -fsSL -o "$GENESIS" https://github.com/eth-clients/merge-testnets/raw/main/ropsten-beacon-chain/genesis.ssz
-    fi
-# Word splitting is desired for the command line parameters
-# shellcheck disable=SC2086
-    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
+    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
   elif [[ "$*" =~ --sepolia ]]; then
     GENESIS=/var/lib/prysm/genesis.ssz
     if [ ! -f "$GENESIS" ]; then
@@ -63,11 +61,11 @@ if [[ "$1" =~ ^(beacon-chain)$ ]]; then
     fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
+    exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
   else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-    exec "$@" ${__rapid_sync} ${__mev_boost} ${CL_EXTRAS}
+    exec "$@" ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
   fi
 else # Not the CL / beacon
   exec "$@"

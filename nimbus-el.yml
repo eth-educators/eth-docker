@@ -21,8 +21,9 @@ services:
     image: nimbus-el:local
     user: user
     environment:
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
+      - ARCHIVE_MODE=${ARCHIVE_MODE:-}
     volumes:
       - nimbus-el-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro

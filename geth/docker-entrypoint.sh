@@ -49,13 +49,24 @@ case ${LOG_LEVEL} in
     ;;
 esac
 
+if [ "${ARCHIVE_MODE}" = "true" ]; then
+  echo "Geth archive mode without pruning"
+  __prune="--gcmode=archive"
+else
+  __prune=""
+fi
+
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
+  if [ "${ARCHIVE_MODE}" = "true" ]; then
+    echo "Geth is in archive mode. Not attempting to prune: Aborting."
+    exit 1
+  fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
   exec "$@" ${EL_EXTRAS} snapshot prune-state
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__verbosity} ${EL_EXTRAS}
+  exec "$@" ${__prune} ${__verbosity} ${EL_EXTRAS}
 fi
