@@ -24,7 +24,7 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
 fi
 
 if [ -n "${RAPID_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
-    if [ "${ARCHIVE_MODE}" = "true" ]; then
+    if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Starting checkpoint sync with backfill and archive reindex. Nimbus will restart when done."
         /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=true --reindex --network="${NETWORK}" --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
         touch /var/lib/nimbus/setupdone
@@ -53,8 +53,8 @@ fi
 
 __log_level="--log-level=${LOG_LEVEL^^}"
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Nimbus archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Nimbus archive node without pruning"
   __prune="--history=archive"
 else
   __prune="--history=prune"

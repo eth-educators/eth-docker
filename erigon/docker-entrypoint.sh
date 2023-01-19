@@ -28,8 +28,8 @@ fi
 
 # Check for network, and set prune accordingly
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Erigon archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Erigon archive node without pruning"
   __prune=""
 else
   if [[ "$*" =~ "--chain mainnet" ]]; then

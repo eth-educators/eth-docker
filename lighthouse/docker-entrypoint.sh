@@ -23,8 +23,8 @@ fi
 if [ -n "${RAPID_SYNC_URL}" ]; then
   __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
   echo "Checkpoint sync enabled"
-  if [ "${ARCHIVE_MODE}" = "true" ]; then
-    echo "Lighthouse archive mode without pruning"
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Lighthouse archive node without pruning"
     __prune="--reconstruct-historic-states"
   else
     __prune=""

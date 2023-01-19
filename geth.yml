@@ -23,7 +23,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - EL_EXTRAS=${EL_EXTRAS:-}
-      - ARCHIVE_MODE=${ARCHIVE_MODE:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro

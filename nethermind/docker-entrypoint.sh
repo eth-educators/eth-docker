@@ -55,8 +55,8 @@ if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Nethermind archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Nethermind archive node without pruning"
   __prune="--Sync.DownloadBodiesInFastSync=false --Sync.DownloadReceiptsInFastSync=false --Sync.FastSync=false --Sync.SnapSync=false --Sync.FastBlocks=false --Pruning.Mode=None"
 else
   __prune=""

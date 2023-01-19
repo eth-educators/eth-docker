@@ -23,7 +23,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - EL_EXTRAS=${EL_EXTRAS:-}
-      - ARCHIVE_MODE=${ARCHIVE_MODE:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro

@@ -35,8 +35,8 @@ else
   __mev_boost=""
 fi
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Prysm archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Prysm archive node without pruning"
   __prune="--slots-per-archive-point=32"
 else
   __prune=""

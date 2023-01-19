@@ -49,8 +49,8 @@ case ${LOG_LEVEL} in
     ;;
 esac
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Geth archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Geth archive node without pruning"
   __prune="--gcmode=archive"
 else
   __prune=""
@@ -58,8 +58,8 @@ fi
 
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
-  if [ "${ARCHIVE_MODE}" = "true" ]; then
-    echo "Geth is in archive mode. Not attempting to prune: Aborting."
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Geth is an archive node. Not attempting to prune: Aborting."
     exit 1
   fi
 # Word splitting is desired for the command line parameters

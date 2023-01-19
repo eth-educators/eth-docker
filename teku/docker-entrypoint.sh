@@ -39,8 +39,8 @@ fi
 
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
-    if [ "${ARCHIVE_MODE}" = "true" ]; then
-        echo "Besu archive mode cannot use checkpoint sync: Syncing from genesis."
+    if [ "${ARCHIVE_NODE}" = "true" ]; then
+        echo "Besu archive node cannot use checkpoint sync: Syncing from genesis."
     else
         __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
         echo "Checkpoint sync enabled"
@@ -65,8 +65,8 @@ else
   __beacon_stats=""
 fi
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Besu archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Besu archive node without pruning"
   __prune="--data-storage-mode=ARCHIVE"
 else
   __prune=""

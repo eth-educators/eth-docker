@@ -26,8 +26,8 @@ if [[ -O "/var/lib/besu/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/besu/ee-secret/jwtsecret
 fi
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Besu archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Besu archive node without pruning"
   __prune="--data-storage-format=FOREST --sync-mode=FULL"
 else
   __prune="--data-storage-format=BONSAI --sync-mode=X_SNAP"

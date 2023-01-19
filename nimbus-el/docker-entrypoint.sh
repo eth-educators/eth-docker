@@ -25,8 +25,8 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
-if [ "${ARCHIVE_MODE}" = "true" ]; then
-  echo "Nimbus EL archive mode without pruning"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Nimbus EL archive node without pruning"
   __prune="--prune-mode=Archive --sync-mode=Full"
 else
   __prune=""
