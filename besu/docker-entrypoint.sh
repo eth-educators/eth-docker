@@ -26,6 +26,13 @@ if [[ -O "/var/lib/besu/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/besu/ee-secret/jwtsecret
 fi
 
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Besu archive node without pruning"
+  __prune="--data-storage-format=FOREST --sync-mode=FULL"
+else
+  __prune="--data-storage-format=BONSAI --sync-mode=X_SNAP"
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${EL_EXTRAS}
+exec "$@" ${__prune} ${EL_EXTRAS}

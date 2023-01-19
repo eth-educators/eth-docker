@@ -29,6 +29,7 @@ services:
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
       - CL_EXTRAS=${CL_EXTRAS:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -88,8 +89,8 @@ services:
       - validator
       - --dataDir
       - /var/lib/lodestar/validators
-      - --server
-      - http://consensus:5052
+      - --beaconNodes
+      - ${CL_NODE}
       - --keymanager
       - --keymanager.address
       - 0.0.0.0

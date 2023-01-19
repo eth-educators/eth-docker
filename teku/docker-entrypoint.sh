@@ -39,8 +39,12 @@ fi
 
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
-    __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
-    echo "Checkpoint sync enabled"
+    if [ "${ARCHIVE_NODE}" = "true" ]; then
+        echo "Besu archive node cannot use checkpoint sync: Syncing from genesis."
+    else
+        __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
+        echo "Checkpoint sync enabled"
+    fi
 else
     __rapid_sync=""
 fi
@@ -61,6 +65,13 @@ else
   __beacon_stats=""
 fi
 
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Besu archive node without pruning"
+  __prune="--data-storage-mode=ARCHIVE"
+else
+  __prune=""
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}

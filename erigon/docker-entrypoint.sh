@@ -28,23 +28,23 @@ fi
 
 # Check for network, and set prune accordingly
 
-if [[ "$*" =~ "--chain mainnet" ]]; then
-#  echo "mainnet: Running with prune.r.before=11184524 for eth deposit contract"
-#  __prune="--prune.r.before=11184524"
-  echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
-  __prune="--prune.r.before=11052984"
-elif [[ "$*" =~ "--chain goerli" ]]; then
-  echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
-  __prune="--prune.r.before=4367322"
-elif [[ "$*" =~ "--chain ropsten" ]]; then
-  echo "ropsten: Running with prune.r.before=12269949 for eth deposit contract"
-  __prune="--prune.r.before=12269949"
-elif [[ "$*" =~ "--chain sepolia" ]]; then
-  echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
-  __prune="--prune.r.before=1273020"
-else
-  echo "Unable to determine eth deposit contract, running without prune.r.before"
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Erigon archive node without pruning"
   __prune=""
+else
+  if [[ "$*" =~ "--chain mainnet" ]]; then
+    echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
+    __prune="--prune=htc --prune.r.before=11052984"
+  elif [[ "$*" =~ "--chain goerli" ]]; then
+    echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
+    __prune="--prune=htc --prune.r.before=4367322"
+  elif [[ "$*" =~ "--chain sepolia" ]]; then
+    echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
+    __prune="--prune=htc --prune.r.before=1273020"
+  else
+    echo "Unable to determine eth deposit contract, running without prune.r.before"
+    __prune="--prune=htc"
+  fi
 fi
 
 # Word splitting is desired for the command line parameters

@@ -23,8 +23,15 @@ fi
 if [ -n "${RAPID_SYNC_URL}" ]; then
   __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
   echo "Checkpoint sync enabled"
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Lighthouse archive node without pruning"
+    __prune="--reconstruct-historic-states"
+  else
+    __prune=""
+  fi
 else
   __rapid_sync=""
+  __prune=""
 fi
 
 # Check whether we should use MEV Boost
@@ -43,6 +50,7 @@ else
   __beacon_stats=""
 fi
 
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__beacon_stats} ${CL_EXTRAS}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS}

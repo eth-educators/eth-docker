@@ -25,6 +25,13 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Nimbus EL archive node without pruning"
+  __prune="--prune-mode=Archive --sync-mode=Full"
+else
+  __prune=""
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${EL_EXTRAS}
+exec "$@" ${__prune} ${EL_EXTRAS}

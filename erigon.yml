@@ -22,8 +22,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - EL_EXTRAS=${EL_EXTRAS:-}
-# Experimental
-      #- WRITE_MAP=true
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
@@ -62,7 +61,6 @@ services:
       - ${NETWORK}
       - --log.console.verbosity
       - ${LOG_LEVEL}
-      - --prune=htc
       - --metrics
       - --metrics.addr
       - 0.0.0.0

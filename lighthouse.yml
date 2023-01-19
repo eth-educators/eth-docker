@@ -32,6 +32,7 @@ services:
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - MALLOC_ARENA_MAX=4
       - CL_EXTRAS=${CL_EXTRAS:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp

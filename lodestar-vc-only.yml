@@ -28,7 +28,7 @@ services:
       - validator
       - --dataDir
       - /var/lib/lodestar/validators
-      - --server
+      - --beaconNodes
       - ${CL_NODE:-http://consensus:5052}
       - --keymanager
       - --keymanager.address

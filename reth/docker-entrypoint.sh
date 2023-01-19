@@ -26,6 +26,30 @@ if [[ -O "/var/lib/reth/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/reth/ee-secret/jwtsecret
 fi
 
+# Set verbosity
+shopt -s nocasematch
+case ${LOG_LEVEL} in
+  error)
+    __verbosity="-v"
+    ;;
+  warn)
+    __verbosity="-vv"
+    ;;
+  info)
+    __verbosity="-vvv"
+    ;;
+  debug)
+    __verbosity="-vvvv"
+    ;;
+  trace)
+    __verbosity="-vvvvv"
+    ;;
+  *)
+    echo "LOG_LEVEL ${LOG_LEVEL} not recognized"
+    __verbosity=""
+    ;;
+esac
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${EL_EXTRAS}
+exec "$@" ${__verbosity} ${EL_EXTRAS}
