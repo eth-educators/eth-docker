@@ -6,15 +6,6 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu nethermind "${BASH_SOURCE[0]}" "$@"
 fi
 
-# Replace gnosis with xdai, until/unless Nethermind gets an alias
-if echo "$@" | grep -q '.*gnosis.*' 2>/dev/null ; then
-  for arg do
-    shift
-    [ "$arg" = "gnosis" ] && set -- "$@" "xdai" && continue
-    set -- "$@" "$arg"
-  done
-fi
-
 # Create JSON RPC logging restrictions in the log config XML
 #        <logger name="JsonRpc.*" minlevel="Warn" writeTo="file-async" final="true"/>
 #        <logger name="JsonRpc.*" minlevel="Warn" writeTo="auto-colored-console-async" final="true"/>

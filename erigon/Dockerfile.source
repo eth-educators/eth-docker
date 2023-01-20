@@ -9,7 +9,8 @@ ARG BUILD_TARGET
 RUN apk update && apk add --no-cache make gcc g++ musl-dev linux-headers git bash
 
 WORKDIR /src
-RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && make erigon"
+RUN bash -c "git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git && cd erigon && git config advice.detachedHead false && git fetch --all --tags && \
+if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:erigon-pr; git checkout erigon-pr; else git checkout ${BUILD_TARGET}; fi && make erigon"
 
 # Pull all binaries into a second stage deploy container
 FROM alpine:3

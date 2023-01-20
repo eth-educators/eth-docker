@@ -1,5 +1,5 @@
 # Partially from Nethermind github
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 
@@ -13,13 +13,15 @@ RUN bash -c "\
     cd nethermind && \
     git config advice.detachedHead false && \
     git fetch --all --tags && \
-    git checkout ${BUILD_TARGET} && \
+    if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nm-pr; \
+    git checkout nm-pr; else \
+    git checkout ${BUILD_TARGET}; fi && \
     git submodule update --init --recursive && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
-FROM ghcr.io/tomwright/dasel:v2.0.2-alpine as dasel
+FROM ghcr.io/tomwright/dasel:v2.1.0-alpine as dasel
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates gosu tzdata wget && rm -rf /var/lib/apt/lists/*
 

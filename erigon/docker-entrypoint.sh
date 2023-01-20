@@ -41,6 +41,9 @@ else
   elif [[ "$*" =~ "--chain sepolia" ]]; then
     echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
     __prune="--prune=htc --prune.r.before=1273020"
+  elif [[ "$*" =~ "--chain gnosis" ]]; then
+    echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
+    __prune="--prune=htc --prune.r.before=19469077"
   else
     echo "Unable to determine eth deposit contract, running without prune.r.before"
     __prune="--prune=htc"

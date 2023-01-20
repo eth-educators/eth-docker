@@ -5,7 +5,8 @@ ARG BUILD_TARGET
 RUN mkdir -p /src
 
 WORKDIR /src
-RUN bash -c "git clone https://github.com/ethereum/staking-deposit-cli.git && cd staking-deposit-cli && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}"
+RUN bash -c "git clone https://github.com/ethereum/staking-deposit-cli.git && cd staking-deposit-cli && git config advice.detachedHead false && git fetch --all --tags \
+  && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:deposit-pr; git checkout deposit-pr; else git checkout ${BUILD_TARGET}; fi"
 
 FROM python:3.10-alpine
 
