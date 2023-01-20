@@ -33,8 +33,13 @@ fi
 
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL}" ]; then
-  __rapid_sync="--checkpointSyncUrl=${RAPID_SYNC_URL}"
-  echo "Checkpoint sync enabled"
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Lodestar archive node cannot use checkpoint sync: Syncing from genesis."
+    __rapid_sync=""
+  else
+    __rapid_sync="--checkpointSyncUrl=${RAPID_SYNC_URL}"
+    echo "Checkpoint sync enabled"
+  fi
 else
   __rapid_sync=""
 fi

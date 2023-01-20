@@ -41,6 +41,7 @@ fi
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Besu archive node cannot use checkpoint sync: Syncing from genesis."
+        __rapid_sync=""
     else
         __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
         echo "Checkpoint sync enabled"
