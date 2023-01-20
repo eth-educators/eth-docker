@@ -64,7 +64,6 @@ services:
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
-      - --validator-monitor-auto
       - --keymanager
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0

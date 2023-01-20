@@ -276,6 +276,7 @@ update() {
         exec "${BASH_SOURCE[0]}" update $__targetcli
     fi
 
+    dodocker system prune --force
     docompose --profile tools build --pull
     exec 3>&1
     exec 4>&2
@@ -1262,7 +1263,8 @@ query_execution_client() {
     if [ "${NETWORK}" = "gnosis" ]; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 9 60 2 \
-      "nethermind.yml" "Nethermind (.NET)" 3>&1 1>&2 2>&3)
+      "nethermind.yml" "Nethermind (.NET)" \
+      "erigon.yml" "Erigon (Go)" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 9 60 3 \
@@ -1272,10 +1274,10 @@ query_execution_client() {
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 12 60 5 \
-      "besu.yml" "Besu (Java)" \
       "nethermind.yml" "Nethermind (.NET)" \
+      "besu.yml" "Besu (Java)" \
       "geth.yml" "Geth (Go)" \
-      "erigon.yml" "Erigon - alpha (Go)" \
+      "erigon.yml" "Erigon (Go)" \
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     fi
 
