@@ -6,6 +6,11 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu nethermind "${BASH_SOURCE[0]}" "$@"
 fi
 
+# Move legacy xdai dir to gnosis
+if [ -d "/var/lib/nethermind/nethermind_db/xdai" ]; then
+  mv /var/lib/nethermind/nethermind_db/xdai /var/lib/nethermind/nethermind_db/gnosis
+fi
+
 # Create JSON RPC logging restrictions in the log config XML
 #        <logger name="JsonRpc.*" minlevel="Warn" writeTo="file-async" final="true"/>
 #        <logger name="JsonRpc.*" minlevel="Warn" writeTo="auto-colored-console-async" final="true"/>
