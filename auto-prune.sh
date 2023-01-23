@@ -29,9 +29,9 @@ for (( i=1; i<=$#; i++ )); do
     fi
   fi
   if [ "$var" = "--help" ]; then
-    echo "Check available space on $__docker_dir and output to stdout when it is under 100 GiB or 10%"
+    echo "Check available space on $__docker_dir and output to stdout when it is under 100 GiB (Geth or any) or under 350 GiB (Nethermind) or under 10%"
     echo "Meant to be run from crontab with a MAILTO, as a simple alerting mechanism."
-    echo "For Geth 1.10.x or Nethermind, this can also kick off an automatic prune."
+    echo "For Geth or Nethermind, this can also kick off an automatic prune."
     echo
     echo "--dry-run"
     echo "  Run and alert on diskspace, but do not start a prune"
@@ -58,7 +58,7 @@ if [[ "${value}" =~ "geth.yml" ]]; then
 elif [[ "${value}" =~ "nethermind.yml" ]]; then
   __el=nethermind
   if [ "$__threshold_override" -eq 0 ]; then
-    __kbyte_threshold=262144000
+    __kbyte_threshold=367001600
   fi
 fi
 
