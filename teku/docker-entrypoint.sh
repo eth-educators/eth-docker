@@ -70,7 +70,7 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-mode=ARCHIVE"
 else
-  __prune=""
+  __prune="--data-storage-mode=MINIMAL"
 fi
 
 # Word splitting is desired for the command line parameters
