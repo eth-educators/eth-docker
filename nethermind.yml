@@ -70,6 +70,9 @@ services:
       - "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool"
       - --JsonRpc.AdditionalRpcUrls=http://127.0.0.1:1337|http|admin
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
+# Temporary Prysm workaround. Remove when no longer needed
+      - --JsonRpc.MaxBatchSize
+      - "10000"
       - --Metrics.Enabled
       - "true"
       - --Metrics.ExposePort
