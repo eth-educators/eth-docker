@@ -30,3 +30,16 @@ services:
       - existing-mnemonic
       - --chain
       - ${NETWORK}
+  deposit-cli-change:
+    profiles: ["tools"]
+    restart: "no"
+    image: staking-deposit-cli:local
+    volumes:
+      - ./.eth:/app/.eth
+    entrypoint:
+      - docker-entrypoint.sh
+      - python3
+      - /app/staking_deposit/deposit.py
+      - generate-bls-to-execution-change
+      - --chain
+      - ${NETWORK}

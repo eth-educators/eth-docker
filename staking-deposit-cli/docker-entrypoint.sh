@@ -38,9 +38,13 @@ done
 
 su-exec depcli "${ARGS[@]}"
 
-mkdir -p /app/.eth/"$folder"
-cp -p /app/validator_keys/* /app/.eth/"$folder"/
-
-chown -R "$uid":"$uid" /app/.eth/"$folder"
-
-echo "The generated files have been copied to ./.eth/$folder/"
+if [[ "$@" =~ "generate-bls-to-execution-change" ]]; then
+  cp -rp /app/bls_to_execution_changes /app/.eth/
+  chown -R "$uid":"$uid" /app/.eth/bls_to_execution_changes
+  echo "The change files have been copied to ./.eth/bls_to_execution_changes"
+else
+  mkdir -p /app/.eth/"$folder"
+  cp -p /app/validator_keys/* /app/.eth/"$folder"/
+  chown -R "$uid":"$uid" /app/.eth/"$folder"
+  echo "The generated files have been copied to ./.eth/$folder/"
+fi
