@@ -101,6 +101,11 @@ case "$CLIENT" in
     wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
   * )
+    # Home staking dashboard
+    __revision=$(wget -q -O - https://grafana.com/api/dashboards/17846 | jq .revision)
+    __url="https://grafana.com/api/dashboards/17846/revisions/${__revision}/download"
+    __file='/etc/grafana/provisioning/dashboards/homestaking-dashboard.json'
+    wget -qcO - $__url | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     # Ethereum Metrics Exporter Dashboard
     __revision=$(wget -q -O - https://grafana.com/api/dashboards/16277 | jq .revision)
     __url="https://grafana.com/api/dashboards/16277/revisions/${__revision}/download"
