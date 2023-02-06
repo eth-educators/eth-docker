@@ -201,6 +201,14 @@ install() {
         else
             echo "Docker is already installed"
         fi
+        __groups=$(${__as_owner} groups)
+        if [[ ! "$__groups" =~ "docker" ]]; then
+            echo "Making your user part of the docker group"
+            ${__auto_sudo} usermod -aG docker "${OWNER}"
+            echo "Please run newgrp docker or log out and back in"
+        else
+            echo "Your user is already part of the docker group"
+        fi
     else
         echo "This script does not know how to install docker on $__distro"
     fi
@@ -213,22 +221,21 @@ check_for_apparmor() {
     if [[ ! "$__distro" = "ubuntu" ]] && [[ ! "$__distro" =~ "debian" ]]; then
         return 0
     fi
-    # Docker-CE 23.0.0 has an issue where containers will fail if neither apparmor
-    # nor apparmor-utils is installed. Remedy.
-    if [ "$(dpkg-query -W -f='${Status}' apparmor 2>/dev/null | grep -c "ok installed")" = "0" ] && \
-       [ "$(dpkg-query -W -f='${Status}' apparmor-utils 2>/dev/null | grep -c "ok installed")" = "0" ]; then
-        echo "apparmor-utils may be required for docker-ce 23.0.0 to function"
-        echo "Out of caution, please let this script install apparmor-utils"
+    # Docker-CE 23.0.0 has an issue where containers will fail if apparmor
+    # is not installed. Remedy.
+    if [ "$(dpkg-query -W -f='${Status}' apparmor 2>/dev/null | grep -c "ok installed")" = "0" ]; then
+        echo "apparmor may be required for docker-ce 23.0.0 to function"
+        echo "Out of caution, please let this script install apparmor"
         echo
         while true; do
-            read -rp "Do you consent to installation of apparmor-utils? (yes/no) " yn
+            read -rp "Do you consent to installation of apparmor? (yes/no) " yn
             case $yn in
                 [Nn]* ) echo "No changes made"; return 0;;
                 * ) break;;
             esac
         done
         ${__auto_sudo} apt-get update
-        ${__auto_sudo} apt-get -y install apparmor-utils
+        ${__auto_sudo} apt-get -y install apparmor
     fi
     return 0
 }
