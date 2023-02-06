@@ -201,6 +201,14 @@ install() {
         else
             echo "Docker is already installed"
         fi
+        __groups=$(${__as_owner} groups)
+        if [[ ! "$__groups" =~ "docker" ]]; then
+            echo "Making your user part of the docker group"
+            ${__auto_sudo} usermod -aG docker "${OWNER}"
+            echo "Please run newgrp docker or log out and back in"
+        else
+            echo "Your user is already part of the docker group"
+        fi
     else
         echo "This script does not know how to install docker on $__distro"
     fi
