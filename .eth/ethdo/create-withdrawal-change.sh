@@ -4,8 +4,10 @@ __arch=$(uname -m)
 
 if [ "${__arch}" = "aarch64" ]; then
     __ethdo=./ethdo-arm64
+    __jq=""
 elif [ "${__arch}" = "x86_64" ]; then
     __ethdo=./ethdo
+    __jq=./jq
 else
     echo "Architecture ${__arch} not recognized - unsure which ethdo to use. Aborting."
     exit 1
@@ -13,6 +15,13 @@ fi
 if [ ! -f "${__ethdo}" ]; then
     echo "Unable to find ethdo executable at \"${BASH_SOURCE[0]}/${__ethdo}\". Aborting."
     exit 1
+fi
+echo "Checking whether Bluetooth is enabled"
+systemctl status bluetooth >/dev/null
+result=$?
+if [ "${result}" -eq 0 ]; then
+    echo "Bluetooth found, disabling"
+    sudo systemctl stop bluetooth
 fi
 echo "Checking whether machine is online"
 echo
@@ -57,21 +66,22 @@ if ! [ "$result" -eq 0 ]; then
     exit "$result"
 fi
 echo "change-operations.json can be found on your USB drive"
+# No jq for ARM64
+if [ "${__arch}" = "aarch64" ]; then
+    exit 0
+fi
 read -rp "Do you want to break change-operations.json into individual files for use with CLWP? (no/yes) " yn
 case $yn in
     [Yy]* ) ;;
     * ) echo "Please shut down this machine and continue online, with the change-operations.json file"; exit 0;;
 esac
-if [ "$(dpkg-query -W -f='${Status}' jq 2>/dev/null | grep -c "ok installed")" = "0" ]; then
-    echo
-    echo "jq is required to break the change-operations.json file apart"
-    echo "Installing jq"
-    sudo apt-get update && sudo apt-get install -y jq
+if [ ! -f "${__jq}" ]; then
+    echo "Unable to find jq executable at \"${BASH_SOURCE[0]}/${__jq}\". Aborting."
+    exit 1
 fi
-echo
-for ((i=0; i<"$(jq -ec '.|length' ./change-operations.json)";i++)); do
-    __validator_index=$(jq -ec ".[$i].message.validator_index|tonumber" ./change-operations.json)
-    echo "$(jq -ec [".[$i]"] ./change-operations.json)" > "${__validator_index}".json
+for ((i=0; i<"$(${__jq} -ec '.|length' ./change-operations.json)";i++)); do
+    __validator_index=$(${__jq} -ec ".[$i].message.validator_index|tonumber" ./change-operations.json)
+    echo "$(${__jq} -ec [".[$i]"] ./change-operations.json)" > "${__validator_index}".json
 done
 echo "$i <validator-index>.json files created on USB for use with CLWP"
 echo "Please shut down this machine and continue online"

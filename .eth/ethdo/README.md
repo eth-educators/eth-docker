@@ -21,7 +21,7 @@ which creates an `offline-preparation.json` file in `./.eth/ethdo`, this directo
 
 This command will also download `ethdo` itself into this directory.
 
-Copy the contents of this directory, including this `README.md`, `ethdo`, the `offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick.
+Copy the contents of this directory, including this `README.md`, `ethdo`, `ethdo-arm64`, `jq`, the `offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick.
 
 ## Make Linux Live USB
 

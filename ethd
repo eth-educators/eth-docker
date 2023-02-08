@@ -1058,6 +1058,15 @@ keys() {
         || echo "-> Could not download the latest version of '${REPO}' for arm64."
         mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
         rm -rf ./.eth/ethdo/arm64
+        echo "Downloading jq"
+        REPO="stedolan/jq"; \
+        curl -s https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux64" \
+        | head -1 \
+        | cut -d : -f 2,3 \
+        | tr -d \" \
+        | wget -qi - -O ./.eth/ethdo/jq \
+        || echo "-> Could not download the latest version of '${REPO}' for amd64."
+        chmod 755 ./.eth/ethdo/jq
         echo
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
         echo "Please see ./.eth/ethdo/README.md for details"
