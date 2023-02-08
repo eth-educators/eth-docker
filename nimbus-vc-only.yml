@@ -25,7 +25,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
-      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
       - LOG_LEVEL=${LOG_LEVEL}
@@ -37,6 +36,7 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --beacon-node=${CL_NODE}
+      - --graffiti=${GRAFFITI}
       - --metrics
       - --metrics-port=8009
       - --metrics-address=0.0.0.0

@@ -27,7 +27,6 @@ services:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
       - VC_EXTRAS=${VC_EXTRAS:-}
@@ -41,6 +40,8 @@ services:
       - /var/lib/prysm/
       - --beacon-rpc-provider
       - ${CL_NODE:-http://consensus:4000}
+      - --graffiti
+      - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}

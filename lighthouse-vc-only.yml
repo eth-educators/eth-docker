@@ -19,7 +19,6 @@ services:
     image: lighthouse:local
     user: lhvalidator
     environment:
-      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
@@ -37,6 +36,8 @@ services:
       - /var/lib/lighthouse
       - --beacon-nodes
       - ${CL_NODE:-http://consensus:5052}
+      - --graffiti
+      - ${GRAFFITI}
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}

@@ -35,14 +35,6 @@ if [ -n "${RAPID_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
     fi
 fi
 
-# Check whether custom graffiti is set
-if [ -v GRAFFITI ]; then
-  __graffiti="--graffiti=${GRAFFITI}"
-  echo "Custom graffiti was supplied in .env"
-else
-  __graffiti=""
-fi
-
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
   __mev_boost="--payload-builder=true --payload-builder-url=${MEV_NODE:-http://mev-boost:18550}"
@@ -70,4 +62,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__mev_boost} ${__log_level} ${__doppel} ${__prune} ${CL_EXTRAS} ${VC_EXTRAS}
+exec "$@" ${__mev_boost} ${__log_level} ${__doppel} ${__prune} ${CL_EXTRAS} ${VC_EXTRAS}
