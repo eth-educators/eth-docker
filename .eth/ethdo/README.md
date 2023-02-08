@@ -14,13 +14,14 @@ You can use `./ethd keys list` to get a list of your validator public keys.
 
 ## Offline preparation
 
-On your node running under eth-docker, run `./ethd keys prepare-address-change`. This will, under the hood, run
-`./ethd cmd run --rm ethdo validator credentials set --prepare-offline --timeout 2m --allow-insecure-connections --connection http://consensus:5052`
-which creates an `offline-preparation.json` file in `./.eth/ethdo`, this directory. This file contains all validators
-on the network, and is used during the offline step.
+On your node running under eth-docker, run `./ethd keys prepare-address-change`.
 
-This command will also download `ethdo` itself into this directory. Copy the contents of this directory, including this `README.md`, `ethdo`, the
-`offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick.
+This will, under the hood, run `./ethd cmd run --rm ethdo validator credentials set --prepare-offline --timeout 2m --allow-insecure-connections --connection http://consensus:5052`
+which creates an `offline-preparation.json` file in `./.eth/ethdo`, this directory. This file contains all validators on the network, and is used during the offline step.
+
+This command will also download `ethdo` itself into this directory.
+
+Copy the contents of this directory, including this `README.md`, `ethdo`, the `offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick.
 
 ## Make Linux Live USB
 
@@ -44,7 +45,7 @@ Disconnect Ubuntu from Internet, if it is connected. This is in the upper right 
 
 Open a "Terminal", and cd to the second USB stick.
 
-Run `./set-withdrawal-address.sh`. This will create a `change-operations.json` file on that USB stick for use with eth-docker and `ethdo`, and
+Run `./create-withdrawal-change.sh`. This will create a `change-operations.json` file on that USB stick for use with eth-docker and `ethdo`, and
 several \<validator-index\>.json files for use with [CLWP](https://clwp.xyz).
 
 **Triple-check the withdrawal address you set here! You can only set this once**
@@ -55,6 +56,8 @@ The withdrawal address has to be an address you control. Good choices are a hard
 Shut down Ubuntu, which will make your PC "forget" anything it knew about your mnemonic during this process.
 
 ## Send changes to the chain
+
+**This is not yet implemented. It'll go live in time for Goerli withdrawals**
 
 Copy the `change-operations.json` from USB to `./eth/ethdo` on your eth-docker node.
 
