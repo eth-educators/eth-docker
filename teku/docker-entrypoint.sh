@@ -50,6 +50,14 @@ else
     __rapid_sync=""
 fi
 
+# Check whether custom graffiti is set
+if [ -v GRAFFITI ]; then
+  __graffiti="--validators-graffiti=${GRAFFITI}"
+  echo "Custom graffiti was supplied in .env"
+else
+  __graffiti=""
+fi
+
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
   __mev_boost="--validators-builder-registration-default-enabled --builder-endpoint=${MEV_NODE:-http://mev-boost:18550}"
@@ -75,4 +83,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}
+exec "$@" ${__graffiti} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}

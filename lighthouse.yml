@@ -95,8 +95,6 @@ services:
       - /var/lib/lighthouse
       - --beacon-nodes
       - ${CL_NODE:-http://consensus:5052}
-      - --graffiti
-      - ${GRAFFITI}
       - --network
       - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
