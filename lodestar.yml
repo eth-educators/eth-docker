@@ -72,7 +72,6 @@ services:
     image: lodestar:local
     user: lsvalidator
     environment:
-      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
       - VC_EXTRAS=${VC_EXTRAS:-}

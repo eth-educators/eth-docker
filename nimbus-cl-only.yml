@@ -29,7 +29,6 @@ services:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - NETWORK=${NETWORK}
       - JWT_SECRET=${JWT_SECRET}
-      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
       - LOG_LEVEL=${LOG_LEVEL}
