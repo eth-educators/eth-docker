@@ -41,8 +41,6 @@ services:
       - "8009"
       - --metrics.address
       - 0.0.0.0
-      - --graffiti
-      - ${GRAFFITI}
       - --logLevel
       - ${LOG_LEVEL}
       - --network

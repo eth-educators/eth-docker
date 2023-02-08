@@ -35,7 +35,6 @@ services:
       - --log-destination=CONSOLE
       - --network=auto
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-      - --validators-graffiti=${GRAFFITI}
       - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
       - --validator-api-interface=0.0.0.0
