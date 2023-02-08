@@ -1648,7 +1648,8 @@ config() {
     if [ "${NETWORK}" = "goerli" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
-    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
+# Not multi-arch, this would break on ARM64
+#    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
     if [ "${__deployment}" = "rocket" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
         sed -i'.original' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
