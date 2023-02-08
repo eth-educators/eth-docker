@@ -19,6 +19,7 @@ services:
     image: lighthouse:local
     user: lhvalidator
     environment:
+      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
