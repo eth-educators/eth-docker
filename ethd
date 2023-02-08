@@ -1029,6 +1029,40 @@ keys() {
         docompose stop validator
         docompose rm --force validator
         up
+    elif [ "${1:-}" = "prepare-address-change" ]; then
+        var="COMPOSE_FILE"
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        if [[ ! "${value}" =~ "ethdo.yml" ]]; then
+            echo "Please make sure ethdo.yml is part of COMPOSE_FILE in .env"
+            echo "Without it, this step cannot be run"
+            exit 1
+        fi
+        docompose run --rm ethdo validator credentials set --prepare-offline --timeout 2m
+        echo
+        echo "Downloading ethdo"
+        REPO="wealdtech/ethdo"; \
+        curl -s https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" \
+        | head -1 \
+        | cut -d : -f 2,3 \
+        | tr -d \" \
+        | wget -qi - -O- \
+        | tar zxf - -C ./.eth/ethdo/ \
+        || echo "-> Could not download the latest version of '${REPO}' for amd64."
+        mkdir -p ./.eth/ethdo/arm64
+        curl -s https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-arm64.tar.gz" \
+        | head -1 \
+        | cut -d : -f 2,3 \
+        | tr -d \" \
+        | wget -qi - -O- \
+        | tar zxf - -C ./.eth/ethdo/arm64 \
+        || echo "-> Could not download the latest version of '${REPO}' for arm64."
+        mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
+        rm -rf ./.eth/ethdo/arm64
+        echo
+        echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
+        echo "Please see ./.eth/ethdo/README.md for details"
+    elif [ "${1:-}" = "send-address-change" ]; then
+        echo "This has not been implemented yet"
     else
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
@@ -1611,9 +1645,10 @@ config() {
     if [ "${MEV_BOOST}" = "true" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
     fi
-    if [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "sepolia" ]; then
+    if [ "${NETWORK}" = "goerli" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
+    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
     if [ "${__deployment}" = "rocket" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
         sed -i'.original' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml

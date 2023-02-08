@@ -467,6 +467,11 @@ usage() {
     echo "      Create a new Prysm wallet to store keys in"
     echo "  get-prysm-wallet"
     echo "      Print Prysm's wallet password"
+    echo
+    echo "  prepare-address-change"
+    echo "      Create an offline-preparation.json with ethdo"
+    echo "  send-address-change"
+    echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
 }
 
 set -e
@@ -488,6 +493,10 @@ if [ "$(id -u)" = '0' ]; then
             exit 0
             ;;
     esac
+    if [ -z "$3" ]; then
+        usage
+        exit 0
+    fi
     if [ -f "$__token_file" ]; then
         cp "$__token_file" /tmp/api-token.txt
         chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
@@ -539,6 +548,12 @@ case "$3" in
     delete-gas)
         __pubkey=$4
         gas-delete
+        ;;
+    prepare-address-change)
+        echo "This should have been handled one layer up in ethd. This is a bug, please report."
+        ;;
+    send-address-change)
+        echo "This should have been handled one layer up in ethd. This is a bug, please report."
         ;;
     *)
         usage
