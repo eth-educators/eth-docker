@@ -25,6 +25,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
+      - GRAFFITI=${GRAFFITI}
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
       - LOG_LEVEL=${LOG_LEVEL}
