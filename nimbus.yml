@@ -57,6 +57,7 @@ services:
       - --network=${NETWORK}
       - --web3-url=${EL_NODE}
       - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
+      - --graffiti=${GRAFFITI}
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=${CL_REST_PORT:-5052}

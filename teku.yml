@@ -57,6 +57,7 @@ services:
       - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
       - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
+      - --validators-graffiti=${GRAFFITI}
       - --logging=${LOG_LEVEL}
       - --rest-api-host-allowlist=*
       - --rest-api-enabled=true

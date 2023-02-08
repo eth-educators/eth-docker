@@ -10,14 +10,6 @@ if [ ! -f /var/lib/nimbus/api-token.txt ]; then
     echo "$__token" > /var/lib/nimbus/api-token.txt
 fi
 
-# Check whether custom graffiti is set
-if [ -v GRAFFITI ]; then
-  __graffiti="--graffiti=${GRAFFITI}"
-  echo "Custom graffiti was supplied in .env"
-else
-  __graffiti=""
-fi
-
 # Check whether we should enable doppelganger protection
 if [ "${DOPPELGANGER}" = "true" ]; then
   __doppel=""
@@ -30,4 +22,4 @@ __log_level="--log-level=${LOG_LEVEL^^}"
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__log_level} ${__doppel} ${VC_EXTRAS}
+exec "$@" ${__log_level} ${__doppel} ${VC_EXTRAS}

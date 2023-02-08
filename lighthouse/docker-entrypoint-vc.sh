@@ -6,14 +6,6 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu lhvalidator docker-entrypoint.sh "$@"
 fi
 
-# Check whether custom graffiti is set
-if [ -v GRAFFITI ]; then
-  __graffiti="--graffiti ${GRAFFITI}"
-  echo "Custom graffiti was supplied in .env"
-else
-  __graffiti=""
-fi
-
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
   __mev_boost="--builder-proposals"
@@ -39,4 +31,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}
+exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}

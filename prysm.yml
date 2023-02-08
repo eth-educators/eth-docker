@@ -100,6 +100,8 @@ services:
       - /var/lib/prysm/
       - --beacon-rpc-provider
       - consensus:4000
+      - --graffiti
+      - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}

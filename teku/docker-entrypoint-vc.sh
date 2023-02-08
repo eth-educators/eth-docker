@@ -24,14 +24,6 @@ if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
     openssl pkcs12 -export -in /var/lib/teku/teku-keyapi.crt -inkey /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.keystore -name teku-keyapi -passout pass:"$__password"
 fi
 
-# Check whether custom graffiti is set
-if [ -v GRAFFITI ]; then
-  __graffiti="--validators-graffiti=${GRAFFITI}"
-  echo "Custom graffiti was supplied in .env"
-else
-  __graffiti=""
-fi
-
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
   __mev_boost="--validators-builder-registration-default-enabled"
@@ -42,4 +34,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__mev_boost} ${VC_EXTRAS}
+exec "$@" ${__mev_boost} ${VC_EXTRAS}
