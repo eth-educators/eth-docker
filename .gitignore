@@ -5,7 +5,8 @@ ext-network.yml.original
 .eth/*
 !.eth/README.md
 !.eth/validator_keys/.empty
-!.eth/ethdo/.empty
+!.eth/ethdo/README.md
+!.eth/ethdo/create-withdrawal-change.sh
 *.swp
 alertmanager/config.yml
 prometheus/custom-prom.yml
