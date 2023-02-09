@@ -17,8 +17,8 @@ You can use `./ethd keys list` to get a list of your validator public keys that 
 On your machine running eth-docker, run `./ethd keys prepare-address-change`.
 
 Under the hood this will run `./ethd cmd run --rm ethdo validator credentials set --prepare-offline --timeout 2m --allow-insecure-connections --connection http://consensus:5052`
-which creates an `offline-preparation.json` file in `./.eth/ethdo`. 
-This file contains a list of all validators currently on the network and is necessary for the offline machine. 
+which creates an `offline-preparation.json` file in `./.eth/ethdo`.
+This file contains a list of all validators currently on the network and is necessary for the offline machine.
 
 This command will also download `ethdo` itself into this directory.
 
@@ -34,8 +34,7 @@ If you do not provide the address through a USB stick you will have to type it m
 
 ## Make Linux Live USB
 
-Get the [Ubuntu Desktop](https://ubuntu.com/download/desktop) ISO and burn it to a second USB stick (we will call it Live USB) with [Balena Etcher](https://www.balena.io/etcher)
-or [Rufus](https://rufus.ie/en/).
+Get the [Ubuntu Desktop](https://ubuntu.com/download/desktop) ISO and burn it to a second USB stick (we will call it Live USB) with [Balena Etcher](https://www.balena.io/etcher) or [Rufus](https://rufus.ie/en/).
 
 Plug in the Live USB to your offline computer and turn it on. You will likely need to override the boot target in the UEFI(BIOS) settings. Methods to do this vary by device: Common key interrupts are F2, F8, F12, DEL and Enter.
 While you are updating the boot target, it would be proper to additionally turn off WIFI, Bluetooth and LAN integrated devices.
@@ -51,7 +50,7 @@ Verify your internet has been disabled by attempting to visit a website, ping th
 
 Open a "Terminal", and cd to the Data USB directory.
 
-Run `./create-withdrawal-change.sh`. 
+Run `./create-withdrawal-change.sh`.
 
 You will be prompted to specify the withdrawal address you want your funds to be sent to. You should copy that value from the text file.
 
