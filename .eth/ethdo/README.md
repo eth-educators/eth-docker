@@ -24,7 +24,7 @@ This command will also download `ethdo` itself into this directory.
 
 Copy the contents of this directory, including this `README.md`, `ethdo`, `ethdo-arm64`, `jq`, the `offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick (we will call it Data USB).
 
-You should also create a new text file on the Data USB that contains the address you want your validator rewards to go to. 
+You should also create a new text file on the Data USB that contains the address you want your validator rewards to go to.
 This has to be an address you control. Good choices are a hardware wallet where the mnemonic was
 **never** online or a contract such as a [multi-signature safe](https://app.safe.global).
 
@@ -87,4 +87,4 @@ everyone piles in at once or should be almost immediate if you have waited.
 Obsessively refresh [Metrika](https://app.metrika.co/ethereum/dashboard/withdrawals-overview) to see whether your validator now has a withdrawal address set.
 If yes, that is where consensus layer rewards will be swept automatically every 4-5 days at ~500,000 validators total.
 
-You can use `./ethd keys list` to get a list of your validator public keys.
+You can use `./ethd keys list` to get a list of your validator public keys that are currently active on your system.
