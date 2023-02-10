@@ -76,15 +76,15 @@ services:
       - ${FEE_RECIPIENT}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cl.entrypoints=websecure
-      - traefik.http.routers.cl.rule=Host(`${CL_HOST}.${DOMAIN}`)
-      - traefik.http.routers.cl.service=cl
-      - traefik.http.routers.cl.tls.certresolver=letsencrypt
-      - traefik.http.routers.cllb.service=cl
-      - traefik.http.routers.cllb.entrypoints=websecure
-      - traefik.http.routers.cllb.rule=Host(`${CL_LB}.${DOMAIN}`)
-      - traefik.http.routers.cllb.tls.certresolver=letsencrypt
-      - traefik.http.services.cl.loadbalancer.server.port=${CL_REST_PORT:-5052}
+      - traefik.http.routers.${CL_HOST:-cl}.entrypoints=websecure
+      - traefik.http.routers.${CL_HOST:-cl}.rule=Host(`${CL_HOST:-cl}.${DOMAIN}`)
+      - traefik.http.routers.${CL_HOST:-cl}.service=${CL_HOST:-cl}
+      - traefik.http.routers.${CL_HOST:-cl}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${CL_HOST:-cl}lb.service=${CL_HOST:-cl}
+      - traefik.http.routers.${CL_HOST:-cl}lb.entrypoints=websecure
+      - traefik.http.routers.${CL_HOST:-cl}lb.rule=Host(`${CL_LB:-cl-lb}.${DOMAIN}`)
+      - traefik.http.routers.${CL_HOST:-cl}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${CL_HOST:-cl}.loadbalancer.server.port=${CL_REST_PORT:-5052}
 volumes:
   prysmconsensus-data:
   jwtsecret:
