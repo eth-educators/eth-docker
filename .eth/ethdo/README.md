@@ -22,7 +22,7 @@ This file contains a list of all validators currently on the network and is nece
 
 This command will also download `ethdo` itself into this directory.
 
-Copy the contents of this directory, including this `README.md`, `ethdo`, `ethdo-arm64`, `jq`, the `offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick (we will call it Data USB).
+Copy the contents of this directory, including this `README.md`, `ethdo`, `ethdo-arm64`, the `offline-preparation.json`, and the `create-withdrawal-change.sh` script, to a USB stick (we will call it Data USB).
 
 You should also create a new text file on the Data USB that contains the address you want your validator rewards to go to.
 This has to be an address you control. Good choices are a hardware wallet where the mnemonic was

@@ -4,10 +4,8 @@ __arch=$(uname -m)
 
 if [ "${__arch}" = "aarch64" ]; then
     __ethdo=./ethdo-arm64
-    __jq=""
 elif [ "${__arch}" = "x86_64" ]; then
     __ethdo=./ethdo
-    __jq=./jq
 else
     echo "Architecture ${__arch} not recognized - unsure which ethdo to use. Aborting."
     exit 1
@@ -66,22 +64,21 @@ if ! [ "$result" -eq 0 ]; then
     exit "$result"
 fi
 echo "change-operations.json can be found on your USB drive"
-# No jq for ARM64
-if [ "${__arch}" = "aarch64" ]; then
-    exit 0
-fi
+
 read -rp "Do you want to break change-operations.json into individual files for use with CLWP? (no/yes) " yn
 case $yn in
     [Yy]* ) ;;
     * ) echo "Please shut down this machine and continue online, with the change-operations.json file"; exit 0;;
 esac
-if [ ! -f "${__jq}" ]; then
-    echo "Unable to find jq executable at \"${BASH_SOURCE[0]}/${__jq}\". Aborting."
-    exit 1
-fi
-for ((i=0; i<"$(${__jq} -ec '.|length' ./change-operations.json)";i++)); do
-    __validator_index=$(${__jq} -ec ".[$i].message.validator_index|tonumber" ./change-operations.json)
-    echo "$(${__jq} -ec [".[$i]"] ./change-operations.json)" > "${__validator_index}".json
-done
-echo "$i <validator-index>.json files created on USB for use with CLWP"
+
+file_count=0
+cat ./change-operations.json | sed "s/},{\"message/}]\n[{\"message/g" | sed -e '$a\' | {
+    while read line
+    do
+        val_index=$(echo $line | grep -Eo '"validator_index"[^,]*' | grep -Eo '[^:]*$' | tr -d '"')
+        echo ${line} > "${val_index}".json
+        file_count=$((file_count+1))
+    done
+    echo "$file_count <validator-index>.json files created on USB for use with CLWP"
+}
 echo "Please shut down this machine and continue online"
