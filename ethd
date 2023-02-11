@@ -1046,6 +1046,11 @@ keys() {
     fi
 }
 
+keyimport() {
+    echo "The legacy keyimport command has been removed."
+    echo "Please try ./ethd keys import instead."
+}
+
 upgrade() {
   update
 }
