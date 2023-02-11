@@ -51,7 +51,6 @@ RUN mkdir -p /var/lib/teku/validator-keys && mkdir -p /var/lib/teku/validator-pa
 
 # Cannot assume buildkit, hence no chmod
 COPY --from=builder --chown=${USER}:${USER} /usr/src/teku/build/install/teku/. /opt/teku/
-COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
 COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
 # Belt and suspenders

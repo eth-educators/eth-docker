@@ -981,12 +981,6 @@ prep-keyimport() {
                     echo "KEYSTORE_PASSWORD not set, aborting"
                     exit 1
                 fi
-                if [ "${__oldskool:-}" = 1 ] && [ "${__prysm}" = 1 ]; then
-                    if [ -z "${WALLET_PASSWORD+x}" ]; then
-                        echo "Using Prysm and WALLET_PASSWORD not set, aborting"
-                        exit 1
-                    fi
-                fi
                 __non_interactive=1
                 shift
                 ;;
@@ -998,22 +992,7 @@ prep-keyimport() {
     done
 }
 
-keyimport() {
-    __oldskool=1
-    prep-keyimport "$@"
-    echo
-    echo "The legacy ./ethd keyimport function will be removed in early 2023 in preparation for a security audit."
-    echo "Consider using ./ethd keys import instead."
-    echo
-    if [ ${__non_interactive} = 1 ]; then
-        docompose run --rm validator-import --non-interactive
-    else
-        docompose run --rm validator-import
-    fi
-}
-
 keys() {
-    __oldskool=0
     __owner_uid=$(id -u "${OWNER}")
     if [ "${1:-}" = "import" ]; then
         shift
