@@ -215,31 +215,6 @@ install() {
     return 0
 }
 
-check_for_apparmor() {
-# This function can likely be removed once docker-ce fixes its issue introduced in 23.0.0
-    # Only relevant to ubuntu or debian
-    if [[ ! "$__distro" = "ubuntu" ]] && [[ ! "$__distro" =~ "debian" ]]; then
-        return 0
-    fi
-    # Docker-CE 23.0.0 has an issue where containers will fail if apparmor
-    # is not installed. Remedy.
-    if [ "$(dpkg-query -W -f='${Status}' apparmor 2>/dev/null | grep -c "ok installed")" = "0" ]; then
-        echo "apparmor may be required for docker-ce 23.0.0 to function"
-        echo "Out of caution, please let this script install apparmor"
-        echo
-        while true; do
-            read -rp "Do you consent to installation of apparmor? (yes/no) " yn
-            case $yn in
-                [Nn]* ) echo "No changes made"; return 0;;
-                * ) break;;
-            esac
-        done
-        ${__auto_sudo} apt-get update
-        ${__auto_sudo} apt-get -y install apparmor
-    fi
-    return 0
-}
-
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
@@ -297,9 +272,6 @@ update() {
                 ;;
         esac
     done
-
-# Hopefully temporary, to handle docker-ce 23.0.0 dependency issue
-    check_for_apparmor
 
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2119
