@@ -47,27 +47,6 @@ services:
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
 
-  validator-import:
-    profiles: ["tools"]
-    restart: "no"
-    image: nimbus-validator:local
-    user: root
-    volumes:
-      - nimbus-vc-data:/var/lib/nimbus
-      - ./.eth/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
-      - NETWORK=${NETWORK}
-    entrypoint:
-      - validator-import.sh
-      - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
-      - deposits
-      - import
-      - /val_keys
-
   validator-exit:
     profiles: ["tools"]
     restart: "no"

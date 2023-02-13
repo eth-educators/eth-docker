@@ -60,7 +60,6 @@ RUN cp /home/user/nimbus_validator_client /usr/local/bin/
 RUN chown ${USER}:${USER} /usr/local/bin/nimbus_validator_client
 # Cannot assume buildkit, hence no chmod
 COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
-COPY --chown=${USER}:${USER} ./validator-import.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
 

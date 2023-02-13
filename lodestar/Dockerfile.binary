@@ -7,9 +7,6 @@ ARG BUILD_TARGET
 
 RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec && rm -rf /var/cache/apk/*
 
-# Scripts that handle permissions
-COPY ./validator-import.sh /usr/local/bin/
-
 ARG USER=lsconsensus
 ARG UID=10002
 
