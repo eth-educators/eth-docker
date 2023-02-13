@@ -1654,7 +1654,7 @@ config() {
     if [ "${MEV_BOOST}" = "true" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
     fi
-    if [ "${NETWORK}" = "goerli" ]; then
+    if [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "zhejiang" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
 # Not multi-arch, this would break on ARM64
