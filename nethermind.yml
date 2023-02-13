@@ -75,6 +75,8 @@ services:
       - "10000"
       - --Metrics.Enabled
       - "true"
+      - --Metrics.PushGatewayUrl
+      - ""
       - --Metrics.ExposePort
       - "6060"
       - --config
