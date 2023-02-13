@@ -1113,6 +1113,7 @@ query_network() {
     "goerli" "Görli (né Prater) Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" \
+    "zhejiang" "Zhejiang Testnet" \
     "sepolia" "Sepolia Testnet (permissioned validators)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
@@ -1122,7 +1123,7 @@ query_network() {
        "gnosis")
            echo "You chose to run on Gnosis Chain"
            ;;
-       "goerli" | "sepolia" )
+       "goerli" | "sepolia" | "zhejiang" )
            echo "You chose to run on ${NETWORK} testnet"
            ;;
        *)
@@ -1138,6 +1139,8 @@ query_deployment() {
       "What kind of deployment do you want to run?" 11 80 3 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
+    elif [ "${NETWORK}" = "zhejiang" ] ; then
+      __deployment=node
     elif uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 4 \
@@ -1215,6 +1218,8 @@ query_consensus_client() {
       "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
       "teku.yml" "Teku (Java) - consensus and validator client" \
       "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
+    elif [ "${NETWORK}" = "zhejiang" ]; then
+      CONSENSUS_CLIENT=lodestar.yml
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
@@ -1318,6 +1323,8 @@ query_execution_client() {
       "Which execution client do you want to run?" 9 60 2 \
       "nethermind.yml" "Nethermind (.NET)" \
       "erigon.yml" "Erigon (Go)" 3>&1 1>&2 2>&3)
+    elif [ "${NETWORK}" = "zhejiang" ]; then
+      EXECUTION_CLIENT=nethermind.yml
     elif uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 9 60 3 \
@@ -1444,6 +1451,10 @@ query_graffiti() {
 }
 
 query_rapid_sync() {
+    if [ "${NETWORK}" = "zhejiang" ]; then
+        RAPID_SYNC_URL=""
+        return
+    fi
     if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 60) then
         query_checkpoint_beacon
     fi
@@ -1488,6 +1499,9 @@ query_coinbase() {
 }
 
 query_mev() {
+    if [ "${NETWORK}" = "zhejiang" ]; then
+        return
+    fi
     var="MEV_BOOST"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if (whiptail --title "Select Option" --yesno "Do you want to use MEV Boost?" 10 60) then
@@ -1673,6 +1687,14 @@ config() {
     if [[ "${NETWORK}" = "gnosis" ]] && [[ "${CONSENSUS_CLIENT}" =~ "nimbus" ]] ; then
         NIM_DOCKERFILE=Dockerfile.sourcegnosis
         var=NIM_DOCKERFILE
+        set_value_in_env
+    fi
+    if [ "${NETWORK}" = "zhejiang" ]; then
+        NM_SRC_BUILD_TARGET=1.17.0-unstable
+        var=NM_SRC_BUILD_TARGET
+        set_value_in_env
+        NM_DOCKERFILE=Dockerfile.source
+        var=NM_DOCKERFILE
         set_value_in_env
     fi
 
