@@ -1040,7 +1040,7 @@ keys() {
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
         echo "Please see ./.eth/ethdo/README.md for details"
     elif [ "${1:-}" = "send-address-change" ]; then
-        echo "This has not been implemented yet"
+        docompose run --rm ethdo validator credentials set --timeout 2m
     else
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi

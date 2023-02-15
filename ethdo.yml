@@ -9,6 +9,8 @@ services:
     image: ethdo:local
     volumes:
       - ./.eth:/app/.eth
+    environment:
+      - NETWORK=${NETWORK}
     entrypoint:
       - docker-entrypoint.sh
       - /app/ethdo
