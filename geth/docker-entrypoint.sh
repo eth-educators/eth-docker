@@ -56,6 +56,14 @@ else
   __prune=""
 fi
 
+# Detect existing DB; use Pebble if fresh
+if [ -d "/var/lib/goethereum/geth/chaindata/" ]; then
+  __pebbleme=""
+else
+  echo "Choosing Pebble DB for fresh sync"
+  __pebbleme="--db.engine=pebble"
+fi
+
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -68,5 +76,5 @@ if [ -f /var/lib/goethereum/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__prune} ${__verbosity} ${EL_EXTRAS}
+  exec "$@" ${__prune} ${__pebbleme} ${__verbosity} ${EL_EXTRAS}
 fi
