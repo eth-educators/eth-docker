@@ -48,9 +48,9 @@ After Ubuntu loads, insert the Data USB that holds `ethdo` and the other files f
 
 Verify your internet has been disabled by attempting to visit a website, ping through terminal, or looking in the upper right corner of the desktop.
 
-Open a "Terminal", and cd to the Data USB directory.
+Open a "Terminal", and cd to the Data USB directory. It will likely be in `/media/ubuntu/USBNAME`. You can use the Files app and right-click the USB, then look at Properties, to see where it is mounted.
 
-Run `./create-withdrawal-change.sh`.
+Run `bash create-withdrawal-change.sh`.
 
 You will be prompted to specify the withdrawal address you want your funds to be sent to. You should copy that value from the text file.
 
@@ -67,8 +67,6 @@ Shut down Ubuntu which will make your PC "forget" anything it knew about your mn
 At this point your Live USB will no longer be needed.
 
 ## Broadcast changes to the chain
-
-**This is not yet implemented. It'll go live in time for Goerli withdrawals**
 
 Insert the Data USB to your online computer where eth-docker is running.
 
