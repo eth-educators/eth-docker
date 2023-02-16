@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+set -e
+echo "Copying ethdo to home directory, ~/ethdo"
+mkdir -p ~/ethdo
+cp ethdo ~/ethdo/
+cp ethdo-arm64 ~/ethdo/
+chmod +x ~/ethdo/*
+set +e
+
 __arch=$(uname -m)
 
 if [ "${__arch}" = "aarch64" ]; then
@@ -23,8 +31,8 @@ if [ "${result}" -eq 0 ]; then
 fi
 echo "Checking whether machine is online"
 echo
-ping -c 4 1.1.1.1 && echo; echo "Machine is online, please disconnect from Internet"; exit 1
-ping -c 4 8.8.8.8 && echo; echo "Machine is online, please disconnect from Internet"; exit 1
+ping -c 4 1.1.1.1 && { echo; echo "Machine is online, please disconnect from Internet"; exit 1; }
+ping -c 4 8.8.8.8 && { echo; echo "Machine is online, please disconnect from Internet"; exit 1; }
 echo "Safely offline. Running ethdo to prep withdrawal address change."
 echo
 while true; do
