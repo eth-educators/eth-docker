@@ -1425,6 +1425,9 @@ query_checkpoint_beacon() {
             "gnosis")
                 RAPID_SYNC_URL="https://checkpoint.gnosischain.com/"
                 ;;
+            "zhejiang")
+                RAPID_SYNC_URL="https://checkpointz.zhejiang.ethpandaops.io/"
+                ;;
             *)
                 RAPID_SYNC_URL=""
                 ;;
@@ -1458,10 +1461,6 @@ query_graffiti() {
 }
 
 query_rapid_sync() {
-    if [ "${NETWORK}" = "zhejiang" ]; then
-        RAPID_SYNC_URL=""
-        return
-    fi
     if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 60) then
         query_checkpoint_beacon
     fi
