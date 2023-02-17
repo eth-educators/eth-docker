@@ -1695,14 +1695,6 @@ config() {
         var=NIM_DOCKERFILE
         set_value_in_env
     fi
-    if [ "${NETWORK}" = "zhejiang" ]; then
-        NM_SRC_BUILD_TARGET=1.17.0-unstable
-        var=NM_SRC_BUILD_TARGET
-        set_value_in_env
-        NM_DOCKERFILE=Dockerfile.source
-        var=NM_DOCKERFILE
-        set_value_in_env
-    fi
 
     docompose --profile tools build --pull
     exec 3>&1
