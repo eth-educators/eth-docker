@@ -48,6 +48,22 @@ services:
       - 0.0.0.0:6060
       - --config
       - /var/lib/reth/reth.toml
+      - --http
+      - --http.addr
+      - 0.0.0.0
+      - --http.port
+      - ${EL_RPC_PORT:-8545}
+      - --http.api
+      - web3,eth,net
+      - --ws
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - ${EL_WS_PORT:-8546}
+      - --ws.api
+      - web3,eth,net
+      - --authrpc.jwtsecret
+      - /var/lib/reth/ee-secret/jwtsecret
 volumes:
   reth-el-data:
   jwtsecret:
