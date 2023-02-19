@@ -153,17 +153,16 @@ check_for_snap() {
 
 install() {
     check_for_snap
-    while true; do
-        read -rp "This will attempt to install docker and make your user part of the docker group. Do you wish to continue? (no/yes) " yn
-        case $yn in
-            [Yy]* ) break;;
-            * ) echo "Aborting, no changes made"; exit 0;;
-        esac
-    done
+    read -rp "This will attempt to install docker and make your user part of the docker group. Do you wish to continue? (no/yes) " yn
+    case $yn in
+        [Yy]* ) ;;
+        * ) echo "Aborting, no changes made"; exit 0;;
+    esac
     if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
         if [ "${__major_version}" -lt 18 ]; then
             echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
+            exit 0
         fi
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail bc chrony
@@ -211,6 +210,30 @@ install() {
         fi
     else
         echo "This script does not know how to install docker on $__distro"
+    fi
+
+    if ! [[ "$__distro" = "ubuntu" ]] || [[ "$__distro" =~ "debian" ]]; then
+        exit 0
+    fi
+
+    # We only get here on Ubuntu or Debian
+    __install_base=$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")
+    if [ "${__install_base}" = "eth-docker" ]; then
+        read -rp "Do you want to be able to call 'ethd' from anywhere? (yes/no) " yn
+        case $yn in
+            [Nn]* ) exit 0;;
+            * ) ;;
+        esac
+        if grep -q "alias ethd" ~/.profile; then
+            sed -i'.original' -e "/alias ethd/d" ~/.profile
+        fi
+        echo "alias ethd=$(realpath "${BASH_SOURCE[0]}")" >>~/.profile
+        if grep -q "cat.*\.motd" ~/.profile; then
+            sed -i'.original' -e "/cat.*\.motd/d" ~/.profile
+        fi
+        echo "cat $(dirname "$(realpath "${BASH_SOURCE[0]}")")/.motd" >>~/.profile
+        echo "Go ahead and 'source ~/.profile' or log out and back in."
+        echo "After that, you can use the command 'ethd'."
     fi
     return 0
 }
@@ -511,7 +534,6 @@ envmigrate() {
         "${value}" =~ "-cl-only.yml" || "${value}" =~ "-vc-only.yml" ]]; then
         # Check for rewards
         var="FEE_RECIPIENT"
-        #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
             whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
@@ -628,7 +650,6 @@ migrate_compose_file() {
 delete_erigon() {
     # Check for Erigon
     var="COMPOSE_FILE"
-    #value=$(grep --color=never -Po "^${var}=\K.*" ".env" || true)
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
@@ -1901,3 +1922,8 @@ if ! docompose --help >/dev/null 2>&1; then
 fi
 
 $command "$@"
+
+__result=$?
+if [ "$__result" -eq 127 ]; then
+    printhelp
+fi
