@@ -1650,7 +1650,9 @@ config() {
 
         query_execution_client
         query_rapid_sync
-        query_mev
+        if [ ! "${__deployment}" = "rpc" ]; then
+          query_mev
+        fi
         query_grafana
         query_coinbase
         if [ "${__deployment}" = "node" ]; then
