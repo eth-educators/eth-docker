@@ -1652,9 +1652,9 @@ config() {
         query_rapid_sync
         if [ ! "${__deployment}" = "rpc" ]; then
           query_mev
+          query_coinbase
         fi
         query_grafana
-        query_coinbase
         if [ "${__deployment}" = "node" ]; then
           query_graffiti
         fi
