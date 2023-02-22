@@ -1526,7 +1526,7 @@ query_coinbase() {
 }
 
 query_mev() {
-    if [ "${NETWORK}" = "zhejiang" ]; then
+    if [ "${NETWORK}" = "zhejiang" ] || [ "${NETWORK}" = "gnosis" ]; then
         return
     fi
     var="MEV_BOOST"
