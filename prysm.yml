@@ -54,6 +54,11 @@ services:
       - 0.0.0.0
       - --grpc-gateway-port
       - ${CL_REST_PORT:-5052}
+      # Allow larger messages so credential change messages can be sent
+      - --rpc-max-page-size
+      - "200000"
+      - --grpc-max-msg-size
+      - "268435456"
       - --execution-endpoint
       - ${EL_NODE}
       - --jwt-secret

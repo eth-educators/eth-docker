@@ -1,0 +1,73 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  web3signer:
+    restart: "unless-stopped"
+    build:
+      context: ./web3signer
+      args:
+        - DOCKER_TAG=${W3S_DOCKER_TAG}
+      dockerfile: Dockerfile.binary
+    image: web3signer:local
+    user: web3signer
+    volumes:
+      - web3signer-keys:/var/lib/web3signer
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - postgres
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - /opt/web3signer/bin/web3signer
+      - --key-store-path=/var/lib/web3signer/keys
+      - --metrics-enabled
+      - --metrics-host-allowlist=*
+      - --http-host-allowlist=*
+      - eth2
+      - --network=${NETWORK}
+      - --enable-key-manager-api=true
+      - --slashing-protection-db-url=jdbc:postgresql://postgres/web3signer
+      - --slashing-protection-db-username=postgres
+      - --slashing-protection-db-password=postgres
+      - --slashing-protection-pruning-enabled=true
+
+  postgres:
+    restart: "unless-stopped"
+    image: "postgres:${PG_DOCKER_TAG}"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=web3signer
+    volumes:
+      - web3signer-slashing-data:/var/lib/postgresql/data/
+
+  validator-keys:
+    profiles: ["tools"]
+    restart: "no"
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
+    user: root
+    volumes:
+      - ./.eth/validator_keys:/validator_keys
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=9000
+    depends_on:
+      - web3signer
+    entrypoint:
+      - keymanager.sh
+      - NIL
+      - web3signer
+
+volumes:
+  web3signer-keys:
+  web3signer-slashing-data:

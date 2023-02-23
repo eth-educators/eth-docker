@@ -1,0 +1,34 @@
+ARG DOCKER_TAG
+
+FROM flyway/flyway:latest-alpine as flyway
+
+FROM consensys/web3signer:${DOCKER_TAG}
+
+ARG USER=web3signer
+ARG UID=10000
+
+USER root
+
+RUN groupmod -g "${UID}" ${USER} && usermod -u "${UID}" -g "${UID}" ${USER}
+
+RUN set -eux; \
+        apt-get update; \
+        DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y gosu ca-certificates tzdata; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/web3signer/keys && chown -R ${USER}:${USER} /var/lib/web3signer && chmod -R 700 /var/lib/web3signer
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
+
+# Flyway for initial migrations
+
+COPY --from=flyway --chown=${USER}:${USER} /flyway /flyway
+
+USER ${USER}
+
+ENTRYPOINT ["/opt/web3signer/bin/web3signer"]
