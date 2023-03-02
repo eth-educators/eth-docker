@@ -38,7 +38,7 @@ services:
       - CLIENT=${COMPOSE_FILE}
     entrypoint:
       - docker-entrypoint.sh
-      - /exporter
+      - /ethereum-metrics-exporter
     <<: *logging
 
   node-exporter:
