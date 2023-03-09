@@ -11,9 +11,9 @@ set +e
 __arch=$(uname -m)
 
 if [ "${__arch}" = "aarch64" ]; then
-    __ethdo=./ethdo-arm64
+    __ethdo=~/ethdo/ethdo-arm64
 elif [ "${__arch}" = "x86_64" ]; then
-    __ethdo=./ethdo
+    __ethdo=~/ethdo/ethdo
 else
     echo "Architecture ${__arch} not recognized - unsure which ethdo to use. Aborting."
     exit 1
