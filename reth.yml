@@ -62,6 +62,10 @@ services:
       - ${EL_WS_PORT:-8546}
       - --ws.api
       - web3,eth,net
+      - --authrpc.addr
+      - 0.0.0.0
+      - --authrpc.port
+      - ${EE_PORT:-8551}
       - --authrpc.jwtsecret
       - /var/lib/reth/ee-secret/jwtsecret
 volumes:
