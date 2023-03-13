@@ -74,6 +74,9 @@ services:
       - --http.api
       - web3,eth,net,engine
       - --ws
+      # Allow RocketPool >=1.9 watchtower queries
+      - --rpc.returndata.limit
+      - "1000000"
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.port
