@@ -58,14 +58,35 @@ while true; do
         continue
     fi
     read -rp "Please verify your validator mnemonic : " __mnemonic2
-    if [[ ${__mnemonic} = ${__mnemonic2} ]]; then
+    if [[ "${__mnemonic}" = "${__mnemonic2}" ]]; then
         break
     else
         echo "Mnemonic did not match. You can try again or hit Ctrl-C to abort."
     fi
 done
+__passphraseCommand=""
+read -rp "Did you use a passphrase / 25th word when you created this mnemonic? (no/yes) " __usepassphrase
+case "${__usepassphrase}" in
+    [Yy]* )
+        while true; do
+            read -rp "What is your mnemonic passphrase? : " __passphrase
+            if [[ -z "${__passphrase}" ]]; then
+                echo "The passphrase cannot be empty. You can try again or hit Ctrl-C to abort."
+                continue
+            fi
+            read -rp "Please verify your mnemonic passphrase : " __passphrase2
+            if [[ "${__passphrase}" = "${__passphrase2}" ]]; then
+                __passphraseCommand="--passphrase=${__passphrase}"
+                break
+            else
+                echo "Passphrase did not match. You can try again or hit Ctrl-C to abort."
+            fi
+        done;;
+    * ) echo "Skipping passphrase entry";;
+esac
+
 echo "Creating change-operations.json"
-$__ethdo validator credentials set --offline --withdrawal-address="${__address}" --mnemonic="${__mnemonic}"
+$__ethdo validator credentials set --offline --withdrawal-address="${__address}" --mnemonic="${__mnemonic}" "${__passphraseCommand}"
 result=$?
 if ! [ "$result" -eq 0 ]; then
     echo "Command failed"
