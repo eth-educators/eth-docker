@@ -733,6 +733,89 @@ delete_erigon() {
     echo ""
 }
 
+resync-execution() {
+    # Check for EL client
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
+    case "${value}" in
+        *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
+        *geth.yml* ) __el_volume='geth-eth1-data'; __el_client="geth";;
+        *reth.yml* ) __el_volume='reth-el-data'; __el_client="reth";;
+        *besu.yml* ) __el_volume='besu-eth1-data'; __el_client="besu";;
+        *nethermind.yml* ) __el_volume='nm-eth1-data'; __el_client="nethermind";;
+        * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return;;
+    esac
+
+    if ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__el_volume}"; then
+        echo "Did not find docker volume for ${__el_client}. Nothing to do."
+        return
+    fi
+
+    echo "This will stop ${__el_client} and delete its database to force a resync."
+    read -rp "WARNING - resync may take days. Do you wish to continue? (No/yes) " yn
+    case $yn in
+        [Yy][Ee][Ss] ) ;;
+        * ) echo "Aborting."; exit 1;;
+    esac
+
+    echo "Stopping ${__el_client} container"
+    docompose stop execution && docompose rm -f execution
+    dodocker volume rm "$(dodocker volume ls -q -f "name=${__el_volume}")"
+    echo ""
+    echo "${__el_client} stopped and database deleted."
+    echo ""
+    echo "Restarting for resync."
+    up
+}
+
+resync-consensus() {
+    # Check for EL client
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
+    case "${value}" in
+        *lighthouse.yml* ) __cl_volume='lhbeacon-data'; __cl_client="lighthouse";;
+        *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
+        *teku.yml* ) __cl_volume=''; __cl_client="teku"; echo "This script does not yet know how to resync Teku without also deleting keys"; echo "Please delete the DB manually from sudo bash"; exit 0;;
+        *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
+        *nimbus.yml* ) __cl_volume=''; __cl_client="nimbus"; echo "This script does not yet know how to resync Nimbus without also deleting keys"; echo "Please delete the DB manually from sudo bash"; exit 0;;
+        *nimbus-cl-only.yml* ) __cl_volume='nimbusconsensus-data'; __cl_client="nimbus";;
+        *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __el_client="lodestar";;
+        *prysm.yml* ) __cl_volume='prysmbeacon-data'; __el_client="prysm";;
+        *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __el_client="prysm";;
+        * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;
+    esac
+
+    if ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
+        echo "Did not find docker volume for ${__cl_client}. Nothing to do."
+        return
+    fi
+
+    # Can we checkpoint sync?
+    var="RAPID_SYNC_URL"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    echo "This will stop ${__cl_client} and delete its database to force a resync."
+    if [ -z "${value}" ]; then
+        read -rp "WARNING - RAPID_SYNC_URL not set, resync may take days. Do you wish to continue? (No/yes) " yn
+    else
+        read -rp "RAPID_SYNC_URL set, resync should finish in minutes. Do you wish to continue? (No/yes) " yn
+    fi
+    case $yn in
+        [Yy][Ee][Ss] ) ;;
+        * ) echo "Aborting."; exit 1;;
+    esac
+
+    echo "Stopping ${__cl_client} container"
+    docompose stop consensus && docompose rm -f consensus
+    dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
+    echo ""
+    echo "${__cl_client} stopped and database deleted."
+    echo ""
+    echo "Restarting for resync."
+    up
+}
+
 query_blox_switch() {
     echo "Detected SSV Node v1. SSV v2 testnet is the new hotness."
     echo
@@ -1906,6 +1989,10 @@ printhelp() {
     echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
     echo "  prune-nethermind"
     echo "     restarts the Nethermind execution client and prunes its DB."
+    echo "  resync-execution"
+    echo "     removes the execution layer database and forces a resync."
+    echo "  resync-consensus"
+    echo "     removes the consensus layer database and forces a resync."
     echo "  attach-geth"
     echo "     launches an interactive geth attach repl"
     echo ""
