@@ -68,6 +68,14 @@ At this point your Live USB will no longer be needed.
 
 ## Broadcast changes to the chain
 
+### Using the beacocha.in explorer
+
+Did I mention to **triple-check the withdrawal address you have set? You can only set this once!**
+
+Go to https://beaconcha.in/tools/broadcast and drag-drop the `change-operations.json` file in. It will be broadcast to the chain.
+
+### Using your own eth-docker CL
+
 Insert the Data USB to your online computer where eth-docker is running.
 
 Copy the `change-operations.json` from the Data USB to `./eth/ethdo` on your eth-docker node.
