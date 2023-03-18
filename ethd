@@ -262,6 +262,45 @@ check_for_apparmor() {
     return 0
 }
 
+# Warn user if space is low, so they can prune
+check_disk_space() {
+    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
+
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
+    if [[ "${value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt 314572800 ]]; then
+        echo ""
+        echo "You are running Nethermind and have less than 300 GiB of free disk space."
+        echo "If Avail reads 250 GiB or more, prune with ./ethd prune-nethermind:"
+        echo ""
+        df -h "${__docker_dir}"
+        echo ""
+        echo "If it's less than 250 GiB, you may need to resync Nethermind from scratch."
+        echo ""
+    elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
+        echo ""
+        echo "You are running Geth and have less than 100 GiB of free disk space."
+        echo "If Avail reads 40 GiB or more, prune with ./ethd prune-geth:"
+        echo ""
+        df -h "${__docker_dir}"
+        echo ""
+        echo "If it's less than 40 GiB, you may need to resync Geth from scratch."
+        echo ""
+    elif [[ "${__free_space}" -lt 52428800 ]]; then
+        echo ""
+        echo "You have less than 50 GiB of free disk space:"
+        echo ""
+        df -h "${__docker_dir}"
+        echo ""
+        echo "Pruning does not appear an option for your client mix."
+        echo "For Besu, Erigon or Reth, consider a resync."
+        echo "If total space is less than 1.5 TiB, consider cloning to a larger drive."
+        echo ""
+    fi
+}
+
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
@@ -270,6 +309,20 @@ update() {
     else
         __dirty=0
     fi
+    if [ "$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
+        echo "You have less than 1 MiB of space left on $(pwd)."
+        echo "Aborting, as an update is not safe."
+        exit 1
+    fi
+
+    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+
+    if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 1048576 ]; then
+        echo "You have less than 1 GiB of space left on ${__docker_dir}."
+        echo "Aborting, as an update is not safe."
+        exit 1
+    fi
+
     if [ -z "${ETHDSECUNDO-}" ]; then
         if ${__as_owner} git branch | grep -q master; then
             ${__as_owner} git branch -m master main
@@ -1927,3 +1980,5 @@ __result=$?
 if [ "$__result" -eq 127 ]; then
     printhelp
 fi
+
+check_disk_space
