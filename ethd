@@ -264,8 +264,15 @@ check_for_apparmor() {
 
 # Warn user if space is low, so they can prune
 check_disk_space() {
-    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+    __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
     __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
+
+    re='^[0-9]+$'
+    if ! [[ "${__free_space}" =~ $re ]] ; then
+        echo "Unable to determine free disk space. This is likely a bug."
+        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        return
+    fi
 
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
@@ -273,11 +280,11 @@ check_disk_space() {
     if [[ "${value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt 314572800 ]]; then
         echo ""
         echo "You are running Nethermind and have less than 300 GiB of free disk space."
-        echo "If Avail reads 250 GiB or more, prune with ./ethd prune-nethermind:"
+        echo "If Avail reads 200 GiB or more, prune with ./ethd prune-nethermind:"
         echo ""
         df -h "${__docker_dir}"
         echo ""
-        echo "If it's less than 250 GiB, you may need to resync Nethermind from scratch."
+        echo "If it's less than 200 GiB, you may need to resync Nethermind from scratch."
         echo ""
     elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
         echo ""
@@ -309,15 +316,27 @@ update() {
     else
         __dirty=0
     fi
-    if [ "$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
+
+    __free_space=$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')
+
+    re='^[0-9]+$'
+    if ! [[ "${__free_space}" =~ $re ]] ; then
+        echo "Unable to determine free disk space. This is likely a bug."
+        echo "df reports $(df -P $(pwd)) and _free_space is ${__free_space}"
+    elif [ "$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
         exit 1
     fi
 
-    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+    __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
+    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
 
-    if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 1048576 ]; then
+    re='^[0-9]+$'
+    if ! [[ "${__free_space}" =~ $re ]] ; then
+        echo "Unable to determine free disk space. This is likely a bug."
+        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+    elif [ "${__free_space}" -lt 1048576 ]; then
         echo "You have less than 1 GiB of space left on ${__docker_dir}."
         echo "Aborting, as an update is not safe."
         exit 1
@@ -889,9 +908,17 @@ prune-geth() {
         return
     fi
 
-    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+    __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
+    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
 
-    if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 41943040 ]; then
+    re='^[0-9]+$'
+    if ! [[ "${__free_space}" =~ $re ]] ; then
+        echo "Unable to determine free disk space. This is likely a bug."
+        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        return
+    fi
+
+    if [ "${__free_space}" -lt 41943040 ]; then
         echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
         df -h "${__docker_dir}"
         echo ""
@@ -1004,9 +1031,17 @@ prune-nethermind() {
         return
     fi
 
-    __docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+    __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
+    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
 
-    if [ "$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')" -lt 209715200 ]; then
+    re='^[0-9]+$'
+    if ! [[ "${__free_space}" =~ $re ]] ; then
+        echo "Unable to determine free disk space. This is likely a bug."
+        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        return
+    fi
+
+    if [ "${__free_space}" -lt 209715200 ]; then
         echo "You do not have enough free disk space. Make sure this reads at least 200G free (Avail):"
         df -h "${__docker_dir}"
         echo ""
