@@ -500,11 +500,11 @@ if [ "$(id -u)" = '0' ]; then
     if [ -f "$__token_file" ]; then
         cp "$__token_file" /tmp/api-token.txt
         chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
-        exec su-exec "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
+        exec gosu "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
     elif  [ "$__token_file" = "NIL" ]; then # web3signer doesn't use a token
         echo "NIL" >/tmp/api-token.txt
         chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
-        exec su-exec "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
+        exec gosu "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
     else
         echo "File $__token_file not found."
         echo "The $__api_container service may not be fully started yet."
