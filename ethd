@@ -1207,7 +1207,7 @@ keys() {
             echo "Without it, this step cannot be run"
             exit 1
         fi
-        docompose run --rm ethdo validator credentials set --prepare-offline --timeout 2m
+        docompose run --rm ethdo validator credentials set --prepare-offline
         echo
         echo "Downloading ethdo"
         REPO="wealdtech/ethdo"; \
@@ -1239,7 +1239,7 @@ keys() {
             echo "Without it, this step cannot be run"
             exit 1
         fi
-        docompose run --rm ethdo validator credentials set --timeout 2m
+        docompose run --rm ethdo validator credentials set
     else
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
