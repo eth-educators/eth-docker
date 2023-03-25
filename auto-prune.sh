@@ -1,6 +1,26 @@
 #!/bin/bash
 __percent_threshold=10
 __kbyte_threshold=104857600
+__docker_exe="docker"
+
+dodocker() {
+    $__docker_exe "$@"
+}
+
+determine_sudo() {
+    __maybe_sudo=""
+    if ! docker images >/dev/null 2>&1; then
+        echo "Will attempt to use sudo to access docker"
+        echo "This is expected to fail if sudo prompts for a password"
+        __maybe_sudo="sudo"
+    fi
+}
+
+determine_docker() {
+    if [ -n "$__maybe_sudo" ]; then
+        __docker_exe="sudo $__docker_exe"
+    fi
+}
 
 if [ "$(dpkg-query -W -f='${Status}' bc 2>/dev/null | grep -c "ok installed")" = "0" ]; then
   echo "This script requires the bc package, please install it via 'sudo apt install bc'"
@@ -9,8 +29,9 @@ fi
 
 cd "$(dirname "$0")" || exit 1
 
-
-__docker_dir=$(docker system info --format '{{.DockerRootDir}}')
+determine_sudo
+determine_docker
+__docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
 __dryrun=0
 __threshold_override=0
 for (( i=1; i<=$#; i++ )); do
