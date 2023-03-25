@@ -270,7 +270,7 @@ check_disk_space() {
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
         return
     fi
 
@@ -322,7 +322,7 @@ update() {
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P $(pwd)) and _free_space is ${__free_space}"
+        echo "df reports $(df -P $(pwd)) and __free_space is ${__free_space}"
     elif [ "$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
@@ -335,7 +335,7 @@ update() {
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
     elif [ "${__free_space}" -lt 1048576 ]; then
         echo "You have less than 1 GiB of space left on ${__docker_dir}."
         echo "Aborting, as an update is not safe."
@@ -353,6 +353,7 @@ update() {
         ${__as_owner} git update-index --assume-unchanged ext-network.yml
         ${__as_owner} git config pull.rebase false
         ${__as_owner} git pull
+        export GITEXITCODE=$?
         # BASH_SOURCE so newer code gets to do the update. Use an ENV var
         # to avoid infinite loop
         export ETHDSECUNDO=1
@@ -417,21 +418,31 @@ update() {
     exec 2>&4
 
     echo
-    if ! cmp -s "${ENV_FILE}" "${ENV_FILE}".bak; then
+    if ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
+        cp "${ENV_FILE}".source "${ENV_FILE}".bak
+        rm "${ENV_FILE}".source
+        echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
+find the original contents in ${ENV_FILE}.bak."
+        if [ $__keeptargets = "0" ]; then
+            echo "NB: If you made changes to the source or binary build targets, these have been \
+reset to defaults."
+        fi
+        echo
         echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
         echo
         diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
-	echo
         if [ "$__pre_merge" -eq 1 ]; then
+            echo
             echo "You appear to be coming from a pre-merge setup."
             echo "A copy of your original settings is in .env.premerge"
             echo
             echo "Pay special attention to EL_NODE, as failover is no longer supported."
-	    echo
-	    echo "Decide whether to use mev-boost. Please see MEV_BOOST in .env for details."
+            echo
+            echo "Decide whether to use mev-boost. Please see MEV_BOOST in .env for details."
         fi
     else
-        echo "No changes made to ${ENV_FILE} during migration"
+        echo "No changes made to ${ENV_FILE} during update"
+        rm "${ENV_FILE}".source
     fi
     if [ "$__el_infura" -eq 1 ]; then
         echo
@@ -447,14 +458,17 @@ update() {
         echo "Please take a look and adjust manually."
     fi
     echo
-    echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
-find the original contents in ${ENV_FILE}.bak."
-    if [ $__keeptargets = "0" ]; then
-      echo "NB: If you made changes to the source or binary build targets, these have been \
-reset to defaults."
+    if [ "${GITEXITCODE}" -eq 0 ]; then
+        echo "An \"./ethd up\" command will start using the new images and configuration."
+    else
+        echo "WARNING"
+        echo
+        echo "Updating eth-docker failed during \"git pull\""
+        echo
+        echo "Please try \"git pull\" manually."
+        echo "Do not run \"./ethd up\" until git can update eth-docker."
+        echo "The current partial update risks startup failure."
     fi
-    echo
-    echo "An ./ethd up command will start using the new images and configuration."
     if [[ "$__distro" = "ubuntu" ]]; then
       __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
       if [ "${__major_version}" -lt 20 ]; then
@@ -465,6 +479,7 @@ reset to defaults."
     fi
 
     unset ETHDSECUNDO
+    unset GITEXITCODE
     if [[ "${ETHDSWITCHED-}" -eq 1 ]]; then
         unset ETHDSWITCHED
         echo
@@ -488,7 +503,7 @@ reset to defaults."
         echo
         echo "WARNING"
         echo
-        echo "You have uncommitted local changes to eth-docker, which keeps updates from coming in."
+        echo "You have uncommitted local changes to eth-docker, which may interfere with updates."
         echo "Please undo these changes or \"git commit\" them."
         echo "These are the files with local changes:"
         echo
@@ -551,13 +566,11 @@ envmigrate() {
       if [ -f ./"${ENV_FILE}".bak ]; then
           rm "${ENV_FILE}".bak
       fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".bak
+      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".source
       sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-      sudo -u "${OWNER}" cp "${ENV_FILE}".bak .env.source
     else
-      cp "${ENV_FILE}" "${ENV_FILE}".bak
+      cp "${ENV_FILE}" "${ENV_FILE}".source
       cp default.env "${ENV_FILE}"
-      cp "${ENV_FILE}".bak .env.source
     fi
     # Detect pre-merge
     if grep -q "FALLBACK_NODE1" ".env.source"; then
@@ -629,7 +642,6 @@ envmigrate() {
     var="DISTRIBUTED"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
-        rm .env.source
         rm .env.original
         return
     fi
@@ -668,7 +680,6 @@ envmigrate() {
        set_value_in_env
        __el_adjusted=1
     fi
-    rm .env.source
     rm .env.original
 }
 
@@ -914,7 +925,7 @@ prune-geth() {
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
         return
     fi
 
@@ -1037,7 +1048,7 @@ prune-nethermind() {
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and _free_space is ${__free_space}"
+        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
         return
     fi
 
