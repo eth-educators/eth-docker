@@ -18,15 +18,14 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
-# Check whether we should use default graffiti
-if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
-  __graffiti=""
-else
-  __graffiti="--graffiti=${GRAFFITI}"
-fi
-
 __log_level="--log-level=${LOG_LEVEL^^}"
 
+if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" "${__graffiti}" ${__log_level} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__log_level} ${__doppel} ${VC_EXTRAS}
+else
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${VC_EXTRAS}
+fi

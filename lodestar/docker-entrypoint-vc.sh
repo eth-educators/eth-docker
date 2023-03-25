@@ -30,15 +30,12 @@ else
   __doppel=""
 fi
 
-# Check whether we should use default graffiti
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
-  __graffiti_cmd=""
-  __graffiti=""
-else
-  __graffiti_cmd="--graffiti"
-  __graffiti="${GRAFFITI}"
-fi
-
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti_cmd} "${__graffiti}" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}
+else
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" "--graffiti" "${GRAFFITI}" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}
+fi
