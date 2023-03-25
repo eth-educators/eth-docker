@@ -62,7 +62,7 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
   __graffiti=""
 else
-  __graffiti="--validators-graffiti=${GRAFFITI}"
+  __graffiti='--validators-graffiti="${GRAFFITI}"'
 fi
 
 # Check whether we should send stats to beaconcha.in

@@ -55,7 +55,7 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
   __graffiti=""
 else
-  __graffiti="--graffiti=${GRAFFITI}"
+  __graffiti='--graffiti="${GRAFFITI}"'
 fi
 
 __log_level="--log-level=${LOG_LEVEL^^}"
