@@ -29,6 +29,8 @@ services:
       - DOPPELGANGER=${DOPPELGANGER}
       - LOG_LEVEL=${LOG_LEVEL}
       - VC_EXTRAS=${VC_EXTRAS:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -36,7 +38,6 @@ services:
       - --data-dir=/var/lib/nimbus
       - --non-interactive
       - --beacon-node=${CL_NODE}
-      - --graffiti=${GRAFFITI}
       - --metrics
       - --metrics-port=8009
       - --metrics-address=0.0.0.0

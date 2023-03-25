@@ -25,6 +25,8 @@ services:
       - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
       - MEV_BOOST=${MEV_BOOST}
       - VC_EXTRAS=${VC_EXTRAS:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -35,7 +37,6 @@ services:
       - --log-destination=CONSOLE
       - --network=auto
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-      - --validators-graffiti=${GRAFFITI}
       - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
       - --validator-api-interface=0.0.0.0

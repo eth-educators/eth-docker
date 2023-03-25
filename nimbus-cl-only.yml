@@ -36,6 +36,8 @@ services:
       - CL_EXTRAS=${CL_EXTRAS:-}
       - VC_EXTRAS=
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=true
     ports:
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-0.0.0.0}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -56,7 +58,6 @@ services:
       - --network=${NETWORK}
       - --web3-url=${EL_NODE}
       - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
-      - --graffiti=${GRAFFITI}
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=${CL_REST_PORT:-5052}
