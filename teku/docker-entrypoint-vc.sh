@@ -36,9 +36,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
   __graffiti=""
 else
-  __graffiti='--validators-graffiti="${GRAFFITI}"'
+  __graffiti="--validators-graffiti=${GRAFFITI}"
 fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__mev_boost} ${VC_EXTRAS}
+exec "$@" "${__graffiti}" ${__mev_boost} ${VC_EXTRAS}

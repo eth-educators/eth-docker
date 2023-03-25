@@ -62,7 +62,7 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
   __graffiti=""
 else
-  __graffiti='--validators-graffiti="${GRAFFITI}"'
+  __graffiti="--validators-graffiti=${GRAFFITI}"
 fi
 
 # Check whether we should send stats to beaconcha.in
@@ -82,4 +82,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}
+exec "$@" "${__graffiti}" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}
