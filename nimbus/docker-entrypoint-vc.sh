@@ -22,11 +22,11 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
   __graffiti=""
 else
-  __graffiti='--graffiti="${GRAFFITI}"'
+  __graffiti="--graffiti=${GRAFFITI}"
 fi
 
 __log_level="--log-level=${LOG_LEVEL^^}"
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__graffiti} ${__log_level} ${__doppel} ${VC_EXTRAS}
+exec "$@" "${__graffiti}" ${__log_level} ${__doppel} ${VC_EXTRAS}
