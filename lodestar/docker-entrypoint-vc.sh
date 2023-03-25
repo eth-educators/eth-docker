@@ -34,7 +34,7 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
   __graffiti=""
 else
-  __graffiti="--graffiti ${GRAFFITI}"
+  __graffiti='--graffiti "${GRAFFITI}"'
 fi
 
 # Word splitting is desired for the command line parameters
