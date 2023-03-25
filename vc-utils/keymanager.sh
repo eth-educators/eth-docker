@@ -198,7 +198,7 @@ gas-delete() {
     esac
 }
 
-validator-list() {
+__validator-list-call() {
     get-token
     __api_path=eth/v1/keystores
     __api_data=""
@@ -211,6 +211,10 @@ validator-list() {
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
     esac
+}
+
+validator-list() {
+    __validator-list-call
     if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
         echo "No keys loaded"
     else
@@ -220,52 +224,78 @@ validator-list() {
 }
 
 validator-delete() {
-    if [ -z "$__pubkey" ]; then
-      echo "Please specify a validator public key to delete"
+    if [ -z "${__pubkey}" ]; then
+      echo "Please specify a validator public key to delete, or \"all\""
       exit 0
     fi
+    __pubkeys=()
+    if [ "${__pubkey}" = "all" ]; then
+        echo "WARNING - this will delete all currently loaded keys from the validator client."
+        echo
+        read -rp "Do you wish to continue with key deletion? (No/yes) " yn
+        case $yn in
+            [Yy][Ee][Ss]) ;;
+            * ) echo "Aborting key deletion"; exit 0;;
+        esac
+
+        __validator-list-call
+        if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
+            echo "No keys loaded, cannot delete anything"
+            return
+        else
+            __keys_to_array=$(echo "$__result" | jq -r '.data[].validating_pubkey' | tr '\n' ' ')
+            # Word splitting is desired for the array
+            # shellcheck disable=SC2086
+            __pubkeys+=( ${__keys_to_array} )
+        fi
+    else
+        __pubkeys+=( "${__pubkey}" )
+    fi
+
     get-token
     __api_path=eth/v1/keystores
-    __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
-    __http_method=DELETE
-    call_api
-    case $__code in
-        200) ;;
-        400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
-    esac
+    for __pubkey in "${__pubkeys[@]}"; do
+        __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
+        __http_method=DELETE
+        call_api
+        case $__code in
+            200) ;;
+            400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+        esac
 
-    __status=$(echo "$__result" | jq -r '.data[].status')
-    case ${__status,,} in
-        error)
-            echo "The key was found but an error was encountered trying to delete it:"
-            echo "$__result" | jq -r '.data[].message'
-            ;;
-        not_active)
-            __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
-            echo "Validator is not actively loaded."
-            echo "$__result" | jq '.slashing_protection | fromjson' > /"$__file"
-            chmod 644 /"$__file"
-            echo "Slashing protection data written to .eth/$__file"
-            ;;
-        deleted)
-            __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
-            echo "Validator deleted."
-            echo "$__result" | jq '.slashing_protection | fromjson' > /"$__file"
-            chmod 644 /"$__file"
-            echo "Slashing protection data written to .eth/$__file"
-            ;;
-        not_found)
-            echo "The key was not found in the keystore, no slashing protection data returned."
-            ;;
-        * )
-            echo "Unexpected status $__status. This may be a bug"
-            exit 1
-            ;;
-    esac
+        __status=$(echo "$__result" | jq -r '.data[].status')
+        case ${__status,,} in
+            error)
+                echo "Validator ${__pubkey} was found but an error was encountered trying to delete it:"
+                echo "$__result" | jq -r '.data[].message'
+                ;;
+            not_active)
+                __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
+                echo "Validator ${__pubkey} is not actively loaded."
+                echo "$__result" | jq '.slashing_protection | fromjson' > /"$__file"
+                chmod 644 /"$__file"
+                echo "Slashing protection data written to .eth/$__file"
+                ;;
+            deleted)
+                __file=validator_keys/slashing_protection-${__pubkey::10}--${__pubkey:90}.json
+                echo "Validator ${__pubkey} deleted."
+                echo "$__result" | jq '.slashing_protection | fromjson' > /"$__file"
+                chmod 644 /"$__file"
+                echo "Slashing protection data written to .eth/$__file"
+                ;;
+            not_found)
+                echo "The validator ${__pubkey} was not found in the keystore, no slashing protection data returned."
+                ;;
+            * )
+                echo "Unexpected status $__status. This may be a bug"
+                exit 1
+                ;;
+        esac
+    done
 }
 
 validator-import() {
@@ -291,9 +321,9 @@ validator-import() {
         echo "you are at risk of getting slashed. Exercise caution"
         echo
         while true; do
-            read -rp "I understand these dire warnings and wish to proceed with key import (No/Yes) " yn
+            read -rp "I understand these dire warnings and wish to proceed with key import (No/yes) " yn
             case $yn in
-                [Yy]es) break;;
+                [Yy][Ee][Ss]) break;;
                 [Nn]* ) echo "Aborting import"; exit 0;;
                 * ) echo "Please answer yes or no.";;
             esac
@@ -348,9 +378,11 @@ validator-import() {
             done
         fi
         __do_a_protec=0
+        __found_one=0
         for __protectfile in /validator_keys/slashing_protection*.json; do
             [ -f "$__protectfile" ] || continue
             if grep -q "$__pubkey" "$__protectfile"; then
+                __found_one=1
                 echo "Found slashing protection import file $__protectfile for $__pubkey"
                 if [ "$(jq ".data[] | select(.pubkey==\"$__pubkey\") | .signed_blocks | length" < "$__protectfile")" -gt 0 ] \
                     || [ "$(jq ".data[] | select(.pubkey==\"$__pubkey\") | .signed_attestations | length" < "$__protectfile")" -gt 0 ]; then
@@ -359,14 +391,14 @@ validator-import() {
                 else
                     echo "WARNING: The file does not contain importable data and will be skipped."
                     echo "Your validator will be imported WITHOUT slashing protection data."
-                    echo
                 fi
                 break
             fi
         done
-        if [ "$__do_a_protec" -eq 0 ]; then
-                echo "No viable slashing protection import file found for $__pubkey"
-                echo "Proceeding without slashing protection."
+        if [ "${__found_one}" -eq 0 ]; then
+                echo "No viable slashing protection import file found for $__pubkey."
+                echo "This is expected if this is a new key."
+                echo "Proceeding without slashing protection import."
         fi
         __keystore_json=$(< "$__keyfile")
         if [ "$__do_a_protec" -eq 1 ]; then
@@ -439,9 +471,9 @@ usage() {
     echo "  import"
     echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
     echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
-    echo "  delete 0xPUBKEY"
+    echo "  delete 0xPUBKEY | all"
     echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
-    echo "      slashing protection database"
+    echo "      slashing protection database. \"all\" deletes all detected validators instead"
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
