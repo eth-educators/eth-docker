@@ -79,6 +79,8 @@ services:
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - DOPPELGANGER=${DOPPELGANGER}
       - VC_EXTRAS=${VC_EXTRAS:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
       - /etc/localtime:/etc/localtime:ro
@@ -106,8 +108,6 @@ services:
       - "8009"
       - --metrics.address
       - 0.0.0.0
-      - --graffiti
-      - ${GRAFFITI}
       - --logLevel
       - ${LOG_LEVEL}
       - --network

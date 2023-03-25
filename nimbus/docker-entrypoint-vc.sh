@@ -12,14 +12,21 @@ fi
 
 # Check whether we should enable doppelganger protection
 if [ "${DOPPELGANGER}" = "true" ]; then
-  __doppel=""
+  __doppel="--doppelganger-detection=true"
   echo "Doppelganger protection enabled, VC will pause for 2 epochs"
 else
   __doppel="--doppelganger-detection=false"
+fi
+
+# Check whether we should use default graffiti
+if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
+  __graffiti=""
+else
+  __graffiti="--graffiti=${GRAFFITI}"
 fi
 
 __log_level="--log-level=${LOG_LEVEL^^}"
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__log_level} ${__doppel} ${VC_EXTRAS}
+exec "$@" ${__graffiti} ${__log_level} ${__doppel} ${VC_EXTRAS}

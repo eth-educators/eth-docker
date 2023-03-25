@@ -94,6 +94,8 @@ services:
       - MEV_BOOST=${MEV_BOOST}
       - DOPPELGANGER=${DOPPELGANGER}
       - VC_EXTRAS=${VC_EXTRAS:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -104,8 +106,6 @@ services:
       - /var/lib/prysm/
       - --beacon-rpc-provider
       - consensus:4000
-      - --graffiti
-      - ${GRAFFITI}
       - --verbosity
       - ${LOG_LEVEL}
       - --${NETWORK}
