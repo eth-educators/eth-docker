@@ -20,7 +20,7 @@ services:
     image: besu:local
     user: besu
     environment:
-      - JAVA_OPTS=${BESU_HEAP:--XX:SoftMaxHeapSize=3g -Xmx5g}
+      - JAVA_OPTS=${BESU_HEAP:--Xmx5g}
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
