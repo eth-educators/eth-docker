@@ -458,7 +458,7 @@ reset to defaults."
         echo "Please take a look and adjust manually."
     fi
     echo
-    if [ "${GITEXITCODE}" -eq 0 ]; then
+    if [ -z "${GITEXITCODE+x}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
         echo "An \"./ethd up\" command will start using the new images and configuration."
     else
         echo "WARNING"
