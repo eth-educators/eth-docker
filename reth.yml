@@ -48,6 +48,8 @@ services:
       - 0.0.0.0:6060
       - --config
       - /var/lib/reth/reth.toml
+      - --port
+      - ${EL_P2P_PORT:-30303}
       - --http
       - --http.addr
       - 0.0.0.0
@@ -55,6 +57,7 @@ services:
       - ${EL_RPC_PORT:-8545}
       - --http.api
       - web3,eth,net
+      - --http.corsdomain=*
       - --ws
       - --ws.addr
       - 0.0.0.0
@@ -62,6 +65,7 @@ services:
       - ${EL_WS_PORT:-8546}
       - --ws.api
       - web3,eth,net
+      - --ws.origins=*
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.port
