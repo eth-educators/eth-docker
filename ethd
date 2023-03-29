@@ -160,7 +160,7 @@ install() {
     esac
     if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-        if [ "${__major_version}" -lt 18 ]; then
+        if [ "${__major_version}" -lt 20 ]; then
             echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
             exit 0
         fi
@@ -189,6 +189,11 @@ install() {
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
             ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc chrony
+            __major_version=$(lsb_release -r | -f2)
+            if [ "${__major_version}" -lt 10 ]; then
+                echo "This script cannot install docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
+                exit 0
+            fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
@@ -234,30 +239,6 @@ install() {
         echo "cat $(dirname "$(realpath "${BASH_SOURCE[0]}")")/.motd" >>~/.profile
         echo "Go ahead and 'source ~/.profile' or log out and back in."
         echo "After that, you can use the command 'ethd'."
-    fi
-    return 0
-}
-
-check_for_apparmor() {
-# This function could be removed once https://github.com/moby/moby/issues/44970 is resolved
-    # Only relevant to ubuntu or debian
-    if [[ ! "$__distro" = "ubuntu" ]] && [[ ! "$__distro" =~ "debian" ]]; then
-        return 0
-    fi
-    # Docker-CE 23.0.x has an issue where containers will fail if apparmor
-    # is not installed. Remedy.
-    if [ "$(dpkg-query -W -f='${Status}' apparmor 2>/dev/null | grep -c "ok installed")" = "0" ]; then
-        echo "apparmor is required for docker-ce 23.0.x to function"
-        echo
-        while true; do
-            read -rp "Do you consent to installation of apparmor? (yes/no) " yn
-            case $yn in
-                [Nn]* ) echo "No changes made"; return 0;;
-                * ) break;;
-            esac
-        done
-        ${__auto_sudo} apt-get update
-        ${__auto_sudo} apt-get -y install apparmor
     fi
     return 0
 }
@@ -392,9 +373,6 @@ update() {
                 ;;
         esac
     done
-
-# docker-ce 23.0.x has this as a dependency
-    check_for_apparmor
 
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2119
