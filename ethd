@@ -50,10 +50,12 @@ determine_docker() {
 }
 
 determine_compose() {
-# This is mainly for Debian and docker-ce, where docker-compose does not exist
+# Check for Compose V2 (docker compose) vs Compose V1 (docker-compose)
   if ! type -P docker-compose >/dev/null 2>&1; then
     __compose_exe="docker compose"
+    __old_compose=0
   else
+    __old_compose=1
     __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
     __compose_version_major=$(echo "$__compose_version" | cut -f1 -d.)
     __compose_version_minor=$(echo "$__compose_version" | cut -f2 -d.)
@@ -2093,3 +2095,10 @@ if [ "$__result" -eq 127 ]; then
 fi
 
 check_disk_space
+
+if [ "${__old_compose}" -eq 1 ]; then
+  echo
+  echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from June 2023 on."
+  echo "A switch to docker-ce is recommended. This is unfortunately a manual step that eth-docker cannot do for you."
+  echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
+fi
