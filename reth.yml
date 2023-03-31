@@ -50,6 +50,8 @@ services:
       - /var/lib/reth/reth.toml
       - --port
       - ${EL_P2P_PORT:-30303}
+      - --discovery.port
+      - ${EL_P2P_PORT:-30303}
       - --http
       - --http.addr
       - 0.0.0.0
