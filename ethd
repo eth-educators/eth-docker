@@ -677,14 +677,14 @@ migrate_compose_file() {
     __new_grafana=0
     __grafana_regex=".+-grafana\.yml"
     __switched_branch=0
-    __old_ifs="$IFS"
     IFS=":"
     set -o noglob
 # Globbing is off
 # shellcheck disable=SC2206
     __ymlarray=($value) # split+glob with glob disabled, and split using : as delimiter
     set +o noglob
-    IFS="$__old_ifs"
+    # Unset restores default
+    unset IFS
 
     value=""
     for n in "${!__ymlarray[@]}"; do
@@ -1152,6 +1152,7 @@ prep-keyimport() {
                 fi
                 IFS=$'\n'
                 files=$(find "$2" -maxdepth 1 -name '*.json')
+                # Unset restores default
                 unset IFS
                 if [ -z "$files" ]; then
                     echo "No .json files found in $2, aborting"
@@ -1159,6 +1160,7 @@ prep-keyimport() {
                 fi
                 IFS=$'\n'
                 files=$(find ./.eth/validator_keys -maxdepth 1 -name '*.json')
+                # Unset restores default
                 unset IFS
                 if [ -n "$files" ]; then
                     mkdir -p ./.eth/validator_keys/keybackup
