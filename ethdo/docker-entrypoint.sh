@@ -52,7 +52,7 @@ if [[ "$@" =~ "validator credentials set" ]] && [[ ! "$@" =~ "--prepare-offline"
       if [ "${__check_address}" != "${__address}" ]; then
         ((__unique++))
       fi
-      printf "\rRecord: %d/%d" "${i}" "${__count}"
+      printf "\rRecord: %d/%d" "$((i + 1))" "${__count}"
     done
     echo
 
