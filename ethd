@@ -259,11 +259,17 @@ check_disk_space() {
 
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    var="AUTOPRUNE_NM"
+    auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
     if [[ "${value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt 314572800 ]]; then
         echo ""
         echo "You are running Nethermind and have less than 300 GiB of free disk space."
-        echo "It should currently be auto-pruning, check logs. Free space:"
+        if [ "${auto_prune}" = true]; then
+          echo "It should currently be auto-pruning, check logs. Free space:"
+        else
+          echo "If the below reads above 250 GiB free, prune it with \"./ethd prune-nethermind\""
+        fi
         echo ""
         df -h "${__docker_dir}"
         echo ""
@@ -519,7 +525,7 @@ envmigrate() {
     fi
 
     ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID MEV_NODE \
-            CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL \
+            CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL AUTOPRUNE_NM \
             CF_EMAIL CF_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP \
             PROM_HOST HOST_IP PRYSM_HOST EE_HOST EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN \
             DDNS_PROXY RAPID_SYNC_URL CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT \
@@ -1064,9 +1070,14 @@ prune-nethermind() {
         exit 1
     fi
 
+    var="AUTOPRUNE_NM"
+    auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
     if [ $__non_interactive = 0 ]; then
       while true; do
-          echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 50 execution\" to see whether it is."
+          if [ ! "${auto_prune}" = true ]; then
+              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 50 execution\" to see whether it is."
+          fi
           read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
           case $yn in
               [Yy][Ee][Ss] ) break;;
