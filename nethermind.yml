@@ -85,10 +85,12 @@ services:
       - "1"
       - --Sync.AncientReceiptsBarrier
       - "1"
-      - --Pruning.FullPruningMaxDegreeOfParallelism
-      - "2"
+      - --Pruning.FullPruningTrigger
+      - VolumeFreeSpace
+      - --Pruning.FullPruningThresholdMb
+      - "358400"
       - --Pruning.FullPruningCompletionBehavior
-      - ShutdownOnSuccess
+      - AlwaysShutdown
       - --log
       - ${LOG_LEVEL}
 volumes:
