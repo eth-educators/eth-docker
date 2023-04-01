@@ -44,14 +44,37 @@ if [[ "$@" =~ "validator credentials set" ]] && [[ ! "$@" =~ "--prepare-offline"
     chown ethdo:ethdo /app/change-operations.json
     __address=$(jq -r .[0].message.to_execution_address < /app/change-operations.json)
     __count=$(jq '. | length' < /app/change-operations.json)
-    echo "You are about to change the withdrawal address of ${__count} validators to Ethereum address ${__address}"
-    echo "Please make TRIPLY sure that you control this address."
+    # Check whether they're all the same
+    __unique=1
+    echo "Counting number of unique addresses. Please be patient, this can take a while."
+    for ((i = 0; i < "${__count}"; i++)); do
+      __check_address=$(jq -r ".[${i}].message.to_execution_address" < /app/change-operations.json)
+      if [ "${__check_address}" != "${__address}" ]; then
+        ((__unique++))
+      fi
+      printf "\rRecord: %d/%d" "${i}" "${__count}"
+    done
     echo
-    read -rp "I have verified that I control ${__address}, change the withdrawal address (No/Yes): " yn
-    case $yn in
-      [Yy][Ee][Ss] ) ;;
-      * ) echo "Aborting"; exit 0;;
-    esac
+
+    if [ "${__unique}" -eq 1 ]; then
+      echo "You are about to change the withdrawal address(es) of ${__count} validators to Ethereum address ${__address}"
+      echo "Please make TRIPLY sure that you control this address."
+      echo
+      read -rp "I have verified that I control ${__address}, change the withdrawal address (No/Yes): " yn
+      case $yn in
+        [Yy][Ee][Ss] ) ;;
+        * ) echo "Aborting"; exit 0;;
+      esac
+    else
+      echo "You are about to change the withdrawal addresses of ${__count} validators to ${__unique} different Ethereum addresses"
+      echo "Please make TRIPLY sure that they are all correct."
+      echo
+      read -rp "I have verified that the addresses are correct, change the withdrawal addresses (No/Yes): " yn
+      case $yn in
+        [Yy][Ee][Ss] ) ;;
+        * ) echo "Aborting"; exit 0;;
+      esac
+    fi
   else
     echo "No change-operations.json found in ./.eth/ethdo. Aborting."
     exit 0
