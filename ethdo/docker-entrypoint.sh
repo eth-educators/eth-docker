@@ -44,16 +44,14 @@ if [[ "$@" =~ "validator credentials set" ]] && [[ ! "$@" =~ "--prepare-offline"
     chown ethdo:ethdo /app/change-operations.json
     __address=$(jq -r .[0].message.to_execution_address < /app/change-operations.json)
     __count=$(jq '. | length' < /app/change-operations.json)
+    __addresses=$(jq -r .[].message.to_execution_address < /app/change-operations.json)
     # Check whether they're all the same
     __unique=1
-    echo "Counting number of unique addresses. Please be patient, this can take a while."
-    for ((i = 0; i < "${__count}"; i++)); do
-      __check_address=$(jq -r ".[${i}].message.to_execution_address" < /app/change-operations.json)
+    while IFS= read -r __check_address; do
       if [ "${__check_address}" != "${__address}" ]; then
         ((__unique++))
       fi
-      printf "\rRecord: %d/%d" "$((i + 1))" "${__count}"
-    done
+    done <<< "$__addresses"
     echo
 
     if [ "${__unique}" -eq 1 ]; then
