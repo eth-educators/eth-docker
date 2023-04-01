@@ -60,6 +60,11 @@ else
     __parallel=2
   fi
   __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
+  if [ "${AUTOPRUNE_NM}" = true ]; then
+    __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=358400"
+  fi
+  echo "Using pruning parameters:"
+  echo "${__prune}"
 fi
 
 # Word splitting is desired for the command line parameters

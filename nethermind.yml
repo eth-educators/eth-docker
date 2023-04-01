@@ -24,6 +24,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - AUTOPRUNE_NM=${AUTOPRUNE_NM:-true}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro
@@ -85,10 +86,6 @@ services:
       - "1"
       - --Sync.AncientReceiptsBarrier
       - "1"
-      - --Pruning.FullPruningTrigger
-      - VolumeFreeSpace
-      - --Pruning.FullPruningThresholdMb
-      - "358400"
       - --Pruning.FullPruningCompletionBehavior
       - AlwaysShutdown
       - --log
