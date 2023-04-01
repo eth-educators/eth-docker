@@ -52,7 +52,7 @@ for (( i=1; i<=$#; i++ )); do
   if [ "$var" = "--help" ]; then
     echo "Check available space on $__docker_dir and output to stdout when it is under 100 GiB (Geth or any) or under 350 GiB (Nethermind) or under 10%"
     echo "Meant to be run from crontab with a MAILTO, as a simple alerting mechanism."
-    echo "For Geth or Nethermind, this can also kick off an automatic prune."
+    echo "For Geth, this can also kick off an automatic prune."
     echo
     echo "--dry-run"
     echo "  Run and alert on diskspace, but do not start a prune"
@@ -86,7 +86,7 @@ fi
 # If under kbyte threshold or 10% free, alert
 if [ "$FREE_DISK" -lt "${__kbyte_threshold}" ] || [ "$PERCENT_FREE" -lt "${__percent_threshold}" ]; then
   if [ "$__dryrun" -eq 0 ]; then
-    if  [ "$__el" = "geth" ] || [ "$__el" = "nethermind" ]; then
+    if  [ "$__el" = "geth" ]; then
       if [ ! -f "./ethd" ]; then
         echo "$__el prune should be started, but $__el pruning script not found. Aborting."
         exit 1
@@ -96,5 +96,9 @@ if [ "$FREE_DISK" -lt "${__kbyte_threshold}" ] || [ "$PERCENT_FREE" -lt "${__per
     fi
   fi
 # The previous options will have exited the script before here
-  echo "Disk space low, prune or resync may be required. $FREE_DISK_GB GiB free on disk, which is $PERCENT_FREE percent."
+  if [ "$__el" = "nethermind" ]; then
+    echo "Disk space low, Nethermind should already be auto-pruning. $FREE_DISK_GB GiB free on disk, which is $PERCENT_FREE percent."
+  else
+    echo "Disk space low, prune or resync may be required. $FREE_DISK_GB GiB free on disk, which is $PERCENT_FREE percent."
+  fi
 fi
