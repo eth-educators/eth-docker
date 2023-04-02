@@ -42,14 +42,18 @@ if [[ "$@" =~ "validator credentials set" ]] && [[ ! "$@" =~ "--prepare-offline"
     __sending=1
     cp /app/.eth/ethdo/change-operations.json /app
     chown ethdo:ethdo /app/change-operations.json
+    echo "Scanning addresses: "
     __address=$(jq -r .[0].message.to_execution_address < /app/change-operations.json)
+    echo $__address
     __count=$(jq '. | length' < /app/change-operations.json)
     __addresses=$(jq -r .[].message.to_execution_address < /app/change-operations.json)
     # Check whether they're all the same
     __unique=1
     while IFS= read -r __check_address; do
-      if [ "${__check_address}" != "${__address}" ]; then
+      if ! [[ ${__address} =~ ${__check_address} ]]; then
         ((__unique++))
+        __address="$__address $__check_address"
+        echo $__check_address
       fi
     done <<< "$__addresses"
     echo
