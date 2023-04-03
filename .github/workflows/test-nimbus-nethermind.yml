@@ -1,15 +1,15 @@
-run-name: Test Teku and Besu
+run-name: Test Nimbus and Nethermind
 
 on:
   issue_comment:
     types: [created, edited, deleted]
 
 jobs:
-  test-teku-besu:
+  test-nimbus-nethermind:
     if: |
       github.event.issue.pull_request && (
-      contains(github.event.comment.body, '/test-teku')||
-      contains(github.event.comment.body, '/test-besu')||
+      contains(github.event.comment.body, '/test-nimbus')||
+      contains(github.event.comment.body, '/test-nethermind')||
       contains(github.event.comment.body, '/test-all') )
     runs-on: ubuntu-latest
     steps:
@@ -22,44 +22,44 @@ jobs:
           sha: ${{ steps.comment-branch.outputs.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
-          context: Test Teku and Besu
+          context: Test Nimbus and Nethermind
       - uses: actions/checkout@v3
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Create .env file
         run: |
           cp default.env .env
-      - name: Set Teku/Besu
+      - name: Set Nimbus/Nethermind
         run: |
           source ./.github/helper.sh
-          COMPOSE_FILE=teku.yml:besu.yml
+          COMPOSE_FILE=nimbus.yml:nethermind.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Teku/Besu
+      - name: Start Nimbus/Nethermind
         run: |
           ./ethd up
-      - name: Test Teku
+      - name: Test Nimbus
         run: |
           ./.github/check-service.sh consensus
-      - name: Test Besu
+      - name: Test Nethermind
         run: |
           ./.github/check-service.sh execution
-      - name: Set Teku/Besu w/ VC
+      - name: Set Nimbus/Nethermind w/ VC
         run: |
           source ./.github/helper.sh
-          COMPOSE_FILE=teku-cl-only.yml:teku-vc-only.yml:besu.yml
+          COMPOSE_FILE=nimbus-cl-only.yml:nimbus-vc-only.yml:nethermind.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Teku/Besu
+      - name: Start Nimbus/Nethermind
         run: |
           ./ethd up
-      - name: Test Teku CL
+      - name: Test Nimbus CL
         run: |
           ./.github/check-service.sh consensus
-      - name: Test Teku VC
+      - name: Test Nimbus VC
         run: |
           ./.github/check-service.sh validator
-      - name: Test Besu
+      - name: Test Nethermind
         run: |
           ./.github/check-service.sh execution
       - name: Set final commit status
@@ -69,4 +69,4 @@ jobs:
           sha: ${{ steps.comment-branch.outputs.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
-          context: Test Teku and Besu
+          context: Test Nimbus and Nethermind

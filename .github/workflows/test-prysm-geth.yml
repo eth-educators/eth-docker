@@ -1,15 +1,15 @@
-run-name: Test Teku and Besu
+run-name: Test Prysm and Geth
 
 on:
   issue_comment:
     types: [created, edited, deleted]
 
 jobs:
-  test-teku-besu:
+  test-lighthouse-geth:
     if: |
       github.event.issue.pull_request && (
-      contains(github.event.comment.body, '/test-teku')||
-      contains(github.event.comment.body, '/test-besu')||
+      contains(github.event.comment.body, '/test-prysm')||
+      contains(github.event.comment.body, '/test-geth')||
       contains(github.event.comment.body, '/test-all') )
     runs-on: ubuntu-latest
     steps:
@@ -22,44 +22,47 @@ jobs:
           sha: ${{ steps.comment-branch.outputs.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
-          context: Test Teku and Besu
+          context: Test Prysm and Geth
       - uses: actions/checkout@v3
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Create .env file
         run: |
           cp default.env .env
-      - name: Set Teku/Besu
+      - name: Set Prysm/Geth
         run: |
           source ./.github/helper.sh
-          COMPOSE_FILE=teku.yml:besu.yml
+          COMPOSE_FILE=prysm.yml:geth.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Teku/Besu
+      - name: Start Prysm/Geth
         run: |
           ./ethd up
-      - name: Test Teku
+      - name: Test Prysm CL
         run: |
           ./.github/check-service.sh consensus
-      - name: Test Besu
-        run: |
-          ./.github/check-service.sh execution
-      - name: Set Teku/Besu w/ VC
-        run: |
-          source ./.github/helper.sh
-          COMPOSE_FILE=teku-cl-only.yml:teku-vc-only.yml:besu.yml
-          var=COMPOSE_FILE
-          set_value_in_env
-      - name: Start Teku/Besu
-        run: |
-          ./ethd up
-      - name: Test Teku CL
-        run: |
-          ./.github/check-service.sh consensus
-      - name: Test Teku VC
+      - name: Test Prysm VC
         run: |
           ./.github/check-service.sh validator
-      - name: Test Besu
+      - name: Test Geth
+        run: |
+          ./.github/check-service.sh execution
+      - name: Set Prysm/Geth w/ VC
+        run: |
+          source ./.github/helper.sh
+          COMPOSE_FILE=prysm-cl-only.yml:prysm-vc-only.yml:geth.yml
+          var=COMPOSE_FILE
+          set_value_in_env
+      - name: Start Prysm/Geth
+        run: |
+          ./ethd up
+      - name: Test Prysm CL
+        run: |
+          ./.github/check-service.sh consensus
+      - name: Test Prysm VC
+        run: |
+          ./.github/check-service.sh validator
+      - name: Test Geth
         run: |
           ./.github/check-service.sh execution
       - name: Set final commit status
@@ -69,4 +72,4 @@ jobs:
           sha: ${{ steps.comment-branch.outputs.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
-          context: Test Teku and Besu
+          context: Test Prysm and Geth
