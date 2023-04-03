@@ -8,7 +8,7 @@ on:
 jobs:
   test-teku-besu:
     if: |
-      contains(github.event.comment.html_url, '/pull/') && (
+      github.event.issue.pull_request && (
       contains(github.event.comment.body, '/test-teku')||
       contains(github.event.comment.body, '/test-besu')||
       contains(github.event.comment.body, '/test-all') )
@@ -51,3 +51,9 @@ jobs:
       - name: Test Besu
         run: |
           ./.github/check-service.sh execution
+      - name: Set commit status
+        uses: myrotvorets/set-commit-status-action@master
+        if: always()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
