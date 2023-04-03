@@ -7,16 +7,10 @@ set -Eeuo pipefail
 # Ditto --folder, since this now copies we need to parse it out
 ARGS=()
 foundu=0
-foundf=0
 uid=1000
-folder="ethdo"
 for var in "$@"; do
   if [ "$var" = '--uid' ]; then
     foundu=1
-    continue
-  fi
-  if [ "$var" = '--folder' ]; then
-    foundf=1
     continue
   fi
   if [ "$foundu" = '1' ]; then
@@ -28,16 +22,11 @@ for var in "$@"; do
     uid="$var"
     continue
   fi
-  if [ "$foundf" = '1' ]; then
-    foundf=0
-    folder="$var"
-    continue
-  fi
   ARGS+=("$var")
 done
 
 __sending=0
-if [[ "$@" =~ "validator credentials set" ]] && [[ ! "$@" =~ "--prepare-offline" ]]; then
+if [[ "$*" =~ "validator credentials set" ]] && [[ ! "$*" =~ "--prepare-offline" ]]; then
   if [ -f "/app/.eth/ethdo/change-operations.json" ]; then
     __sending=1
     cp /app/.eth/ethdo/change-operations.json /app
@@ -90,7 +79,7 @@ if [ "${__sending}" -eq 1 ]; then
   fi
 fi
 
-if [[ "$@" =~ "--prepare-offline" ]]; then
+if [[ "$*" =~ "--prepare-offline" ]]; then
   if [ "${NETWORK}" = "mainnet" ]; then
     __butta="https://beaconcha.in"
   else

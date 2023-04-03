@@ -37,12 +37,12 @@ echo "Safely offline. Running ethdo to prep withdrawal address change."
 echo
 while true; do
     read -rp "What is your desired Ethereum withdrawal address in 0x... format? : " __address
-    if [[ ! ${__address} == 0x* || ! ${#__address} -eq 42 ]]; then
+    if [[ ! "${__address}" == 0x* || ! "${#__address}" -eq 42 ]]; then
         echo "${__address} is not a valid ETH address. You can try again or hit Ctrl-C to abort."
         continue
     fi
     read -rp "Please verify your desired Ethereum withdrawal address in 0x... format : " __address2
-    if [[ ${__address2} = ${__address} ]]; then
+    if [[ "${__address2}" = "${__address}" ]]; then
         echo "Your new withdrawal address is: ${__address}"
         break
     else
@@ -53,7 +53,7 @@ echo "MAKE SURE YOU CONTROL THE WITHDRAWAL ADDRESS"
 echo "This can only be changed once."
 while true; do
     read -rp "What is your validator mnemonic? : " __mnemonic
-    if ! [ "$(echo $__mnemonic | wc -w)" -eq 24 ]; then
+    if ! [ "$(echo "$__mnemonic" | wc -w)" -eq 24 ]; then
         echo "The mnemonic needs to be 24 words. You can try again or hit Ctrl-C to abort."
         continue
     fi
@@ -101,11 +101,13 @@ case $yn in
 esac
 
 file_count=0
-cat ./change-operations.json | sed "s/},{\"message/}]\n[{\"message/g" | sed -e '$a\' | {
-    while read line
+# I am not escaping ', I am appending an empty line
+# shellcheck disable=SC1003
+sed "s/},{\"message/}]\n[{\"message/g" < ./change-operations.json | sed -e '$a\' | {
+    while read -r line
     do
-        val_index=$(echo $line | grep -Eo '"validator_index"[^,]*' | grep -Eo '[^:]*$' | tr -d '"')
-        echo ${line} > "${val_index}".json
+        val_index=$(echo "$line" | grep -Eo '"validator_index"[^,]*' | grep -Eo '[^:]*$' | tr -d '"')
+        echo "${line}" > "${val_index}".json
         file_count=$((file_count+1))
     done
     echo "$file_count <validator-index>.json files created on USB for use with CLWP"

@@ -244,8 +244,8 @@ validator-delete() {
             return
         else
             __keys_to_array=$(echo "$__result" | jq -r '.data[].validating_pubkey' | tr '\n' ' ')
-            # Word splitting is desired for the array
-            # shellcheck disable=SC2086
+# Word splitting is desired for the array
+# shellcheck disable=SC2206
             __pubkeys+=( ${__keys_to_array} )
         fi
     else
