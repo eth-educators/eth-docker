@@ -14,7 +14,18 @@ jobs:
       contains(github.event.comment.body, '/test-all') )
     runs-on: ubuntu-latest
     steps:
+      - name: Get PR details
+        uses: xt0rted/pull-request-comment-branch@v1
+        id: comment-branch
+      - name: Set commit status as pending
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: pending
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Create .env file
         run: |
           cp default.env .env
@@ -51,3 +62,10 @@ jobs:
       - name: Test Besu
         run: |
           ./.github/check-service.sh execution
+      - name: Set final commit status
+        uses: myrotvorets/set-commit-status-action@master
+        if: always()
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
