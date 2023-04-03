@@ -1,9 +1,8 @@
 name: docker-compose-actions-workflow
 
 on:
-  push:
-  pull_request:
-    types: [opened, synchronize, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited, deleted]
     branches: [main]
 
 jobs:
