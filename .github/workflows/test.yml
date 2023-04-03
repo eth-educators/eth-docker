@@ -9,9 +9,10 @@ on:
 jobs:
   test-teku-besu:
     if: |
-      contains(github.event.pull_request.labels.*.name, 'test teku-besu') ||
-      contains(github.event.pull_request.labels.*.name, 'test all') ||
-      github.event_name == 'push'
+      ${{ github.event.issue.pull_request }} && (
+      contains(github.event.comment.body, '/test-teku')||
+      contains(github.event.comment.body, '/test-besu')||
+      contains(github.event.comment.body, '/test-all') )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
