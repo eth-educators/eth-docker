@@ -33,7 +33,7 @@ if [[ "$*" =~ "validator credentials set" ]] && [[ ! "$*" =~ "--prepare-offline"
     chown ethdo:ethdo /app/change-operations.json
     echo "Scanning addresses: "
     __address=$(jq -r .[0].message.to_execution_address < /app/change-operations.json)
-    echo $__address
+    echo "${__address}"
     __count=$(jq '. | length' < /app/change-operations.json)
     __addresses=$(jq -r .[].message.to_execution_address < /app/change-operations.json)
     # Check whether they're all the same
@@ -42,7 +42,7 @@ if [[ "$*" =~ "validator credentials set" ]] && [[ ! "$*" =~ "--prepare-offline"
       if ! [[ ${__address} =~ ${__check_address} ]]; then
         ((__unique++))
         __address="$__address $__check_address"
-        echo $__check_address
+        echo "${__check_address}"
       fi
     done <<< "$__addresses"
     echo

@@ -1,9 +1,22 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.4.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-json
-    -   id: check-yaml
-    -   id: double-quote-string-fixer
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+    - id: check-json
+    - id: check-yaml
+    - id: double-quote-string-fixer
+    - id: check-shebang-scripts-are-executable
+    - id: check-executables-have-shebangs
+    - id: detect-private-key
+    - id: detect-aws-credentials
+repos:
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 3.0.0
+  hooks:
+  - id: shellcheck
+  - id: script-must-have-extension
+  - id: git-dirty
+  - id: git-check
+  - id: forbid-binary
