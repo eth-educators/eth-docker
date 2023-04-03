@@ -8,10 +8,7 @@ on:
 
 jobs:
   test-teku-besu:
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'test teku-besu') ||
-      contains(github.event.pull_request.labels.*.name, 'test all') ||
-      github.event_name == 'push'
+    if: contains(github.event.pull_request.labels.*.name, 'test teku-besu') || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
