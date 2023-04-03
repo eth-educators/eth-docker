@@ -55,6 +55,7 @@ jobs:
         uses: myrotvorets/set-commit-status-action@master
         if: always()
         with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          sha: ${{ github.pull_request.head.sha }}
+          allowForks: true
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
