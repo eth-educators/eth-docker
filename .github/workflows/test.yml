@@ -2,6 +2,7 @@ name: docker-compose-actions-workflow
 
 on:
   pull_request:
+    branches: [main]
   issue_comment:
     types: [created, edited, deleted]
 
