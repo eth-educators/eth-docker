@@ -63,6 +63,7 @@ services:
       - --rest-api-enabled=true
       - --rest-api-interface=0.0.0.0
       - --rest-api-port=${CL_REST_PORT:-5052}
+      - --beacon-liveness-tracking-enabled=true
       - --metrics-enabled=true
       - --metrics-port=8008
       - --metrics-interface=0.0.0.0
