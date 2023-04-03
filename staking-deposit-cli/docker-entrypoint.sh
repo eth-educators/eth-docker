@@ -38,7 +38,7 @@ done
 
 su-exec depcli "${ARGS[@]}"
 
-if [[ "$@" =~ "generate-bls-to-execution-change" ]]; then
+if [[ "$*" =~ "generate-bls-to-execution-change" ]]; then
   cp -rp /app/bls_to_execution_changes /app/.eth/
   chown -R "$uid":"$uid" /app/.eth/bls_to_execution_changes
   echo "The change files have been copied to ./.eth/bls_to_execution_changes"

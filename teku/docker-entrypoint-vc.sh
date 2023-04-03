@@ -6,9 +6,9 @@ if [ "$(id -u)" = '0' ]; then
 fi
 
 if [ -f /var/lib/teku/teku-keyapi.keystore ]; then
-    if [ $(date +%s -r /var/lib/teku/teku-keyapi.keystore) -lt $(date +%s --date="300 days ago") ]; then
+    if [ "$(date +%s -r /var/lib/teku/teku-keyapi.keystore)" -lt "$(date +%s --date="300 days ago")" ]; then
        rm /var/lib/teku/teku-keyapi.keystore
-    elif [ -z "$(openssl x509 -noout -ext subjectAltName -in /var/lib/teku/teku-keyapi.crt | grep 'DNS:consensus')" ]; then
+    elif openssl x509 -noout -ext subjectAltName -in /var/lib/teku/teku-keyapi.crt | grep -q 'DNS:consensus'; then
        rm /var/lib/teku/teku-keyapi.keystore
     fi
 fi

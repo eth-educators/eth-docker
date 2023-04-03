@@ -68,9 +68,10 @@ PERCENT_FREE=$(echo "percent = ($FREE_DISK / $TOTAL_DISK) * 100; scale = 0; perc
 FREE_DISK_GB=$(echo "$FREE_DISK / 1024 / 1024" | bc)
 
 # Try and detect the EL
-el=nada
 var="COMPOSE_FILE"
 value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
 if [[ "${value}" =~ "geth.yml" ]]; then
   __el=geth
   if [ "$__threshold_override" -eq 0 ]; then
