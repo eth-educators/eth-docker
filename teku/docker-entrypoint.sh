@@ -8,7 +8,7 @@ fi
 if [ -f /var/lib/teku/teku-keyapi.keystore ]; then
     if [ "$(date +%s -r /var/lib/teku/teku-keyapi.keystore)" -lt "$(date +%s --date="300 days ago")" ]; then
        rm /var/lib/teku/teku-keyapi.keystore
-    elif openssl x509 -noout -ext subjectAltName -in /var/lib/teku/teku-keyapi.crt | grep -q 'DNS:consensus'; then
+    elif ! openssl x509 -noout -ext subjectAltName -in /var/lib/teku/teku-keyapi.crt | grep -q 'DNS:consensus'; then
        rm /var/lib/teku/teku-keyapi.keystore
     fi
 fi
@@ -66,6 +66,14 @@ else
   __beacon_stats=""
 fi
 
+# Check whether we should enable doppelganger protection
+if [ "${DOPPELGANGER}" = "true" ]; then
+  __doppel="--doppelganger-detection-enabled=true"
+  echo "Doppelganger protection enabled, VC will pause for 2 epochs"
+else
+  __doppel=""
+fi
+
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-mode=ARCHIVE"
@@ -76,9 +84,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--validators-graffiti=${GRAFFITI}" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" "--validators-graffiti=${GRAFFITI}" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}
 fi

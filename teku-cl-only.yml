@@ -33,6 +33,7 @@ services:
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - CL_EXTRAS=${CL_EXTRAS:-}
       - VC_EXTRAS=
+      - DOPPELGANGER=false
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=true
