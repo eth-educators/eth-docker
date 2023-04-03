@@ -1,3 +1,4 @@
+name: Test Lighthouse and Geth
 run-name: Test Lighthouse and Geth
 
 on:

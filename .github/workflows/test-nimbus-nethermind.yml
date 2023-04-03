@@ -1,3 +1,4 @@
+name: Test Nimbus and Nethermind
 run-name: Test Nimbus and Nethermind
 
 on:

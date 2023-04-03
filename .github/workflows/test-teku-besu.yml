@@ -1,3 +1,4 @@
+name: Test Teku and Besu
 run-name: Test Teku and Besu
 
 on:

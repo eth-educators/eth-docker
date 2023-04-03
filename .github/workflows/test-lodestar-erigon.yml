@@ -1,3 +1,4 @@
+name: Test Lodestar and Erigon
 run-name: Test Lodestar and Erigon
 
 on:
