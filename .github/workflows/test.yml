@@ -1,0 +1,33 @@
+name: docker-compose-actions-workflow
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
+
+jobs:
+  test:
+    if: contains(github.event.pull_request.labels.*.name, 'run-test') || github.event_name == 'push'
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create .env file
+        run: |
+          cp default.env .env
+      - name: Set Teku/Besu
+        run: |
+          source ./.github/helper.sh
+          COMPOSE_FILE=teku.yml:besu.yml
+          var=COMPOSE_FILE
+          set_value_in_env
+      - name: Start Teku/Besu
+        run: |
+          ./ethd up
+      - name: Test Teku
+        run: |
+          ./.github/check-service.sh consensus
+      - name: Test Besu
+        run: |
+          ./.github/check-service.sh execution
