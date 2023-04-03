@@ -9,7 +9,6 @@ on:
 jobs:
   test:
     if: contains(github.event.pull_request.labels.*.name, 'run-test') || github.event_name == 'push'
-    needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
