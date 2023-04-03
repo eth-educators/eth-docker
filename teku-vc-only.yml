@@ -25,6 +25,7 @@ services:
       - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
       - MEV_BOOST=${MEV_BOOST}
       - VC_EXTRAS=${VC_EXTRAS:-}
+      - DOPPELGANGER=${DOPPELGANGER:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
     <<: *logging
