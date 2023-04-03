@@ -191,7 +191,7 @@ install() {
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
             ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc chrony
-            __major_version=$(lsb_release -r | -f2)
+            __major_version=$(lsb_release -r | cut -f2)
             if [ "${__major_version}" -lt 10 ]; then
                 echo "This script cannot install docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
                 exit 0
@@ -248,12 +248,12 @@ install() {
 # Warn user if space is low, so they can prune
 check_disk_space() {
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
+    __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
 
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
+        echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
         return
     fi
 
@@ -262,10 +262,12 @@ check_disk_space() {
     var="AUTOPRUNE_NM"
     auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
+# Literal match intended
+# shellcheck disable=SC2076
     if [[ "${value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt 314572800 ]]; then
         echo ""
         echo "You are running Nethermind and have less than 300 GiB of free disk space."
-        if [ "${auto_prune}" = true]; then
+        if [ "${auto_prune}" = true ]; then
           echo "It should currently be auto-pruning, check logs. Free space:"
         else
           echo "If the below reads above 250 GiB free, prune it with \"./ethd prune-nethermind\""
@@ -304,25 +306,25 @@ update() {
         __dirty=0
     fi
 
-    __free_space=$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')
+    __free_space=$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')
 
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P $(pwd)) and __free_space is ${__free_space}"
-    elif [ "$(df -P $(pwd) | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
+        echo "df reports $(df -P "$(pwd)") and __free_space is ${__free_space}"
+    elif [ "$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
         exit 1
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
+    __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
 
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
+        echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
     elif [ "${__free_space}" -lt 1048576 ]; then
         echo "You have less than 1 GiB of space left on ${__docker_dir}."
         echo "Aborting, as an update is not safe."
@@ -351,7 +353,7 @@ update() {
     __targetcli=""
     while :
     do
-        if [ -z ${1+x} ]; then
+        if [ -z "${1+x}" ]; then
             break
         fi
         case "$1" in
@@ -442,7 +444,7 @@ reset to defaults."
         echo "Please take a look and adjust manually."
     fi
     echo
-    if [ -z "${GITEXITCODE+x}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
+    if [ -z "${GITEXITCODE}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
         echo "An \"./ethd up\" command will start using the new images and configuration."
     else
         echo "WARNING"
@@ -870,7 +872,7 @@ prune-geth() {
     __non_interactive=0
     while :
     do
-        if [ -z ${1+x} ]; then
+        if [ -z "${1+x}" ]; then
             break
         fi
         case "$1" in
@@ -904,12 +906,12 @@ prune-geth() {
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
+    __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
 
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
+        echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
         return
     fi
 
@@ -993,7 +995,7 @@ prune-nethermind() {
     __non_interactive=0
     while :
     do
-        if [ -z ${1+x} ]; then
+        if [ -z "${1+x}" ]; then
             break
         fi
         case "$1" in
@@ -1027,12 +1029,12 @@ prune-nethermind() {
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-    __free_space=$(df -P ${__docker_dir} | awk '/[0-9]%/{print $(NF-2)}')
+    __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
 
     re='^[0-9]+$'
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
-        echo "df reports $(df -P ${__docker_dir}) and __free_space is ${__free_space}"
+        echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
         return
     fi
 
@@ -1132,7 +1134,7 @@ prep-keyimport() {
 
     while :
     do
-        if [ -z ${1+x} ]; then
+        if [ -z "${1+x}" ]; then
             break
         fi
         case "$1" in
@@ -1172,8 +1174,8 @@ prep-keyimport() {
                 shift 2
                 ;;
             --non-interactive)
-                if [ -z ${KEYSTORE_PASSWORD+x} ]; then
-                    echo "KEYSTORE_PASSWORD not set, aborting"
+                if [ -z "${KEYSTORE_PASSWORD}" ]; then
+                    echo "KEYSTORE_PASSWORD not set or empty, aborting"
                     exit 1
                 fi
                 __non_interactive=1
@@ -1205,6 +1207,8 @@ keys() {
     elif [ "${1:-}" = "prepare-address-change" ]; then
         var="COMPOSE_FILE"
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
         if [[ ! "${value}" =~ "ethdo.yml" ]]; then
             echo "Please make sure ethdo.yml is part of COMPOSE_FILE in .env"
             echo "Without it, this step cannot be run"
@@ -1237,6 +1241,8 @@ keys() {
     elif [ "${1:-}" = "send-address-change" ]; then
         var="COMPOSE_FILE"
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
         if [[ ! "${value}" =~ "ethdo.yml" ]]; then
             echo "Please make sure ethdo.yml is part of COMPOSE_FILE in .env"
             echo "Without it, this step cannot be run"
@@ -1843,13 +1849,13 @@ config() {
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
-    if [ "${EXECUTION_CLIENT+x}" ]; then
+    if [ -n "${EXECUTION_CLIENT}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
     fi
     if [ "${__deployment}" = "blox" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv2.yml"
     fi
-    if [ "${GRAFANA_CLIENT+x}" ]; then
+    if [ -n "${GRAFANA_CLIENT}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
     if [ "${MEV_BOOST}" = "true" ]; then
@@ -1886,6 +1892,8 @@ config() {
     var=MEV_RELAYS
     set_value_in_env
     if [[ "${NETWORK}" = "gnosis" ]] && [[ "${CONSENSUS_CLIENT}" =~ "nimbus" ]] ; then
+# We are using the variable
+# shellcheck disable=SC2034
         NIM_DOCKERFILE=Dockerfile.sourcegnosis
         var=NIM_DOCKERFILE
         set_value_in_env
