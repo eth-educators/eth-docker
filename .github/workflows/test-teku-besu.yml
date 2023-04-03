@@ -15,11 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ouzi-dev/commit-status-updater@v2
-      - if: always()
-        uses: ouzi-dev/commit-status-updater@v2
-        with:
-          status: "${{ job.status }}"
       - name: Create .env file
         run: |
           cp default.env .env
