@@ -1,4 +1,5 @@
-name: docker-compose-actions-workflow
+name: Lint sources
+run-name: Lint sources
 
 on:
   push:
