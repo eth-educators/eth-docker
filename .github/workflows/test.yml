@@ -1,17 +1,17 @@
 name: docker-compose-actions-workflow
 
 on:
-  push:
   pull_request:
-    types: [opened, synchronize, labeled, unlabeled]
-    branches: [main]
+  issue_comment:
+    types: [created, edited, deleted]
 
 jobs:
   test-teku-besu:
     if: |
-      contains(github.event.pull_request.labels.*.name, 'test teku-besu') ||
-      contains(github.event.pull_request.labels.*.name, 'test all') ||
-      github.event_name == 'push'
+      contains(github.event.comment.html_url, '/pull/') && (
+      contains(github.event.comment.body, '/test-teku')||
+      contains(github.event.comment.body, '/test-besu')||
+      contains(github.event.comment.body, '/test-all') )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
