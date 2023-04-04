@@ -1,0 +1,78 @@
+name: Test Grafana
+run-name: Test Grafana
+
+on:
+  issue_comment:
+    types: [created, edited, deleted]
+
+jobs:
+  test-grafana:
+    if: |
+      github.event.issue.pull_request && (
+      contains(github.event.comment.body, '/test-grafana')||
+      contains(github.event.comment.body, '/test-all') )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR details
+        uses: xt0rted/pull-request-comment-branch@v2
+        id: comment-branch
+      - name: Set commit status as pending
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: pending
+          context: Test Grafana
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
+      - name: Create .env file
+        run: |
+          cp default.env .env
+      - name: Set Lighthouse/Geth/Grafana
+        run: |
+          source ./.github/helper.sh
+          COMPOSE_FILE=lighthouse.yml:geth.yml:grafana.yml
+          var=COMPOSE_FILE
+          set_value_in_env
+      - name: Start Lighthouse/Geth/Grafana
+        run: |
+          ./ethd up
+      - name: Test Prometheus
+        run: |
+          ./.github/check-service.sh prometheus
+      - name: Test metrics exporter
+        run: |
+          ./.github/check-service.sh ethereum-metrics-exporter
+      - name: Test node exporter
+        run: |
+          ./.github/check-service.sh node-exporter
+      - name: Test blackbox exporter
+        run: |
+          ./.github/check-service.sh blackbox-exporter
+      - name: Test json exporter
+        run: |
+          ./.github/check-service.sh json-exporter
+      - name: Test cryptowat exporter
+        run: |
+          ./.github/check-service.sh cryptowat-exporter
+      - name: Test cadvisor
+        run: |
+          ./.github/check-service.sh cadvisor
+      - name: Test promtail
+        run: |
+          ./.github/check-service.sh promtail
+      - name: Test Loki
+        run: |
+          ./.github/check-service.sh loki
+      - name: Test Grafana
+        run: |
+          ./.github/check-service.sh grafana
+      - name: Set final commit status
+        uses: myrotvorets/set-commit-status-action@master
+        if: always()
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          context: Test Lighthouse and Geth
