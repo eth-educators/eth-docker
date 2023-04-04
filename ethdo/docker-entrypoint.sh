@@ -22,7 +22,7 @@ for var in "$@"; do
     uid="$var"
     continue
   fi
-  ARGS+=("$var")
+  ARGS+=( "$var" )
 done
 
 __sending=0
@@ -71,6 +71,9 @@ if [[ "$*" =~ "validator credentials set" ]] && [[ ! "$*" =~ "--prepare-offline"
     exit 0
   fi
 fi
+
+# Get just the first CL_NODE
+ARGS=( "${ARGS[@]:0:1}" "--connection" "$(cut -d, -f1 <<<"${CL_NODE}")" "${ARGS[@]:1}" )
 
 gosu ethdo "${ARGS[@]}"
 __result=$?
