@@ -9,7 +9,7 @@ jobs:
   test-grafana:
     if: |
       github.event.issue.pull_request && (
-      contains(github.event.comment.body, '/test-grafana')||
+      contains(github.event.comment.body, '/test-grafana') ||
       contains(github.event.comment.body, '/test-all') )
     runs-on: ubuntu-latest
     steps:
@@ -75,4 +75,4 @@ jobs:
           sha: ${{ steps.comment-branch.outputs.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
-          context: Test Lighthouse and Geth
+          context: Test Grafana
