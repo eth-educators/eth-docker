@@ -16,7 +16,7 @@ You can use `./ethd keys list` to get a list of your validator public keys that 
 
 On your machine running eth-docker, run `./ethd keys prepare-address-change`.
 
-Under the hood this will run `./ethd cmd run --rm ethdo validator credentials set --prepare-offline --timeout 2m --allow-insecure-connections --connection http://consensus:5052`
+Under the hood this will run `ethdo --connection <FIRST_CL_IN_CL_NODE> --allow-insecure-connections validator credentials set --prepare-offline`
 which creates an `offline-preparation.json` file in `./.eth/ethdo`.
 This file contains a list of all validators currently on the network and is necessary for the offline machine.
 
