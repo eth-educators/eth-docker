@@ -25,7 +25,7 @@ please read the [contribution guidelines](CONTRIBUTING.md) so you can run lint c
 
 ## License
 
-[Apache License v2](https://github.com/eth2-educators/eth-docker/blob/master/LICENSE)
+[Apache License v2](LICENSE)
 
 ## Version
 
