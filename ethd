@@ -444,7 +444,7 @@ reset to defaults."
         echo "Please take a look and adjust manually."
     fi
     echo
-    if [ -z "${GITEXITCODE}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
+    if [ -z "${GITEXITCODE+x}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
         echo "An \"./ethd up\" command will start using the new images and configuration."
     else
         echo "WARNING"
@@ -1174,7 +1174,7 @@ prep-keyimport() {
                 shift 2
                 ;;
             --non-interactive)
-                if [ -z "${KEYSTORE_PASSWORD}" ]; then
+                if [ -z "${KEYSTORE_PASSWORD+x}" ]; then
                     echo "KEYSTORE_PASSWORD not set or empty, aborting"
                     exit 1
                 fi
@@ -1849,13 +1849,13 @@ config() {
     fi
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
-    if [ -n "${EXECUTION_CLIENT}" ]; then
+    if [ -n "${EXECUTION_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
     fi
     if [ "${__deployment}" = "blox" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv2.yml"
     fi
-    if [ -n "${GRAFANA_CLIENT}" ]; then
+    if [ -n "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
     if [ "${MEV_BOOST}" = "true" ]; then
