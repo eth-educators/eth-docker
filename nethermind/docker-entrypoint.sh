@@ -61,7 +61,7 @@ else
   fi
   __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
-    __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=358400"
+    __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
   fi
   echo "Using pruning parameters:"
   echo "${__prune}"
