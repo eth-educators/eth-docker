@@ -1587,7 +1587,7 @@ query_execution_client() {
 }
 
 query_grafana() {
-    if (whiptail --title "Select Option" --yesno "Do you want to use Grafana dashboards?" 10 60) then
+    if (whiptail --title "Grafana" --yesno "Do you want to use Grafana dashboards?" 10 60) then
         if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS doesn't do well with / bind mount - leave node-exporter, cadvisor and loki/promtail off by default
             GRAFANA_CLIENT="grafana-rootless.yml:grafana-shared.yml"
@@ -1647,11 +1647,11 @@ query_checkpoint_beacon() {
         esac
     fi
 
-    RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint consensus client" --inputbox "What is the URL for your checkpoint consensus client? (right-click to paste)" 10 60 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
+    RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint URL" --inputbox "What is the URL for your checkpoint provider? (right-click to paste)" 10 60 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
-        echo "Your checkpoint consensus client is:" "${RAPID_SYNC_URL}"
+        echo "Your checkpoint URL is:" "${RAPID_SYNC_URL}"
     else
         echo "You chose Cancel."
         exit 1
@@ -1674,7 +1674,7 @@ query_graffiti() {
 }
 
 query_rapid_sync() {
-    if (whiptail --title "Select Option" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 60) then
+    if (whiptail --title "Checkpoint Sync" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 60) then
         query_checkpoint_beacon
     fi
 }
@@ -1684,7 +1684,7 @@ query_coinbase() {
     FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
     while true; do
-        FEE_RECIPIENT=$(whiptail --title "Configure Rewards Address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -1723,7 +1723,7 @@ query_mev() {
     fi
     var="MEV_BOOST"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-    if (whiptail --title "Select Option" --yesno "Do you want to use MEV Boost?" 10 60) then
+    if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 60) then
         MEV_BOOST="true"
         if [ "${value}" = "true" ]; then
             var="MEV_RELAYS"
