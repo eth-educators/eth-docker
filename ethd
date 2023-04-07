@@ -1217,6 +1217,12 @@ keys() {
         # We need things up so we can query
         up
         docompose run --rm ethdo validator credentials set --prepare-offline
+        exitstatus=$?
+        if [ "${exitstatus}" -ne 0 ]; then
+            echo "Running ethdo failed, unfortunately."
+            echo "Please try again after fixing root cause. Aborting."
+            return 1
+        fi
         echo
         echo "Downloading ethdo"
         REPO="wealdtech/ethdo"; \
@@ -1239,7 +1245,7 @@ keys() {
         rm -rf ./.eth/ethdo/arm64
         echo
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
-        echo "Please see ./.eth/ethdo/README.md for details"
+        echo "Please see https://eth-docker.net/Support/ChangingWithdrawalCredentials for details"
     elif [ "${1:-}" = "send-address-change" ]; then
         var="COMPOSE_FILE"
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
