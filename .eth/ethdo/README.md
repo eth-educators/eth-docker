@@ -60,8 +60,6 @@ You will then be prompted to provide the mnemonic key of your withdrawal key. Th
 
 A file `change-operations.json` will then be created and saved on the Data USB for use with eth-docker and `ethdo` on your online computer.
 
-You will be given the option to create a separate file for each validator if you plan to use [CLWP](https://clwp.xyz). Doing so will create several \<validator-index\>.json files.
-
 Shut down Ubuntu which will make your PC "forget" anything it knew about your mnemonic during this process.
 
 At this point your Live USB will no longer be needed.
