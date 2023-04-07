@@ -1217,6 +1217,12 @@ keys() {
         # We need things up so we can query
         up
         docompose run --rm ethdo validator credentials set --prepare-offline
+        exitstatus=$?
+        if [ "${exitstatus}" -ne 0 ]; then
+            echo "Running ethdo failed, unfortunately."
+            echo "Please try again after fixing root cause. Aborting."
+            return 1
+        fi
         echo
         echo "Downloading ethdo"
         REPO="wealdtech/ethdo"; \
