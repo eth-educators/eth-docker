@@ -1,0 +1,155 @@
+#!/usr/bin/env expect
+
+proc accept_default {} {
+    global spawn_id
+    send "\t\r"
+}
+
+proc yes {} {
+    global spawn_id
+    send "\r"
+}
+
+proc no {} {
+    global spawn_id
+    send "\t\r"
+}
+
+proc default-deployment {} {
+    global spawn_id
+    expect "Select Network"
+    accept_default
+
+    expect "Select deployment"
+    accept_default
+
+    expect "Select consensus"
+    accept_default
+
+    expect "Select execution"
+    accept_default
+}
+
+proc all-defaults {} {
+    global spawn_id
+    default-deployment
+
+    expect "Checkpoint Sync"
+    yes
+
+    expect "Configure checkpoint"
+    accept_default
+
+    expect "MEV Boost"
+    yes
+
+    expect "Configure MEV"
+    accept_default
+
+    expect "Grafana"
+    yes
+
+    expect "Configure rewards"
+    accept_default
+
+    expect "Configure Graffiti"
+    accept_default
+
+    expect EOF
+}
+
+proc no-checkpoint {} {
+    global spawn_id
+    default-deployment
+
+    expect "Checkpoint Sync"
+    no
+
+    expect "MEV Boost"
+    yes
+
+    expect "Configure MEV"
+    accept_default
+
+    expect "Grafana"
+    yes
+
+    expect "Configure rewards"
+    accept_default
+
+    expect "Configure Graffiti"
+    accept_default
+
+    expect EOF
+}
+
+proc no-mev {} {
+    global spawn_id
+    default-deployment
+
+    expect "Checkpoint Sync"
+    yes
+
+    expect "Configure checkpoint"
+    accept_default
+
+    expect "MEV Boost"
+    no
+
+    expect "Grafana"
+    yes
+
+    expect "Configure rewards"
+    accept_default
+
+    expect "Configure Graffiti"
+    accept_default
+
+    expect EOF
+}
+
+proc no-grafana {} {
+    global spawn_id
+    default-deployment
+
+    expect "Checkpoint Sync"
+    yes
+
+    expect "Configure checkpoint"
+    accept_default
+
+    expect "MEV Boost"
+    yes
+
+    expect "Configure MEV"
+    accept_default
+
+    expect "Grafana"
+    no
+
+    expect "Configure rewards"
+    accept_default
+
+    expect "Configure Graffiti"
+    accept_default
+
+    expect EOF
+}
+
+set timeout 5
+spawn ../ethd config
+
+# Check for the command-line argument
+if {$argc > 0} {
+    set action [lindex $argv 0]
+    switch -- $action {
+        "all-defaults" all-defaults
+        "no-checkpoint" no-checkpoint
+        "no-mev" no-mev
+        "no-grafana" no-grafana
+        default  { puts "Unknown action: $action"; exit 1 }
+    }
+} else {
+    puts "No specific test specified, using all-defaults"
+    all-defaults
+}
