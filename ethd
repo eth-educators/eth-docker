@@ -1214,6 +1214,8 @@ keys() {
             echo "Without it, this step cannot be run"
             exit 1
         fi
+        # We need things up so we can query
+        up
         docompose run --rm ethdo validator credentials set --prepare-offline
         echo
         echo "Downloading ethdo"
@@ -1248,8 +1250,12 @@ keys() {
             echo "Without it, this step cannot be run"
             exit 1
         fi
+        # We need things up so we can query
+        up
         docompose run --rm ethdo validator credentials set
     else
+        # We need things up so we can query
+        up
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
 }
