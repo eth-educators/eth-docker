@@ -93,23 +93,6 @@ if ! [ "$result" -eq 0 ]; then
     exit "$result"
 fi
 echo "change-operations.json can be found on your USB drive"
-
-read -rp "Do you want to break change-operations.json into individual files for use with CLWP? (no/yes) " yn
-case $yn in
-    [Yy]* ) ;;
-    * ) echo "Please shut down this machine and continue online, with the change-operations.json file"; exit 0;;
-esac
-
-file_count=0
-# I am not escaping ', I am appending an empty line
-# shellcheck disable=SC1003
-sed "s/},{\"message/}]\n[{\"message/g" < ./change-operations.json | sed -e '$a\' | {
-    while read -r line
-    do
-        val_index=$(echo "$line" | grep -Eo '"validator_index"[^,]*' | grep -Eo '[^:]*$' | tr -d '"')
-        echo "${line}" > "${val_index}".json
-        file_count=$((file_count+1))
-    done
-    echo "$file_count <validator-index>.json files created on USB for use with CLWP"
-}
-echo "Please shut down this machine and continue online"
+echo
+echo "Please shut down this machine and continue online, with the created change-operations.json file"
+echo "You can submit it to https://beaconcha.in/tools/broadcast, for example"
