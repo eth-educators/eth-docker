@@ -16,5 +16,3 @@ services:
       - docker-entrypoint.sh
       - /app/ethdo
       - --allow-insecure-connections
-    depends_on:
-      - consensus
