@@ -89,7 +89,7 @@ services:
       - --Pruning.FullPruningCompletionBehavior
       - AlwaysShutdown
       - --Init.MemoryHint
-      - "2048"
+      - "2147483648"
       - --log
       - ${LOG_LEVEL}
 volumes:
