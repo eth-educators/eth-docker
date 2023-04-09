@@ -1262,9 +1262,18 @@ keys() {
 # Literal match intended
 # shellcheck disable=SC2076
         if [[ ! "${value}" =~ "ethdo.yml" ]]; then
-            echo "Please make sure ethdo.yml is part of COMPOSE_FILE in .env"
+            echo "Please edit the .env file and make sure \":ethdo.yml\" is added to the \"COMPOSE_FILE\" line"
+            echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
             echo "Without it, this step cannot be run"
-            exit 1
+            echo
+            read -rp "Do you want me to make this change for you? (n/y)" yn
+            case $yn in
+                [Yy] );;
+                * ) exit 1;;
+            esac
+            COMPOSE_FILE="${value}:ethdo.yml"
+            set_value_in_env
+            echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
         fi
         # We need things up so we can query
         up
