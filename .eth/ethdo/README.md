@@ -56,7 +56,9 @@ You will be prompted to specify the withdrawal address you want your funds to be
 
 **Triple-check the withdrawal address you set here! You can only set this once**
 
-You will then be prompted to provide the mnemonic key of your withdrawal key. This is needed to sign the change withdrawal request.
+You will then be prompted to provide the mnemonic or "seed phrase" of your validator(s). This is needed to sign the change withdrawal request.
+To clarify, this is the mnemonic of the validators' "withdrawal key", which, if you used staking-deposit-cli to make the keys,
+is also the mnemonic of your validator signing keys. It is not the mnemonic of the depositing address, or the withdrawal address.
 
 A file `change-operations.json` will then be created and saved on the Data USB for use with eth-docker and `ethdo` on your online computer.
 
