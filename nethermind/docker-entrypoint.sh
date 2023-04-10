@@ -54,6 +54,7 @@ fi
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Nethermind archive node without pruning"
   __prune="--Sync.DownloadBodiesInFastSync=false --Sync.DownloadReceiptsInFastSync=false --Sync.FastSync=false --Sync.SnapSync=false --Sync.FastBlocks=false --Pruning.Mode=None --Sync.PivotNumber=0"
+  __memhint="--Init.MemoryHint=4096000000"
 else
   __parallel=$(($(nproc)/4))
   if [ "${__parallel}" -lt 2 ]; then
@@ -65,8 +66,8 @@ else
   fi
   echo "Using pruning parameters:"
   echo "${__prune}"
+  __memhint="--Init.MemoryHint=1024000000"
 fi
-
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__prune} ${EL_EXTRAS}
+exec "$@" ${__memhint} ${__prune} ${EL_EXTRAS}
