@@ -64,6 +64,9 @@ while true; do
         echo "Mnemonic did not match. You can try again or hit Ctrl-C to abort."
     fi
 done
+echo "You may have used a 25th word for the mnemonic. This is not the passphrase for the"
+echo "validator signing keys. When in doubt, say no to the next question."
+echo
 __passphraseCommand=""
 read -rp "Did you use a passphrase / 25th word when you created this mnemonic? (no/yes) " __usepassphrase
 case "${__usepassphrase}" in
