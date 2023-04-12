@@ -60,7 +60,7 @@ else
   if [ "${__parallel}" -lt 2 ]; then
     __parallel=2
   fi
-  __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
+  __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel} --Pruning.Mode=Full"
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
   fi
