@@ -87,14 +87,29 @@ case "${__usepassphrase}" in
         done;;
     * ) echo "Skipping passphrase entry";;
 esac
+__advancedCommand=""
+read -rp "Did you use a third party such as StakeFish/Staked.us or know that multiple validators share credentials? This is uncommon.  (no/yes) : " __advancedCommand
 
 echo "Creating change-operations.json"
-$__ethdo validator credentials set --offline --withdrawal-address="${__address}" --mnemonic="${__mnemonic}" "${__passphraseCommand}"
+case "${__advancedCommand}" in
+    [Yy]* )
+        __starting_index=""
+        read -rp "Please provide the index position (0 is the most common) : " __starting_index
+
+        # Output is: Private Key: 0x...
+        __private_key=$($__ethdo account derive --mnemonic="${__mnemonic}" "${__passphraseCommand}" --show-private-key --path="m/12381/3600/${__starting_index}/0" | awk '{print $NF}')
+
+        $__ethdo validator credentials set --offline --withdrawal-address="${__address}" --private-key="${__private_key}"
+        ;;
+    * ) $__ethdo validator credentials set --offline --withdrawal-address="${__address}" --mnemonic="${__mnemonic}" "${__passphraseCommand}"
+esac
+
 result=$?
 if ! [ "$result" -eq 0 ]; then
     echo "Command failed"
     exit "$result"
 fi
+echo
 echo "change-operations.json can be found on your USB drive"
 echo
 echo "Please shut down this machine and continue online, with the created change-operations.json file"
