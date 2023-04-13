@@ -72,6 +72,20 @@ services:
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
 
+  wipe-db:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:latest
+    user: "10002"
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        rm -rf /var/lib/nimbus/db/*
+        rm /var/lib/nimbus/setupdone
+
   validator-exit:
     profiles: ["tools"]
     restart: "no"
