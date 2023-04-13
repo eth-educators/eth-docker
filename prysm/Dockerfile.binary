@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 ARG DOCKER_VC_TAG
-FROM prysmaticlabs/prysm-beacon-chain:${DOCKER_TAG} as ccsource
+FROM gcr.io/prysmaticlabs/prysm/beacon-chain:${DOCKER_TAG} as ccsource
 
 FROM debian:bullseye-slim as consensus
 
@@ -45,7 +45,7 @@ USER ${USER}
 
 ENTRYPOINT ["beacon-chain"]
 
-FROM prysmaticlabs/prysm-validator:${DOCKER_VC_TAG} as vcsource
+FROM gcr.io/prysmaticlabs/prysm/validator:${DOCKER_VC_TAG} as vcsource
 
 FROM consensus as validator
 
