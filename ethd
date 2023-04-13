@@ -786,7 +786,7 @@ resync-execution() {
 }
 
 resync-consensus() {
-    # Check for EL client
+    # Check for CL client
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
@@ -797,9 +797,9 @@ resync-consensus() {
         *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
         *nimbus.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
         *nimbus-cl-only.yml* ) __cl_volume='nimbusconsensus-data'; __cl_client="nimbus";;
-        *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __el_client="lodestar";;
-        *prysm.yml* ) __cl_volume='prysmbeacon-data'; __el_client="prysm";;
-        *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __el_client="prysm";;
+        *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
+        *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
+        *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
         * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;
     esac
 
