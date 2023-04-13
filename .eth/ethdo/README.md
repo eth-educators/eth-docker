@@ -78,7 +78,7 @@ Go to https://beaconcha.in/tools/broadcast and drag-drop the `change-operations.
 
 Insert the Data USB to your online computer where eth-docker is running.
 
-Copy the `change-operations.json` from the Data USB to `./eth/ethdo` on your eth-docker node.
+Copy the `change-operations.json` from the Data USB to `./.eth/ethdo` on your eth-docker node.
 
 Run `./ethd keys send-address-change`. You will have one more chance to verify your withdrawal address.
 
