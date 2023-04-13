@@ -79,6 +79,19 @@ services:
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
       - --validators-keystore-locking-enabled=false
 
+  wipe-db:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:latest
+    user: "10002"
+    volumes:
+      - teku-data:/var/lib/teku
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        rm -rf /var/lib/teku/beacon/*
+
   validator-exit:
     profiles: ["tools"]
     restart: "no"

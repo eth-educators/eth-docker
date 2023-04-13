@@ -793,9 +793,9 @@ resync-consensus() {
     case "${value}" in
         *lighthouse.yml* ) __cl_volume='lhbeacon-data'; __cl_client="lighthouse";;
         *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
-        *teku.yml* ) __cl_volume=''; __cl_client="teku"; echo "This script does not yet know how to resync Teku without also deleting keys"; echo "Please delete the DB manually from sudo bash"; exit 0;;
+        *teku.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
         *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
-        *nimbus.yml* ) __cl_volume=''; __cl_client="nimbus"; echo "This script does not yet know how to resync Nimbus without also deleting keys"; echo "Please delete the DB manually from sudo bash"; exit 0;;
+        *nimbus.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
         *nimbus-cl-only.yml* ) __cl_volume='nimbusconsensus-data'; __cl_client="nimbus";;
         *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __el_client="lodestar";;
         *prysm.yml* ) __cl_volume='prysmbeacon-data'; __el_client="prysm";;
@@ -803,7 +803,7 @@ resync-consensus() {
         * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;
     esac
 
-    if ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
+    if [ ! "${__cl_volume}" = "wipe-db" ] && ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
         echo "Did not find docker volume for ${__cl_client}. Nothing to do."
         return
     fi
@@ -824,7 +824,11 @@ resync-consensus() {
 
     echo "Stopping ${__cl_client} container"
     docompose stop consensus && docompose rm -f consensus
-    dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
+    if [ "${__cl_volume}" = "wipe-db" ]; then
+      docompose run --rm wipe-db
+    else
+      dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
+    fi
     echo ""
     echo "${__cl_client} stopped and database deleted."
     echo ""
