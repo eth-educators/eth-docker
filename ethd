@@ -51,7 +51,7 @@ determine_docker() {
 
 determine_compose() {
 # Check for Compose V2 (docker compose) vs Compose V1 (docker-compose)
-  if ! type -P docker-compose >/dev/null 2>&1; then
+  if docker compose version >/dev/null 2>&1; then
     __compose_exe="docker compose"
     __old_compose=0
   else
