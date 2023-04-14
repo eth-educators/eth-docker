@@ -51,10 +51,15 @@ if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
+__memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Nethermind archive node without pruning"
   __prune="--Sync.DownloadBodiesInFastSync=false --Sync.DownloadReceiptsInFastSync=false --Sync.FastSync=false --Sync.SnapSync=false --Sync.FastBlocks=false --Pruning.Mode=None --Sync.PivotNumber=0"
-  __memhint="--Init.MemoryHint=4096000000"
+  if [ "${__memtotal}" -gt 62 ]; then
+    __memhint="--Init.MemoryHint=4096000000"
+  else
+    __memhint=""
+  fi
 else
   __parallel=$(($(nproc)/4))
   if [ "${__parallel}" -lt 2 ]; then
@@ -66,7 +71,11 @@ else
   fi
   echo "Using pruning parameters:"
   echo "${__prune}"
-  __memhint="--Init.MemoryHint=1024000000"
+  if [ "${__memtotal}" -gt 62 ]; then
+    __memhint=""
+  else
+    __memhint="--Init.MemoryHint=1024000000"
+  fi
 fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
