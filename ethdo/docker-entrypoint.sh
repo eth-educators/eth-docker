@@ -72,8 +72,19 @@ if [[ "$*" =~ "validator credentials set" ]] && [[ ! "$*" =~ "--prepare-offline"
   fi
 fi
 
-# Get just the first CL_NODE
-ARGS=( "${ARGS[@]:0:1}" "--connection" "$(cut -d, -f1 <<<"${CL_NODE}")" "${ARGS[@]:1}" )
+if [[ "$*" =~ "--offline" ]]; then
+  if [ ! -f "/app/.eth/ethdo/offline-preparation.json" ]; then
+    echo "Offline preparation file ./.eth/ethdo/offline-preparation.json not found"
+    echo "Please create it, for example with ./ethd keys prepare-address-change, and try again"
+    exit 1
+  else
+    cp /app/.eth/ethdo/offline-preparation.json /app
+    chown ethdo:ethdo /app/offline-preparation.json
+  fi
+else
+  # Get just the first CL_NODE
+  ARGS=( "${ARGS[@]:0:1}" "--connection" "$(cut -d, -f1 <<<"${CL_NODE}")" "${ARGS[@]:1}" )
+fi
 
 gosu ethdo "${ARGS[@]}"
 __result=$?
@@ -92,7 +103,7 @@ if [[ "$*" =~ "--prepare-offline" ]]; then
   else
     __butta="https://${NETWORK}.beaconcha.in"
   fi
-  cp -rp /app/offline-preparation.json /app/.eth/ethdo/
+  cp -p /app/offline-preparation.json /app/.eth/ethdo/
   chown "$uid":"$uid" /app/.eth/ethdo/offline-preparation.json
   echo "The preparation file has been copied to ./.eth/ethdo/offline-preparation.json"
   echo "It contains $(jq .validators[].index </app/.eth/ethdo/offline-preparation.json | wc -l) validators."
