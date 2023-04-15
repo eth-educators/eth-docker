@@ -65,12 +65,6 @@ services:
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
-      - --validator-monitor-totals
-      - --keymanager
-      - --keymanager-port=${KEY_API_PORT:-7500}
-      - --keymanager-address=0.0.0.0
-      - --keymanager-allow-origin=*
-      - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
       - --in-process-validators=false
     labels:
