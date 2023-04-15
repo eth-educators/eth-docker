@@ -9,6 +9,7 @@ services:
     image: ethdo:local
     volumes:
       - ./.eth:/app/.eth
+      - ethdo-wallet:/app/wallet
     environment:
       - NETWORK=${NETWORK}
       - CL_NODE=${CL_NODE:-http://consensus:5052}
@@ -16,3 +17,6 @@ services:
       - docker-entrypoint.sh
       - /app/ethdo
       - --allow-insecure-connections
+
+volumes:
+  ethdo-wallet:

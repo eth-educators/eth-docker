@@ -57,12 +57,6 @@ while true; do
         echo "The mnemonic needs to be 24 or 12 words. You can try again or hit Ctrl-C to abort."
         continue
     fi
-    read -rp "Please verify your validator mnemonic : " __mnemonic2
-    if [[ "${__mnemonic}" = "${__mnemonic2}" ]]; then
-        break
-    else
-        echo "Mnemonic did not match. You can try again or hit Ctrl-C to abort."
-    fi
 done
 echo "You may have used a 25th word for the mnemonic. This is not the passphrase for the"
 echo "validator signing keys. When in doubt, say no to the next question."

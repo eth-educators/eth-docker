@@ -15,6 +15,7 @@ RUN adduser \
 
 RUN apt-get update && apt-get install -y gosu jq
 
+RUN mkdir -p /app/wallet
 RUN chown -R ${USER}:${USER} /app
 
 COPY ./docker-entrypoint.sh /usr/local/bin/

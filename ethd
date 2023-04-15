@@ -1193,7 +1193,79 @@ prep-keyimport() {
     done
 }
 
+__i_haz_ethdo() {
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+    if [[ ! "${value}" =~ "ethdo.yml" ]]; then
+        echo "Please edit the .env file and make sure \":ethdo.yml\" is added to the \"COMPOSE_FILE\" line"
+        echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
+        echo "Without it, this step cannot be run"
+        echo
+        read -rp "Do you want me to make this change for you? (n/y)" yn
+        case $yn in
+            [Yy] );;
+            * ) exit 1;;
+        esac
+        COMPOSE_FILE="${value}:ethdo.yml"
+        set_value_in_env
+        echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
+    fi
+}
+
+
+__keys_usage() {
+    echo "Call keymanager with an ACTION, one of:"
+    echo "  list"
+    echo "     Lists the public keys of all validators currently loaded into your validator client"
+    echo "  import"
+    echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
+    echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
+    echo "  delete 0xPUBKEY | all"
+    echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
+    echo "      slashing protection database. \"all\" deletes all detected validators instead"
+    echo
+    echo "  get-recipient 0xPUBKEY"
+    echo "      List fee recipient set for the validator with public key 0xPUBKEY"
+    echo "      Validators will use FEE_RECIPIENT in .env by default, if not set individually"
+    echo "  set-recipient 0xPUBKEY 0xADDRESS"
+    echo "      Set individual fee recipient for the validator with public key 0xPUBKEY"
+    echo "  delete-recipient 0xPUBKEY"
+    echo "      Delete individual fee recipient for the validator with public key 0xPUBKEY"
+    echo
+    echo "  get-gas 0xPUBKEY"
+    echo "      List execution gas limit set for the validator with public key 0xPUBKEY"
+    echo "      Validators will use the client's default, if not set individually"
+    echo "  set-gas 0xPUBKEY amount"
+    echo "      Set individual execution gas limit for the validator with public key 0xPUBKEY"
+    echo "  delete-gas 0xPUBKEY"
+    echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
+    echo
+    echo "  get-api-token"
+    echo "      Print the token for the keymanager API running on port ${KEY_API_PORT:-7500}."
+    echo "      This is also the token for the Prysm Web UI"
+    echo
+    echo "  create-prysm-wallet"
+    echo "      Create a new Prysm wallet to store keys in"
+    echo "  get-prysm-wallet"
+    echo "      Print Prysm's wallet password"
+    echo
+    echo "  prepare-address-change"
+    echo "      Create an offline-preparation.json with ethdo"
+    echo "  send-address-change"
+    echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
+    echo
+    echo "  sign-exit from-keystore [--offline]"
+    echo "      Create pre-signed exit messages with ethdo, from keystore files in ./.eth/validator_keys"
+}
+
 keys() {
+    if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
+        __keys_usage
+        return
+    fi
+
     __owner_uid=$(id -u "${OWNER}")
     if [ "${1:-}" = "import" ]; then
         shift
@@ -1209,25 +1281,7 @@ keys() {
         docompose rm --force validator
         up
     elif [ "${1:-}" = "prepare-address-change" ]; then
-        var="COMPOSE_FILE"
-        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-# Literal match intended
-# shellcheck disable=SC2076
-        if [[ ! "${value}" =~ "ethdo.yml" ]]; then
-            echo "Please edit the .env file and make sure \":ethdo.yml\" is added to the \"COMPOSE_FILE\" line"
-            echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
-            echo "Without it, this step cannot be run"
-            echo
-            read -rp "Do you want me to make this change for you? (n/y)" yn
-            case $yn in
-                [Yy] );;
-                * ) exit 1;;
-            esac
-            COMPOSE_FILE="${value}:ethdo.yml"
-            set_value_in_env
-            echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
-        fi
-        # We need things up so we can query
+        __i_haz_ethdo
         up
         echo "Generating offline prep file"
         docompose run --rm ethdo validator credentials set --prepare-offline
@@ -1261,27 +1315,125 @@ keys() {
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
         echo "Please see https://eth-docker.net/Support/ChangingWithdrawalCredentials for details"
     elif [ "${1:-}" = "send-address-change" ]; then
-        var="COMPOSE_FILE"
-        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-# Literal match intended
-# shellcheck disable=SC2076
-        if [[ ! "${value}" =~ "ethdo.yml" ]]; then
-            echo "Please edit the .env file and make sure \":ethdo.yml\" is added to the \"COMPOSE_FILE\" line"
-            echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
-            echo "Without it, this step cannot be run"
-            echo
-            read -rp "Do you want me to make this change for you? (n/y)" yn
-            case $yn in
-                [Yy] );;
-                * ) exit 1;;
-            esac
-            COMPOSE_FILE="${value}:ethdo.yml"
-            set_value_in_env
-            echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
-        fi
+        __i_haz_ethdo
         # We need things up so we can query
         up
         docompose run --rm ethdo validator credentials set
+    elif [ "${1:-}" = "sign-exit" ] && [ "${2:-}" = "from-keystore" ]; then
+        __i_haz_ethdo
+        # We need things up so we can query
+        up
+
+        __offline=""
+        if echo "$@" | grep -q '.*--offline.*' 2>/dev/null ; then
+          __offline="--offline"
+        fi
+
+        __non_interactive=0
+        if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
+          __non_interactive=1
+        fi
+
+        if [ ${__non_interactive} = 1 ]; then
+            __password="${KEYSTORE_PASSWORD}"
+            __justone=1
+        else
+            __num_files=$(find .eth/validator_keys -maxdepth 1 -type f -name 'keystore*.json' | wc -l)
+            if [ "$__num_files" -eq 0 ]; then
+                echo "No keystore*.json files found in .eth/validator_keys/"
+                echo "Nothing to do"
+                exit 0
+            fi
+
+            if [ "$__num_files" -gt 1 ]; then
+                while true; do
+                    read -rp "Do all validator keys have the same password? (y/n) " yn
+                    case $yn in
+                        [Yy]* ) __justone=1; break;;
+                        [Nn]* ) __justone=0; break;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+            else
+                __justone=1
+            fi
+            if [ "${__justone}" -eq 1 ]; then
+                while true; do
+                    read -srp "Please enter the password for your validator key(s): " __password
+                    echo
+                    read -srp "Please re-enter the password: " __password2
+                    echo
+                    if [ "${__password}" == "${__password2}" ]; then
+                        break
+                    else
+                        echo "The two entered passwords do not match, please try again."
+                        echo
+                    fi
+                done
+                echo
+            fi
+        fi
+
+        docompose run --rm ethdo --base-dir /app/wallet wallet delete --wallet=exits >/dev/null 2>&1
+        docompose run --rm ethdo --base-dir /app/wallet wallet create --wallet=exits
+
+        i=1
+        created=0
+        failed=0
+        mkdir -p .eth/exit_messages
+        for __keyfile in .eth/validator_keys/keystore-*.json; do
+            [ -f "${__keyfile}" ] || continue # Should always evaluate true - just in case
+            if [ "${__justone}" -eq 0 ]; then
+                while true; do
+                    read -srp "Please enter the password for your validator key stored in ${__keyfile}: " __password
+                    echo
+                    read -srp "Please re-enter the password: " __password2
+                    echo
+                    if [ "${__password}" == "${__password2}" ]; then
+                        break
+                    else
+                        echo "The two entered passwords do not match, please try again."
+                        echo
+                    fi
+                    echo
+                done
+            fi
+
+            __pubkey=$(docompose run --rm ethdo account import --base-dir /app/wallet --account exits/"${i}" --keystore "/app/.eth/validator_keys/$(basename "${__keyfile}")" --keystore-passphrase "${__password}" --passphrase "${__password}" --allow-weak-passphrases --verbose)
+            exitstatus=$?
+            if [ "${exitstatus}" -ne 0 ]; then
+                echo "Importing ${__keyfile} failed"
+                echo "Was the supplied password correct?"
+                (( i++ ))
+                continue
+            fi
+            __json=$(docompose run --rm ethdo validator exit --base-dir /app/wallet --validator exits/"${i}" --json --timeout 2m --passphrase "${__password}" ${__offline})
+            exitstatus=$?
+            if [ "${exitstatus}" -eq 0 ]; then
+              echo "${__json}" >".eth/exit_messages/${__pubkey}-exit.json"
+              exitstatus=$?
+              if [ "${exitstatus}" -eq 0 ]; then
+                echo "Creating an exit message for validator ${__pubkey} into file ./.eth/exit_messages/${__pubkey}-exit.json succeeded"
+                (( created++ ))
+              else
+                echo "Error writing exit json to file ./.eth/exit_messages/${__pubkey}-exit.json"
+                (( failed++ ))
+              fi
+            else
+                echo "Creating an exit message for validator ${__pubkey} from file ${__keyfile} failed"
+                (( failed++ ))
+            fi
+            (( i++ ))
+        done
+        docompose run --rm ethdo --base-dir /app/wallet wallet delete --wallet=exits
+        echo
+        echo "Created pre-signed exit messages for ${created} validators"
+        if [ "${created}" -gt 0 ]; then
+          echo "You can find them in ./.eth/exit_messages"
+        fi
+        if [ "${failed}" -gt 0 ]; then
+          echo "Failed for ${failed} validators"
+        fi
     else
         # We need things up so we can query
         up

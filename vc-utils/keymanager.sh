@@ -504,6 +504,9 @@ usage() {
     echo "      Create an offline-preparation.json with ethdo"
     echo "  send-address-change"
     echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
+    echo
+    echo "  sign-exit from-keystore [--offline]"
+    echo "      Create pre-signed exit messages with ethdo, from keystore files in ./.eth/validator_keys"
 }
 
 set -e
