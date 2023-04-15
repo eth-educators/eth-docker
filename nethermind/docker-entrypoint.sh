@@ -58,7 +58,7 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   if [ "${__memtotal}" -gt 62 ]; then
     __memhint="--Init.MemoryHint=4096000000"
   else
-    __memhint=""
+    __memhint="--Init.MemoryHint=1024000000"
   fi
 else
   __parallel=$(($(nproc)/4))

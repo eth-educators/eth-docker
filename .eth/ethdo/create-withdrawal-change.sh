@@ -53,8 +53,8 @@ echo "MAKE SURE YOU CONTROL THE WITHDRAWAL ADDRESS"
 echo "This can only be changed once."
 while true; do
     read -rp "What is your validator mnemonic? : " __mnemonic
-    if ! [ "$(echo "$__mnemonic" | wc -w)" -eq 24 ]; then
-        echo "The mnemonic needs to be 24 words. You can try again or hit Ctrl-C to abort."
+    if [ ! "$(echo "$__mnemonic" | wc -w)" -eq 24 ] && [ ! "$(echo "$__mnemonic" | wc -w)" -eq 12 ]; then
+        echo "The mnemonic needs to be 24 or 12 words. You can try again or hit Ctrl-C to abort."
         continue
     fi
     read -rp "Please verify your validator mnemonic : " __mnemonic2
