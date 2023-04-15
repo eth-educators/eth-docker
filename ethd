@@ -1240,19 +1240,19 @@ keys() {
         echo
         echo "Downloading ethdo"
         REPO="wealdtech/ethdo"; \
-        curl -s https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" \
+        wget -q -O- https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" \
         | head -1 \
         | cut -d : -f 2,3 \
         | tr -d \" \
-        | wget -qi - -O- \
+        | wget -qi- -O- \
         | tar zxf - -C ./.eth/ethdo/ \
         || echo "-> Could not download the latest version of '${REPO}' for amd64."
         mkdir -p ./.eth/ethdo/arm64
-        curl -s https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-arm64.tar.gz" \
+        wget -q -O- https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-arm64.tar.gz" \
         | head -1 \
         | cut -d : -f 2,3 \
         | tr -d \" \
-        | wget -qi - -O- \
+        | wget -qi- -O- \
         | tar zxf - -C ./.eth/ethdo/arm64 \
         || echo "-> Could not download the latest version of '${REPO}' for arm64."
         mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
