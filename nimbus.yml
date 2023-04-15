@@ -56,7 +56,7 @@ services:
       - --udp-port=${CL_P2P_PORT:-9000}
       - --max-peers=${CL_MAX_PEER_COUNT:-160}
       - --network=${NETWORK}
-      - --web3-url=${EL_NODE}
+      - --el=${EL_NODE}
       - --jwt-secret=/var/lib/nimbus/ee-secret/jwtsecret
       - --rest
       - --rest-address=0.0.0.0
@@ -90,14 +90,13 @@ services:
     profiles: ["tools"]
     restart: "no"
     image: nimbus:local
-    user: user
+    user: root
     volumes:
-      - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
+      - ./.eth/validator_keys:/validator_keys
     entrypoint:
+      - validator-exit.sh
       - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
       - --log-level=${LOG_LEVEL}
       - deposits
       - exit

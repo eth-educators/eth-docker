@@ -48,24 +48,6 @@ services:
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
 
-  validator-exit:
-    profiles: ["tools"]
-    restart: "no"
-    image: nimbus-validator:local
-    user: user
-    volumes:
-      - nimbus-vc-data:/var/lib/nimbus
-      - /etc/localtime:/etc/localtime:ro
-    entrypoint:
-      - /usr/local/bin/nimbus_beacon_node
-      - --data-dir=/var/lib/nimbus
-      - --network=${NETWORK}
-      - --log-level=${LOG_LEVEL}
-      - deposits
-      - exit
-      - --rest-url=http://consensus:5052
-      - --validator=
-
   validator-keys:
     profiles: ["tools"]
     restart: "no"
