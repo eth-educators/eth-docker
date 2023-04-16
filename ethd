@@ -1276,10 +1276,11 @@ keys() {
             docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import
         fi
     elif [ "${1:-}" = "create-prysm-wallet" ]; then
-        docompose run --rm create-wallet
-        docompose stop validator
-        docompose rm --force validator
-        up
+        if docompose run --rm create-wallet; then
+            docompose stop validator
+            docompose rm --force validator
+            up
+        fi
     elif [ "${1:-}" = "prepare-address-change" ]; then
         __i_haz_ethdo
         echo "Generating offline prep file"
