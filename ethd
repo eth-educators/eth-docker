@@ -1374,9 +1374,6 @@ keys() {
             fi
         fi
 
-        docompose run --rm ethdo --base-dir /app/wallet wallet delete --wallet=exits >/dev/null 2>&1
-        docompose run --rm ethdo --base-dir /app/wallet wallet create --wallet=exits
-
         i=1
         created=0
         failed=0
@@ -1399,24 +1396,24 @@ keys() {
                 done
             fi
 
-            __pubkey=$(docompose run --rm ethdo account import --base-dir /app/wallet --account exits/"${i}" --keystore "/app/.eth/validator_keys/$(basename "${__keyfile}")" --keystore-passphrase "${__password}" --passphrase "${__password}" --allow-weak-passphrases --verbose)
-            exitstatus=$?
-            if [ "${exitstatus}" -ne 0 ]; then
-                echo "Importing ${__keyfile} failed"
-                echo "Was the supplied password correct?"
+            __pubkey="$(sed -E 's/.*"pubkey":\s*"([0-9a-fA-F]+)".*/\1/' < "${__keyfile}")"
+            if [ -z "$__pubkey" ]; then
+                echo "Unable to read public key from ${__keyfile}. Is it the right format?"
                 (( i++ ))
                 continue
+            else
+                __pubkey="0x${__pubkey}"
             fi
-            __json=$(docompose run --rm ethdo validator exit --base-dir /app/wallet --validator exits/"${i}" --json --timeout 2m --passphrase "${__password}" ${__offline})
+            __json=$(docompose run --rm ethdo validator exit --validator "${__keyfile}" --json --timeout 2m --passphrase "${__password}" ${__offline})
             exitstatus=$?
             if [ "${exitstatus}" -eq 0 ]; then
-              echo "${__json}" >".eth/exit_messages/${__pubkey}-exit.json"
+              echo "${__json}" >".eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
               exitstatus=$?
               if [ "${exitstatus}" -eq 0 ]; then
-                echo "Creating an exit message for validator ${__pubkey} into file ./.eth/exit_messages/${__pubkey}-exit.json succeeded"
+                echo "Creating an exit message for validator ${__pubkey} into file ./.eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json succeeded"
                 (( created++ ))
               else
-                echo "Error writing exit json to file ./.eth/exit_messages/${__pubkey}-exit.json"
+                echo "Error writing exit json to file ./.eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
                 (( failed++ ))
               fi
             else
@@ -1425,7 +1422,6 @@ keys() {
             fi
             (( i++ ))
         done
-        docompose run --rm ethdo --base-dir /app/wallet wallet delete --wallet=exits
         echo
         echo "Created pre-signed exit messages for ${created} validators"
         if [ "${created}" -gt 0 ]; then
