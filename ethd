@@ -1321,13 +1321,13 @@ keys() {
         docompose run --rm ethdo validator credentials set
     elif [ "${1:-}" = "sign-exit" ] && [ "${2:-}" = "from-keystore" ]; then
         __i_haz_ethdo
-        # We need things up so we can query
-        up
 
-        __offline=""
         if echo "$@" | grep -q '.*--offline.*' 2>/dev/null ; then
           __offline="--offline"
-        fi
+        else
+          __offline=""
+          up
+       fi
 
         __non_interactive=0
         if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
@@ -1374,7 +1374,6 @@ keys() {
             fi
         fi
 
-        i=1
         created=0
         failed=0
         mkdir -p .eth/exit_messages
@@ -1399,11 +1398,12 @@ keys() {
             __pubkey="$(sed -E 's/.*"pubkey":\s*"([0-9a-fA-F]+)".*/\1/' < "${__keyfile}")"
             if [ -z "$__pubkey" ]; then
                 echo "Unable to read public key from ${__keyfile}. Is it the right format?"
-                (( i++ ))
                 continue
             else
                 __pubkey="0x${__pubkey}"
             fi
+            # __offline may be empty, don't quote it
+            # shellcheck disable=SC2086
             __json=$(docompose run --rm ethdo validator exit --validator "${__keyfile}" --json --timeout 2m --passphrase "${__password}" ${__offline})
             exitstatus=$?
             if [ "${exitstatus}" -eq 0 ]; then
@@ -1420,7 +1420,6 @@ keys() {
                 echo "Creating an exit message for validator ${__pubkey} from file ${__keyfile} failed"
                 (( failed++ ))
             fi
-            (( i++ ))
         done
         echo
         echo "Created pre-signed exit messages for ${created} validators"
