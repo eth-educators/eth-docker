@@ -29,4 +29,4 @@ please read the [contribution guidelines](CONTRIBUTING.md) so you can run lint c
 
 ## Version
 
-This is eth-docker v2.2.9.4
+This is eth-docker v2.2.9.5
