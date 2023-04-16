@@ -1282,7 +1282,6 @@ keys() {
         up
     elif [ "${1:-}" = "prepare-address-change" ]; then
         __i_haz_ethdo
-        up
         echo "Generating offline prep file"
         docompose run --rm ethdo validator credentials set --prepare-offline
         exitstatus=$?
@@ -1316,8 +1315,6 @@ keys() {
         echo "Please see https://eth-docker.net/Support/ChangingWithdrawalCredentials for details"
     elif [ "${1:-}" = "send-address-change" ]; then
         __i_haz_ethdo
-        # We need things up so we can query
-        up
         docompose run --rm ethdo validator credentials set
     elif [ "${1:-}" = "sign-exit" ] && [ "${2:-}" = "from-keystore" ]; then
         __i_haz_ethdo
@@ -1326,7 +1323,6 @@ keys() {
           __offline="--offline"
         else
           __offline=""
-          up
        fi
 
         __non_interactive=0
@@ -1430,8 +1426,6 @@ keys() {
           echo "Failed for ${failed} validators"
         fi
     else
-        # We need things up so we can query
-        up
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
 }
