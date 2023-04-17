@@ -1,0 +1,7 @@
+# Add this to COMPOSE_FILE in .env so docker compose assigns v6 addresses
+# Docker will also need to be configured, please see http://eth-docker.net/Support/ipv6.md
+version: "3.9"
+
+networks:
+  default:
+    enable_ipv6: true
