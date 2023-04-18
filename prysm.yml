@@ -36,8 +36,8 @@ services:
       - CL_EXTRAS=${CL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
     ports:
-      - ${HOST_IP:-0.0.0.0}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${HOST_IP:-0.0.0.0}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - ${HOST_IP:-}${PRYSM_PORT}:${PRYSM_PORT}/tcp
+      - ${HOST_IP:-}${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     networks:
       default:
         aliases:

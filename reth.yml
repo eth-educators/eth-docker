@@ -29,8 +29,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/reth/ee-secret
     ports:
-      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${HOST_IP:-0.0.0.0}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-}${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-}${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
