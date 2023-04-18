@@ -2302,7 +2302,7 @@ value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 if [ "${value}" = true ] && [ "${__old_compose}" -eq 1 ]; then
   echo
   echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from June 2023 on."
-  echo "A switch to docker-ce is recommended. This is unfortunately a manual step that eth-docker cannot do for you."
+  echo "A switch to docker-ce is recommended. It is *not* mandatory. This is unfortunately a manual step that eth-docker cannot do for you."
   echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
   echo "You can turn this message off by adjusting COMPOSEV1_NAG in .env"
 fi
