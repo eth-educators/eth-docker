@@ -56,6 +56,8 @@ while true; do
     if [ ! "$(echo "$__mnemonic" | wc -w)" -eq 24 ] && [ ! "$(echo "$__mnemonic" | wc -w)" -eq 12 ]; then
         echo "The mnemonic needs to be 24 or 12 words. You can try again or hit Ctrl-C to abort."
         continue
+    else
+        break
     fi
 done
 echo "You may have used a 25th word for the mnemonic. This is not the passphrase for the"
