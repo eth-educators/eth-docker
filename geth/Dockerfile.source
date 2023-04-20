@@ -11,7 +11,7 @@ RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash
 WORKDIR /src
 RUN bash -c "git clone https://github.com/ethereum/go-ethereum.git && cd go-ethereum && git config advice.detachedHead false && git fetch --all --tags && \
 if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:geth-pr; git checkout geth-pr; else git checkout ${BUILD_TARGET}; fi && \
-make geth"
+make all"
 
 # Pull all binaries into a second stage deploy container
 FROM alpine:3
@@ -40,6 +40,7 @@ RUN mkdir -p /var/lib/goethereum/ee-secret && chown -R ${USER}:${USER} /var/lib/
 
 # Cannot assume buildkit, hence no chmod
 COPY --from=builder --chown=${USER}:${USER} /src/go-ethereum/build/bin/geth /usr/local/bin/
+COPY --from=builder --chown=${USER}:${USER} /src/go-ethereum/build/bin/clef /usr/local/bin/
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
