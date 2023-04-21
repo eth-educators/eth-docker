@@ -616,14 +616,6 @@ envmigrate() {
             set_value_in_env
         fi
     fi
-    # Check for Blox SSV 1 and auto migrate
-    var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-# I do mean to match literally
-# shellcheck disable=SC2076
-    if [[ "${value}" =~ "blox-ssv.yml" ]]; then
-        query_blox_switch
-    fi
 
     # User signals it's a distributed setup and not to nag
     # Ditto do not nag if we switched branch, as the code that does
@@ -837,28 +829,6 @@ resync-consensus() {
     echo ""
     echo "Restarting for resync."
     up
-}
-
-query_blox_switch() {
-    echo "Detected SSV Node v1. SSV v2 testnet is the new hotness."
-    echo
-    echo "Stopping SSV Node container"
-    dodocker stop "$(dodocker ps -q -f "name=ssv-node")" && dodocker rm -f "$(dodocker ps -a -q -f "name=ssv-node")"
-    docompose stop ssv-node && docompose rm -f ssv-node
-    dodocker volume rm "$(dodocker volume ls -q -f "name=ssv-data")"
-    echo ""
-    echo "SSV Node stopped and database deleted."
-    echo ""
-    cp blox-ssv-config.yaml blox-ssv-config.yaml.bak
-    echo "Backup copy blox-ssv-config.yaml.bak created"
-    echo "Making changes to blox-ssv-config.yaml"
-    sed -i 's/blox-ssv.yml/blox-ssv2.yml/' .env
-    sed -i '/RegistryContractAddr/d' blox-ssv-config.yaml
-    sed -i '/RegistryContractABI/d' blox-ssv-config.yaml
-    sed -i '/ETH1SyncOffset/d' blox-ssv-config.yaml
-    sed -i '/AbiVersion/d' blox-ssv-config.yaml
-    sed -i '/Bootnodes/d' blox-ssv-config.yaml
-    sed -i '/NetworkID/d' blox-ssv-config.yaml
 }
 
 attach-geth() {
