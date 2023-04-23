@@ -1172,6 +1172,10 @@ prep-keyimport() {
 }
 
 __i_haz_ethdo() {
+    if [ ! -f ".env" ]; then
+        echo "eth-docker has not been configured. Please run ./ethd config first."
+        exit 1
+    fi
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 # Literal match intended
