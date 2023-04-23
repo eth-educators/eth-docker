@@ -48,7 +48,7 @@ services:
     image: oznu/cloudflare-ddns:latest
     restart: "unless-stopped"
     environment:
-      - API_KEY=${CF_API_TOKEN}
+      - API_KEY=${CF_DNS_API_TOKEN}
       - ZONE=${DOMAIN}
       - SUBDOMAIN=${DDNS_SUBDOMAIN}
       - PROXIED=${DDNS_PROXY}
