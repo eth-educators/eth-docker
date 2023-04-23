@@ -1186,7 +1186,12 @@ __i_haz_ethdo() {
             [Yy] );;
             * ) exit 1;;
         esac
-        COMPOSE_FILE="${value}:ethdo.yml"
+        if [ -n "${value}" ]; then
+          COMPOSE_FILE="${value}:ethdo.yml"
+        else
+          COMPOSE_FILE="ethdo.yml"
+          echo "You do not have a CL in eth-docker. Please make sure CL_NODE in .env points at an available one"
+        fi
         set_value_in_env
         echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
     fi
