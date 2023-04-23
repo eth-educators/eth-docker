@@ -84,7 +84,6 @@ services:
       - --authrpc.vhosts=*
       - --authrpc.jwtsecret
       - /var/lib/erigon/ee-secret/jwtsecret
-      - --externalcl
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-100}
       # To assist with recordsize 16k in ZFS
