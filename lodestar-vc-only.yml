@@ -7,9 +7,18 @@ x-logging: &logging
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
+x-build: &ls-build
+  context: ./lodestar
+  dockerfile: ${LS_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${LS_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${LS_DOCKER_TAG}
+
 services:
   validator:
     restart: "unless-stopped"
+    build:
+      <<: *ls-build
     image: lodestar:local
     user: lsvalidator
     environment:
@@ -55,6 +64,8 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
+    build:
+      <<: *ls-build
     image: lodestar:local
     user: lsvalidator
     volumes:

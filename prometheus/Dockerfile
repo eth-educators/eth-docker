@@ -1,4 +1,4 @@
-FROM prom/prometheus
+FROM prom/prometheus:latest
 
 COPY ./*-prom.yml /etc/prometheus/
 COPY ./global.yml /etc/prometheus

@@ -73,6 +73,9 @@ services:
   create-wallet:
     profiles: ["tools"]
     restart: "no"
+    build:
+      target: validator
+      <<: *prysm-build
     image: prysm-validator:local
     user: prysmvalidator
     environment:
@@ -85,8 +88,11 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    user: prysmvalidator
+    build:
+      target: validator
+      <<: *prysm-build
     image: prysm-validator:local
+    user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
@@ -106,8 +112,11 @@ services:
   validator-backup:
     profiles: ["tools"]
     restart: "no"
-    user: root
+    build:
+      target: validator
+      <<: *prysm-build
     image: prysm-validator:local
+    user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - ./.eth/validator_keys:/validator_keys
