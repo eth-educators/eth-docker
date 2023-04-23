@@ -10,7 +10,7 @@ on:
 jobs:
   test-lighthouse-geth:
     if: contains(github.event.pull_request.labels.*.name, 'test-lighthouse-geth') ||
-        contains(github.event.pull_request.labels.*.name, 'test-lighthouse-geth') ||
+        contains(github.event.pull_request.labels.*.name, 'test-all') ||
         github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
