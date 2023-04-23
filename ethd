@@ -1270,7 +1270,7 @@ keys() {
         docompose run --rm ethdo validator credentials set --prepare-offline
         exitstatus=$?
         if [ "${exitstatus}" -ne 0 ]; then
-            echo "Running ethdo failed, unfortunately."
+            echo "Running ethdo failed, unfortunately. Is the CL running and synced?"
             echo "Please try again after fixing root cause. Aborting."
             return 1
         fi
