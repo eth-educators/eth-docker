@@ -7,15 +7,18 @@ x-logging: &logging
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
+x-build: &teku-build
+  context: ./teku
+  dockerfile: ${TEKU_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${TEKU_DOCKER_TAG}
+
 services:
   consensus:
     restart: "unless-stopped"
     build:
-      context: ./teku
-      args:
-        - BUILD_TARGET=${TEKU_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${TEKU_DOCKER_TAG}
-      dockerfile: ${TEKU_DOCKERFILE}
+      <<: *teku-build
     image: teku:local
     user: teku
     stop_grace_period: 1m

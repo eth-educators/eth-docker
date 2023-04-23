@@ -7,17 +7,20 @@ x-logging: &logging
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
+x-build: &nimbus-build
+  context: ./nimbus
+  dockerfile: ${NIM_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${NIM_DOCKER_TAG}
+    - DOCKER_VC_TAG=${NIM_DOCKER_VC_TAG}
+
 services:
   validator:
     restart: "unless-stopped"
     build:
       target: validator
-      context: ./nimbus
-      args:
-        - BUILD_TARGET=${NIM_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${NIM_DOCKER_TAG}
-        - DOCKER_VC_TAG=${NIM_DOCKER_VC_TAG}
-      dockerfile: ${NIM_DOCKERFILE}
+      <<: *nimbus-build
     image: nimbus-validator:local
     user: user
     volumes:

@@ -7,15 +7,19 @@ x-logging: &logging
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
+
+x-build: &lh-build
+  context: ./lighthouse
+  dockerfile: ${LH_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
+    - DOCKER_TAG=${LH_DOCKER_TAG}
+
 services:
   consensus:
     restart: "unless-stopped"
     build:
-      context: ./lighthouse
-      dockerfile: ${LH_DOCKERFILE}
-      args:
-        - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${LH_DOCKER_TAG}
+      <<: *lh-build
     image: lighthouse:local
     user: lhconsensus
     stop_grace_period: 1m
@@ -74,6 +78,8 @@ services:
 
   validator:
     restart: "unless-stopped"
+    build:
+      <<: *lh-build
     image: lighthouse:local
     user: lhvalidator
     environment:
@@ -119,6 +125,8 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
+    build:
+      <<: *lh-build
     image: lighthouse:local
     # Keys have 440 permissions. Root copies and chowns them,
     # then switches to user lhvalidator

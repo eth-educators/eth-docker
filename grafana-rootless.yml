@@ -52,7 +52,7 @@ services:
 
   json-exporter:
     restart: "unless-stopped"
-    image: quay.io/prometheuscommunity/json-exporter
+    image: prometheuscommunity/json-exporter:latest
     volumes:
       - ./prometheus/json.yml:/config/json.yml
       - /etc/localtime:/etc/localtime:ro
