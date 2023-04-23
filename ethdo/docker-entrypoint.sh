@@ -106,6 +106,6 @@ if [[ "$*" =~ "--prepare-offline" ]]; then
   cp -p /app/offline-preparation.json /app/.eth/ethdo/
   chown "$uid":"$uid" /app/.eth/ethdo/offline-preparation.json
   echo "The preparation file has been copied to ./.eth/ethdo/offline-preparation.json"
-  echo "It contains $(jq .validators[].index </app/.eth/ethdo/offline-preparation.json | wc -l) validators."
-  echo "Please verify that this matches what you see on ${__butta}/validators"
+  echo "It contains a list of all validators on chain, $(jq .validators[].index </app/.eth/ethdo/offline-preparation.json | wc -l) in total"
+  echo "You can verify that this matches the total validator count at ${__butta}/validators"
 fi
