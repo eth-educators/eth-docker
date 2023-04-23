@@ -2,31 +2,21 @@ name: Test Nimbus and Nethermind
 run-name: Test Nimbus and Nethermind
 
 on:
-  issue_comment:
-    types: [created, edited, deleted]
+  push:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
 
 jobs:
   test-nimbus-nethermind:
     if: |
-      github.event.issue.pull_request && (
-      contains(github.event.comment.body, '/test-nimbus')||
-      contains(github.event.comment.body, '/test-nethermind')||
-      contains(github.event.comment.body, '/test-all') )
+      contains(github.event.pull_request.labels.*.name, 'test-nimbus') ||
+      contains(github.event.pull_request.labels.*.name, 'test-nethermind') ||
+      contains(github.event.pull_request.labels.*.name, 'test-all') ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Get PR details
-        uses: xt0rted/pull-request-comment-branch@v2
-        id: comment-branch
-      - name: Set commit status as pending
-        uses: myrotvorets/set-commit-status-action@master
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: pending
-          context: Test Nimbus and Nethermind
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Create .env file
         run: |
           cp default.env .env
@@ -63,11 +53,3 @@ jobs:
       - name: Test Nethermind
         run: |
           ./.github/check-service.sh execution
-      - name: Set final commit status
-        uses: myrotvorets/set-commit-status-action@master
-        if: always()
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
-          context: Test Nimbus and Nethermind
