@@ -34,8 +34,8 @@ services:
       - ${HOST_IP:-}${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
       - ${HOST_IP:-}${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
-      - CLOUDFLARE_EMAIL=${CF_EMAIL}
-      - CLOUDFLARE_DNS_API_TOKEN=${CF_API_TOKEN}
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+      - CF_ZONE_API_TOKEN=${CF_ZONE_API_TOKEN:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/letsencrypt
