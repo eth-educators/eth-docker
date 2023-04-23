@@ -9,9 +9,11 @@ on:
 
 jobs:
   test-lighthouse-geth:
-    if: contains(github.event.pull_request.labels.*.name, 'test-lighthouse-geth') ||
-        contains(github.event.pull_request.labels.*.name, 'test-all') ||
-        github.event_name == 'push'
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'test-lighthouse') ||
+      contains(github.event.pull_request.labels.*.name, 'test-reth') ||
+      contains(github.event.pull_request.labels.*.name, 'test-all') ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -2,30 +2,20 @@ name: Test Grafana
 run-name: Test Grafana
 
 on:
-  issue_comment:
-    types: [created, edited, deleted]
+  push:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
 
 jobs:
   test-grafana:
     if: |
-      github.event.issue.pull_request && (
-      contains(github.event.comment.body, '/test-grafana') ||
-      contains(github.event.comment.body, '/test-all') )
+      contains(github.event.pull_request.labels.*.name, 'test-grafana') ||
+      contains(github.event.pull_request.labels.*.name, 'test-all') ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Get PR details
-        uses: xt0rted/pull-request-comment-branch@v2
-        id: comment-branch
-      - name: Set commit status as pending
-        uses: myrotvorets/set-commit-status-action@master
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: pending
-          context: Test Grafana
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Create .env file
         run: |
           cp default.env .env
@@ -68,11 +58,3 @@ jobs:
       - name: Test Grafana
         run: |
           ./.github/check-service.sh grafana
-      - name: Set final commit status
-        uses: myrotvorets/set-commit-status-action@master
-        if: always()
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
-          context: Test Grafana
