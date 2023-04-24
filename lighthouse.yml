@@ -58,7 +58,13 @@ services:
       - ${CL_REST_PORT:-5052}
       - --network
       - ${NETWORK}
+      - --listen-address
+      - 0.0.0.0
+      - --listen-address
+      - "::"
       - --port
+      - ${CL_P2P_PORT:-9000}
+      - --port6
       - ${CL_P2P_PORT:-9000}
       - --target-peers
       - ${CL_MAX_PEER_COUNT:-80}
