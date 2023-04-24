@@ -43,15 +43,37 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     depends_on:
-      - cf-ddns
-  cf-ddns:
-    image: oznu/cloudflare-ddns:latest
+      - cf-ddns-v4
+      - cf-ddns-v6
+  cf-ddns-v4:
+    image: ghcr.io/joshuaavalon/cloudflare-ddns:3
     restart: "unless-stopped"
     environment:
-      - API_KEY=${CF_DNS_API_TOKEN}
-      - ZONE=${DOMAIN}
-      - SUBDOMAIN=${DDNS_SUBDOMAIN}
-      - PROXIED=${DDNS_PROXY}
+      - CF_DNS__LOG_LEVEL=${LOG_LEVEL:-info}
+      - CF_DNS__AUTH__SCOPED_TOKEN=${CF_DNS_API_TOKEN}
+      - CF_DNS__DOMAINS_0__ZONE_NAME=${DOMAIN}
+      - CF_DNS__DOMAINS_0__ZONE_ID=${CF_ZONE_ID:-}
+      - CF_DNS__DOMAINS_0__NAME=${DDNS_SUBDOMAIN}
+      - CF_DNS__DOMAINS_0__PROXIED=${DDNS_PROXY}
+      - CF_DNS__DOMAINS_0__CREATE=true
+      - CF_DNS__DOMAINS_0__TYPE=A
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+  cf-ddns-v6:
+    image: ghcr.io/joshuaavalon/cloudflare-ddns:3
+    restart: "unless-stopped"
+    environment:
+      - CF_DNS_CONFIG=
+      - CLOUDFLARE_CONFIG=
+      - CF_DNS__LOG_LEVEL=${LOG_LEVEL:-info}
+      - CF_DNS__AUTH__SCOPED_TOKEN=${CF_DNS_API_TOKEN}
+      - CF_DNS__DOMAINS_0__ZONE_NAME=${DOMAIN}
+      - CF_DNS__DOMAINS_0__ZONE_ID=${CF_ZONE_ID:-}
+      - CF_DNS__DOMAINS_0__NAME=${DDNS_SUBDOMAIN}
+      - CF_DNS__DOMAINS_0__PROXIED=${DDNS_PROXY}
+      - CF_DNS__DOMAINS_0__CREATE=true
+      - CF_DNS__DOMAINS_0__TYPE=AAAA
     volumes:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
