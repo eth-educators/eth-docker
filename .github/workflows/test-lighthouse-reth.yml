@@ -8,7 +8,7 @@ on:
     branches: [main]
 
 jobs:
-  test-lighthouse-geth:
+  test-lighthouse-reth:
     if: |
       contains(github.event.pull_request.labels.*.name, 'test-lighthouse') ||
       contains(github.event.pull_request.labels.*.name, 'test-reth') ||
