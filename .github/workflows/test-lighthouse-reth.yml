@@ -1,5 +1,5 @@
-name: Test Lighthouse and Geth
-run-name: Test Lighthouse and Geth
+name: Test Lighthouse and Reth
+run-name: Test Lighthouse and Reth
 
 on:
   push:
@@ -20,13 +20,13 @@ jobs:
       - name: Create .env file
         run: |
           cp default.env .env
-      - name: Set Lighthouse/Geth
+      - name: Set Lighthouse/Reth
         run: |
           source ./.github/helper.sh
-          COMPOSE_FILE=lighthouse.yml:geth.yml
+          COMPOSE_FILE=lighthouse.yml:reth.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Lighthouse/Geth
+      - name: Start Lighthouse/Reth
         run: |
           ./ethd up
       - name: Test Lighthouse CL
@@ -35,16 +35,16 @@ jobs:
       - name: Test Lighthouse VC
         run: |
           ./.github/check-service.sh validator
-      - name: Test Geth
+      - name: Test Reth
         run: |
           ./.github/check-service.sh execution
-      - name: Set Lighthouse/Geth w/ VC
+      - name: Set Lighthouse/Reth w/ VC
         run: |
           source ./.github/helper.sh
-          COMPOSE_FILE=lighthouse-cl-only.yml:lighthouse-vc-only.yml:geth.yml
+          COMPOSE_FILE=lighthouse-cl-only.yml:lighthouse-vc-only.yml:reth.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Lighthouse/Geth
+      - name: Start Lighthouse/Reth
         run: |
           ./ethd up
       - name: Test Lighthouse CL
@@ -53,6 +53,6 @@ jobs:
       - name: Test Lighthouse VC
         run: |
           ./.github/check-service.sh validator
-      - name: Test Geth
+      - name: Test Reth
         run: |
           ./.github/check-service.sh execution
