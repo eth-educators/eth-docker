@@ -84,6 +84,12 @@ case "$CLIENT" in
     __file='/etc/grafana/provisioning/dashboards/besu_dashboard.json'
     wget -qcO - "${__url}" | jq '.title = "besu_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
     ;;&
+  *reth* )
+    # reth_dashboard
+    __url='https://raw.githubusercontent.com/paradigmxyz/reth/main/etc/grafana/dashboards/overview.json'
+    __file='/etc/grafana/provisioning/dashboards/reth_dashboard.json'
+    wget -qcO - "${__url}" | jq '.title = "reth_dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
+    ;;&
   *nethermind* )
     # nethermind_dashboard
 #    __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/dashboards/nethermind.json'
