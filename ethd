@@ -1485,7 +1485,6 @@ query_network() {
     "goerli" "Görli (né Prater) Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" \
-    "zhejiang" "Zhejiang Testnet" \
     "sepolia" "Sepolia Testnet (permissioned validators)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
@@ -1511,8 +1510,6 @@ query_deployment() {
       "What kind of deployment do you want to run?" 11 80 3 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
-    elif [ "${NETWORK}" = "zhejiang" ] ; then
-      __deployment=node
     elif uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 4 \
@@ -1836,7 +1833,11 @@ query_coinbase() {
     FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
     while true; do
-        FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        if [ "${__deployment}" = rpc ]; then
+            FEE_RECIPIENT=$(whiptail --title "Configure fee recipient" --inputbox "What is the fallback fee recipient address? Yes even on an RPC node. Can be any address at all. (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        else
+            FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        fi
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
