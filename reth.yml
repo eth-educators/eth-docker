@@ -24,6 +24,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - RUST_LOG=${LOG_LEVEL:-info}
     volumes:
       - reth-el-data:/var/lib/reth
       - /etc/localtime:/etc/localtime:ro
