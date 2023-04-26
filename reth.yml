@@ -24,6 +24,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Make this RUST_LOG=${LOG_LEVEL:-info},engine=trace when requiring deep debug
       - RUST_LOG=${LOG_LEVEL:-info}
     volumes:
       - reth-el-data:/var/lib/reth
