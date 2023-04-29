@@ -155,6 +155,7 @@ check_for_snap() {
 
 install() {
     check_for_snap
+    set -e
     read -rp "This will attempt to install docker and make your user part of the docker group. Do you wish to continue? (no/yes) " yn
     case $yn in
         [Yy]* ) ;;
@@ -242,6 +243,7 @@ install() {
         echo "Go ahead and 'source ~/.profile' or log out and back in."
         echo "After that, you can use the command 'ethd'."
     fi
+    set +e
     return 0
 }
 
