@@ -14,12 +14,12 @@ services:
       context: ./traefik
     restart: "unless-stopped"
     command:
-#      - --log.level=DEBUG
 #      - --accesslog=true
 #      - --accesslog.format=json
 #      - --accesslog.fields.defaultmode=keep
 #      - --accesslog.fields.headers.defaultmode=keep
 #      - --certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --log.level=${LOG_LEVEL:-info}
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
@@ -43,6 +43,10 @@ services:
       - certs:/letsencrypt
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8080
     <<: *logging
 volumes:
   certs:
