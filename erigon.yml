@@ -55,6 +55,8 @@ services:
       - ${EL_P2P_PORT:-30303},${ERIGON_P2P_PORT_2:-30304},${ERIGON_P2P_PORT_3:-30305}
       - --torrent.port
       - ${ERIGON_TORRENT_PORT:-42069}
+      - --torrent.download.rate
+      - 500mb
       - --nat
       - any
       - --chain
