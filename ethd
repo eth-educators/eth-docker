@@ -117,7 +117,7 @@ upgrade_compose() {
 prep_prometheus() {
 # Create custom-prom.yml if it doesn't exist
     if [ ! -f "./prometheus/custom-prom.yml" ]; then
-        $__as_owner touch "./prometheus/custom-prom.yml"
+        ${__as_owner} touch "./prometheus/custom-prom.yml"
     fi
 }
 
@@ -412,8 +412,8 @@ update() {
 
     echo
     if ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
-        cp "${ENV_FILE}".source "${ENV_FILE}".bak
-        rm "${ENV_FILE}".source
+        ${__as_owner} cp "${ENV_FILE}".source "${ENV_FILE}".bak
+        ${__as_owner} rm "${ENV_FILE}".source
         echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${ENV_FILE}.bak."
         if [ $__keeptargets = "0" ]; then
@@ -435,7 +435,7 @@ reset to defaults."
         fi
     else
         echo "No changes made to ${ENV_FILE} during update"
-        rm "${ENV_FILE}".source
+        ${__as_owner} rm "${ENV_FILE}".source
     fi
     if [ "$__el_infura" -eq 1 ]; then
         echo
@@ -557,18 +557,15 @@ envmigrate() {
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
       if [ -f ./"${ENV_FILE}".bak ]; then
-          rm "${ENV_FILE}".bak
+          ${__as_owner} rm "${ENV_FILE}".bak
       fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".source
-      sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-    else
-      cp "${ENV_FILE}" "${ENV_FILE}".source
-      cp default.env "${ENV_FILE}"
     fi
+    ${__as_owner} cp "${ENV_FILE}" "${ENV_FILE}".source
+    ${__as_owner} cp default.env "${ENV_FILE}"
     # Detect pre-merge
     if grep -q "FALLBACK_NODE1" ".env.source"; then
       __pre_merge=1
-      cp .env.source .env.premerge
+      ${__as_owner} cp .env.source .env.premerge
     else
       __pre_merge=0
     fi
@@ -630,7 +627,7 @@ envmigrate() {
     var="DISTRIBUTED"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
-        rm .env.original
+        ${__as_owner} rm .env.original
         return
     fi
     # Check for CL and EL, nag if we have only one without the other
@@ -668,7 +665,7 @@ envmigrate() {
        set_value_in_env
        __el_adjusted=1
     fi
-    rm .env.original
+    ${__as_owner} rm .env.original
 }
 
 migrate_compose_file() {
@@ -1149,12 +1146,12 @@ prep-keyimport() {
                 # Unset restores default
                 unset IFS
                 if [ -n "$files" ]; then
-                    mkdir -p ./.eth/validator_keys/keybackup
-                    mv -uf ./.eth/validator_keys/*.json ./.eth/validator_keys/keybackup
-                    rm -f ./.eth/validator_keys/*.json
+                    ${__as_owner} mkdir -p ./.eth/validator_keys/keybackup
+                    ${__as_owner} mv -uf ./.eth/validator_keys/*.json ./.eth/validator_keys/keybackup
+                    ${__as_owner} rm -f ./.eth/validator_keys/*.json
                     echo "Moved existing json files to .eth/validator_keys/keybackup"
                 fi
-                cp "$2"/*.json .eth/validator_keys/
+                ${__as_owner} cp "$2"/*.json .eth/validator_keys/
                 shift 2
                 ;;
             --non-interactive)
@@ -1288,18 +1285,18 @@ keys() {
         | cut -d : -f 2,3 \
         | tr -d \" \
         | wget -qi- -O- \
-        | tar zxf - -C ./.eth/ethdo/ \
+        | ${__as_owner} tar zxf - -C ./.eth/ethdo/ \
         || echo "-> Could not download the latest version of '${REPO}' for amd64."
-        mkdir -p ./.eth/ethdo/arm64
+        ${__as_owner} mkdir -p ./.eth/ethdo/arm64
         wget -q -O- https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-arm64.tar.gz" \
         | head -1 \
         | cut -d : -f 2,3 \
         | tr -d \" \
         | wget -qi- -O- \
-        | tar zxf - -C ./.eth/ethdo/arm64 \
+        | ${__as_owner} tar zxf - -C ./.eth/ethdo/arm64 \
         || echo "-> Could not download the latest version of '${REPO}' for arm64."
-        mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
-        rm -rf ./.eth/ethdo/arm64
+        ${__as_owner} mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
+        ${__as_owner} rm -rf ./.eth/ethdo/arm64
         echo
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
         echo "Please see https://eth-docker.net/Support/ChangingWithdrawalCredentials for details"
@@ -1958,11 +1955,7 @@ config() {
 
         echo "Your configuration file template is:" "${ENV_TEMPLATE}"
 
-        if [ "${EUID}" -eq 0 ]; then
-          sudo -u "${OWNER}" cp "${ENV_TEMPLATE}" "${ENV_FILE}"
-        else
-          cp "${ENV_TEMPLATE}" "${ENV_FILE}"
-        fi
+        ${__as_owner} cp "${ENV_TEMPLATE}" "${ENV_FILE}"
         __minty_fresh=1
     else
         __minty_fresh=0
@@ -1979,7 +1972,7 @@ config() {
         ;;
       "blox")
         if [ ! -f "./blox-ssv-config.yaml" ]; then
-            cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
+            ${__as_owner} cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
         fi
         query_consensus_only_client
         ;;
