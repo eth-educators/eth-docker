@@ -38,8 +38,8 @@ fi
 
 if [[ ! -f /var/lib/nethermind/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
-  __secret1=$(echo $RANDOM | md5sum | head -c 32)
-  __secret2=$(echo $RANDOM | md5sum | head -c 32)
+  __secret1=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
+  __secret2=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
   echo -n "${__secret1}""${__secret2}" > /var/lib/nethermind/ee-secret/jwtsecret
 fi
 

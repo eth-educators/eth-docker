@@ -14,7 +14,7 @@ if [ -f /var/lib/teku/teku-keyapi.keystore ]; then
 fi
 
 if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
-    __password=$(echo $RANDOM | md5sum | head -c 32)
+    __password=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     echo "$__password" > /var/lib/teku/teku-keyapi.password
     openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes -keyout /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.crt -subj '/CN=teku-keyapi-cert' -extensions san -config <( \
       echo '[req]'; \
