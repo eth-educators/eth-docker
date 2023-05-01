@@ -1106,6 +1106,16 @@ prep-keyimport() {
         exit 1
     fi
 
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+    if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "lighthouse.yml" ]] && [[ ! "${value}" =~ "teku.yml" ]] \
+       && [[ ! "${value}" =~ "nimbus.yml" ]] && [[ ! "${value}" =~ "lodestar.yml" ]] && [[ ! "${value}" =~ "vc-only.yml" ]]; then
+        echo "You do not appear to be running a validator client. Aborting."
+        exit 1
+    fi
+
     __prysm=0
     __path=''
     __non_interactive=0
@@ -1262,6 +1272,14 @@ keys() {
             docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import
         fi
     elif [ "${1:-}" = "create-prysm-wallet" ]; then
+        var="COMPOSE_FILE"
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+        if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "prysm-vc-only.yml" ]]; then
+            echo "You do not appear to be using a Prysm validator. Aborting."
+            exit 1
+        fi
         if docompose run --rm create-wallet; then
             docompose stop validator
             docompose rm --force validator
