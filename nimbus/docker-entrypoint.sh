@@ -12,7 +12,7 @@ if [ -f /var/lib/nimbus/api-token.txt ] && [ "$(date +%s -r /var/lib/nimbus/api-
 fi
 
 if [ ! -f /var/lib/nimbus/api-token.txt ]; then
-    __token=api-token-0x$(head -c 4 /dev/urandom | od -A n -t u4 | tr -d '[:space:]' | md5sum | head -c 32)$(head -c 4 /dev/urandom | od -A n -t u4 | tr -d '[:space:]' | md5sum | head -c 32)
+    __token=api-token-0x$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     echo "$__token" > /var/lib/nimbus/api-token.txt
 fi
 
