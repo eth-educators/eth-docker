@@ -13,8 +13,8 @@ fi
 
 if [[ ! -f /var/lib/besu/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
-  __secret1=$(echo $RANDOM | md5sum | head -c 32)
-  __secret2=$(echo $RANDOM | md5sum | head -c 32)
+  __secret1=$(head -c 4 /dev/urandom | od -A n -t u4 | tr -d '[:space:]' | md5sum | head -c 32)
+  __secret2=$(head -c 4 /dev/urandom | od -A n -t u4 | tr -d '[:space:]' | md5sum | head -c 32)
   echo -n "${__secret1}""${__secret2}" > /var/lib/besu/ee-secret/jwtsecret
 fi
 
