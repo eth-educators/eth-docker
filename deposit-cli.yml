@@ -20,6 +20,10 @@ services:
   deposit-cli-existing:
     profiles: ["tools"]
     restart: "no"
+    build:
+      context: ./staking-deposit-cli
+      args:
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
     image: staking-deposit-cli:local
     volumes:
       - ./.eth:/app/.eth/
@@ -32,6 +36,10 @@ services:
       - ${NETWORK}
   deposit-cli-change:
     profiles: ["tools"]
+    build:
+      context: ./staking-deposit-cli
+      args:
+        - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET}
     restart: "no"
     image: staking-deposit-cli:local
     volumes:
