@@ -591,7 +591,8 @@ envmigrate() {
             if [[ "${var}" = "HOST_IP" && "${value: -1}" != ":" ]]; then
                 value="${value}:" # ComposeV1 requires this so I can do v6
             fi
-            sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+            # Handle & in GRAFFITI gracefully
+            sed -i'.original' -E "s~^(${var}\s*=).*~\1$(printf '%s\n' "${value}" | sed 's/[&\\/]/\\&/g')~" "${ENV_FILE}"
         fi
     done
     if [ $__keeptargets = "1" ]; then
@@ -647,12 +648,12 @@ envmigrate() {
 # shellcheck disable=SC2076
     if [[ "${value}" =~ "prysm.yml" || "${value}" =~ "lighthouse.yml" || "${value}" =~ "teku.yml" || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || "${value}" =~ "-cl-only.yml" ]]; then
         if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nethermind.yml"  && ! "${value}" =~ "nimbus-el.yml" && ! "${value}" =~ "reth.yml" ]]; then
-            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, as Infura will no longer be usable as an EL after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client since Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
         fi
     # Case 2 ... EL, do we have a CL?
     elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nethermind.yml" || "${value}" =~ "nimbus-el.yml" || "${value}" =~ "reth.yml" ]]; then
         if [[ ! "${value}" =~ "prysm.yml"  && ! "${value}" =~ "lighthouse.yml"  && ! "${value}" =~ "teku.yml"  && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
-            whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+            whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client since Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
         fi
     fi
     # Adjust EL_NODE as needed
