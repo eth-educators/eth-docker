@@ -592,7 +592,7 @@ envmigrate() {
                 value="${value}:" # ComposeV1 requires this so I can do v6
             fi
             # Handle & in GRAFFITI gracefully
-            sed -i'.original' -E "s~^(${var}\s*=).*~\1$(printf '%s\n' "${value}" | sed 's/[&\\/]/\\&/g')~" "${ENV_FILE}"
+            sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
         fi
     done
     if [ $__keeptargets = "1" ]; then
