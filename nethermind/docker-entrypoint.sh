@@ -61,12 +61,10 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
     __memhint="--Init.MemoryHint=1024000000"
   fi
 else
-#  __parallel=$(($(nproc)/4))
-#  if [ "${__parallel}" -lt 2 ]; then
-#    __parallel=2
-#  fi
-# 3 was too heavy for sync committee.
-  __parallel=2
+  __parallel=$(($(nproc)/4))
+  if [ "${__parallel}" -lt 2 ]; then
+    __parallel=2
+  fi
   __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
@@ -75,7 +73,10 @@ else
   echo "${__prune}"
   if [ "${__memtotal}" -gt 62 ]; then
     __memhint=""
+  elif [ "${__memtotal}" -gt 30 ]; then
+    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"
   else
+    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=4096"
     __memhint="--Init.MemoryHint=1024000000"
   fi
 fi
