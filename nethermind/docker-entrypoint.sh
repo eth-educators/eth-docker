@@ -75,6 +75,7 @@ else
     __memhint=""
   elif [ "${__memtotal}" -gt 30 ]; then
     __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"
+    __memhint=""
   else
     __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=4096"
     __memhint="--Init.MemoryHint=1024000000"
