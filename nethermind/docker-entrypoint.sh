@@ -69,8 +69,6 @@ else
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
   fi
-  echo "Using pruning parameters:"
-  echo "${__prune}"
   if [ "${__memtotal}" -gt 62 ]; then
     __memhint=""
   elif [ "${__memtotal}" -gt 30 ]; then
@@ -80,6 +78,8 @@ else
     __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=4096"
     __memhint="--Init.MemoryHint=1024000000"
   fi
+  echo "Using pruning parameters:"
+  echo "${__prune}"
 fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
