@@ -67,7 +67,7 @@ else
 #  fi
 # 3 was too heavy for sync committee.
   __parallel=2
-  __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel} --Pruning.Mode=Full"
+  __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
   fi
