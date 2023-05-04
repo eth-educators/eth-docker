@@ -279,7 +279,7 @@ check_disk_space() {
         echo ""
         echo "You are running Nethermind and have less than 300 GiB of free disk space."
         if [ "${auto_prune}" = true ]; then
-          echo "It should currently be auto-pruning, check logs. Free space:"
+          echo "It should currently be auto-pruning, check logs with \"./ethd logs -f --tail 500 execution | grep Full\". Free space:"
         else
           echo "If the below reads above 250 GiB free, prune it with \"./ethd prune-nethermind\""
         fi
@@ -1069,7 +1069,7 @@ prune-nethermind() {
     if [ $__non_interactive = 0 ]; then
       while true; do
           if [ "${auto_prune}" = true ]; then
-              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 50 execution\" to see whether it is."
+              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 500 execution | grep Full\" to see whether it is."
           fi
           read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
           case $yn in
