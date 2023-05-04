@@ -1097,7 +1097,7 @@ prune-nethermind() {
         exit 1
     fi
     echo ""
-    echo "Prune is running, you can observe it with './ethd logs -f --tail 50 execution'"
+    echo "Prune is running, you can observe it with \"./ethd logs -f --tail 500 execution | grep Full\""
     echo ""
     echo "Please do not restart the node or restart Nethermind until prune is done."
     echo ""
