@@ -1068,7 +1068,7 @@ prune-nethermind() {
 
     if [ $__non_interactive = 0 ]; then
       while true; do
-          if [ ! "${auto_prune}" = true ]; then
+          if [ "${auto_prune}" = true ]; then
               echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 50 execution\" to see whether it is."
           fi
           read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
