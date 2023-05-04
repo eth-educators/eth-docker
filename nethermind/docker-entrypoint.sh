@@ -69,13 +69,13 @@ else
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
   fi
-  if [ "${__memtotal}" -gt 62 ]; then
-    __memhint=""
-  elif [ "${__memtotal}" -gt 30 ]; then
+  if [ "${__memtotal}" -gt 30 ]; then
     __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"
     __memhint=""
-  else
+  elif [ "${__memtotal}" -gt 14 ]; then
     __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=4096"
+    __memhint="--Init.MemoryHint=1024000000"
+  else
     __memhint="--Init.MemoryHint=1024000000"
   fi
   echo "Using pruning parameters:"
