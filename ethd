@@ -308,6 +308,108 @@ check_disk_space() {
     fi
 }
 
+source_build() {
+# Check whether there's a source-built client and if so, force it with --no-cache
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
+    case "${value}" in
+        *deposit-cli.yml* )
+            docompose --profile tools build --pull --no-cache deposit-cli-new
+            ;;
+    esac
+    case "${value}" in
+        *mev-boost.yml* )
+            var="MEV_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache mev-boost
+            fi
+            ;;
+    esac
+    case "${value}" in
+        *reth.yml* )
+            var="RETH_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *geth.yml* )
+            var="GETH_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *besu.yml* )
+            var="BESU_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *nethermind.yml* )
+            var="NM_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *erigon.yml* )
+            var="ERIGON_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *nimbus-el.yml* )
+            var="NIMEL_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+    esac
+    case "${value}" in
+        *lighthouse.yml* | *lighthouse-cl-only.yml* )
+            var="LH_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *teku.yml* | *teku-cl-only.yml* )
+            var="TEKU_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *lodestar.yml* | *lodestar-cl-only.yml* )
+            var="LS_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *nimbus.yml* | *nimbus-cl-only.yml* )
+            var="NIM_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *prysm.yml* | *prysm-cl-only.yml* )
+            var="PRYSM_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+    esac
+}
+
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
@@ -405,18 +507,12 @@ update() {
     fi
 
     dodocker system prune --force
-#    exec 3>&1
-#    exec 4>&2
-#    exec 1> /dev/null
-#    exec 2> /dev/null
     if [ ${__old_compose} -eq 1 ]; then
       docompose --profile tools pull --ignore-pull-failures || true
     else
       docompose --profile tools pull --ignore-buildable
     fi
-#    docompose --profile tools pull
-#    exec 1>&3
-#    exec 2>&4
+    source_build
     docompose --profile tools build --pull
 
     echo
