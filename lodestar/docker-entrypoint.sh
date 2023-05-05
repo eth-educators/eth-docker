@@ -7,7 +7,7 @@ fi
 
 # Remove old low-entropy token, related to Sigma Prime security audit
 # This detection isn't perfect - a user could recreate the token without ./ethd update
-if [ -f /var/lib/lodestar/consensus/api-token.txt ] && [ "$(date +%s -r /var/lib/nimbus/api-token.txt)" -lt "$(date +%s --date="2023-05-02 09:00:00")" ]; then
+if [[ -f /var/lib/lodestar/consensus/api-token.txt  && "$(date +%s -r /var/lib/nimbus/api-token.txt)" -lt "$(date +%s --date="2023-05-02 09:00:00")" ]]; then
     rm /var/lib/lodestar/consensus/api-token.txt
 fi
 

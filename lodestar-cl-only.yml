@@ -53,6 +53,7 @@ services:
       - ${CL_REST_PORT:-5052}
       - --port
       - ${CL_P2P_PORT:-9000}
+      - --nat
       - --metrics
       - "true"
       - --metrics.port
