@@ -5,8 +5,14 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu user docker-entrypoint-vc.sh "$@"
 fi
 
+# Remove old low-entropy token, related to Sigma Prime security audit
+# This detection isn't perfect - a user could recreate the token without ./ethd update
+if [[ -f /var/lib/nimbus/api-token.txt && "$(date +%s -r /var/lib/nimbus/api-token.txt)" -lt "$(date +%s --date="2023-05-02 09:00:00")" ]]; then
+    rm /var/lib/nimbus/api-token.txt
+fi
+
 if [ ! -f /var/lib/nimbus/api-token.txt ]; then
-    __token=api-token-0x$(echo $RANDOM | md5sum | head -c 32)$(echo $RANDOM | md5sum | head -c 32)
+    __token=api-token-0x$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     echo "$__token" > /var/lib/nimbus/api-token.txt
 fi
 

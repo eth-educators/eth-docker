@@ -38,8 +38,8 @@ fi
 
 if [[ ! -f /var/lib/nethermind/ee-secret/jwtsecret ]]; then
   echo "Generating JWT secret"
-  __secret1=$(echo $RANDOM | md5sum | head -c 32)
-  __secret2=$(echo $RANDOM | md5sum | head -c 32)
+  __secret1=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
+  __secret2=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
   echo -n "${__secret1}""${__secret2}" > /var/lib/nethermind/ee-secret/jwtsecret
 fi
 
@@ -65,17 +65,21 @@ else
   if [ "${__parallel}" -lt 2 ]; then
     __parallel=2
   fi
-  __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel} --Pruning.Mode=Full"
+  __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
   fi
-  echo "Using pruning parameters:"
-  echo "${__prune}"
-  if [ "${__memtotal}" -gt 62 ]; then
+  if [ "${__memtotal}" -gt 30 ]; then
+    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"
     __memhint=""
+  elif [ "${__memtotal}" -gt 14 ]; then
+    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=4096"
+    __memhint="--Init.MemoryHint=1024000000"
   else
     __memhint="--Init.MemoryHint=1024000000"
   fi
+  echo "Using pruning parameters:"
+  echo "${__prune}"
 fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086

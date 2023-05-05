@@ -36,6 +36,15 @@ determine_distro() {
 }
 
 determine_sudo() {
+    systemctl status docker >/dev/null
+    result=$?
+    if [ ! "${result}" -eq 0 ]; then
+        echo "The docker daemon is not running. Please check docker installation."
+        echo "\"sudo systemctl status docker\" and \"sudo journalctl -fu docker\" will be helpful."
+        echo "Aborting."
+        exit 1
+    fi
+
     __maybe_sudo=""
     if ! docker images >/dev/null 2>&1; then
         echo "Will use sudo to access docker"
@@ -117,7 +126,7 @@ upgrade_compose() {
 prep_prometheus() {
 # Create custom-prom.yml if it doesn't exist
     if [ ! -f "./prometheus/custom-prom.yml" ]; then
-        $__as_owner touch "./prometheus/custom-prom.yml"
+        ${__as_owner} touch "./prometheus/custom-prom.yml"
     fi
 }
 
@@ -155,6 +164,7 @@ check_for_snap() {
 
 install() {
     check_for_snap
+    set -e
     read -rp "This will attempt to install docker and make your user part of the docker group. Do you wish to continue? (no/yes) " yn
     case $yn in
         [Yy]* ) ;;
@@ -242,6 +252,7 @@ install() {
         echo "Go ahead and 'source ~/.profile' or log out and back in."
         echo "After that, you can use the command 'ethd'."
     fi
+    set +e
     return 0
 }
 
@@ -268,7 +279,7 @@ check_disk_space() {
         echo ""
         echo "You are running Nethermind and have less than 300 GiB of free disk space."
         if [ "${auto_prune}" = true ]; then
-          echo "It should currently be auto-pruning, check logs. Free space:"
+          echo "It should currently be auto-pruning, check logs with \"./ethd logs -f --tail 500 execution | grep Full\". Free space:"
         else
           echo "If the below reads above 250 GiB free, prune it with \"./ethd prune-nethermind\""
         fi
@@ -295,6 +306,108 @@ check_disk_space() {
         echo "If total space is less than 1.5 TiB, consider cloning to a larger drive."
         echo ""
     fi
+}
+
+source_build() {
+# Check whether there's a source-built client and if so, force it with --no-cache
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
+    case "${value}" in
+        *deposit-cli.yml* )
+            docompose --profile tools build --pull --no-cache deposit-cli-new
+            ;;
+    esac
+    case "${value}" in
+        *mev-boost.yml* )
+            var="MEV_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache mev-boost
+            fi
+            ;;
+    esac
+    case "${value}" in
+        *reth.yml* )
+            var="RETH_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *geth.yml* )
+            var="GETH_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *besu.yml* )
+            var="BESU_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *nethermind.yml* )
+            var="NM_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *erigon.yml* )
+            var="ERIGON_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+        *nimbus-el.yml* )
+            var="NIMEL_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache execution
+            fi
+            ;;
+    esac
+    case "${value}" in
+        *lighthouse.yml* | *lighthouse-cl-only.yml* )
+            var="LH_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *teku.yml* | *teku-cl-only.yml* )
+            var="TEKU_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *lodestar.yml* | *lodestar-cl-only.yml* )
+            var="LS_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *nimbus.yml* | *nimbus-cl-only.yml* )
+            var="NIM_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+        *prysm.yml* | *prysm-cl-only.yml* )
+            var="PRYSM_DOCKERFILE"
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            if [ "${build}" = "Dockerfile.source" ]; then
+                docompose build --pull --no-cache consensus
+            fi
+            ;;
+    esac
 }
 
 # Arguments are passed, but shellcheck doesn't recognize that
@@ -394,24 +507,18 @@ update() {
     fi
 
     dodocker system prune --force
-#    exec 3>&1
-#    exec 4>&2
-#    exec 1> /dev/null
-#    exec 2> /dev/null
     if [ ${__old_compose} -eq 1 ]; then
       docompose --profile tools pull --ignore-pull-failures || true
     else
       docompose --profile tools pull --ignore-buildable
     fi
-#    docompose --profile tools pull
-#    exec 1>&3
-#    exec 2>&4
+    source_build
     docompose --profile tools build --pull
 
     echo
     if ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
-        cp "${ENV_FILE}".source "${ENV_FILE}".bak
-        rm "${ENV_FILE}".source
+        ${__as_owner} cp "${ENV_FILE}".source "${ENV_FILE}".bak
+        ${__as_owner} rm "${ENV_FILE}".source
         echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${ENV_FILE}.bak."
         if [ $__keeptargets = "0" ]; then
@@ -433,7 +540,7 @@ reset to defaults."
         fi
     else
         echo "No changes made to ${ENV_FILE} during update"
-        rm "${ENV_FILE}".source
+        ${__as_owner} rm "${ENV_FILE}".source
     fi
     if [ "$__el_infura" -eq 1 ]; then
         echo
@@ -533,7 +640,7 @@ envmigrate() {
 
     ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID MEV_NODE \
             CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL AUTOPRUNE_NM \
-            CF_DNS_API_TOKEN CF_ZONE_API_TOKEN AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP \
+            CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP \
             PROM_HOST HOST_IP PRYSM_HOST EE_HOST EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN \
             DDNS_PROXY RAPID_SYNC_URL CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT \
             PRYSM_PORT DOPPELGANGER PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
@@ -555,18 +662,15 @@ envmigrate() {
     if [ "${EUID}" -eq 0 ]; then
       # Previous version of this tool when run as root may have created a root-owned .env.bak
       if [ -f ./"${ENV_FILE}".bak ]; then
-          rm "${ENV_FILE}".bak
+          ${__as_owner} rm "${ENV_FILE}".bak
       fi
-      sudo -u "${OWNER}" cp "${ENV_FILE}" "${ENV_FILE}".source
-      sudo -u "${OWNER}" cp default.env "${ENV_FILE}"
-    else
-      cp "${ENV_FILE}" "${ENV_FILE}".source
-      cp default.env "${ENV_FILE}"
     fi
+    ${__as_owner} cp "${ENV_FILE}" "${ENV_FILE}".source
+    ${__as_owner} cp default.env "${ENV_FILE}"
     # Detect pre-merge
     if grep -q "FALLBACK_NODE1" ".env.source"; then
       __pre_merge=1
-      cp .env.source .env.premerge
+      ${__as_owner} cp .env.source .env.premerge
     else
       __pre_merge=0
     fi
@@ -583,7 +687,8 @@ envmigrate() {
             if [[ "${var}" = "HOST_IP" && "${value: -1}" != ":" ]]; then
                 value="${value}:" # ComposeV1 requires this so I can do v6
             fi
-            sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
+            # Handle & in GRAFFITI gracefully
+            sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
         fi
     done
     if [ $__keeptargets = "1" ]; then
@@ -628,7 +733,7 @@ envmigrate() {
     var="DISTRIBUTED"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
-        rm .env.original
+        ${__as_owner} rm .env.original
         return
     fi
     # Check for CL and EL, nag if we have only one without the other
@@ -639,12 +744,12 @@ envmigrate() {
 # shellcheck disable=SC2076
     if [[ "${value}" =~ "prysm.yml" || "${value}" =~ "lighthouse.yml" || "${value}" =~ "teku.yml" || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || "${value}" =~ "-cl-only.yml" ]]; then
         if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" && ! "${value}" =~ "nethermind.yml"  && ! "${value}" =~ "nimbus-el.yml" && ! "${value}" =~ "reth.yml" ]]; then
-            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own EL soonest, as Infura will no longer be usable as an EL after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+            whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client since Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
         fi
     # Case 2 ... EL, do we have a CL?
     elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" || "${value}" =~ "nethermind.yml" || "${value}" =~ "nimbus-el.yml" || "${value}" =~ "reth.yml" ]]; then
         if [[ ! "${value}" =~ "prysm.yml"  && ! "${value}" =~ "lighthouse.yml"  && ! "${value}" =~ "teku.yml"  && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
-            whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client come Ethereum Merge. Refer to eth-docker docs (https://eth-docker.net/docs/About/MergePrep) for more information.\n\nPlease start running your own CL soonest, as an EL alone will no longer be usable after The Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
+            whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client since Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in .env" 16 75
         fi
     fi
     # Adjust EL_NODE as needed
@@ -666,14 +771,14 @@ envmigrate() {
        set_value_in_env
        __el_adjusted=1
     fi
-    rm .env.original
+    ${__as_owner} rm .env.original
 }
 
 migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
@@ -1059,8 +1164,8 @@ prune-nethermind() {
 
     if [ $__non_interactive = 0 ]; then
       while true; do
-          if [ ! "${auto_prune}" = true ]; then
-              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 50 execution\" to see whether it is."
+          if [ "${auto_prune}" = true ]; then
+              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 500 execution | grep Full\" to see whether it is."
           fi
           read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
           case $yn in
@@ -1088,7 +1193,7 @@ prune-nethermind() {
         exit 1
     fi
     echo ""
-    echo "Prune is running, you can observe it with './ethd logs -f --tail 50 execution'"
+    echo "Prune is running, you can observe it with \"./ethd logs -f --tail 500 execution | grep Full\""
     echo ""
     echo "Please do not restart the node or restart Nethermind until prune is done."
     echo ""
@@ -1104,6 +1209,16 @@ prep-keyimport() {
     fi
     if grep -q '^COMPOSE_FILE=.*cl-only\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "eth-docker is configured to run consensus client only, key import not possible"
+        exit 1
+    fi
+
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+    if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "lighthouse.yml" ]] && [[ ! "${value}" =~ "teku.yml" ]] \
+       && [[ ! "${value}" =~ "nimbus.yml" ]] && [[ ! "${value}" =~ "lodestar.yml" ]] && [[ ! "${value}" =~ "vc-only.yml" ]]; then
+        echo "You do not appear to be running a validator client. Aborting."
         exit 1
     fi
 
@@ -1147,12 +1262,12 @@ prep-keyimport() {
                 # Unset restores default
                 unset IFS
                 if [ -n "$files" ]; then
-                    mkdir -p ./.eth/validator_keys/keybackup
-                    mv -uf ./.eth/validator_keys/*.json ./.eth/validator_keys/keybackup
-                    rm -f ./.eth/validator_keys/*.json
+                    ${__as_owner} mkdir -p ./.eth/validator_keys/keybackup
+                    ${__as_owner} mv -uf ./.eth/validator_keys/*.json ./.eth/validator_keys/keybackup
+                    ${__as_owner} rm -f ./.eth/validator_keys/*.json
                     echo "Moved existing json files to .eth/validator_keys/keybackup"
                 fi
-                cp "$2"/*.json .eth/validator_keys/
+                ${__as_owner} cp "$2"/*.json .eth/validator_keys/
                 shift 2
                 ;;
             --non-interactive)
@@ -1263,6 +1378,14 @@ keys() {
             docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import
         fi
     elif [ "${1:-}" = "create-prysm-wallet" ]; then
+        var="COMPOSE_FILE"
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+        if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "prysm-vc-only.yml" ]]; then
+            echo "You do not appear to be using a Prysm validator. Aborting."
+            exit 1
+        fi
         if docompose run --rm create-wallet; then
             docompose stop validator
             docompose rm --force validator
@@ -1286,18 +1409,18 @@ keys() {
         | cut -d : -f 2,3 \
         | tr -d \" \
         | wget -qi- -O- \
-        | tar zxf - -C ./.eth/ethdo/ \
+        | ${__as_owner} tar zxf - -C ./.eth/ethdo/ \
         || echo "-> Could not download the latest version of '${REPO}' for amd64."
-        mkdir -p ./.eth/ethdo/arm64
+        ${__as_owner} mkdir -p ./.eth/ethdo/arm64
         wget -q -O- https://api.github.com/repos/${REPO}/releases/latest | grep "browser_download_url.*linux-arm64.tar.gz" \
         | head -1 \
         | cut -d : -f 2,3 \
         | tr -d \" \
         | wget -qi- -O- \
-        | tar zxf - -C ./.eth/ethdo/arm64 \
+        | ${__as_owner} tar zxf - -C ./.eth/ethdo/arm64 \
         || echo "-> Could not download the latest version of '${REPO}' for arm64."
-        mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
-        rm -rf ./.eth/ethdo/arm64
+        ${__as_owner} mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
+        ${__as_owner} rm -rf ./.eth/ethdo/arm64
         echo
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
         echo "Please see https://eth-docker.net/Support/ChangingWithdrawalCredentials for details"
@@ -1485,7 +1608,6 @@ query_network() {
     "goerli" "Görli (né Prater) Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" \
-    "zhejiang" "Zhejiang Testnet" \
     "sepolia" "Sepolia Testnet (permissioned validators)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
@@ -1511,8 +1633,6 @@ query_deployment() {
       "What kind of deployment do you want to run?" 11 80 3 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
-    elif [ "${NETWORK}" = "zhejiang" ] ; then
-      __deployment=node
     elif uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 4 \
@@ -1550,12 +1670,14 @@ query_validator_client() {
           "Which validator client do you want to run?" 9 65 3 \
           "lighthouse-vc-only.yml" "Lighthouse validator client" \
           "teku-vc-only.yml" "Teku validator client" \
+          "lodestar-vc-only.yml" "Lodestar validator client" \
           "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
         else
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
           "Which validator client do you want to run?" 9 65 3 \
           "teku-vc-only.yml" "Teku validator client" \
           "lighthouse-vc-only.yml" "Lighthouse validator client" \
+          "lodestar-vc-only.yml" "Lodestar validator client" \
           "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
         fi
     elif uname -a | grep -q aarch64; then
@@ -1563,6 +1685,7 @@ query_validator_client() {
       "Which validator client do you want to run?" 9 65 3 \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
       "teku-vc-only.yml" "Teku validator client" \
+      "lodestar-vc-only.yml" "Lodestar validator client" \
       "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
@@ -1836,7 +1959,11 @@ query_coinbase() {
     FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
     while true; do
-        FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        if [ "${__deployment}" = rpc ]; then
+            FEE_RECIPIENT=$(whiptail --title "Configure fee recipient" --inputbox "What is the fallback fee recipient address? Yes even on an RPC node. Can be any address at all. (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        else
+            FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
+        fi
 
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
@@ -1952,11 +2079,7 @@ config() {
 
         echo "Your configuration file template is:" "${ENV_TEMPLATE}"
 
-        if [ "${EUID}" -eq 0 ]; then
-          sudo -u "${OWNER}" cp "${ENV_TEMPLATE}" "${ENV_FILE}"
-        else
-          cp "${ENV_TEMPLATE}" "${ENV_FILE}"
-        fi
+        ${__as_owner} cp "${ENV_TEMPLATE}" "${ENV_FILE}"
         __minty_fresh=1
     else
         __minty_fresh=0
@@ -1973,7 +2096,7 @@ config() {
         ;;
       "blox")
         if [ ! -f "./blox-ssv-config.yaml" ]; then
-            cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
+            ${__as_owner} cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
         fi
         query_consensus_only_client
         ;;
@@ -2212,9 +2335,10 @@ printhelp() {
     echo "  $me logs -f --tail 50 execution"
     echo "    shows logs only for execution service"
     echo ""
-    echo ""
-    echo "Be sure to run the config command as a non-root user"
     echo "$me will attempt to use sudo as needed for docker commands"
+    echo ""
+    echo "✍️ Give feedback and report issues on GitHub:"
+    echo "  * https://https://github.com/eth-educators/eth-docker"
     echo ""
 }
 

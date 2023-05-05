@@ -1,7 +1,7 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-__password=$(echo $RANDOM | md5sum | head -c 32)
+__password=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
 
 echo "$__password" >/tmp/password.txt
 echo "Wallet password created"

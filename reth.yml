@@ -24,6 +24,8 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Make this RUST_LOG=${LOG_LEVEL:-info},engine=trace when requiring deep debug
+      - RUST_LOG=${LOG_LEVEL:-info}
     volumes:
       - reth-el-data:/var/lib/reth
       - /etc/localtime:/etc/localtime:ro
@@ -40,18 +42,18 @@ services:
       - docker-entrypoint.sh
       - reth
       - node
-      - --db
+      - --datadir
       - /var/lib/reth
       - --chain
       - ${NETWORK}
       - --metrics
       - 0.0.0.0:6060
-      - --config
-      - /var/lib/reth/reth.toml
       - --port
       - ${EL_P2P_PORT:-30303}
       - --discovery.port
       - ${EL_P2P_PORT:-30303}
+      - --nat
+      - publicip
       - --http
       - --http.addr
       - 0.0.0.0
