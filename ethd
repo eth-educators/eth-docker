@@ -2239,9 +2239,10 @@ printhelp() {
     echo "  $me logs -f --tail 50 execution"
     echo "    shows logs only for execution service"
     echo ""
-    echo ""
-    echo "Be sure to run the config command as a non-root user"
     echo "$me will attempt to use sudo as needed for docker commands"
+    echo ""
+    echo "✍️ Give feedback and report issues on GitHub:"
+    echo "  * https://https://github.com/eth-educators/eth-docker"
     echo ""
 }
 
