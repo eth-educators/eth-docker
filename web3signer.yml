@@ -48,26 +48,6 @@ services:
     volumes:
       - web3signer-slashing-data:/var/lib/postgresql/data/
 
-  validator-keys:
-    profiles: ["tools"]
-    restart: "no"
-    build:
-      context: ./vc-utils
-    image: vc-utils:local
-    user: root
-    volumes:
-      - ./.eth/validator_keys:/validator_keys
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
-      - KEY_API_PORT=9000
-    depends_on:
-      - web3signer
-    entrypoint:
-      - keymanager.sh
-      - NIL
-      - web3signer
-
 volumes:
   web3signer-keys:
   web3signer-slashing-data:
