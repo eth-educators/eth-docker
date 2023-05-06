@@ -1,6 +1,6 @@
 ARG DOCKER_TAG
 
-FROM flyway/flyway:latest-alpine as flyway
+FROM flyway/flyway:9 as flyway
 
 FROM consensys/web3signer:${DOCKER_TAG}
 
