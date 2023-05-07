@@ -99,12 +99,12 @@ case "$CLIENT" in
     ;;&
   *blox-ssv* )
     # Blox SSV Operator Dashboard
-    __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator.json'
+    __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator_performance.json'
     __file='/etc/grafana/provisioning/dashboards/blox_ssv_operator_dashboard.json'
-    wget -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
-    __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_validator.json'
-    __file='/etc/grafana/provisioning/dashboards/blox_ssv_validator_dashboard.json'
-    wget -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
+    wget -qcO - "${__url}" >"${__file}"
+    __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
+    __file='/etc/grafana/provisioning/dashboards/blox_ssv_node_dashboard.json'
+    wget -qcO - "${__url}" >"${__file}"
     ;;&
   * )
     # Home staking dashboard
