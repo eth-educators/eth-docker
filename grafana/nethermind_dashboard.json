@@ -5859,10 +5859,7 @@
           "text": "None",
           "value": ""
         },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
+        "datasource": "Prometheus",
         "definition": "",
         "hide": 0,
         "includeAll": false,
