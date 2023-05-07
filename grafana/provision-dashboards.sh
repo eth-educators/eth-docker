@@ -92,19 +92,19 @@ case "$CLIENT" in
     ;;&
   *nethermind* )
     # nethermind_dashboard
-#    __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/dashboards/nethermind.json'
+    __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/dashboards/nethermind.json'
     __file='/etc/grafana/provisioning/dashboards/nethermind_dashboard.json'
-#    wget -qcO - "${__url}" | jq '.title = "nethermind_dashboard"' >"${__file}"
-    cp /tmp/nethermind_dashboard.json i"${__file}"
+#    wget -qcO - "${__url}" | jq '.templating.list[0].current |= (.selected = true) | (.isNone = true) | (.text = "None") | (.value = "") | del(.allValue, .label, .description, .error, .includeAll, .multi) | .templating.list[1] |= (.hide = 2) | (.query = "execution:6060") | (.type = "constant") | (.current |= del(.selected, .text, .value)) | del(.allValue, .label, .description, .error, .includeAll, .multi, .options, .datasource, .definition, .refresh, .regex, .sort, .tagValuesQuery, .tagsQuery, .useTags)' >"${__file}"
+    cp /tmp/nethermind_dashboard.json "${__file}"
     ;;&
   *blox-ssv* )
     # Blox SSV Operator Dashboard
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator_performance.json'
     __file='/etc/grafana/provisioning/dashboards/blox_ssv_operator_dashboard.json'
-    wget -qcO - "${__url}" >"${__file}"
+    wget -qcO - "${__url}" | jq '.templating.list[0].current |= (.selected = false) | (.text = "ssv2-node") | (.value = "ssv2-node") | .templating.list[0].options = [ { "selected": true, "text": "ssv2-node", "value": "ssv2-node" } ] | .templating.list[0].query = "ssv2-node"' >"${__file}"
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
     __file='/etc/grafana/provisioning/dashboards/blox_ssv_node_dashboard.json'
-    wget -qcO - "${__url}" >"${__file}"
+    wget -qcO - "${__url}" | jq '.templating.list[0].current |= (.selected = false) | (.text = "ssv2-node") | (.value = "ssv2-node") | .templating.list[0].options = [ { "selected": true, "text": "ssv2-node", "value": "ssv2-node" } ] | .templating.list[0].query = "ssv2-node"' >"${__file}"
     ;;&
   * )
     # Home staking dashboard
