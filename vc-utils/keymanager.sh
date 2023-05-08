@@ -656,6 +656,7 @@ validator-register() {
     __api_container=${__vc_api_container}
     __api_port=${__vc_api_port}
     __api_tls=${__vc_api_tls}
+    get-token
     __registered=0
     __reg_skipped=0
     __reg_errored=0
@@ -664,7 +665,6 @@ validator-register() {
     while IFS= read -r __pubkey; do
         jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
 
-        get-token
         __api_data=@/tmp/apidata.txt
         __api_path=eth/v1/remotekeys
         __http_method=POST
