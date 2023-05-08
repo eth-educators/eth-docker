@@ -1207,10 +1207,6 @@ prep-keyimport() {
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 1
     fi
-    if grep -q '^COMPOSE_FILE=.*cl-only\.yml' "${ENV_FILE}" 2>/dev/null ; then
-        echo "eth-docker is configured to run consensus client only, key import not possible"
-        exit 1
-    fi
 
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
@@ -1364,6 +1360,8 @@ __keys_usage() {
     echo "  delete 0xPUBKEY | all"
     echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
     echo "      slashing protection database. \"all\" deletes all detected validators instead"
+    echo "  register"
+    echo "      For use with web3signer only: Re-register all keys in web3signer with the validator client"
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
