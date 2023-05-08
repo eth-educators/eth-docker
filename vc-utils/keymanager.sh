@@ -632,6 +632,88 @@ validator-import() {
     echo "Failure to do so will get your validators slashed: Greater 1 ETH penalty and forced exit."
 }
 
+validator-register() {
+    if [ ! "${WEB3SIGNER}" = "true" ]; then
+        echo "WEB3SIGNER is not \"true\" in .env, cannot register web3signer keys with the validator client."
+        echo "Aborting."
+        exit 1
+    fi
+
+    __api_path=eth/v1/keystores
+    __token=NIL
+    __vc_api_container=${__api_container}
+    __api_container=web3signer
+    __vc_api_port=${__api_port}
+    __api_port=9000
+    __vc_api_tls=${__api_tls}
+    __api_tls=false
+    __validator-list-call
+    if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
+        echo "No keys loaded in web3signer, aborting."
+        exit 1
+    fi
+
+    __api_container=${__vc_api_container}
+    __api_port=${__vc_api_port}
+    __api_tls=${__vc_api_tls}
+    get-token
+    __registered=0
+    __reg_skipped=0
+    __reg_errored=0
+
+    __w3s_pubkeys="$(echo "$__result" | jq -r '.data[].validating_pubkey')"
+    while IFS= read -r __pubkey; do
+        jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
+
+        __api_data=@/tmp/apidata.txt
+        __api_path=eth/v1/remotekeys
+        __http_method=POST
+        call_api
+        case $__code in
+            200) ;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+        esac
+        if ! echo "$__result" | grep -q "data"; then
+           echo "The key manager API query failed. Output:"
+           echo "$__result"
+           exit 1
+        fi
+        __status=$(echo "$__result" | jq -r '.data[].status')
+        case ${__status,,} in
+            error)
+                echo "An error was encountered trying to register the key $__pubkey:"
+                echo "$__result" | jq -r '.data[].message'
+                echo
+                (( __reg_errored+=1 ))
+                ;;
+            imported)
+                echo "Validator key was successfully registered with validator client: $__pubkey"
+                echo
+                (( __registered+=1 ))
+                ;;
+            duplicate)
+                echo "Validator key is a duplicate and registration was skipped: $__pubkey"
+                echo
+                (( __reg_skipped+=1 ))
+                ;;
+            *)
+                echo "Unexpected status $__status. This may be a bug"
+                exit 1
+                ;;
+        esac
+    done <<< "${__w3s_pubkeys}"
+
+    echo "Registered $__registered keys with the validator client"
+    echo "Skipped registration of $__reg_skipped keys"
+    if [ $__reg_errored -gt 0 ]; then
+        echo "$__reg_errored keys caused an error during registration"
+    fi
+    echo
+}
+
 # Verify keys only exist in one location
 __web3signer_check() {
     if [ ! "${WEB3SIGNER}" = "true" ]; then
@@ -656,6 +738,8 @@ usage() {
     echo "  delete 0xPUBKEY | all"
     echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
     echo "      slashing protection database. \"all\" deletes all detected validators instead"
+    echo "  register"
+    echo "      For use with web3signer only: Re-register all keys in web3signer with the validator client"
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
@@ -751,6 +835,9 @@ case "$3" in
         __web3signer_check
         shift 3
         validator-import "$@"
+        ;;
+    register)
+        validator-register
         ;;
     get-recipient)
         __pubkey=$4
