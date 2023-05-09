@@ -31,6 +31,7 @@ services:
       - DOPPELGANGER=${DOPPELGANGER:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
