@@ -716,7 +716,7 @@ validator-register() {
 
 # Verify keys only exist in one location
 __web3signer_check() {
-    if [ ! "${WEB3SIGNER}" = "true" ]; then
+    if [[ -z "${PRYSM:+x}" && ! "${WEB3SIGNER}" = "true" ]]; then
         get-token
         __api_path=eth/v1/remotekeys
         __validator-list-call
