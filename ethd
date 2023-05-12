@@ -901,7 +901,7 @@ resync-consensus() {
         *teku.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
         *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
         *nimbus.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
-        *nimbus-cl-only.yml* ) __cl_volume='nimbusconsensus-data'; __cl_client="nimbus";;
+        *nimbus-cl-only.yml* ) __cl_volume='nimbus-consensus-data'; __cl_client="nimbus";;
         *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
         *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
         *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
