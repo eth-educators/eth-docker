@@ -50,7 +50,12 @@ else
   __beacon_stats=""
 fi
 
+if [ "${IPV6}" = "true" ]; then
+  __ipv6="--listen-address :: --port6 ${CL_P2P_PORT:-9000}"
+else
+  __ipv6=""
+fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${CL_EXTRAS}
+exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS}
