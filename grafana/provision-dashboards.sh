@@ -125,6 +125,9 @@ case "$CLIENT" in
     ;;
 esac
 
+# Remove empty files, so a download error doesn't kill Grafana
+find /etc/grafana/provisioning -type f -empty -delete
+
 tree /etc/grafana/provisioning/
 
 exec "$@"
