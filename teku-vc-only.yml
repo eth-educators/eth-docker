@@ -31,6 +31,7 @@ services:
       - DOPPELGANGER=${DOPPELGANGER:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -84,6 +85,7 @@ services:
       - TLS="true"
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - KEY_API_PORT=${KEY_API_PORT:-7500}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
     depends_on:
       - validator
     entrypoint:

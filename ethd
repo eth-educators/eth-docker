@@ -641,8 +641,8 @@ envmigrate() {
     ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID MEV_NODE \
             CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL AUTOPRUNE_NM \
             CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID GRAFANA_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP \
-            PROM_HOST HOST_IP PRYSM_HOST EE_HOST EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN \
-            DDNS_PROXY RAPID_SYNC_URL CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT \
+            PROM_HOST HOST_IP PRYSM_HOST EE_HOST EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB DDNS_SUBDOMAIN IPV6 \
+            DDNS_PROXY RAPID_SYNC_URL CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER \
             PRYSM_PORT DOPPELGANGER PRYSM_UDP_PORT GRAFANA_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET EL_EXTRAS CL_EXTRAS \
             VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 ERIGON_P2P_PORT_3 COMPOSEV1_NAG )
@@ -901,7 +901,7 @@ resync-consensus() {
         *teku.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
         *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
         *nimbus.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
-        *nimbus-cl-only.yml* ) __cl_volume='nimbusconsensus-data'; __cl_client="nimbus";;
+        *nimbus-cl-only.yml* ) __cl_volume='nimbus-consensus-data'; __cl_client="nimbus";;
         *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
         *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
         *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
@@ -1207,10 +1207,6 @@ prep-keyimport() {
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 1
     fi
-    if grep -q '^COMPOSE_FILE=.*cl-only\.yml' "${ENV_FILE}" 2>/dev/null ; then
-        echo "eth-docker is configured to run consensus client only, key import not possible"
-        exit 1
-    fi
 
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
@@ -1316,6 +1312,43 @@ __i_haz_ethdo() {
     fi
 }
 
+__i_haz_web3signer() {
+    if [ ! -f ".env" ]; then
+        echo "eth-docker has not been configured. Please run ./ethd config first."
+        exit 1
+    fi
+
+    var="WEB3SIGNER"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    if [ ! "${value}" = "true" ]; then
+        return
+    fi
+
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+    if [[ ! "${value}" =~ "web3signer.yml" ]]; then
+        echo "WEB3SIGNER=true in .env, but web3signer.yml is not in use"
+        echo "Please edit the .env file and make sure \":web3signer.yml\" is added to the \"COMPOSE_FILE\" line"
+        echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
+        echo "Without it, ./ethd keys cannot be run"
+        echo
+        read -rp "Do you want me to make this change for you? (n/y)" yn
+        case $yn in
+            [Yy] );;
+            * ) exit 1;;
+        esac
+        if [ -n "${value}" ]; then
+          COMPOSE_FILE="${value}:web3signer.yml"
+        else
+          echo "You do not have a validator client in eth-docker. web3signer cannot be used without one."
+          exit 1
+        fi
+        set_value_in_env
+        echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
+    fi
+}
 
 __keys_usage() {
     echo "Call keymanager with an ACTION, one of:"
@@ -1327,6 +1360,8 @@ __keys_usage() {
     echo "  delete 0xPUBKEY | all"
     echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
     echo "      slashing protection database. \"all\" deletes all detected validators instead"
+    echo "  register"
+    echo "      For use with web3signer only: Re-register all keys in web3signer with the validator client"
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
@@ -1367,6 +1402,8 @@ keys() {
         __keys_usage
         return
     fi
+
+    __i_haz_web3signer
 
     __owner_uid=$(id -u "${OWNER}")
     if [ "${1:-}" = "import" ]; then

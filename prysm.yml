@@ -96,6 +96,7 @@ services:
       - VC_EXTRAS=${VC_EXTRAS:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -145,6 +146,7 @@ services:
     user: prysmvalidator
     environment:
       - NETWORK=${NETWORK}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
@@ -218,6 +220,7 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - KEY_API_PORT=${KEY_API_PORT:-7500}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
       - PRYSM="true"
     depends_on:
       - validator

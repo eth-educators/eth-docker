@@ -35,7 +35,9 @@ services:
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - CL_EXTRAS=${CL_EXTRAS:-}
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
+      - IPV6=${IPV6:-false}
+      - CL_P2P_PORT=${CL_P2P_PORT:-9000}
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -60,11 +62,7 @@ services:
       - ${NETWORK}
       - --listen-address
       - 0.0.0.0
-      - --listen-address
-      - "::"
       - --port
-      - ${CL_P2P_PORT:-9000}
-      - --port6
       - ${CL_P2P_PORT:-9000}
       - --target-peers
       - ${CL_MAX_PEER_COUNT:-80}
@@ -176,6 +174,7 @@ services:
     environment:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - KEY_API_PORT=${KEY_API_PORT:-7500}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
     depends_on:
       - validator
     entrypoint:

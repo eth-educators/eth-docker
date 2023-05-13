@@ -3,27 +3,26 @@
 call_api() {
     set +e
     if [ -z "${__api_data}" ]; then
-        if [ -z "${TLS:+x}" ]; then
-            __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Authorization: Bearer $__token" \
-                http://"${__api_container}":"${KEY_API_PORT:-7500}"/"${__api_path}")
-        else
+        if [ "${__api_tls}" = "true" ]; then
             __code=$(curl -k -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Authorization: Bearer $__token" \
-                https://"${__api_container}":"${KEY_API_PORT:-7500}"/"${__api_path}")
-
+                https://"${__api_container}":"${__api_port}"/"${__api_path}")
+        else
+            __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Authorization: Bearer $__token" \
+                http://"${__api_container}":"${__api_port}"/"${__api_path}")
         fi
     else
-        if [ -z "${TLS:+x}" ]; then
-            __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
-                --data "${__api_data}" http://"${__api_container}":"${KEY_API_PORT:-7500}"/"${__api_path}")
-        else
+        if [ "${__api_tls}" = "true" ]; then
             __code=$(curl -k -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
-                --data "${__api_data}" https://"${__api_container}":"${KEY_API_PORT:-7500}"/"${__api_path}")
+                --data "${__api_data}" https://"${__api_container}":"${__api_port:-7500}"/"${__api_path}")
+        else
+            __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $__token" \
+                --data "${__api_data}" http://"${__api_container}":"${__api_port:-7500}"/"${__api_path}")
         fi
     fi
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to call the keymanager API via curl."
-        echo "Please make sure ${__api_container} is up and shows the key manager API, port ${KEY_API_PORT:-7500}, enabled."
+        echo "Please make sure ${__api_container} is up and shows the key manager API, port ${__api_port}, enabled."
         echo "Error code $__return"
         exit $__return
     fi
@@ -46,7 +45,7 @@ set +e
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to get the keymanager API token."
-        echo "Please make sure ${__api_container} is up and shows the key manager API, port ${KEY_API_PORT:-7500}, enabled."
+        echo "Please make sure ${__api_container} is up and shows the key manager API, port ${__api_port}, enabled."
         exit $__return
     fi
 set -e
@@ -199,8 +198,6 @@ gas-delete() {
 }
 
 __validator-list-call() {
-    get-token
-    __api_path=eth/v1/keystores
     __api_data=""
     __http_method=GET
     call_api
@@ -214,12 +211,38 @@ __validator-list-call() {
 }
 
 validator-list() {
+    __api_path=eth/v1/keystores
+    if [ "${WEB3SIGNER}" = "true" ]; then
+        __token=NIL
+        __vc_api_container=${__api_container}
+        __api_container=web3signer
+        __vc_api_port=${__api_port}
+        __api_port=9000
+        __vc_api_tls=${__api_tls}
+        __api_tls=false
+    else
+        get-token
+    fi
     __validator-list-call
     if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
         echo "No keys loaded"
     else
         echo "Validator public keys"
         echo "$__result" | jq -r '.data[].validating_pubkey'
+    fi
+    if [ "${WEB3SIGNER}" = "true" ]; then
+        get-token
+        __api_path=eth/v1/remotekeys
+        __api_container=${__vc_api_container}
+        __api_port=${__vc_api_port}
+        __api_tls=${__vc_api_tls}
+        __validator-list-call
+        if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
+            echo "No keys registered"
+        else
+            echo "Keys registered"
+            echo "$__result" | jq -rc '.data[] | [.pubkey, .url] | join(" ")'
+        fi
     fi
 }
 
@@ -229,14 +252,30 @@ validator-delete() {
       exit 0
     fi
     __pubkeys=()
+    __api_path=eth/v1/keystores
     if [ "${__pubkey}" = "all" ]; then
-        echo "WARNING - this will delete all currently loaded keys from the validator client."
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            echo "WARNING - this will delete all currently loaded keys from web3signer and the validator client."
+        else
+            echo "WARNING - this will delete all currently loaded keys from the validator client."
+        fi
         echo
         read -rp "Do you wish to continue with key deletion? (No/yes) " yn
         case $yn in
             [Yy][Ee][Ss]) ;;
             * ) echo "Aborting key deletion"; exit 0;;
         esac
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __token=NIL
+            __vc_api_container=${__api_container}
+            __api_container=web3signer
+            __vc_api_port=${__api_port}
+            __api_port=9000
+            __vc_api_tls=${__api_tls}
+            __api_tls=false
+        else
+            get-token
+        fi
 
         __validator-list-call
         if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
@@ -247,14 +286,30 @@ validator-delete() {
 # Word splitting is desired for the array
 # shellcheck disable=SC2206
             __pubkeys+=( ${__keys_to_array} )
+            if [ "${WEB3SIGNER}" = "true" ]; then
+                __api_container=${__vc_api_container}
+                __api_port=${__vc_api_port}
+                __api_tls=${__vc_api_tls}
+            fi
         fi
     else
         __pubkeys+=( "${__pubkey}" )
     fi
 
-    get-token
-    __api_path=eth/v1/keystores
     for __pubkey in "${__pubkeys[@]}"; do
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __token=NIL
+            __vc_api_container=${__api_container}
+            __api_container=web3signer
+            __vc_api_port=${__api_port}
+            __api_port=9000
+            __vc_api_tls=${__api_tls}
+            __api_tls=false
+        else
+            get-token
+        fi
+
+        __api_path=eth/v1/keystores
         __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
         __http_method=DELETE
         call_api
@@ -295,6 +350,46 @@ validator-delete() {
                 exit 1
                 ;;
         esac
+        # Remove remote registration
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __api_container=${__vc_api_container}
+            __api_port=${__vc_api_port}
+            __api_tls=${__vc_api_tls}
+
+            get-token
+            __api_path=eth/v1/remotekeys
+            __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
+            __http_method=DELETE
+            call_api
+            case $__code in
+                200) ;;
+                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+            esac
+
+            __status=$(echo "$__result" | jq -r '.data[].status')
+            case ${__status,,} in
+                error)
+                    echo "Remote registration for validator ${__pubkey} was found but an error was encountered trying to delete it:"
+                    echo "$__result" | jq -r '.data[].message'
+                    ;;
+                not_active)
+                    echo "Validator ${__pubkey} is not actively loaded."
+                    ;;
+                deleted)
+                    echo "Remote registration for validator ${__pubkey} deleted."
+                    ;;
+                not_found)
+                    echo "The validator ${__pubkey} was not found in the registration list."
+                    ;;
+                *)
+                    echo "Unexpected status $__status. This may be a bug"
+                    exit 1
+                    ;;
+            esac
+        fi
     done
 }
 
@@ -305,7 +400,6 @@ validator-import() {
         echo "Nothing to do"
         exit 0
     fi
-    get-token
 
     __non_interactive=0
     if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
@@ -359,6 +453,9 @@ validator-import() {
     __imported=0
     __skipped=0
     __errored=0
+    __registered=0
+    __reg_skipped=0
+    __reg_errored=0
     for __keyfile in /validator_keys/keystore*.json; do
         [ -f "$__keyfile" ] || continue
         __pubkey=0x$(jq -r '.pubkey' < "$__keyfile")
@@ -412,18 +509,31 @@ validator-import() {
         else
             jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" --slurpfile protect_value /tmp/protect.json '. | .keystores += [$keystore_value] | .passwords += [$password_value] | . += {slashing_protection: $protect_value[0]}' <<< '{}' >/tmp/apidata.txt
         fi
+
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __token=NIL
+            __vc_api_container=${__api_container}
+            __api_container=web3signer
+            __vc_api_port=${__api_port}
+            __api_port=9000
+            __vc_api_tls=${__api_tls}
+            __api_tls=false
+        else
+            get-token
+        fi
+
         __api_data=@/tmp/apidata.txt
         __api_path=eth/v1/keystores
         __http_method=POST
         call_api
-    case $__code in
-        200) ;;
-        400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
-    esac
+        case $__code in
+            200) ;;
+            400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+        esac
         if ! echo "$__result" | grep -q "data"; then
            echo "The key manager API query failed. Output:"
            echo "$__result"
@@ -432,36 +542,190 @@ validator-import() {
         __status=$(echo "$__result" | jq -r '.data[].status')
         case ${__status,,} in
             error)
-                echo "An error was encountered trying to import the key:"
+                echo "An error was encountered trying to import the key $__pubkey:"
                 echo "$__result" | jq -r '.data[].message'
                 echo
                 (( __errored+=1 ))
+                continue
                 ;;
             imported)
                 echo "Validator key was successfully imported: $__pubkey"
-                echo
                 (( __imported+=1 ))
                 ;;
             duplicate)
                 echo "Validator key is a duplicate and was skipped: $__pubkey"
-                echo
                 (( __skipped+=1 ))
                 ;;
-            * )
+            *)
                 echo "Unexpected status $__status. This may be a bug"
                 exit 1
                 ;;
         esac
+        # Add remote registration
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __api_container=${__vc_api_container}
+            __api_port=${__vc_api_port}
+            __api_tls=${__vc_api_tls}
+
+            jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
+
+            get-token
+            __api_data=@/tmp/apidata.txt
+            __api_path=eth/v1/remotekeys
+            __http_method=POST
+            call_api
+            case $__code in
+                200) ;;
+                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+            esac
+            if ! echo "$__result" | grep -q "data"; then
+               echo "The key manager API query failed. Output:"
+               echo "$__result"
+               exit 1
+            fi
+            __status=$(echo "$__result" | jq -r '.data[].status')
+            case ${__status,,} in
+                error)
+                    echo "An error was encountered trying to register the key $__pubkey:"
+                    echo "$__result" | jq -r '.data[].message'
+                    echo
+                    (( __reg_errored+=1 ))
+                    ;;
+                imported)
+                    echo "Validator key was successfully registered with validator client: $__pubkey"
+                    echo
+                    (( __registered+=1 ))
+                    ;;
+                duplicate)
+                    echo "Validator key is a duplicate and registration was skipped: $__pubkey"
+                    echo
+                    (( __reg_skipped+=1 ))
+                    ;;
+                *)
+                    echo "Unexpected status $__status. This may be a bug"
+                    exit 1
+                    ;;
+            esac
+        fi
+        echo
     done
 
     echo "Imported $__imported keys"
+    if [ "$WEB3SIGNER" = "true" ]; then
+        echo "Registered $__registered keys with the validator client"
+    fi
     echo "Skipped $__skipped keys"
+    if [ "$WEB3SIGNER" = "true" ]; then
+        echo "Skipped registration of $__reg_skipped keys"
+    fi
     if [ $__errored -gt 0 ]; then
         echo "$__errored keys caused an error during import"
+    fi
+    if [ $__reg_errored -gt 0 ]; then
+        echo "$__reg_errored keys caused an error during registration"
     fi
     echo
     echo "IMPORTANT: Only import keys in ONE LOCATION."
     echo "Failure to do so will get your validators slashed: Greater 1 ETH penalty and forced exit."
+}
+
+validator-register() {
+    if [ ! "${WEB3SIGNER}" = "true" ]; then
+        echo "WEB3SIGNER is not \"true\" in .env, cannot register web3signer keys with the validator client."
+        echo "Aborting."
+        exit 1
+    fi
+
+    __api_path=eth/v1/keystores
+    __token=NIL
+    __vc_api_container=${__api_container}
+    __api_container=web3signer
+    __vc_api_port=${__api_port}
+    __api_port=9000
+    __vc_api_tls=${__api_tls}
+    __api_tls=false
+    __validator-list-call
+    if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
+        echo "No keys loaded in web3signer, aborting."
+        exit 1
+    fi
+
+    __api_container=${__vc_api_container}
+    __api_port=${__vc_api_port}
+    __api_tls=${__vc_api_tls}
+    get-token
+    __registered=0
+    __reg_skipped=0
+    __reg_errored=0
+
+    __w3s_pubkeys="$(echo "$__result" | jq -r '.data[].validating_pubkey')"
+    while IFS= read -r __pubkey; do
+        jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
+
+        __api_data=@/tmp/apidata.txt
+        __api_path=eth/v1/remotekeys
+        __http_method=POST
+        call_api
+        case $__code in
+            200) ;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+        esac
+        if ! echo "$__result" | grep -q "data"; then
+           echo "The key manager API query failed. Output:"
+           echo "$__result"
+           exit 1
+        fi
+        __status=$(echo "$__result" | jq -r '.data[].status')
+        case ${__status,,} in
+            error)
+                echo "An error was encountered trying to register the key $__pubkey:"
+                echo "$__result" | jq -r '.data[].message'
+                echo
+                (( __reg_errored+=1 ))
+                ;;
+            imported)
+                echo "Validator key was successfully registered with validator client: $__pubkey"
+                echo
+                (( __registered+=1 ))
+                ;;
+            duplicate)
+                echo "Validator key is a duplicate and registration was skipped: $__pubkey"
+                echo
+                (( __reg_skipped+=1 ))
+                ;;
+            *)
+                echo "Unexpected status $__status. This may be a bug"
+                exit 1
+                ;;
+        esac
+    done <<< "${__w3s_pubkeys}"
+
+    echo "Registered $__registered keys with the validator client"
+    echo "Skipped registration of $__reg_skipped keys"
+    if [ $__reg_errored -gt 0 ]; then
+        echo "$__reg_errored keys caused an error during registration"
+    fi
+    echo
+}
+
+# Verify keys only exist in one location
+__web3signer_check() {
+    if [[ -z "${PRYSM:+x}" && ! "${WEB3SIGNER}" = "true" ]]; then
+        get-token
+        __api_path=eth/v1/remotekeys
+        __validator-list-call
+        if [ ! "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
+            echo "WEB3SIGNER is not \"true\" in .env, but there are web3signer keys registered."
+            echo "This is not safe. Set WEB3SIGNER=true and remove web3signer keys first. Aborting."
+            exit 1
+        fi
+    fi
 }
 
 usage() {
@@ -474,6 +738,8 @@ usage() {
     echo "  delete 0xPUBKEY | all"
     echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
     echo "      slashing protection database. \"all\" deletes all detected validators instead"
+    echo "  register"
+    echo "      For use with web3signer only: Re-register all keys in web3signer with the validator client"
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
@@ -492,7 +758,7 @@ usage() {
     echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
     echo
     echo "  get-api-token"
-    echo "      Print the token for the keymanager API running on port ${KEY_API_PORT:-7500}."
+    echo "      Print the token for the keymanager API running on port ${__api_port}."
     echo "      This is also the token for the Prysm Web UI"
     echo
     echo "  create-prysm-wallet"
@@ -514,6 +780,12 @@ set -e
 if [ "$(id -u)" = '0' ]; then
     __token_file=$1
     __api_container=$2
+    __api_port=${KEY_API_PORT:-7500}
+    if [ -z "${TLS:+x}" ]; then
+        __api_tls=false
+    else
+        __api_tls=true
+    fi
     case "$3" in
         get-api-token)
             print-api-token
@@ -536,19 +808,20 @@ if [ "$(id -u)" = '0' ]; then
         cp "$__token_file" /tmp/api-token.txt
         chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
         exec gosu "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
-    elif  [ "$__token_file" = "NIL" ]; then # web3signer doesn't use a token
-        echo "NIL" >/tmp/api-token.txt
-        chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
-        exec gosu "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
     else
         echo "File $__token_file not found."
         echo "The $__api_container service may not be fully started yet."
         exit 1
     fi
 fi
-
 __token_file=/tmp/api-token.txt
 __api_container=$2
+__api_port=${KEY_API_PORT:-7500}
+if [ -z "${TLS:+x}" ]; then
+    __api_tls=false
+else
+    __api_tls=true
+fi
 
 case "$3" in
     list)
@@ -559,8 +832,12 @@ case "$3" in
         validator-delete
         ;;
     import)
+        __web3signer_check
         shift 3
         validator-import "$@"
+        ;;
+    register)
+        validator-register
         ;;
     get-recipient)
         __pubkey=$4

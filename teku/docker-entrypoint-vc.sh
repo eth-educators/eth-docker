@@ -40,12 +40,19 @@ else
   __mev_boost=""
 fi
 
+# Web3signer URL
+if [ "${WEB3SIGNER}" = "true" ]; then
+  __w3s_url="--validators-external-signer-url http://web3signer:9000"
+else
+  __w3s_url=""
+fi
+
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__mev_boost} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__w3s_url} ${__mev_boost} ${__doppel} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--validators-graffiti=${GRAFFITI}" ${__mev_boost} ${__doppel} ${VC_EXTRAS}
+  exec "$@" "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__doppel} ${VC_EXTRAS}
 fi
