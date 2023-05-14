@@ -19,7 +19,10 @@ RUN bash -c "\
     git submodule update --init --recursive && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
-FROM ghcr.io/tomwright/dasel:v2.2.0-alpine as dasel
+FROM alpine as dasel
+RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
+    wget -q https://github.com/TomWright/dasel/releases/download/v2.2.0/dasel_linux_${arch} -O /usr/local/bin/dasel && \
+    chmod +x /usr/local/bin/dasel
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 
