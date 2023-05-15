@@ -5,6 +5,7 @@ x-logging: &logging
     options:
       max-size: 100m
       max-file: "3"
+      tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 
 services:
   mev-boost:
