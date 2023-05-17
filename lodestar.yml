@@ -92,6 +92,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - consensus
+    networks:
+      default:
+        aliases:
+          - vc
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -166,7 +170,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/lodestar/validators/validator-db/api-token.txt
-      - validator
+      - vc
 
 volumes:
   lsconsensus-data:

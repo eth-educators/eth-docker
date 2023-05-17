@@ -22,7 +22,7 @@ call_api() {
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to call the keymanager API via curl."
-        echo "Please make sure the ${__api_container} service is up and in its logs shows the key manager API, port ${__api_port}, enabled."
+        echo "Please make sure the ${__service} service is up and its logs show the key manager API, port ${__api_port}, enabled."
         echo "Error code $__return"
         exit $__return
     fi
@@ -45,7 +45,7 @@ set +e
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to get the keymanager API token."
-        echo "Please make sure the ${__api_container} service is up and in its logs shows the key manager API, port ${__api_port}, enabled."
+        echo "Please make sure the ${__service} service is up and its logs show the key manager API, port ${__api_port}, enabled."
         exit $__return
     fi
 set -e
@@ -822,6 +822,11 @@ if [ -z "${TLS:+x}" ]; then
 else
     __api_tls=true
 fi
+
+case "$__api_container" in
+    vc) __service=validator;;
+    *) __service="$__api_container";;
+esac
 
 case "$3" in
     list)
