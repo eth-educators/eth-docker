@@ -34,6 +34,10 @@ services:
       - VC_EXTRAS=${VC_EXTRAS:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+    networks:
+      default:
+        aliases:
+          - vc
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -71,7 +75,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/nimbus/api-token.txt
-      - validator
+      - vc
 
 volumes:
   nimbus-vc-data:
