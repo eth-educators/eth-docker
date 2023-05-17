@@ -78,7 +78,7 @@ services:
   wipe-db:
     profiles: ["tools"]
     restart: "no"
-    image: alpine:3
+    image: alpine:latest
     user: "10002"
     volumes:
       - nimbus-data:/var/lib/nimbus
