@@ -87,7 +87,7 @@ services:
   wipe-db:
     profiles: ["tools"]
     restart: "no"
-    image: alpine:latest
+    image: alpine:3
     user: "10002"
     volumes:
       - teku-data:/var/lib/teku
