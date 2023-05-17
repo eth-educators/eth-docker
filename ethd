@@ -2375,7 +2375,7 @@ printhelp() {
     echo "$me will attempt to use sudo as needed for docker commands"
     echo ""
     echo "✍️ Give feedback and report issues on GitHub:"
-    echo "  * https://https://github.com/eth-educators/eth-docker"
+    echo "  * https://github.com/eth-educators/eth-docker"
     echo ""
 }
 
