@@ -51,7 +51,7 @@ esac
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Geth archive node without pruning"
-  __prune="--gcmode=archive"
+  __prune="--syncmode=full --gcmode=archive"
 else
   __prune=""
 fi
