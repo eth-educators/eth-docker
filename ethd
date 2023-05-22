@@ -2295,6 +2295,10 @@ version() {
             docompose exec execution geth version
             echo
             ;;&
+        *reth.yml* )
+            docompose exec execution reth --version
+            echo
+            ;;&
         *besu.yml* )
             docompose exec execution /opt/besu/bin/besu --version
             echo
