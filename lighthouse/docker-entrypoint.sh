@@ -25,7 +25,7 @@ if [ -n "${RAPID_SYNC_URL}" ]; then
   echo "Checkpoint sync enabled"
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Lighthouse archive node without pruning"
-    __prune="--reconstruct-historic-states"
+    __prune="--reconstruct-historic-states --genesis-backfill"
   else
     __prune=""
   fi
