@@ -510,7 +510,7 @@ update() {
     if [ ${__old_compose} -eq 1 ]; then
       docompose --profile tools pull --ignore-pull-failures || true
     else
-      docompose --profile tools pull --ignore-buildable
+      docompose --profile tools pull --ignore-pull-failures --quiet || true
     fi
     source_build
     docompose --profile tools build --pull
