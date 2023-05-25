@@ -56,13 +56,13 @@ else
   __prune=""
 fi
 
-# Detect existing DB; use Pebble if fresh
-if [ -d "/var/lib/goethereum/geth/chaindata/" ]; then
-  __pebbleme=""
-else
-  echo "Choosing Pebble DB for fresh sync"
-  __pebbleme="--db.engine=pebble"
-fi
+# Detect existing DB; use PBSS if fresh
+#if [ -d "/var/lib/goethereum/geth/chaindata/" ]; then
+#  __pbbsme=""
+#else
+#  echo "Choosing PBSS for fresh sync"
+#  __pbbsme="--trie.path-based"
+#fi
 
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
@@ -76,5 +76,5 @@ if [ -f /var/lib/goethereum/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__prune} ${__pebbleme} ${__verbosity} ${EL_EXTRAS}
+  exec "$@" ${__prune} ${__verbosity} ${EL_EXTRAS}
 fi
