@@ -2468,6 +2468,9 @@ check_disk_space
 if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
   echo "You updated compose to V2."
+  echo "The \"docker-compose\" command is gone and replaced with \"docker compose\"."
+  echo "You can create yourself an alias for \"docker-compose\"."
+  echo
   echo "Optionally, you can switch to docker-ce."
   echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
 elif [ "${__old_compose}" -eq 1 ]; then
