@@ -68,6 +68,7 @@ determine_compose() {
     __compose_exe="docker-compose"
     __old_compose=1
     __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
+    echo
     echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on"
     echo "eth-docker will stop supporting it with Dencun, sometime fall 2023."
     echo ""
@@ -75,7 +76,7 @@ determine_compose() {
     while true; do
       read -rp "Do you want to update compose to V2? (yes/no) " yn
       case $yn in
-        [Nn]* ) echo "Please be sure to update docker-compose yourself!";;
+        [Nn]* ) echo "Please be sure to update docker-compose yourself!"; break;;
          * ) upgrade_compose; break;;
       esac
     done
