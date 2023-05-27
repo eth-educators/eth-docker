@@ -68,7 +68,7 @@ determine_compose() {
     __compose_exe="docker-compose"
     __old_compose=1
     __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
-    if [ -z "${ETHDSECUNDO-}" ]; then # Don't run this twice
+    if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on"
       echo "eth-docker will stop supporting it with Dencun, sometime fall 2023."
