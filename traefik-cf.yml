@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   traefik:
-    image: traefik:v2.9
+    image: traefik:v2.10
     restart: "unless-stopped"
     command:
 #      - --accesslog=true

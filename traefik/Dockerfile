@@ -1,6 +1,6 @@
 # Add AWS CLI to traefik image
 
-FROM traefik:v2.9
+FROM traefik:v2.10
 
 RUN apk add --no-cache \
         python3 \
