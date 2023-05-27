@@ -105,7 +105,7 @@ upgrade_compose() {
     ${__auto_sudo} apt-get remove -y docker-compose
     echo "Removed docker-compose"
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
-    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
     ${__auto_sudo} echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
         $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -125,7 +125,7 @@ upgrade_compose() {
     ${__auto_sudo} apt-get remove -y docker-compose
     echo "Removed docker-compose"
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
-    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
     ${__auto_sudo} echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
         $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -196,7 +196,7 @@ install() {
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail bc chrony
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
-            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
                 "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
                 $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -224,7 +224,7 @@ install() {
                 exit 0
             fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
-            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
             ${__auto_sudo} echo \
                 "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
                 $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
