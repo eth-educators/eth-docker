@@ -3,7 +3,8 @@
 set -uo pipefail
 
 __docker_exe="docker"
-__compose_exe="docker-compose"
+__compose_exe="docker compose"
+__compose_upgraded=0
 
 dodocker() {
     $__docker_exe "$@"
@@ -64,34 +65,20 @@ determine_compose() {
     __compose_exe="docker compose"
     __old_compose=0
   else
+    __compose_exe="docker-compose"
     __old_compose=1
     __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
-    __compose_version_major=$(echo "$__compose_version" | cut -f1 -d.)
-    __compose_version_minor=$(echo "$__compose_version" | cut -f2 -d.)
-    if ! [ "$__compose_version_major" -eq "$__compose_version_major" ] && [ "$__compose_version_minor" -eq "$__compose_version_minor" ] 2> /dev/null; then
-        echo "docker-compose version detection failed. Please report this output so it can be fixed."
-        $__maybe_sudo docker-compose --version
-    elif [ "$__compose_version_major" -eq 1 ] && [ "$__compose_version_minor" -lt 28 ]; then
-      echo "Error: Outdated docker-compose version detected ($__compose_version). Please upgrade to version 1.28.0 or later." >&2
-      if [[ "$__distro" = "ubuntu" ]]; then
-        __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-        if [ "${__major_version}" -lt 22 ]; then
-          echo
-          while true; do
-            read -rp "Do you want to update docker-compose to v1.29.2? (yes/no) " yn
-            case $yn in
-              [Nn]* ) echo "Please be sure to update docker-compose yourself!"; exit 1;;
-              * ) upgrade_compose; break;;
-            esac
-          done
-        fi
-      else
-        echo >&2
-        echo "On Debian 11, using docker-ce instead of docker.io, with the compose plugin, will work." >&2
-        exit 1
-      fi
-    fi
-    __compose_exe="docker-compose"
+    echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on"
+    echo "eth-docker will stop supporting it with Dencun, sometime fall 2023."
+    echo ""
+    echo "It is recommended that you replace compose V1 with compose V2."
+    while true; do
+      read -rp "Do you want to update compose to V2? (yes/no) " yn
+      case $yn in
+        [Nn]* ) echo "Please be sure to update docker-compose yourself!";;
+         * ) upgrade_compose; break;;
+      esac
+    done
   fi
 
   if [ -n "$__maybe_sudo" ]; then
@@ -100,26 +87,53 @@ determine_compose() {
 }
 
 upgrade_compose() {
-  if type -P docker-compose >/dev/null 2>&1; then
-    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
-    __compose_version_major=$(echo "$__compose_version" | cut -f1 -d.)
-    __compose_version_minor=$(echo "$__compose_version" | cut -f2 -d.)
-    if [ "$__compose_version_major" -eq 1 ] && [ "$__compose_version_minor" -lt 28 ]; then
-      echo "Found docker-compose version $__compose_version_major.$__compose_version_minor, upgrading to 1.29.2"
-      ${__auto_sudo} apt-get install -y curl
-      ${__auto_sudo} curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-      ${__auto_sudo} chmod +x /usr/bin/docker-compose
+  if ! type -P docker-compose >/dev/null 2>&1; then
+    echo "Compose has already been updated to V2"
+    return
+  fi
+  echo "Updating compose to V2"
+  if [[ "$__distro" = "ubuntu" ]]; then
+    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release
+    __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
+    if [ "${__major_version}" -lt 20 ]; then
+      echo "This script cannot update compose on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
+      exit 0
     fi
-    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -e "s/.*version \([0-9.-]*\).*/\1/p")
-    __compose_version_major=$(echo "$__compose_version" | cut -f1 -d.)
-    __compose_version_minor=$(echo "$__compose_version" | cut -f2 -d.)
-    if [ "$__compose_version_major" -eq 1 ] && [ "$__compose_version_minor" -lt 28 ]; then
-      echo "Updating docker-compose failed. It is still version $__compose_version_major.$__compose_version_minor."
-      echo "Please manually update docker-compose to version 1.29.2. These commands should do it:"
-      echo "sudo curl -fsSL \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/bin/docker-compose"
-      echo "sudo chmod +x /usr/bin/docker-compose"
-      exit 1
+    ${__auto_sudo} apt-get remove -y docker-compose
+    echo "Removed docker-compose"
+    ${__auto_sudo} mkdir -p /etc/apt/keyrings
+    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    ${__auto_sudo} echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get install -y docker-compose-plugin
+    echo "Installed docker-compose-plugin"
+    __old_compose=0
+    __compose_exe="docker compose"
+    __compose_upgraded=1
+  elif [[ "$__distro" =~ "debian" ]]; then
+    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
+    __major_version=$(lsb_release -r | cut -f2)
+    if [ "${__major_version}" -lt 10 ]; then
+        echo "This script cannot update compose on Debian ${__major_version}. Consider upgrading to 11 or 12."
+        exit 0
     fi
+    ${__auto_sudo} apt-get remove -y docker-compose
+    echo "Removed docker-compose"
+    ${__auto_sudo} mkdir -p /etc/apt/keyrings
+    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    ${__auto_sudo} echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+        $(lsb_release -cs) stable" | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get install -y docker-compose-plugin
+    echo "Installed docker-compose-plugin"
+    __old_compose=0
+    __compose_exe="docker compose"
+    __compose_upgraded=1
+  else
+    echo "This script does not know how to update compose on $__distro"
   fi
 }
 
@@ -645,7 +659,7 @@ envmigrate() {
             DDNS_PROXY RAPID_SYNC_URL CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER \
             PRYSM_PORT DOPPELGANGER PRYSM_UDP_PORT GRAFANA_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT TRAEFIK_WEB_HTTP_PORT \
             CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET EL_EXTRAS CL_EXTRAS \
-            VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 ERIGON_P2P_PORT_3 COMPOSEV1_NAG )
+            VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 ERIGON_P2P_PORT_3 )
     TARGET_VARS=( NIM_SRC_BUILD_TARGET NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_DOCKER_TAG \
                 TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_DOCKER_TAG LH_DOCKERFILE PRYSM_SRC_BUILD_TARGET \
                 PRYSM_DOCKER_TAG PRYSM_DOCKER_VC_TAG PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET ERIGON_DOCKER_TAG \
@@ -2448,13 +2462,16 @@ fi
 
 check_disk_space
 
-var="COMPOSEV1_NAG"
-value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-
-if [ "${value}" = true ] && [ "${__old_compose}" -eq 1 ]; then
+if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
-  echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from June 2023 on."
+  echo "You updated compose to V2."
+  echo "Optionally, you can switch to docker-ce."
+  echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
+elif [ "${__old_compose}" -eq 1 ]; then
+  echo
+  echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on."
+  echo "eth-docker will stop supporting it with Dencun, sometime fall 2023."
+  echo ""
   echo "A switch to docker-ce is recommended. It is *not* mandatory. This is unfortunately a manual step that eth-docker cannot do for you."
   echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
-  echo "You can turn this message off by adjusting COMPOSEV1_NAG in .env"
 fi
