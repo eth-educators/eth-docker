@@ -37,13 +37,15 @@ determine_distro() {
 }
 
 determine_sudo() {
-    systemctl status docker >/dev/null
-    result=$?
-    if [ ! "${result}" -eq 0 ]; then
-        echo "The docker daemon is not running. Please check docker installation."
-        echo "\"sudo systemctl status docker\" and \"sudo journalctl -fu docker\" will be helpful."
-        echo "Aborting."
-        exit 1
+    if [[ ! "$OSTYPE" == "darwin"* ]]; then
+        systemctl status docker >/dev/null
+        result=$?
+        if [ ! "${result}" -eq 0 ]; then
+            echo "The docker daemon is not running. Please check docker installation."
+            echo "\"sudo systemctl status docker\" and \"sudo journalctl -fu docker\" will be helpful."
+            echo "Aborting."
+            exit 1
+        fi
     fi
 
     __maybe_sudo=""
