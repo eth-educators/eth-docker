@@ -37,7 +37,7 @@ determine_distro() {
 }
 
 determine_sudo() {
-    if [[ ! "$OSTYPE" == "darwin"* ]]; then
+    if [[ "$__distro" =~ "debian" || "$__distro" = "ubuntu" ]]; then
         systemctl status docker >/dev/null
         result=$?
         if [ ! "${result}" -eq 0 ]; then
