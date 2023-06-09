@@ -33,6 +33,14 @@ schema_config:
       index:
         prefix: index_
         period: 24h
+    - from: 2023-06-15
+      store: tsdb
+      object_store: filesystem
+      schema: v12
+      index:
+        prefix: tsdb_index
+        period: 24h
+
 
 limits_config:
   retention_period: 30d
