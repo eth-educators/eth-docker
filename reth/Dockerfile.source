@@ -12,7 +12,7 @@ WORKDIR /src
 RUN bash -c "git clone --recurse-submodules -j8 https://github.com/paradigmxyz/reth.git && cd reth \
     && git config advice.detachedHead false && git fetch --all --tags \
     && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:reth-pr; git checkout reth-pr; else git checkout ${BUILD_TARGET}; fi \
-    && cargo build --release"
+    && RUSTFLAGS='-C target-cpu=native' cargo build --profile maxperf --features jemalloc"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bullseye-slim
@@ -38,7 +38,7 @@ RUN adduser \
 RUN mkdir -p /var/lib/reth/ee-secret && chown -R ${USER}:${USER} /var/lib/reth && chmod -R 700 /var/lib/reth && chmod 777 /var/lib/reth/ee-secret
 
 # Cannot assume buildkit, hence no chmod
-COPY --from=builder --chown=${USER}:${USER} /src/reth/target/release/reth /usr/local/bin/
+COPY --from=builder --chown=${USER}:${USER} /src/reth/target/maxperf/reth /usr/local/bin/
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
