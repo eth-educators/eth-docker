@@ -63,7 +63,6 @@ done
 echo "You may have used a 25th word for the mnemonic. This is not the passphrase for the"
 echo "validator signing keys. When in doubt, say no to the next question."
 echo
-__passphraseCommand=""
 read -rp "Did you use a passphrase / 25th word when you created this mnemonic? (no/yes) " __usepassphrase
 case "${__usepassphrase}" in
     [Yy]* )
@@ -75,7 +74,7 @@ case "${__usepassphrase}" in
             fi
             read -rp "Please verify your mnemonic passphrase : " __passphrase2
             if [[ "${__passphrase}" = "${__passphrase2}" ]]; then
-                __passphraseCommand="--passphrase=${__passphrase}"
+                __mnemonic="${__mnemonic} ${__passphrase}"
                 break
             else
                 echo "Passphrase did not match. You can try again or hit Ctrl-C to abort."
@@ -93,11 +92,11 @@ case "${__advancedCommand}" in
         read -rp "Please provide the index position (0 is the most common) : " __starting_index
 
         # Output is: Private Key: 0x...
-        __private_key=$($__ethdo account derive --mnemonic="${__mnemonic}" "${__passphraseCommand}" --show-private-key --path="m/12381/3600/${__starting_index}/0" | awk '{print $NF}')
+        __private_key=$($__ethdo account derive --mnemonic="${__mnemonic}" --show-private-key --path="m/12381/3600/${__starting_index}/0" | awk '{print $NF}')
 
         $__ethdo validator credentials set --offline --withdrawal-address="${__address}" --private-key="${__private_key}"
         ;;
-    * ) $__ethdo validator credentials set --offline --withdrawal-address="${__address}" --mnemonic="${__mnemonic}" "${__passphraseCommand}"
+    * ) $__ethdo validator credentials set --offline --withdrawal-address="${__address}" --mnemonic="${__mnemonic}"
 esac
 
 result=$?
