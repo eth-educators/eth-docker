@@ -41,8 +41,7 @@ services:
       - certs:/letsencrypt
       - /etc/localtime:/etc/localtime:ro
     depends_on:
-      - cf-ddns-v4
-      - cf-ddns-v6
+      - cf-ddns
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
