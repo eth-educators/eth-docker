@@ -49,7 +49,7 @@ services:
       - metrics.port=8080
     <<: *logging
 
-  cf-ddns-v4:
+  cf-ddns:
     image: ghcr.io/joshuaavalon/cloudflare-ddns:3
     restart: "unless-stopped"
     environment:
@@ -61,22 +61,12 @@ services:
       - CF_DNS__DOMAINS_0__PROXIED=${DDNS_PROXY}
       - CF_DNS__DOMAINS_0__CREATE=true
       - CF_DNS__DOMAINS_0__TYPE=A
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-
-  cf-ddns-v6:
-    image: ghcr.io/joshuaavalon/cloudflare-ddns:3
-    restart: "unless-stopped"
-    environment:
-      - CF_DNS__LOG_LEVEL=${LOG_LEVEL:-info}
-      - CF_DNS__AUTH__SCOPED_TOKEN=${CF_DNS_API_TOKEN}
-      - CF_DNS__DOMAINS_0__ZONE_NAME=${DOMAIN}
-      - CF_DNS__DOMAINS_0__ZONE_ID=${CF_ZONE_ID:-}
-      - CF_DNS__DOMAINS_0__NAME=${DDNS_SUBDOMAIN}.${DOMAIN}
-      - CF_DNS__DOMAINS_0__PROXIED=${DDNS_PROXY}
-      - CF_DNS__DOMAINS_0__CREATE=true
-      - CF_DNS__DOMAINS_0__TYPE=AAAA
+      - CF_DNS__DOMAINS_1__ZONE_NAME=${DOMAIN}
+      - CF_DNS__DOMAINS_1__ZONE_ID=${CF_ZONE_ID:-}
+      - CF_DNS__DOMAINS_1__NAME=${DDNS_SUBDOMAIN}.${DOMAIN}
+      - CF_DNS__DOMAINS_1__PROXIED=${DDNS_PROXY}
+      - CF_DNS__DOMAINS_1__CREATE=true
+      - CF_DNS__DOMAINS_1__TYPE=AAAA
     volumes:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
