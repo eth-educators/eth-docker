@@ -6,9 +6,6 @@ server:
 positions:
   filename: /tmp/positions.yaml
 
-clients:
-  - url: http://loki:3100/loki/api/v1/push
-
 scrape_configs:
 - job_name: containers
   static_configs:
