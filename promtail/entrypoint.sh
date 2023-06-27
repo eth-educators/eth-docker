@@ -3,15 +3,15 @@
 # Start fresh every time
 cp /etc/promtail/global.yml /promtail-config.yml
 
-# Set loki push url to one set in environment variable
-cat >> /promtail-config.yml << EOF
-clients:
-  - url: $LOKI_PUSH_URL
-EOF
-
 # Add custom loki urls to config with indentation to make sure its valid yml
-if [ -f "/etc/promtail/custom-lokiurl.yml" ]; then
+if [ -s "/etc/promtail/custom-lokiurl.yml" ]; then
   echo "/etc/promtail/custom-lokiurl.yml" | xargs sed 's/^/  /' >> /promtail-config.yml
+else
+cat >> /promtail-config.yml << EOF
+  - url: http://loki:3100/loki/api/v1/push
+EOF
 fi
 
+# Replace SERVER_LABEL_HOSTNAME in config file
+sed -i "s/SERVER_LABEL_HOSTNAME/$SERVER_LABEL_HOSTNAME/" "/promtail-config.yml"
 exec "$@" --config.file=/promtail-config.yml

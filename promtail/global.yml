@@ -13,6 +13,7 @@ scrape_configs:
       - localhost
     labels:
       job: containerlogs
+      server: SERVER_LABEL_HOSTNAME
       __path__: /var/lib/docker/containers/*/*log
 
   pipeline_stages:
@@ -44,3 +45,5 @@ scrape_configs:
 
   - output:
       source: output
+
+clients:

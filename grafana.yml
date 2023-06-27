@@ -116,7 +116,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command: ["/usr/bin/promtail"]
     environment:
-      LOKI_PUSH_URL: ${LOKI_PUSH_URL:-http://loki:3100/loki/api/v1/push}
+      SERVER_LABEL_HOSTNAME: ${SERVER_LABEL_HOSTNAME:-notset}
     restart: "unless-stopped"
     depends_on:
       - loki
