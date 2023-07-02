@@ -64,6 +64,7 @@ services:
       - ${NETWORK}
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
+      - --force
 
   validator-exit:
     profiles: ["tools"]
