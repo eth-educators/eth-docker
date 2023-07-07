@@ -1619,11 +1619,11 @@ run() {
 }
 
 stop() {
-    docompose down --remove-orphans
+    docompose down --remove-orphans "$@"
 }
 
 down() {
-    stop
+    stop "$@"
 }
 
 terminate() {
@@ -1635,7 +1635,7 @@ terminate() {
         esac
     done
 
-    down
+    stop
 # In this case I want the word splitting, so rm can remove all volumes
 # shellcheck disable=SC2046
     dodocker volume rm $(dodocker volume ls -q -f "name=$(basename "$(realpath .)")")
@@ -1645,7 +1645,7 @@ terminate() {
 }
 
 restart() {
-    stop
+    stop "$@"
     start
 }
 
@@ -2363,13 +2363,13 @@ printhelp() {
     echo "  update [--refresh-targets] "
     echo "     updates all client versions and eth-docker itself"
     echo "     --refresh-targets will reset your custom build targets in .env to defaults"
-    echo "  up (or start)"
+    echo "  up|start"
     echo "     starts the Ethereum node, or restarts containers that had their image or"
     echo "     configuration changed"
-    echo "  down (or stop)"
-    echo "     stops the Ethereum node"
-    echo "  restart"
-    echo "     restarts the Ethereum node, a combination of down and up"
+    echo "  down|stop [service-name]"
+    echo "     stops the Ethereum node, or a specific service by name"
+    echo "  restart [service-name]"
+    echo "     restarts the Ethereum node, or a specific service by name, a combination of down and up"
     echo "  version"
     echo "     prints the version(s) of currently running client(s)"
     echo "  logs"
