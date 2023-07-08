@@ -129,21 +129,8 @@ services:
     environment:
       SERVER_LABEL_HOSTNAME: ${SERVER_LABEL_HOSTNAME:-notset}
     restart: "unless-stopped"
-    depends_on:
-      - loki
-    <<: *logging
-
-  loki:
-    restart: "unless-stopped"
-    image: grafana/loki:latest
-    volumes:
-      - loki-data:/tmp
-      - ./loki:/etc/loki
-    command:
-      - '--config.file=/etc/loki/loki.yml'
     <<: *logging
 
 volumes:
   prom-data:
-  loki-data:
   promtail-data:
