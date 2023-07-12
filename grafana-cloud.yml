@@ -127,7 +127,7 @@ services:
     entrypoint: ./etc/promtail/entrypoint.sh
     command: ["/usr/bin/promtail"]
     environment:
-      SERVER_LABEL_HOSTNAME: ${SERVER_LABEL_HOSTNAME:-notset}
+      SERVER_LABEL_HOSTNAME: ${LOGS_LABEL:-notset}
     restart: "unless-stopped"
     <<: *logging
 
