@@ -107,8 +107,10 @@ services:
       - ./promtail:/etc/promtail
       - promtail-data:/tmp
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command:
-      - '--config.file=/etc/promtail/promtail.yml'
+    entrypoint: ./etc/promtail/entrypoint.sh
+    command: ["/usr/bin/promtail"]
+    environment:
+      SERVER_LABEL_HOSTNAME: ${SERVER_LABEL_HOSTNAME:-notset}
     restart: "unless-stopped"
     depends_on:
       - loki
