@@ -44,7 +44,7 @@ services:
       - --beacon-node-api-endpoints=${CL_NODE:-http://consensus:5052}
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
-      - --network=auto
+      - --network=${NETWORK}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
