@@ -24,14 +24,22 @@ else
   __doppel="--doppelganger-detection=false"
 fi
 
+# Check whether we should use MEV Boost
+if [ "${MEV_BOOST}" = "true" ]; then
+  __mev_boost="--payload-builder=true"
+  echo "MEV Boost enabled"
+else
+  __mev_boost=""
+fi
+
 __log_level="--log-level=${LOG_LEVEL^^}"
 
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__log_level} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__log_level} ${__doppel} ${__mev_boost} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${VC_EXTRAS}
+  exec "$@" "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${__mev_boost} ${VC_EXTRAS}
 fi
