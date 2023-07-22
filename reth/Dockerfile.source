@@ -1,5 +1,5 @@
 # Build reth in a stock rust container
-FROM rust:bullseye as builder
+FROM rust:bookworm as builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
@@ -15,7 +15,7 @@ RUN bash -c "git clone --recurse-submodules -j8 https://github.com/paradigmxyz/r
     && RUSTFLAGS='-C target-cpu=native' cargo build --profile maxperf --features jemalloc"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 ARG USER=reth
 ARG UID=10001

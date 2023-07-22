@@ -2,7 +2,7 @@ ARG DOCKER_TAG
 ARG DOCKER_VC_TAG
 FROM gcr.io/prysmaticlabs/prysm/beacon-chain:${DOCKER_TAG} as ccsource
 
-FROM debian:bullseye-slim as consensus
+FROM debian:bookworm-slim as consensus
 
 #Included here to avoid build-time complaints
 ARG BUILD_TARGET
