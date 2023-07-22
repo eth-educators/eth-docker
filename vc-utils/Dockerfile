@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl jq gosu
 COPY --chown=1000:1000 ./keymanager.sh /usr/local/bin/

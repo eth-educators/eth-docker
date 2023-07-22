@@ -1,4 +1,4 @@
-from python:3.10-bullseye as builder
+from python:3.10-bookworm as builder
 
 ARG BUILD_TARGET
 
