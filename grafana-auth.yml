@@ -1,0 +1,5 @@
+version: "3.9"
+services:
+  grafana:
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
