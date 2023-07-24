@@ -14,7 +14,7 @@ RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y cmake libcla
 #ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /usr/src
-RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:lh-pr; git checkout lh-pr; else git checkout ${BUILD_TARGET}; fi && make"
+RUN bash -c "git clone https://github.com/sigp/lighthouse.git && cd lighthouse && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:lh-pr; git checkout lh-pr; else git checkout ${BUILD_TARGET}; fi && CROSS_PROFILE=maxperf make"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bullseye-slim
