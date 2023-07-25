@@ -40,8 +40,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/letsencrypt
       - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - cf-ddns
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
