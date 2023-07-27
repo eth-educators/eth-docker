@@ -50,6 +50,13 @@ case ${LOG_LEVEL} in
     ;;
 esac
 
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Reth archive node without pruning"
+  __prune=""
+else
+  __prune="--full"
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__verbosity} ${EL_EXTRAS}
+exec "$@" ${__verbosity} ${__prune} ${EL_EXTRAS}
