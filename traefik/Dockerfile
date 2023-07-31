@@ -1,6 +1,7 @@
 # Add AWS CLI to traefik image
+ARG DOCKER_TAG
 
-FROM traefik:v2.10
+FROM traefik:${DOCKER_TAG}
 
 RUN apk add --no-cache \
         python3 \
