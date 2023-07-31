@@ -12,6 +12,8 @@ services:
     image: traefik-aws
     build:
       context: ./traefik
+      args:
+        - DOCKER_TAG=${TRAEFIK_TAG}
     restart: "unless-stopped"
     command:
 #      - --accesslog=true

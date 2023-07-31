@@ -9,7 +9,7 @@ x-logging: &logging
 
 services:
   traefik:
-    image: traefik:v2.10
+    image: traefik:${TRAEFIK_TAG}
     restart: "unless-stopped"
     command:
 #      - --accesslog=true
@@ -47,7 +47,7 @@ services:
     <<: *logging
 
   cf-ddns:
-    image: ghcr.io/joshuaavalon/cloudflare-ddns:3
+    image: ghcr.io/joshuaavalon/cloudflare-ddns:${DDNS_TAG}
     restart: "unless-stopped"
     environment:
       - CF_DNS__LOG_LEVEL=${LOG_LEVEL:-info}
