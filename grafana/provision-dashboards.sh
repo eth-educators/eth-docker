@@ -41,11 +41,6 @@ case "$CLIENT" in
     __url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorMonitor.json'
     __file='/etc/grafana/provisioning/dashboards/lighthouse_validator_monitor.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "lighthouse_validator_monitor"' >"${__file}"
-    # lighthouse_yoldark34
-    # This needs a bit more for datasource than is here
-    #__url='https://raw.githubusercontent.com/Yoldark34/lighthouse-staking-dashboard/main/Yoldark_ETH_staking_dashboard.json'
-    #__file='/etc/grafana/provisioning/dashboards/lighthouse_yoldark34.json'
-    #wget -qcO - $__url | jq '.title = "lighthouse_yoldark34"' | jq '.uid = "t2yHaa3Zz3lou"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
   *teku* )
     #  teku_overview
@@ -94,8 +89,8 @@ case "$CLIENT" in
     # nethermind_dashboard
     __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/provisioning/dashboards/nethermind.json'
     __file='/etc/grafana/provisioning/dashboards/nethermind_dashboard.json'
-#    wget -t 3 -T 10 -qcO - "${__url}" | jq '.templating.list[0].current |= (.selected = true) | (.isNone = true) | (.text = "None") | (.value = "") | del(.allValue, .label, .description, .error, .includeAll, .multi) | .templating.list[1] |= (.hide = 2) | (.query = "execution:6060") | (.type = "constant") | (.current |= del(.selected, .text, .value)) | del(.allValue, .label, .description, .error, .includeAll, .multi, .options, .datasource, .definition, .refresh, .regex, .sort, .tagValuesQuery, .tagsQuery, .useTags)' >"${__file}"
-    cp /tmp/nethermind_dashboard.json "${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "prometheus_ds" then "Prometheus" else . end)' >"${__file}"
+#    cp /tmp/nethermind_dashboard.json "${__file}"
     ;;&
   *blox-ssv* )
     # Blox SSV Operator Dashboard
