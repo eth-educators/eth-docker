@@ -1,6 +1,6 @@
 OperatorPrivateKey: YOURPRIVATEKEYHERE
 ssv:
-  network: jato-v2
+  Network: jato-v2
 p2p:
   DiscoveryType: discv5
   TcpPort: 13001

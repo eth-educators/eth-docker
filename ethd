@@ -879,9 +879,9 @@ blox_switch() {
     if ! grep -q "ssv:" ssv-config.yaml; then
       sed -i'' '$a\ssv:' ssv-config.yaml
       if [ "${NETWORK}" = "goerli" ]; then
-        sed -i'' '$a\  network: jato-v2' ssv-config.yaml
-      elif [ "${NETWORK}" = "prater" ]; then
-        sed -i'' '$a\  network: mainnet' ssv-config.yaml
+        sed -i'' '$a\  Network: jato-v2' ssv-config.yaml
+      elif [ "${NETWORK}" = "mainnet" ]; then
+        sed -i'' '$a\  Network: mainnet' ssv-config.yaml
       else
         echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running ./ethd update again"
         echo "Aborting."
@@ -2206,6 +2206,15 @@ config() {
       "blox")
         if [ ! -f "./ssv-config.yaml" ]; then
             ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
+        fi
+        if [ "${NETWORK}" = "goerli" ]; then
+          sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config.yaml
+        elif [ "${NETWORK}" = "mainnet" ]; then
+          sed -i'' 's/  Network: .*/  Network: mainnet' ssv-config.yaml
+        else
+          echo "${NETWORK} is not something that works with SSV. This needs to be fixed when running ./ethd config again"
+          echo "Aborting."
+          exit 1
         fi
         query_consensus_only_client
         ;;
