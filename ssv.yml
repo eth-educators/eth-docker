@@ -8,13 +8,13 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  ssv2-node:
+  ssv-node:
     restart: "unless-stopped"
-    image: bloxstaking/ssv-node:${SSV2_NODE_TAG:-latest}
+    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
     user: 12000:12000
     volumes:
-      - ./blox-ssv-config.yaml:/config.yaml
-      - ssv2-data:/tmp
+      - ./ssv-config.yaml:/config.yaml
+      - ssv-data:/tmp
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
@@ -27,7 +27,7 @@ services:
   ssv-generate-keys:
     profiles: ["tools"]
     restart: "no"
-    image: bloxstaking/ssv-node:${SSV2_NODE_TAG:-latest}
+    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
     command: /go/bin/ssvnode generate-operator-keys
 volumes:
-  ssv2-data:
+  ssv-data:

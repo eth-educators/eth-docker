@@ -142,10 +142,14 @@ upgrade_compose() {
   fi
 }
 
-prep_prometheus() {
+prep_conffiles() {
 # Create custom-prom.yml if it doesn't exist
     if [ ! -f "./prometheus/custom-prom.yml" ]; then
         ${__as_owner} touch "./prometheus/custom-prom.yml"
+    fi
+# Create ssv-config.yml if it doesn't exist
+    if [ ! -f "./ssv-config.yaml" ]; then
+        ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
     fi
 }
 
@@ -671,11 +675,11 @@ envmigrate() {
                 ERIGON_DOCKERFILE MEV_DOCKERFILE MEV_DOCKER_TAG NIMEL_SRC_BUILD_TARGET NIMEL_DOCKER_TAG NIMEL_DOCKERFILE \
                 LS_SRC_BUILD_TARGET LS_DOCKER_TAG LS_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG TRAEFIK_TAG DDNS_TAG \
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
-                BESU_DOCKER_TAG BESU_DOCKERFILE SSV2_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG W3S_DOCKER_TAG \
+                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG W3S_DOCKER_TAG \
                 PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_DOCKER_TAG RETH_DOCKERFILE NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN \
+    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN SSV2_NODE_TAG \
             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
-    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN \
+    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN SSV_NODE_TAG \
             EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     if [ "${EUID}" -eq 0 ]; then
@@ -693,6 +697,15 @@ envmigrate() {
     else
       __pre_merge=0
     fi
+
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+    if [[ "${value}" =~ "blox-ssv2.yml" ]]; then
+       blox_switch
+    fi
+
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
@@ -796,8 +809,8 @@ envmigrate() {
 migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml blox-ssv2.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml ssv.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
@@ -837,6 +850,43 @@ migrate_compose_file() {
     done
     if [ "${__new_grafana}" = 0 ] && [ "${__old_grafana}" = 1 ]; then
         value="${value}:grafana.yml"
+    fi
+}
+
+blox_switch() {
+    echo "Detected legacy SSV Node. Migrating config to new testnet."
+    echo
+    echo "Stopping SSV Node container"
+    docompose stop ssv2-node && docompose rm -f ssv2-node
+    docker volume rm "$(docker volume ls -q | grep "$(basename "$(realpath .)")"_ssv2-data)"
+    echo ""
+    echo "SSV Node stopped and database deleted."
+    echo ""
+    cp blox-ssv-config.yaml blox-ssv-config.yaml.bak
+    cp blox-ssv-config.yaml ssv-config.yaml
+    rm blox-ssv-config.yaml
+    echo "Backup copy blox-ssv-config.yaml.bak created"
+    echo "Making changes to ssv-config.yaml"
+    var="NETWORK"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    sed -i'' 's/blox-ssv2.yml/ssv.yml/' .env
+    if ! grep -q "LogFilePath:" ssv-config.yaml; then
+      sed -i'' '/Global:/a\\n  LogFilePath: /tmp/ssv/debug.log' ssv-config.yaml
+    fi
+    if ! grep -q "MetricsAPIPort:" ssv-config.yaml; then
+      sed -i'' '$a\MetricsAPIPort: 15000' ssv-config.yaml
+    fi
+    if ! grep -q "ssv:" ssv-config.yaml; then
+      sed -i'' '$a\ssv:' ssv-config.yaml
+      if [ "${NETWORK}" = "goerli" ]; then
+        sed -i'' '$a\  network: jato-v2' ssv-config.yaml
+      elif [ "${NETWORK}" = "prater" ]; then
+        sed -i'' '$a\  network: mainnet' ssv-config.yaml
+      else
+        echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running ./ethd update again"
+        echo "Aborting."
+        exit 1
+      fi
     fi
 }
 
@@ -2154,8 +2204,8 @@ config() {
         query_validator_client
         ;;
       "blox")
-        if [ ! -f "./blox-ssv-config.yaml" ]; then
-            ${__as_owner} cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
+        if [ ! -f "./ssv-config.yaml" ]; then
+            ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
         fi
         query_consensus_only_client
         ;;
@@ -2199,7 +2249,7 @@ config() {
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
     fi
     if [ "${__deployment}" = "blox" ]; then
-        COMPOSE_FILE="${COMPOSE_FILE}:blox-ssv2.yml"
+        COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
     fi
     if [ -n "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
@@ -2263,8 +2313,8 @@ version() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     # Client versions
     case "${value}" in
-        *blox-ssv2.yml* )
-            docompose exec ssv2-node /go/bin/ssvnode --version
+        *ssv.yml* )
+            docompose exec ssv-node /go/bin/ssvnode --version
             echo
             ;;&
         *lighthouse.yml* | *lighthouse-cl-only* )
@@ -2433,7 +2483,7 @@ shift
 
 determine_distro
 handle_root
-prep_prometheus
+prep_conffiles
 
 # Don't check for docker before it's installed
 if [ "$command" = "install" ]; then

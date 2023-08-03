@@ -29,7 +29,7 @@ case "$CLIENT" in
 esac
 
 case "$CLIENT" in
-  *blox-ssv2* ) cat /etc/prometheus/blox-ssv2-prom.yml >> /etc/prometheus/prometheus.yml ;;
+  *ssv* ) cat /etc/prometheus/ssv-prom.yml >> /etc/prometheus/prometheus.yml ;;
 esac
 
 case "$CLIENT" in
