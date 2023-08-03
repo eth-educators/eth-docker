@@ -37,12 +37,6 @@ jobs:
       - name: Test node exporter
         run: |
           ./.github/check-service.sh node-exporter
-      - name: Test blackbox exporter
-        run: |
-          ./.github/check-service.sh blackbox-exporter
-      - name: Test json exporter
-        run: |
-          ./.github/check-service.sh json-exporter
       - name: Test cryptowat exporter
         run: |
           ./.github/check-service.sh cryptowat-exporter

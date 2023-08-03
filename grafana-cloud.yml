@@ -70,26 +70,26 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
 
-  blackbox-exporter:
-    restart: "unless-stopped"
-    image: prom/blackbox-exporter:master
-    volumes:
-      - ./prometheus/blackbox.yml:/config/blackbox.yml
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    command:
-      - --config.file=/config/blackbox.yml
+#  blackbox-exporter:
+#    restart: "unless-stopped"
+#    image: prom/blackbox-exporter:master
+#    volumes:
+#      - ./prometheus/blackbox.yml:/config/blackbox.yml
+#      - /etc/localtime:/etc/localtime:ro
+#    <<: *logging
+#    command:
+#      - --config.file=/config/blackbox.yml
 
-  json-exporter:
-    restart: "unless-stopped"
-    image: prometheuscommunity/json-exporter:latest
-    volumes:
-      - ./prometheus/json.yml:/config/json.yml
-      - /etc/localtime:/etc/localtime:ro
-    <<: *logging
-    command:
-      - --config.file
-      - /config/json.yml
+#  json-exporter:
+#    restart: "unless-stopped"
+#    image: prometheuscommunity/json-exporter:latest
+#    volumes:
+#      - ./prometheus/json.yml:/config/json.yml
+#      - /etc/localtime:/etc/localtime:ro
+#    <<: *logging
+#    command:
+#      - --config.file
+#      - /config/json.yml
 
   cryptowat-exporter:
     restart: "unless-stopped"
@@ -98,7 +98,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - CRYPTOWAT_EXCHANGES=kraken
-      - CRYPTOWAT_PAIRS=ethusd,ethchf
+      - CRYPTOWAT_PAIRS=etheur,ethusd,ethgbp,ethcad,ethchf,ethjpy,ethbtc
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     <<: *logging

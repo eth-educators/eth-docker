@@ -11,22 +11,15 @@ fi
 
 case "$CLIENT" in
   *prysm* )
-    #  prysm_metanull
-    __url='https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source-beacon_node.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_metanull.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_metanull"' >"${__file}"
-    #  prysm_less_10
-    __url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_less_10.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_less_10"' >"${__file}"
+    #  prysm_small
+    __url='https://docs.prylabs.network/assets/grafana-dashboards/small_amount_validators.json'
+    __file='/etc/grafana/provisioning/dashboards/prysm_small.json'
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Prysm Dashboard"' >"${__file}"
     #  prysm_more_10
-    __url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_more_10.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_more_10"' >"${__file}"
-    # prysm_ynager
-    __url='https://raw.githubusercontent.com/ynager/grafana-eth-staking/main/dashboard.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_ynager.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_ynager"' >"${__file}"
+    __url='https://docs.prylabs.network/assets/grafana-dashboards/big_amount_validators.json'
+    __file='/etc/grafana/provisioning/dashboards/prysm_big.json'
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Prysm Dashboard Many Validators"' >"${__file}"
     ;;&
   *lighthouse* )
     #  lighthouse_summary
@@ -41,11 +34,6 @@ case "$CLIENT" in
     __url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorMonitor.json'
     __file='/etc/grafana/provisioning/dashboards/lighthouse_validator_monitor.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "lighthouse_validator_monitor"' >"${__file}"
-    # lighthouse_yoldark34
-    # This needs a bit more for datasource than is here
-    #__url='https://raw.githubusercontent.com/Yoldark34/lighthouse-staking-dashboard/main/Yoldark_ETH_staking_dashboard.json'
-    #__file='/etc/grafana/provisioning/dashboards/lighthouse_yoldark34.json'
-    #wget -qcO - $__url | jq '.title = "lighthouse_yoldark34"' | jq '.uid = "t2yHaa3Zz3lou"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >$__file
     ;;&
   *teku* )
     #  teku_overview
@@ -94,8 +82,8 @@ case "$CLIENT" in
     # nethermind_dashboard
     __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/provisioning/dashboards/nethermind.json'
     __file='/etc/grafana/provisioning/dashboards/nethermind_dashboard.json'
-#    wget -t 3 -T 10 -qcO - "${__url}" | jq '.templating.list[0].current |= (.selected = true) | (.isNone = true) | (.text = "None") | (.value = "") | del(.allValue, .label, .description, .error, .includeAll, .multi) | .templating.list[1] |= (.hide = 2) | (.query = "execution:6060") | (.type = "constant") | (.current |= del(.selected, .text, .value)) | del(.allValue, .label, .description, .error, .includeAll, .multi, .options, .datasource, .definition, .refresh, .regex, .sort, .tagValuesQuery, .tagsQuery, .useTags)' >"${__file}"
-    cp /tmp/nethermind_dashboard.json "${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "prometheus_ds" then "Prometheus" else . end)' >"${__file}"
+#    cp /tmp/nethermind_dashboard.json "${__file}"
     ;;&
   *blox-ssv* )
     # Blox SSV Operator Dashboard
