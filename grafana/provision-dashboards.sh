@@ -11,22 +11,15 @@ fi
 
 case "$CLIENT" in
   *prysm* )
-    #  prysm_metanull
-    __url='https://raw.githubusercontent.com/metanull-operator/eth2-grafana/master/eth2-grafana-dashboard-single-source-beacon_node.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_metanull.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_metanull"' >"${__file}"
-    #  prysm_less_10
-    __url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/less_10_validators.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_less_10.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_less_10"' >"${__file}"
+    #  prysm_small
+    __url='https://docs.prylabs.network/assets/grafana-dashboards/small_amount_validators.json'
+    __file='/etc/grafana/provisioning/dashboards/prysm_small.json'
+    wget -t 3 -T 10 -qcO - "${__url}" >"${__file}"
     #  prysm_more_10
-    __url='https://raw.githubusercontent.com/GuillaumeMiralles/prysm-grafana-dashboard/master/more_10_validators.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_more_10.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_more_10"' >"${__file}"
-    # prysm_ynager
-    __url='https://raw.githubusercontent.com/ynager/grafana-eth-staking/main/dashboard.json'
-    __file='/etc/grafana/provisioning/dashboards/prysm_ynager.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "prysm_ynager"' >"${__file}"
+    __url='https://docs.prylabs.network/assets/grafana-dashboards/big_amount_validators.json'
+    __file='/etc/grafana/provisioning/dashboards/prysm_big.json'
+    wget -t 3 -T 10 -qcO - "${__url}" >"${__file}"
     ;;&
   *lighthouse* )
     #  lighthouse_summary
