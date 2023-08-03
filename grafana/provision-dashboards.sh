@@ -15,11 +15,11 @@ case "$CLIENT" in
     #  prysm_small
     __url='https://docs.prylabs.network/assets/grafana-dashboards/small_amount_validators.json'
     __file='/etc/grafana/provisioning/dashboards/prysm_small.json'
-    wget -t 3 -T 10 -qcO - "${__url}" >"${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Prysm Dashboard"' >"${__file}"
     #  prysm_more_10
     __url='https://docs.prylabs.network/assets/grafana-dashboards/big_amount_validators.json'
     __file='/etc/grafana/provisioning/dashboards/prysm_big.json'
-    wget -t 3 -T 10 -qcO - "${__url}" >"${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Prysm Dashboard Many Validators"' >"${__file}"
     ;;&
   *lighthouse* )
     #  lighthouse_summary
