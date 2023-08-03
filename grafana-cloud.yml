@@ -31,13 +31,6 @@ services:
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     <<: *logging
-    depends_on:
-      - node-exporter
-      - blackbox-exporter
-      - json-exporter
-      - cryptowat-exporter
-      - cadvisor
-      - ethereum-metrics-exporter
 
   ethereum-metrics-exporter:
     restart: "unless-stopped"
