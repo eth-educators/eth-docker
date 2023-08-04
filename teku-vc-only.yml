@@ -25,7 +25,7 @@ services:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - JAVA_OPTS=${TEKU_HEAP:--XX:SoftMaxHeapSize=2g -Xmx5g}
+      - JAVA_OPTS=${TEKU_HEAP:--Xmx2g}
       - MEV_BOOST=${MEV_BOOST}
       - VC_EXTRAS=${VC_EXTRAS:-}
       - DOPPELGANGER=${DOPPELGANGER:-}
