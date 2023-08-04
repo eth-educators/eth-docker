@@ -24,7 +24,7 @@ fi
 
 # Check whether we should enable doppelganger protection
 if [ "${DOPPELGANGER}" = "true" ]; then
-  __doppel="--doppelgangerProtectionEnabled"
+  __doppel="--doppelgangerProtection"
   echo "Doppelganger protection enabled, VC will pause for 2 epochs"
 else
   __doppel=""
