@@ -89,14 +89,24 @@ fi
 if [ -d "/var/lib/goethereum/geth/chaindata/" ]; then
   __pbss=""
 else
-  echo "Choosing PBSS for fresh sync"
-  __pbss="--state.scheme path"
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Geth is an archive node. Syncing without PBSS."
+    _pbss=""
+  else
+    echo "Choosing PBSS for fresh sync"
+    __pbss="--state.scheme path"
+    touch /var/lib/goethereum/is-pbss
+  fi
 fi
 
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Geth is an archive node. Not attempting to prune: Aborting."
+    exit 1
+  fi
+  if [ -f /var/lib/goethereum/is-pbss ]; then
+    echo "Geth is using PBSS. Pruning is neither needed nor supported. Aborting."
     exit 1
   fi
 # Word splitting is desired for the command line parameters
