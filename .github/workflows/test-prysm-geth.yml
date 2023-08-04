@@ -26,6 +26,9 @@ jobs:
           COMPOSE_FILE=prysm.yml:geth.yml
           var=COMPOSE_FILE
           set_value_in_env
+          FEE_RECIPIENT=0xDccf8451070a86183eE70D330C4c43b686E9CF86
+          var=FEE_RECIPIENT
+          set_value_in_env
       - name: Start Prysm/Geth
         run: |
           ./ethd up
