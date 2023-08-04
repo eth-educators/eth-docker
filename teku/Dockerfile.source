@@ -19,7 +19,7 @@ RUN bash -c "git clone https://github.com/ConsenSys/teku.git \
   && ./gradlew installDist"
 
 # Pull all binaries into a second stage deploy Ubuntu container
-FROM eclipse-temurin:17-jammy
+FROM eclipse-temurin:17-jre-jammy
 
 ARG USER=teku
 ARG UID=10002
