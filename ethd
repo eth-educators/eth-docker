@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #set -euo pipefail
 set -uo pipefail
+set -x
 
 __docker_exe="docker"
 __compose_exe="docker compose"
