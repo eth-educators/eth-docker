@@ -86,7 +86,7 @@ services:
 
   cryptowat-exporter:
     restart: "unless-stopped"
-    image: nbarrientos/cryptowat_exporter
+    image: nbarrientos/cryptowat_exporter:latest
     volumes:
       - /etc/localtime:/etc/localtime:ro
     environment:
@@ -97,7 +97,7 @@ services:
     <<: *logging
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/rootfs:ro
