@@ -151,6 +151,10 @@ prep_conffiles() {
     if [ ! -f "./ssv-config.yaml" ]; then
         ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
     fi
+# Create blox-ssv-config.yml if it doesn't exist
+    if [ ! -f "./blox-ssv-config.yaml" ]; then
+        ${__as_owner} cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
+    fi
 }
 
 handle_root() {
@@ -677,9 +681,9 @@ envmigrate() {
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
                 BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG SSV2_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG W3S_DOCKER_TAG \
                 PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_DOCKER_TAG RETH_DOCKERFILE NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN SSV2_NODE_TAG \
+    OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN \
             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
-    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN SSV_NODE_TAG \
+    NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN \
             EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
     if [ "${EUID}" -eq 0 ]; then
