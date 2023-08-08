@@ -675,7 +675,7 @@ envmigrate() {
                 ERIGON_DOCKERFILE MEV_DOCKERFILE MEV_DOCKER_TAG NIMEL_SRC_BUILD_TARGET NIMEL_DOCKER_TAG NIMEL_DOCKERFILE \
                 LS_SRC_BUILD_TARGET LS_DOCKER_TAG LS_DOCKERFILE GETH_SRC_BUILD_TARGET GETH_DOCKER_TAG TRAEFIK_TAG DDNS_TAG \
                 GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_DOCKER_TAG NM_DOCKERFILE BESU_SRC_BUILD_TARGET \
-                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG W3S_DOCKER_TAG \
+                BESU_DOCKER_TAG BESU_DOCKERFILE SSV_NODE_TAG SSV2_NODE_TAG DEPCLI_SRC_BUILD_TARGET DEPCLI_DOCKER_TAG W3S_DOCKER_TAG \
                 PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_DOCKER_TAG RETH_DOCKERFILE NODE_EXPORTER_IGNORE_MOUNT_REGEX )
     OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN SSV2_NODE_TAG \
             EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
@@ -703,7 +703,7 @@ envmigrate() {
 # Literal match intended
 # shellcheck disable=SC2076
     if [[ "${value}" =~ "blox-ssv2.yml" ]]; then
-       blox_switch
+       ssv_switch
     fi
 
     # Migrate over user settings
@@ -810,7 +810,7 @@ migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
     FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml blox-ssv2.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml ssv.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml blox-ssv2.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
@@ -853,7 +853,9 @@ migrate_compose_file() {
     fi
 }
 
-blox_switch() {
+ssv_switch() {
+    echo "Detected legacy SSV Node. Not migrating, yet."
+    return
     echo "Detected legacy SSV Node. Migrating config to new testnet."
     echo
     echo "Stopping SSV Node container"
@@ -2324,6 +2326,10 @@ version() {
     case "${value}" in
         *ssv.yml* )
             docompose exec ssv-node /go/bin/ssvnode --version
+            echo
+            ;;&
+        *blox-ssv2.yml* )
+            docompose exec ssv2-node /go/bin/ssvnode --version
             echo
             ;;&
         *lighthouse.yml* | *lighthouse-cl-only* )

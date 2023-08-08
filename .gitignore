@@ -12,4 +12,6 @@ alertmanager/config.yml
 prometheus/custom-prom.yml
 ssv-config.yaml
 ssv-config.yaml.bak
+blox-ssv-config.yaml
+blox-ssv-config.yaml.bak
 promtail/custom-lokiurl.yml
