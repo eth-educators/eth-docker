@@ -151,10 +151,6 @@ prep_conffiles() {
     if [ ! -f "./ssv-config.yaml" ]; then
         ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
     fi
-# Create blox-ssv-config.yml if it doesn't exist
-    if [ ! -f "./blox-ssv-config.yaml" ]; then
-        ${__as_owner} cp ./blox-ssv-config-sample.yaml ./blox-ssv-config.yaml
-    fi
 }
 
 handle_root() {
@@ -814,7 +810,7 @@ migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
     FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml lh-validator-notz.yml lh-slasher.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml blox-ssv2.yml prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml )
-    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml blox-ssv2.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml ssv.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
     __old_grafana=0
     __new_grafana=0
@@ -858,8 +854,6 @@ migrate_compose_file() {
 }
 
 ssv_switch() {
-    echo "Detected legacy SSV Node. Not migrating, yet."
-    return
     echo "Detected legacy SSV Node. Migrating config to new testnet."
     echo
     echo "Stopping SSV Node container"
@@ -2330,10 +2324,6 @@ version() {
     case "${value}" in
         *ssv.yml* )
             docompose exec ssv-node /go/bin/ssvnode --version
-            echo
-            ;;&
-        *blox-ssv2.yml* )
-            docompose exec ssv2-node /go/bin/ssvnode --version
             echo
             ;;&
         *lighthouse.yml* | *lighthouse-cl-only* )
