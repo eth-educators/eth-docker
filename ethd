@@ -1756,7 +1756,7 @@ query_deployment() {
       "What kind of deployment do you want to run?" 12 80 5 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rocket" "Validator client only - integrate with RocketPool" \
-      "blox" "Blox SSV node - consensus, execution and ssv-node" \
+      "ssv" "SSV node - consensus, execution and ssv-node" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     fi
 
@@ -2209,7 +2209,7 @@ config() {
       "validator" | "rocket")
         query_validator_client
         ;;
-      "blox")
+      "ssv")
         if [ ! -f "./ssv-config.yaml" ]; then
             ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
         fi
@@ -2263,7 +2263,7 @@ config() {
     if [ -n "${EXECUTION_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
     fi
-    if [ "${__deployment}" = "blox" ]; then
+    if [ "${__deployment}" = "ssv" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
     fi
     if [ -n "${GRAFANA_CLIENT+x}" ]; then
