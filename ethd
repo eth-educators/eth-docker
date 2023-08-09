@@ -73,7 +73,7 @@ determine_compose() {
     if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
-      echo "eth-docker will stop supporting it with Dencun, sometime fall 2023."
+      echo "Eth Docker will stop supporting it with Dencun, sometime fall 2023."
       echo ""
       echo "It is recommended that you replace compose V1 with compose V2."
       while true; do
@@ -186,7 +186,7 @@ check_for_snap() {
         echo "an apt version of docker installed as well, but in a nutshell"
         echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
         echo "and then a reboot, and as needed install docker.io or docker-ce with apt,"
-        echo "re-import keys and restart eth-docker."
+        echo "re-import keys and restart Eth Docker."
         echo
         echo "Do join us on EthStaker Discord to work through this issue."
         echo
@@ -322,11 +322,11 @@ check_disk_space() {
     elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
         echo ""
         echo "You are running Geth and have less than 100 GiB of free disk space."
-        echo "If Avail reads 40 GiB or more, prune with ./ethd prune-geth:"
+        echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"./ethd resync-consensus\"."
+        echo ""
+        echo "Alternatively, if you don't feel ready for a resync and have more than 40 GiB free, you can prune with \"./ethd prune-geth\"."
         echo ""
         df -h "${__docker_dir}"
-        echo ""
-        echo "If it's less than 40 GiB, you may need to resync Geth from scratch."
         echo ""
     elif [[ "${__free_space}" -lt 52428800 ]]; then
         echo ""
@@ -594,10 +594,10 @@ reset to defaults."
     else
         echo "WARNING"
         echo
-        echo "Updating eth-docker failed during \"git pull\""
+        echo "Updating Eth Docker failed during \"git pull\""
         echo
         echo "Please try \"git pull\" manually."
-        echo "Do not run \"./ethd up\" until git can update eth-docker."
+        echo "Do not run \"./ethd up\" until git can update Eth Docker."
         echo "The current partial update risks startup failure."
     fi
     if [[ "$__distro" = "ubuntu" ]]; then
@@ -614,7 +614,7 @@ reset to defaults."
     if [[ "${ETHDSWITCHED-}" -eq 1 ]]; then
         unset ETHDSWITCHED
         echo
-        echo "You were migrated to the $(${__as_owner} git name-rev --name-only HEAD) branch of eth-docker"
+        echo "You were migrated to the $(${__as_owner} git name-rev --name-only HEAD) branch of Eth Docker"
         echo
     fi
     delete_erigon
@@ -623,7 +623,7 @@ reset to defaults."
 # shellcheck disable=SC2009
     if ps $PPID | grep -q "ethd"; then
         echo
-        echo "Updated from an older version of eth-docker. You'll see \"Terminated\","
+        echo "Updated from an older version of Eth Docker. You'll see \"Terminated\","
         echo "which keeps the update from running twice. This is normal and will"
         echo "only happen this once."
         echo
@@ -634,7 +634,7 @@ reset to defaults."
         echo
         echo "WARNING"
         echo
-        echo "You have uncommitted local changes to eth-docker, which may interfere with updates."
+        echo "You have uncommitted local changes to Eth Docker, which may interfere with updates."
         echo "Please undo these changes or \"git commit\" them."
         echo "These are the files with local changes:"
         echo
@@ -764,7 +764,7 @@ envmigrate() {
         var="FEE_RECIPIENT"
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to eth-docker docs (https://eth-docker.net/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
+            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to Eth Docker docs (https://ethdocker.com/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
             __during_update=1
             query_coinbase
             set_value_in_env
@@ -1136,6 +1136,9 @@ prune-geth() {
     fi
 
     if [ $__non_interactive = 0 ]; then
+      echo "Geth PBSS is available. Consider answering \"No\" and using \"./ethd resync-execution\" instead of prune."
+      echo "PBSS continually prunes, making manual pruning runs a thing of the past."
+      echo ""
       while true; do
           read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
           case $yn in
@@ -1362,7 +1365,7 @@ prep-keyimport() {
 
 __i_haz_ethdo() {
     if [ ! -f ".env" ]; then
-        echo "eth-docker has not been configured. Please run ./ethd config first."
+        echo "Eth Docker has not been configured. Please run ./ethd config first."
         exit 1
     fi
     var="COMPOSE_FILE"
@@ -1383,7 +1386,7 @@ __i_haz_ethdo() {
           COMPOSE_FILE="${value}:ethdo.yml"
         else
           COMPOSE_FILE="ethdo.yml"
-          echo "You do not have a CL in eth-docker. Please make sure CL_NODE in .env points at an available one"
+          echo "You do not have a CL in Eth Docker. Please make sure CL_NODE in .env points at an available one"
         fi
         set_value_in_env
         echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
@@ -1392,7 +1395,7 @@ __i_haz_ethdo() {
 
 __i_haz_web3signer() {
     if [ ! -f ".env" ]; then
-        echo "eth-docker has not been configured. Please run ./ethd config first."
+        echo "Eth Docker has not been configured. Please run ./ethd config first."
         exit 1
     fi
 
@@ -1420,7 +1423,7 @@ __i_haz_web3signer() {
         if [ -n "${value}" ]; then
           COMPOSE_FILE="${value}:web3signer.yml"
         else
-          echo "You do not have a validator client in eth-docker. web3signer cannot be used without one."
+          echo "You do not have a validator client in Eth Docker. web3signer cannot be used without one."
           exit 1
         fi
         set_value_in_env
@@ -1559,7 +1562,7 @@ keys() {
         ${__as_owner} rm -rf ./.eth/ethdo/arm64
         echo
         echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
-        echo "Please see https://eth-docker.net/Support/ChangingWithdrawalCredentials for details"
+        echo "Please see https://ethdocker.com/Support/ChangingWithdrawalCredentials for details"
     elif [ "${1:-}" = "send-address-change" ]; then
         __i_haz_ethdo
         docompose run --rm ethdo validator credentials set
@@ -2556,12 +2559,12 @@ printhelp() {
     echo "  install"
     echo "     attempts to install docker and docker-compose for you"
     echo "  config"
-    echo "     configures eth-docker with your choice of Ethereum clients"
+    echo "     configures Eth Docker with your choice of Ethereum clients"
     echo "  keys ACTION"
     echo "     list, delete, import keys; their fee recipients; and gas fees"
     echo "     Run without ACTION to get help text"
     echo "  update [--refresh-targets] "
-    echo "     updates all client versions and eth-docker itself"
+    echo "     updates all client versions and Eth Docker itself"
     echo "     --refresh-targets will reset your custom build targets in .env to defaults"
     echo "  up|start"
     echo "     starts the Ethereum node, or restarts containers that had their image or"
@@ -2579,7 +2582,8 @@ printhelp() {
     echo "  terminate"
     echo "     stops the Ethereum node and destroys all data stores"
     echo "  prune-geth"
-    echo "     stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
+    echo "     legacy command - stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
+    echo "     consider a resync with PBSS instead, \"$me resync-execution\""
     echo "  prune-nethermind"
     echo "     restarts the Nethermind execution client and prunes its DB."
     echo "  resync-execution"
@@ -2594,8 +2598,6 @@ printhelp() {
     echo ""
     echo "  $me logs -f --tail 50 execution"
     echo "    shows logs only for execution service"
-    echo ""
-    echo "$me will attempt to use sudo as needed for docker commands"
     echo ""
     echo "✍️ Give feedback and report issues on GitHub:"
     echo "  * https://github.com/eth-educators/eth-docker"
@@ -2618,7 +2620,7 @@ else
 fi
 
 if [ "${OWNER}" == "root" ]; then
-    echo "Please install eth-docker as a non-root user."
+    echo "Please install Eth Docker as a non-root user."
     exit 1
 fi
 
@@ -2674,12 +2676,12 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
   echo "You can create yourself an alias for \"docker-compose\"."
   echo
   echo "Optionally, you can switch to docker-ce."
-  echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
+  echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
 elif [ "${__old_compose}" -eq 1 ]; then
   echo
   echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on."
-  echo "eth-docker will stop supporting it with Dencun, sometime fall 2023."
+  echo "Eth Docker will stop supporting it with Dencun, sometime fall 2023."
   echo ""
-  echo "A switch to docker-ce is recommended. It is *not* mandatory. This is unfortunately a manual step that eth-docker cannot do for you."
-  echo "Please see https://eth-docker.net/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
+  echo "A switch to docker-ce is recommended. It is *not* mandatory. This is unfortunately a manual step that Eth Docker cannot do for you."
+  echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
 fi
