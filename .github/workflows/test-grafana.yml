@@ -17,8 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Create .env file
-        run: |
-          cp default.env .env
+        run: cp default.env .env
       - name: Set Lighthouse/Geth/Grafana
         run: |
           source ./.github/helper.sh
@@ -26,35 +25,26 @@ jobs:
           var=COMPOSE_FILE
           set_value_in_env
       - name: Start Lighthouse/Geth/Grafana
-        run: |
-          ./ethd up
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
       - name: Test Prometheus
-        run: |
-          ./.github/check-service.sh prometheus
+        run: ./.github/check-service.sh prometheus
       - name: Test metrics exporter
-        run: |
-          ./.github/check-service.sh ethereum-metrics-exporter
+        run: ./.github/check-service.sh ethereum-metrics-exporter
       - name: Test node exporter
-        run: |
-          ./.github/check-service.sh node-exporter
-      - name: Test cryptowat exporter
-        run: |
-          ./.github/check-service.sh cryptowat-exporter
+        run: ./.github/check-service.sh node-exporter
       - name: Test blackbox exporter
-        run: |
-          ./.github/check-service.sh blackbox-exporter
+        run: ./.github/check-service.sh blackbox-exporter
       - name: Test json exporter
-        run: |
-          ./.github/check-service.sh json-exporter
+        run: ./.github/check-service.sh json-exporter
+      - name: Test cryptowat exporter
+        run: ./.github/check-service.sh cryptowat-exporter
       - name: Test cadvisor
-        run: |
-          ./.github/check-service.sh cadvisor
+        run: ./.github/check-service.sh cadvisor
       - name: Test promtail
-        run: |
-          ./.github/check-service.sh promtail
+        run: ./.github/check-service.sh promtail
       - name: Test Loki
-        run: |
-          ./.github/check-service.sh loki
+        run: ./.github/check-service.sh loki
       - name: Test Grafana
-        run: |
-          ./.github/check-service.sh grafana
+        run: ./.github/check-service.sh grafana
