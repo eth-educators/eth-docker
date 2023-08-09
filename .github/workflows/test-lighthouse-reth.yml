@@ -18,8 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Create .env file
-        run: |
-          cp default.env .env
+        run: cp default.env .env
       - name: Set Lighthouse/Reth
         run: |
           source ./.github/helper.sh
@@ -30,17 +29,15 @@ jobs:
           var=FEE_RECIPIENT
           set_value_in_env
       - name: Start Lighthouse/Reth
-        run: |
-          ./ethd up
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
       - name: Test Lighthouse CL
-        run: |
-          ./.github/check-service.sh consensus
+        run: ./.github/check-service.sh consensus
       - name: Test Lighthouse VC
-        run: |
-          ./.github/check-service.sh validator
+        run: ./.github/check-service.sh validator
       - name: Test Reth
-        run: |
-          ./.github/check-service.sh execution
+        run: ./.github/check-service.sh execution
       - name: Set Lighthouse/Reth w/ VC
         run: |
           source ./.github/helper.sh
@@ -48,14 +45,12 @@ jobs:
           var=COMPOSE_FILE
           set_value_in_env
       - name: Start Lighthouse/Reth
-        run: |
-          ./ethd up
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
       - name: Test Lighthouse CL
-        run: |
-          ./.github/check-service.sh consensus
+        run: ./.github/check-service.sh consensus
       - name: Test Lighthouse VC
-        run: |
-          ./.github/check-service.sh validator
+        run: ./.github/check-service.sh validator
       - name: Test Reth
-        run: |
-          ./.github/check-service.sh execution
+        run: ./.github/check-service.sh execution

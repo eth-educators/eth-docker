@@ -18,8 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Create .env file
-        run: |
-          cp default.env .env
+        run: cp default.env .env
       - name: Set Nimbus/Nethermind
         run: |
           source ./.github/helper.sh
@@ -30,14 +29,13 @@ jobs:
           var=FEE_RECIPIENT
           set_value_in_env
       - name: Start Nimbus/Nethermind
-        run: |
-          ./ethd up
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
       - name: Test Nimbus
-        run: |
-          ./.github/check-service.sh consensus
+        run: ./.github/check-service.sh consensus
       - name: Test Nethermind
-        run: |
-          ./.github/check-service.sh execution
+        run: ./.github/check-service.sh execution
       - name: Set Nimbus/Nethermind w/ VC
         run: |
           source ./.github/helper.sh
@@ -45,14 +43,12 @@ jobs:
           var=COMPOSE_FILE
           set_value_in_env
       - name: Start Nimbus/Nethermind
-        run: |
-          ./ethd up
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
       - name: Test Nimbus CL
-        run: |
-          ./.github/check-service.sh consensus
+        run: ./.github/check-service.sh consensus
       - name: Test Nimbus VC
-        run: |
-          ./.github/check-service.sh validator
+        run: ./.github/check-service.sh validator
       - name: Test Nethermind
-        run: |
-          ./.github/check-service.sh execution
+        run: ./.github/check-service.sh execution

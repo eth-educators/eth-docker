@@ -1,0 +1,36 @@
+name: Test ethd
+run-name: Test ethd
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
+
+jobs:
+  test-ethd:
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'test-ethd') ||
+      contains(github.event.pull_request.labels.*.name, 'test-all') ||
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Expect
+        run: sudo apt-get install -y expect whiptail
+      - name: Test ethd config defaults
+        run: expect ./.github/test-ethd-config.exp all-defaults
+        env:
+          TERM: xterm
+      - name: Test ethd config no checkpoint
+        run: expect ./.github/test-ethd-config.exp no-checkpoint
+        env:
+          TERM: xterm
+      - name: Test ethd config no mev
+        run: expect ./.github/test-ethd-config.exp no-mev
+        env:
+          TERM: xterm
+      - name: Test ethd config no grafana
+        run: expect ./.github/test-ethd-config.exp no-grafana
+        env:
+          TERM: xterm
