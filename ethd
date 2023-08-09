@@ -764,7 +764,7 @@ envmigrate() {
         var="FEE_RECIPIENT"
         value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to Eth Docker docs (https://ethdocker.com/docs/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
+            whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no valid address is set" 16 75
             __during_update=1
             query_coinbase
             set_value_in_env
