@@ -322,7 +322,7 @@ check_disk_space() {
     elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
         echo ""
         echo "You are running Geth and have less than 100 GiB of free disk space."
-        echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"./ethd resync-consensus\"."
+        echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"./ethd resync-execution\"."
         echo ""
         echo "Alternatively, if you don't feel ready for a resync and have more than 40 GiB free, you can prune with \"./ethd prune-geth\"."
         echo ""
