@@ -35,6 +35,31 @@ call_api() {
     fi
 }
 
+call_cl_api() {
+    set +e
+    if [ -z "${__api_data}" ]; then
+        __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" \
+            "${CL_NODE}"/"${__api_path}")
+    else
+        __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Content-Type: application/json" \
+            --data "${__api_data}" "${CL_NODE}"/"${__api_path}")
+    fi
+    __return=$?
+    if [ $__return -ne 0 ]; then
+        echo "Error encountered while trying to call the consensus client REST API via curl."
+        echo "Please make sure the ${CL_NODE} URL is reachable."
+        echo "Error code $__return"
+        exit $__return
+    fi
+    if [ -f /tmp/result.txt ]; then
+        __result=$(cat /tmp/result.txt)
+    else
+        echo "Error encountered while trying to call the consensus client REST API via curl."
+        echo "HTTP code: ${__code}"
+        exit 1
+    fi
+}
+
 get-token() {
 set +e
     if [ -z "${PRYSM:+x}" ]; then
@@ -196,6 +221,68 @@ gas-delete() {
         *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
     esac
 }
+
+exit-sign() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/voluntary_exit
+    __api_data=""
+    __http_method=POST
+    call_api
+    case $__code in
+        200) echo "Signed voluntary exit for validator with public key $__pubkey";;
+        400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+    esac
+    # This is only reached for 200
+    echo "${__result}" >"/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
+    exitstatus=$?
+    if [ "${exitstatus}" -eq 0 ]; then
+        echo "Writing the exit message into file ./.eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json succeeded"
+    else
+        echo "Error writing exit json to file ./.eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
+    fi
+}
+
+exit-send() {
+    shopt -s nullglob
+    json_files=(/exit_messages/*.json)
+
+    if [[ ${#json_files[@]} -eq 0 ]]; then
+        echo "No exit message files found in \"./.eth/exit_messages\"."
+        echo "Aborting."
+        exit 1
+    fi
+
+    for file in "${json_files[@]}"; do
+        validator_index=$(jq '.message.validator_index' "$file" 2>/dev/null || true)
+
+        if [[ $validator_index != "null" && -n $validator_index ]]; then
+            __api_path=eth/v1/beacon/pool/voluntary_exits
+            __api_data="$(cat "${file}")"
+            __http_method=POST
+            call_cl_api
+            case $__code in
+                200) echo "Loaded voluntary exit message for validator index $validator_index";;
+                400) echo "Unable to load the voluntary exit message. Error: $(echo "$__result" | jq -r '.message')";;
+                500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')";;
+                *) echo "Unexpected return code $__code. Result: $__result";;
+            esac
+            echo ""
+        else
+            echo "./.eth/exit_messages/$(basename "$file") is not a pre-signed exit message."
+            echo "Skipping."
+        fi
+    done
+}
+
 
 __validator-list-call() {
     __api_data=""
@@ -771,8 +858,12 @@ usage() {
     echo "  send-address-change"
     echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
     echo
+    echo "  sign-exit 0xPUBKEY"
+    echo "      Create pre-signed exit message for the validator with public key 0xPUBKEY"
     echo "  sign-exit from-keystore [--offline]"
     echo "      Create pre-signed exit messages with ethdo, from keystore files in ./.eth/validator_keys"
+    echo "  send-exit"
+    echo "      Send pre-signed exit messages in ./.eth/exit_messages to the Ethereum chain"
 }
 
 set -e
@@ -869,6 +960,13 @@ case "$3" in
     delete-gas)
         __pubkey=$4
         gas-delete
+        ;;
+    sign-exit)
+        __pubkey=$4
+        exit-sign
+        ;;
+    send-exit)
+        exit-send
         ;;
     prepare-address-change)
         echo "This should have been handled one layer up in ethd. This is a bug, please report."

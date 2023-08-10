@@ -104,8 +104,9 @@ upgrade_compose() {
       echo "This script cannot update compose on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
       exit 0
     fi
-    ${__auto_sudo} apt-get remove -y docker-compose
-    echo "Removed docker-compose"
+    #Out of caution as this may trigger an autoremove of docker.io, tbd
+    #${__auto_sudo} apt-get remove -y docker-compose
+    #echo "Removed docker-compose"
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
     ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
     ${__auto_sudo} echo \
@@ -124,8 +125,9 @@ upgrade_compose() {
         echo "This script cannot update compose on Debian ${__major_version}. Consider upgrading to 11 or 12."
         exit 0
     fi
-    ${__auto_sudo} apt-get remove -y docker-compose
-    echo "Removed docker-compose"
+    #Out of caution as this may trigger an autoremove of docker.io, tbd
+    #${__auto_sudo} apt-get remove -y docker-compose
+    #echo "Removed docker-compose"
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
     ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
     ${__auto_sudo} echo \
@@ -1425,6 +1427,22 @@ __i_haz_web3signer() {
     fi
 }
 
+__i_haz_keys_service() {
+    if ! docompose --profile tools config --services | grep -q validator-keys; then
+        if [[ "${1:-}" = "silent" ]]; then
+            return 1
+        fi
+        echo "The validator-keys service is not defined. Are you running only a consensus layer client?"
+        echo "Key management happens on the validator client / web3signer, not the consensus layer client."
+        echo "You can however do things like send an exit message, prep a withdrawal credentials change,"
+        echo "sign exit messages with ethdo."
+        echo ""
+        echo "Aborting."
+        exit 1
+    fi
+    return 0
+}
+
 __keys_usage() {
     echo "Call keymanager with an ACTION, one of:"
     echo "  list"
@@ -1468,8 +1486,12 @@ __keys_usage() {
     echo "  send-address-change"
     echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
     echo
+    echo "  sign-exit 0xPUBKEY"
+    echo "      Create pre-signed exit message for the validator with public key 0xPUBKEY"
     echo "  sign-exit from-keystore [--offline]"
     echo "      Create pre-signed exit messages with ethdo, from keystore files in ./.eth/validator_keys"
+    echo "  send-exit"
+    echo "      Send pre-signed exit messages in ./.eth/exit_messages to the Ethereum chain"
 }
 
 keys() {
@@ -1482,6 +1504,7 @@ keys() {
 
     __owner_uid=$(id -u "${OWNER}")
     if [ "${1:-}" = "import" ]; then
+        __i_haz_keys_service
         shift
         prep-keyimport "$@"
         if [ ${__non_interactive} = 1 ]; then
@@ -1595,7 +1618,6 @@ keys() {
 
         created=0
         failed=0
-        mkdir -p .eth/exit_messages
         for __keyfile in .eth/validator_keys/keystore-*.json; do
             [ -f "${__keyfile}" ] || continue # Should always evaluate true - just in case
             if [ "${__justone}" -eq 0 ]; then
@@ -1648,7 +1670,31 @@ keys() {
         if [ "${failed}" -gt 0 ]; then
           echo "Failed for ${failed} validators"
         fi
+    elif [ "${1:-}" = "send-exit" ] && ! __i_haz_keys_service silent; then
+        var="CL_NODE"
+        CL_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        network_name="$(basename "$(pwd)")_default"
+        if ! dodocker image ls --format "{{.Repository}}:{{.Tag}}" | grep -q "vc-utils:local"; then
+          if ! dpkg-query -W -f='${Status}' docker-ce 2>/dev/null | grep -q "ok installed"; then
+            dodocker build -t vc-utils:local ./vc-utils
+          else
+            if ! dpkg-query -W -f='${Status}' docker-buildx-plugin 2>/dev/null | grep -q "ok installed"; then
+              ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y docker-buildx-plugin
+            fi
+            dodocker buildx build -t vc-utils:local ./vc-utils
+          fi
+        fi
+        dodocker run --rm \
+          -u 1000:1000 \
+          --network "${network_name}" \
+          --name send-exit \
+          -v "$(pwd)/.eth/exit_messages:/exit_messages" \
+          -v "/etc/localtime:/etc/localtime:ro" \
+          -e "CL_NODE=${CL_NODE}" \
+          --entrypoint "keymanager.sh" \
+          vc-utils:local /var/lib/lighthouse/nonesuch.txt consensus send-exit
     else
+        __i_haz_keys_service
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
 }

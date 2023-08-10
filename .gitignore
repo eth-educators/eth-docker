@@ -5,6 +5,7 @@ ext-network.yml.original
 .eth/*
 !.eth/README.md
 !.eth/validator_keys/.empty
+!.eth/exit_messages/.empty
 !.eth/ethdo/README.md
 !.eth/ethdo/create-withdrawal-change.sh
 *.swp
