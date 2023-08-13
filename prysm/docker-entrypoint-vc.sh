@@ -24,7 +24,7 @@ fi
 
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--validators-external-signer-url http://web3signer:9000"
+  __w3s_url="--validators-external-signer-url http://web3signer:9000 --validators-external-signer-public-keys http://web3signer:9000/api/v1/eth2/publicKeys"
 else
   __w3s_url=""
 fi

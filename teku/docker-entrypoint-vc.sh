@@ -42,7 +42,7 @@ fi
 
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--validators-external-signer-url http://web3signer:9000"
+  __w3s_url="--validators-external-signer-url http://web3signer:9000 --validators-external-signer-public-keys external-signer"
 else
   __w3s_url=""
 fi
