@@ -30,12 +30,19 @@ else
   __doppel=""
 fi
 
+# Web3signer URL
+if [ "${WEB3SIGNER}" = "true" ]; then
+  __w3s_url="--externalSigner.url http://web3signer:9000 --externalSigner.fetch"
+else
+  __w3s_url=""
+fi
+
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__mev_boost} ${__beacon_stats} ${__doppel} ${__w3s_url} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--graffiti" "${GRAFFITI}" ${__mev_boost} ${__beacon_stats} ${__doppel} ${VC_EXTRAS}
+  exec "$@" "--graffiti" "${GRAFFITI}" ${__mev_boost} ${__beacon_stats} ${__doppel} ${__w3s_url} ${VC_EXTRAS}
 fi
