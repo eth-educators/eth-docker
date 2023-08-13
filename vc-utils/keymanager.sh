@@ -303,6 +303,8 @@ validator-list() {
         __token=NIL
         __vc_api_container=${__api_container}
         __api_container=web3signer
+        __vc_service=${__service}
+        __service=web3signer
         __vc_api_port=${__api_port}
         __api_port=9000
         __vc_api_tls=${__api_tls}
@@ -312,22 +314,23 @@ validator-list() {
     fi
     __validator-list-call
     if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
-        echo "No keys loaded"
+        echo "No keys loaded into ${__service}"
     else
-        echo "Validator public keys"
+        echo "Validator public keys loaded into ${__service}"
         echo "$__result" | jq -r '.data[].validating_pubkey'
     fi
     if [ "${WEB3SIGNER}" = "true" ]; then
         get-token
         __api_path=eth/v1/remotekeys
         __api_container=${__vc_api_container}
+        __service=${__vc_service}
         __api_port=${__vc_api_port}
         __api_tls=${__vc_api_tls}
         __validator-list-call
         if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
-            echo "No keys registered"
+            echo "No remote keys registered with ${__service}"
         else
-            echo "Keys registered"
+            echo "Remote keys registered with ${__service}"
             echo "$__result" | jq -rc '.data[] | [.pubkey, .url] | join(" ")'
         fi
     fi
