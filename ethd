@@ -1504,7 +1504,7 @@ keys() {
 
     __owner_uid=$(id -u "${OWNER}")
     if [ "${1:-}" = "import" ]; then
-        __i_haz_keys_service
+        #__i_haz_keys_service
         shift
         prep-keyimport "$@"
         if [ ${__non_interactive} = 1 ]; then
@@ -1670,7 +1670,8 @@ keys() {
         if [ "${failed}" -gt 0 ]; then
           echo "Failed for ${failed} validators"
         fi
-    elif [ "${1:-}" = "send-exit" ] && ! __i_haz_keys_service silent; then
+    #elif [ "${1:-}" = "send-exit" ] && ! __i_haz_keys_service silent; then
+    elif [ "${1:-}" = "send-exit" ]; then
         var="CL_NODE"
         CL_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
         network_name="$(basename "$(pwd)")_default"
@@ -1694,7 +1695,7 @@ keys() {
           --entrypoint "keymanager.sh" \
           vc-utils:local /var/lib/lighthouse/nonesuch.txt consensus send-exit
     else
-        __i_haz_keys_service
+        #__i_haz_keys_service
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
 }
