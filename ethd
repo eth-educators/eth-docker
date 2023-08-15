@@ -2449,6 +2449,10 @@ version() {
             docompose exec execution erigon --version
             echo
             ;;&
+        *web3signer.yml* )
+            docompose exec web3signer /opt/web3signer/bin/web3signer --version
+            echo
+            ;;&
         *mev-boost.yml* )
             docompose exec mev-boost /app/mev-boost -version
             echo
