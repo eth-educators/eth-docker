@@ -1741,7 +1741,7 @@ terminate() {
     stop
 # In this case I want the word splitting, so rm can remove all volumes
 # shellcheck disable=SC2046
-    dodocker volume rm $(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_.+")
+    dodocker volume rm $(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")
     echo ""
     echo "All containers stopped and all volumes deleted"
     echo ""
