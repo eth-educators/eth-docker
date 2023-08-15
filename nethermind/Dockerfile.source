@@ -56,4 +56,4 @@ RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
-ENTRYPOINT ["./Nethermind.Runner"]
+ENTRYPOINT ["./nethermind"]
