@@ -874,6 +874,10 @@ set -e
 if [ "$(id -u)" = '0' ]; then
     __token_file=$1
     __api_container=$2
+    case "$__api_container" in
+        vc) __service=validator;;
+        *) __service="$__api_container";;
+    esac
     __api_port=${KEY_API_PORT:-7500}
     if [ -z "${TLS:+x}" ]; then
         __api_tls=false
@@ -904,7 +908,7 @@ if [ "$(id -u)" = '0' ]; then
         exec gosu "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
     else
         echo "File $__token_file not found."
-        echo "The $__api_container service may not be fully started yet."
+        echo "The $__service service may not be fully started yet."
         exit 1
     fi
 fi

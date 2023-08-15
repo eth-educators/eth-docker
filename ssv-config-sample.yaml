@@ -1,6 +1,8 @@
 OperatorPrivateKey: YOURPRIVATEKEYHERE
 ssv:
   Network: jato-v2
+  ValidatorOptions:
+    BuilderProposals: true
 p2p:
   DiscoveryType: discv5
   TcpPort: 13001
