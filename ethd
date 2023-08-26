@@ -1767,10 +1767,11 @@ query_network() {
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
     "Which network do you want to run on?" 12 60 5 \
-    "goerli" "Görli (né Prater) Testnet" \
+    "holesky" "Holešovice Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" \
     "sepolia" "Sepolia Testnet (permissioned validators)" \
+    "goerli" "Görli Legacy Testnet" \
     "custom" "Custom Testnet (needs a URL)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
@@ -1780,7 +1781,7 @@ query_network() {
       "gnosis")
           echo "You chose to run on Gnosis Chain"
           ;;
-      "goerli" | "sepolia" | "zhejiang" )
+      "goerli" | "sepolia" | "holesky" )
           echo "You chose to run on ${NETWORK} testnet"
           ;;
       "custom" )
@@ -2090,14 +2091,14 @@ query_checkpoint_beacon() {
             "goerli")
                 RAPID_SYNC_URL="https://goerli.beaconstate.info"
                 ;;
+            "holesky")
+                RAPID_SYNC_URL="https://holesky.beaconstate.info"
+                ;;
             "mainnet")
                 RAPID_SYNC_URL="https://beaconstate.info"
                 ;;
             "gnosis")
                 RAPID_SYNC_URL="https://checkpoint.gnosischain.com/"
-                ;;
-            "zhejiang")
-                RAPID_SYNC_URL="https://checkpointz.zhejiang.ethpandaops.io/"
                 ;;
             *)
                 RAPID_SYNC_URL=""
@@ -2195,6 +2196,14 @@ https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f
 https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@goerli.aestus.live,\
 https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com"
                 ;;
+            "holesky")
+                MEV_RELAYS="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net,\
+https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.holesky.blxrbdn.com,\
+https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-holesky.blocknative.com,\
+https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-holesky.edennetwork.io,\
+https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@holesky.aestus.live,\
+https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@holesky-relay.securerpc.com"
+                ;;
             "mainnet")
                 MEV_RELAYS="https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,\
 https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com,\
@@ -2229,6 +2238,16 @@ https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376
 https://0xa6bcad37b5d647152a93c2807d8a56055f1e0d7480eb6505d46edc21593e400f0f13738bf2e892f85946234629a3036a@goerli.agnostic-relay.net,\
 https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com,\
 https://0x88d0cc4b8139580d176cf6863db874ee9c505fc3f6362aa005fd9a91f7ea8b47ba026c424a678e072fd67ba6e952e1a1@goerli-relay.wenmerge.com
+                    ;;
+                "holesky")
+                    MEV_RELAYS=https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net,\
+https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.holesky.blxrbdn.com,\
+https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-holesky.blocknative.com,\
+https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-holesky.edennetwork.io,\
+https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@holesky.aestus.live,\
+https://0xa6bcad37b5d647152a93c2807d8a56055f1e0d7480eb6505d46edc21593e400f0f13738bf2e892f85946234629a3036a@holesky.agnostic-relay.net,\
+https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@holesky-relay.securerpc.com,\
+https://0x88d0cc4b8139580d176cf6863db874ee9c505fc3f6362aa005fd9a91f7ea8b47ba026c424a678e072fd67ba6e952e1a1@holesky-relay.wenmerge.com
                     ;;
                 "mainnet")
                     MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,\
@@ -2368,7 +2387,7 @@ config() {
     if [ "${MEV_BOOST}" = "true" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
     fi
-    if [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "zhejiang" ]; then
+    if [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "holesky" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
     fi
 # Not multi-arch, this would break on ARM64
