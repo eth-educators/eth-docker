@@ -25,6 +25,7 @@ services:
       - EL_EXTRAS=${EL_EXTRAS:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
       # Make this RUST_LOG=${LOG_LEVEL:-info},engine=trace when requiring deep debug
       - RUST_LOG=${LOG_LEVEL:-info}
       - RUST_LOG_STYLE=never
@@ -46,8 +47,6 @@ services:
       - node
       - --datadir
       - /var/lib/reth
-      - --chain
-      - ${NETWORK}
       - --metrics
       - 0.0.0.0:6060
       - --port
