@@ -14,7 +14,7 @@ RUN bash -c "cd .. && rm -rf app && git clone https://github.com/ChainSafe/lodes
 
 FROM node:20-alpine
 
-RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec && rm -rf /var/cache/apk/*
+RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec git && rm -rf /var/cache/apk/*
 
 ARG USER=lsconsensus
 ARG UID=10002

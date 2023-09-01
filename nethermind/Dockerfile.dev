@@ -27,7 +27,7 @@ RUN adduser \
 
 RUN set -eux; \
 	apt-get update; \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates gosu tzdata; \
+	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates gosu tzdata git; \
 	rm -rf /var/lib/apt/lists/*; \
 # verify that the binary works
         gosu nobody true

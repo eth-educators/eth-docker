@@ -35,6 +35,7 @@ services:
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - CL_EXTRAS=${CL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -68,8 +69,6 @@ services:
       - ${CL_MIN_PEER_COUNT:-50}
       - --logLevel
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
     labels:
