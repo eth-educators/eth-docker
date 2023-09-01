@@ -12,7 +12,7 @@ ARG GID=10002
 
 USER root
 
-RUN apk --no-cache add shadow bash su-exec && groupmod -g "${GID}" ${USER} && usermod -u "${UID}" -g "${GID}" ${USER}
+RUN apk --no-cache add shadow bash su-exec git jq && groupmod -g "${GID}" ${USER} && usermod -u "${UID}" -g "${GID}" ${USER}
 
 RUN mkdir -p /var/lib/erigon/ee-secret && chown -R ${USER}:${USER} /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
 
