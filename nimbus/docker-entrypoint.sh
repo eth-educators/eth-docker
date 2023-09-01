@@ -29,14 +29,42 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/nimbus/ee-secret/jwtsecret
 fi
 
+if [[ "${NETWORK}" =~ ^https?:// ]]; then
+  echo "Custom testnet at ${NETWORK}"
+  repo=$(awk -F'/tree/' '{print $1}' <<< "${NETWORK}")
+  branch=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f1)
+  config_dir=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f2-)
+  echo "This appears to be the ${repo} repo, branch ${branch} and config directory ${config_dir}."
+  # For want of something more amazing, let's just fail if git fails to pull this
+  set -e
+  if [ ! -d "/var/lib/nimbus/testnet/${config_dir}" ]; then
+    mkdir -p /var/lib/nimbus/testnet
+    cd /var/lib/nimbus/testnet
+    git init --initial-branch="${branch}"
+    git remote add origin "${repo}"
+    git config core.sparseCheckout true
+    echo "${config_dir}" > .git/info/sparse-checkout
+    git pull origin "${branch}"
+  fi
+  bootnodes="$(paste -s -d, "/var/lib/nimbus/testnet/${config_dir}/bootstrap_nodes.txt")"
+  set +e
+  __network="--network=/var/lib/nimbus/testnet/${config_dir} --bootstrap-node=${bootnodes}"
+else
+  __network="--network=${NETWORK}"
+fi
+
 if [ -n "${RAPID_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Starting checkpoint sync with backfill and archive reindex. Nimbus will restart when done."
-        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=true --reindex --network="${NETWORK}" --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=true --reindex ${__network} --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
         touch /var/lib/nimbus/setupdone
     else
         echo "Starting checkpoint sync. Nimbus will restart when done."
-        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false --network="${NETWORK}" --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false ${__network} --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
         touch /var/lib/nimbus/setupdone
     fi
 fi
@@ -69,9 +97,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__mev_boost} ${__log_level} ${__doppel} ${__prune} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__mev_boost} ${__log_level} ${__doppel} ${__prune} ${CL_EXTRAS} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--graffiti=${GRAFFITI}" ${__mev_boost} ${__log_level} ${__doppel} ${__prune} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} "--graffiti=${GRAFFITI}" ${__mev_boost} ${__log_level} ${__doppel} ${__prune} ${CL_EXTRAS} ${VC_EXTRAS}
 fi
