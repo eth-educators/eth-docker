@@ -20,7 +20,7 @@ ARG USER=user
 ARG UID=10002
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
-  ca-certificates bash tzdata \
+  ca-certificates bash tzdata git \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
