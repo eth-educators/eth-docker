@@ -23,6 +23,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
@@ -57,8 +58,6 @@ services:
       - ${ERIGON_TORRENT_PORT:-42069}
       - --nat
       - any
-      - --chain
-      - ${NETWORK}
       - --log.console.verbosity
       - ${LOG_LEVEL}
       - --metrics
@@ -71,8 +70,6 @@ services:
       - ${EL_RPC_PORT}
       - --http.vhosts=*
       - --http.corsdomain=*
-      - --http.api
-      - web3,eth,net,engine
       - --ws
       # Allow RocketPool >=1.9 watchtower queries
       - --rpc.returndata.limit

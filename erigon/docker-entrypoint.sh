@@ -26,6 +26,34 @@ if [[ -O "/var/lib/erigon/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/erigon/ee-secret/jwtsecret
 fi
 
+if [[ "${NETWORK}" =~ ^https?:// ]]; then
+  echo "Custom testnet at ${NETWORK}"
+  repo=$(awk -F'/tree/' '{print $1}' <<< "${NETWORK}")
+  branch=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f1)
+  config_dir=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f2-)
+  echo "This appears to be the ${repo} repo, branch ${branch} and config directory ${config_dir}."
+  # For want of something more amazing, let's just fail if git fails to pull this
+  set -e
+  if [ ! -d "/var/lib/erigon/testnet/${config_dir}" ]; then
+    mkdir -p /var/lib/erigon/testnet
+    cd /var/lib/erigon/testnet
+    git init --initial-branch="${branch}"
+    git remote add origin "${repo}"
+    git config core.sparseCheckout true
+    echo "${config_dir}" > .git/info/sparse-checkout
+    git pull origin "${branch}"
+  fi
+  bootnodes="$(paste -s -d, "/var/lib/erigon/testnet/${config_dir}/bootnode.txt")"
+  networkid="$(jq -r '.config.chainId' "/var/lib/erigon/testnet/${config_dir}/genesis.json")"
+  set +e
+  __network="--bootnodes=${bootnodes} --networkid=${networkid} --http.api=eth,erigon,engine,web3,net,debug,trace,txpool,admin"
+  if [ ! -f /var/lib/erigon/setupdone ]; then
+    erigon init --datadir /var/lib/erigon "/var/lib/erigon/testnet/${config_dir}/genesis.json"
+    touch /var/lib/erigon/setupdone
+  fi
+else
+  __network="--chain ${NETWORK} --http.api web3,eth,net,engine"
+fi
 # Check for network, and set prune accordingly
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -52,4 +80,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__prune} ${EL_EXTRAS}
+exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
