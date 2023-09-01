@@ -35,6 +35,7 @@ services:
       - MEV_NODE=${MEV_NODE}
       - CL_EXTRAS=${CL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
     ports:
       - ${HOST_IP:-}${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${HOST_IP:-}${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
@@ -71,7 +72,6 @@ services:
       - ${CL_MAX_PEER_COUNT:-45}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0

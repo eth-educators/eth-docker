@@ -35,6 +35,7 @@ services:
       - MEV_NODE=${MEV_NODE}
       - CL_EXTRAS=${CL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
     ports:
       - ${HOST_IP:-}${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${HOST_IP:-}${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
@@ -54,6 +55,7 @@ services:
       - 0.0.0.0
       - --grpc-gateway-port
       - ${CL_REST_PORT:-5052}
+      - --grpc-gateway-corsdomain=*
       # Allow larger messages so credential change messages can be sent
       - --rpc-max-page-size
       - "200000"
@@ -71,7 +73,6 @@ services:
       - ${CL_MAX_PEER_COUNT:-45}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0
@@ -97,6 +98,7 @@ services:
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER:-false}
+      - NETWORK=${NETWORK}
     networks:
       default:
         aliases:
@@ -113,7 +115,6 @@ services:
       - consensus:4000
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0

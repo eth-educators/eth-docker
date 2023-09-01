@@ -33,6 +33,7 @@ services:
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER:-false}
+      - NETWORK=${NETWORK}
     networks:
       default:
         aliases:
@@ -49,7 +50,6 @@ services:
       - ${CL_NODE:-http://consensus:4000}
       - --verbosity
       - ${LOG_LEVEL}
-      - --${NETWORK}
       - --accept-terms-of-use
       - --monitoring-host
       - 0.0.0.0
