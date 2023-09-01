@@ -24,6 +24,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
     volumes:
       - besu-eth1-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
@@ -44,8 +45,6 @@ services:
       - --p2p-port
       - ${EL_P2P_PORT:-30303}
       - --rpc-http-enabled
-      - --rpc-http-api
-      - "WEB3,ETH,NET"
       - --rpc-http-host
       - 0.0.0.0
       - --rpc-http-port
@@ -68,8 +67,6 @@ services:
       - --engine-rpc-port=${EE_PORT:-8551}
       - --logging
       - ${LOG_LEVEL}
-      - --network
-      - ${NETWORK}
       - --metrics-enabled
       - --metrics-host
       - 0.0.0.0
