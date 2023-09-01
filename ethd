@@ -2209,6 +2209,15 @@ https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1e
     fi
     var="MEV_BOOST"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    # I do mean to match literally
+    # shellcheck disable=SC2076
+    if [[ "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" ]]; then
+        if (whiptail --title "MEV Boost" --yesno "Is MEV Boost configured on your remote consensus client and do you want to use MEV Boost?" 10 60); then
+            MEV_BOOST="true"
+            MEV_RELAYS=""
+        fi
+        return
+    fi
     if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 60) then
         MEV_BOOST="true"
         if [ "${value}" = "true" ]; then
@@ -2351,6 +2360,7 @@ config() {
 # This gets used, but shellcheck doesn't recognize that
 # shellcheck disable=SC2034
         CL_NODE="${REMOTE_BEACON}"
+        query_mev
         query_coinbase
         query_graffiti
     fi
