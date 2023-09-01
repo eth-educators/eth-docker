@@ -54,6 +54,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
 else
   __network="--chain ${NETWORK} --http.api web3,eth,net,engine"
 fi
+
 # Check for network, and set prune accordingly
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then

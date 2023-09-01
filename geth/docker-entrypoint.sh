@@ -25,6 +25,35 @@ if [[ -O "/var/lib/goethereum/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/goethereum/ee-secret/jwtsecret
 fi
 
+if [[ "${NETWORK}" =~ ^https?:// ]]; then
+  echo "Custom testnet at ${NETWORK}"
+  repo=$(awk -F'/tree/' '{print $1}' <<< "${NETWORK}")
+  branch=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f1)
+  config_dir=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f2-)
+  echo "This appears to be the ${repo} repo, branch ${branch} and config directory ${config_dir}."
+  # For want of something more amazing, let's just fail if git fails to pull this
+  set -e
+  if [ ! -d "/var/lib/goethereum/testnet/${config_dir}" ]; then
+    mkdir -p /var/lib/goethereum/testnet
+    cd /var/lib/goethereum/testnet
+    git init --initial-branch="${branch}"
+    git remote add origin "${repo}"
+    git config core.sparseCheckout true
+    echo "${config_dir}" > .git/info/sparse-checkout
+    git pull origin "${branch}"
+  fi
+  bootnodes="$(paste -s -d, "/var/lib/goethereum/testnet/${config_dir}/bootnode.txt")"
+  networkid="$(jq -r '.config.chainId' "/var/lib/goethereum/testnet/${config_dir}/genesis.json")"
+  set +e
+  __network="--bootnodes=${bootnodes} --networkid=${networkid} --http.api=eth,net,web3,debug,admin,txpool"
+  if [ ! -f /var/lib/goethereum/setupdone ]; then
+    geth init --datadir /var/lib/goethereum "/var/lib/goethereum/testnet/${config_dir}/genesis.json"
+    touch /var/lib/goethereum/setupdone
+  fi
+else
+  __network="--${NETWORK} --http.api web3,eth,net"
+fi
+
 # Set verbosity
 shopt -s nocasematch
 case ${LOG_LEVEL} in
@@ -72,9 +101,9 @@ if [ -f /var/lib/goethereum/prune-marker ]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${EL_EXTRAS} snapshot prune-state
+  exec "$@" ${__network} ${EL_EXTRAS} snapshot prune-state
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__prune} ${__verbosity} ${EL_EXTRAS}
+  exec "$@" ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
 fi
