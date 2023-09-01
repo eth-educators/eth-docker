@@ -19,6 +19,30 @@ if [[ -O "/var/lib/lighthouse/ee-secret/jwtsecret" ]]; then
   chmod 666 /var/lib/lighthouse/beacon/ee-secret/jwtsecret
 fi
 
+if [[ "${NETWORK}" =~ ^https?:// ]]; then
+  echo "Custom testnet at ${NETWORK}"
+  repo=$(awk -F'/tree/' '{print $1}' <<< "${NETWORK}")
+  branch=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f1)
+  config_dir=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f2-)
+  echo "This appears to be the ${repo} repo, branch ${branch} and config directory ${config_dir}."
+  # For want of something more amazing, let's just fail if git fails to pull this
+  set -e
+  if [ ! -d "/var/lib/lighthouse/beacon/testnet/${config_dir}" ]; then
+    mkdir -p /var/lib/lighthouse/beacon/testnet
+    cd /var/lib/lighthouse/beacon/testnet
+    git init --initial-branch="${branch}"
+    git remote add origin "${repo}"
+    git config core.sparseCheckout true
+    echo "${config_dir}" > .git/info/sparse-checkout
+    git pull origin "${branch}"
+  fi
+  bootnodes="$(paste -s -d, "/var/lib/lighthouse/beacon/testnet/${config_dir}/bootstrap_nodes.txt")"
+  set +e
+  __network="--testnet-dir=/var/lib/lighthouse/beacon/testnet/${config_dir} --boot-nodes=${bootnodes}"
+else
+  __network="--network=${NETWORK}"
+fi
+
 # Check whether we should rapid sync
 if [ -n "${RAPID_SYNC_URL}" ]; then
   __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
@@ -58,4 +82,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS}
+exec "$@" ${__network} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS}
