@@ -5,7 +5,7 @@ FROM chainsafe/lodestar:${DOCKER_TAG}
 # Here only to avoid build-time errors
 ARG BUILD_TARGET
 
-RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec && rm -rf /var/cache/apk/*
+RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec git && rm -rf /var/cache/apk/*
 
 ARG USER=lsconsensus
 ARG UID=10002

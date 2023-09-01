@@ -21,7 +21,7 @@ RUN bash -c "\
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates gosu tzdata wget && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates gosu tzdata wget git && rm -rf /var/lib/apt/lists/*
 
 ARG USER=nethermind
 ARG UID=10001

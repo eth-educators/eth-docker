@@ -25,6 +25,7 @@ services:
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - AUTOPRUNE_NM=${AUTOPRUNE_NM:-true}
+      - NETWORK=${NETWORK}
     volumes:
       - nm-eth1-data:/var/lib/nethermind
       - /etc/localtime:/etc/localtime:ro
@@ -67,8 +68,6 @@ services:
       - 0.0.0.0
       - --JsonRpc.EnginePort
       - ${EE_PORT:-8551}
-      - --JsonRpc.EnabledModules
-      - "Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool"
       - --JsonRpc.AdditionalRpcUrls=http://127.0.0.1:1337|http|admin
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
 # Temporary Prysm workaround. Remove when no longer needed
@@ -80,8 +79,6 @@ services:
       - ""
       - --Metrics.ExposePort
       - "6060"
-      - --config
-      - ${NETWORK}
       - --Sync.AncientBodiesBarrier
       - "1"
       - --Sync.AncientReceiptsBarrier

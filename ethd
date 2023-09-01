@@ -1303,12 +1303,7 @@ prep-keyimport() {
         exit 1
     fi
 
-    __prysm=0
-    __path=''
     __non_interactive=0
-    if grep -q '^COMPOSE_FILE=.*prysm.*\.yml' "${ENV_FILE}" 2>/dev/null ; then
-        __prysm=1
-    fi
 
     while :
     do
@@ -1775,22 +1770,40 @@ query_network() {
     "goerli" "Görli (né Prater) Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain (né xDai)" \
-    "sepolia" "Sepolia Testnet (permissioned validators)" 3>&1 1>&2 2>&3)
+    "sepolia" "Sepolia Testnet (permissioned validators)" \
+    "custom" "Custom Testnet (needs a URL)" 3>&1 1>&2 2>&3)
 
     case "${NETWORK}" in
-       "mainnet")
-           echo "You chose to run on Ethereum mainnet"
-           ;;
-       "gnosis")
-           echo "You chose to run on Gnosis Chain"
-           ;;
-       "goerli" | "sepolia" | "zhejiang" )
-           echo "You chose to run on ${NETWORK} testnet"
-           ;;
-       *)
-           echo "You chose Cancel"
-           exit 1
-           ;;
+      "mainnet")
+          echo "You chose to run on Ethereum mainnet"
+          ;;
+      "gnosis")
+          echo "You chose to run on Gnosis Chain"
+          ;;
+      "goerli" | "sepolia" | "zhejiang" )
+          echo "You chose to run on ${NETWORK} testnet"
+          ;;
+      "custom" )
+          while true; do
+            NETWORK=$(whiptail --title "Configure testnet URL" --inputbox "What is github URL of your custom testnet spec? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+            exitstatus=$?
+            if [ $exitstatus -eq 0 ]; then
+              if [[ ${NETWORK} =~ ^https?:// ]]; then
+                echo "Your customer testnet URL is: ${NETWORK}"
+                break
+              else
+                whiptail --msgbox "${NETWORK} is not a valid URL. You can try again or Cancel on the next screen.\n\nCustom testnets only work with a URL to fetch their configuration from." 16 75
+              fi
+            else
+              echo "You chose Cancel"
+              exit 1
+            fi
+          done
+          ;;
+      *)
+          echo "You chose Cancel"
+          exit 1
+          ;;
     esac
 }
 
