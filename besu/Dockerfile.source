@@ -24,6 +24,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   tzdata \
   gosu \
   libjemalloc-dev \
+  git \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
