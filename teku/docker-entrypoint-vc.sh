@@ -5,6 +5,29 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu teku docker-entrypoint.sh "$@"
 fi
 
+if [[ "${NETWORK}" =~ ^https?:// ]]; then
+  echo "Custom testnet at ${NETWORK}"
+  repo=$(awk -F'/tree/' '{print $1}' <<< "${NETWORK}")
+  branch=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f1)
+  config_dir=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f2-)
+  echo "This appears to be the ${repo} repo, branch ${branch} and config directory ${config_dir}."
+  # For want of something more amazing, let's just fail if git fails to pull this
+  set -e
+  if [ ! -d "/var/lib/teku/testnet/${config_dir}" ]; then
+    mkdir -p /var/lib/teku/testnet
+    cd /var/lib/teku/testnet
+    git init --initial-branch="${branch}"
+    git remote add origin "${repo}"
+    git config core.sparseCheckout true
+    echo "${config_dir}" > .git/info/sparse-checkout
+    git pull origin "${branch}"
+  fi
+  set +e
+  __network="--network=/var/lib/teku/testnet/${config_dir}/config.yaml"
+else
+  __network="--network=${NETWORK}"
+fi
+
 if [ -f /var/lib/teku/teku-keyapi.keystore ]; then
     if [ "$(date +%s -r /var/lib/teku/teku-keyapi.keystore)" -lt "$(date +%s --date="300 days ago")" ]; then
        rm /var/lib/teku/teku-keyapi.keystore
@@ -59,9 +82,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__w3s_url} ${__mev_boost} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__doppel} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__doppel} ${VC_EXTRAS}
+  exec "$@" ${__network} "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__doppel} ${VC_EXTRAS}
 fi

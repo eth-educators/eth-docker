@@ -37,6 +37,7 @@ services:
       - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
       - IPV6=${IPV6:-false}
       - CL_P2P_PORT=${CL_P2P_PORT:-9000}
+      - NETWORK=${NETWORK}
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -57,8 +58,6 @@ services:
       - 0.0.0.0
       - --http-port
       - ${CL_REST_PORT:-5052}
-      - --network
-      - ${NETWORK}
       - --port
       - ${CL_P2P_PORT:-9000}
       - --target-peers

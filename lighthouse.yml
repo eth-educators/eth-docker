@@ -38,6 +38,7 @@ services:
       - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
       - IPV6=${IPV6:-false}
       - CL_P2P_PORT=${CL_P2P_PORT:-9000}
+      - NETWORK=${NETWORK}
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -58,8 +59,6 @@ services:
       - 0.0.0.0
       - --http-port
       - ${CL_REST_PORT:-5052}
-      - --network
-      - ${NETWORK}
       - --listen-address
       - 0.0.0.0
       - --port
@@ -94,6 +93,7 @@ services:
       - VC_EXTRAS=${VC_EXTRAS:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - NETWORK=${NETWORK}
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
@@ -110,8 +110,6 @@ services:
       - /var/lib/lighthouse
       - --beacon-nodes
       - ${CL_NODE:-http://consensus:5052}
-      - --network
-      - ${NETWORK}
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address

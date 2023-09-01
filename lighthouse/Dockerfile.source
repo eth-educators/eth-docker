@@ -36,6 +36,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   ca-certificates \
   wget \
   tzdata \
+  git \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
