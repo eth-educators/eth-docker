@@ -69,7 +69,7 @@ else
 fi
 
 # Fetch genesis file as needed
-if [[ "$*" =~ --prater || "$*" =~ --goerli ]]; then
+if [[ "${NETWORK}" = "prater" || "${NETWORK}" = "goerli" ]]; then
   GENESIS=/var/lib/prysm/genesis.ssz
   if [ ! -f "$GENESIS" ]; then
     echo "Fetching genesis file for Goerli testnet"
@@ -77,8 +77,8 @@ if [[ "$*" =~ --prater || "$*" =~ --goerli ]]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
-elif [[ "$*" =~ --sepolia ]]; then
+  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
+elif [[ "${NETWORK}" = "sepolia" ]]; then
 GENESIS=/var/lib/prysm/genesis.ssz
   if [ ! -f "$GENESIS" ]; then
     echo "Fetching genesis file for Sepolia testnet"
@@ -86,7 +86,7 @@ GENESIS=/var/lib/prysm/genesis.ssz
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--genesis-state=$GENESIS" ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
+  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086

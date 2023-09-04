@@ -61,16 +61,16 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Erigon archive node without pruning"
   __prune=""
 else
-  if [[ "$*" =~ "--chain mainnet" ]]; then
+  if [[ "${NETWORK}" = "mainnet" ]]; then
     echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
     __prune="--prune=htc --prune.r.before=11052984"
-  elif [[ "$*" =~ "--chain goerli" ]]; then
+  elif [[ "${NETWORK}" = "goerli" ]]; then
     echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
     __prune="--prune=htc --prune.r.before=4367322"
-  elif [[ "$*" =~ "--chain sepolia" ]]; then
+  elif [[ "${NETWORK}" = "sepolia" ]]; then
     echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
     __prune="--prune=htc --prune.r.before=1273020"
-  elif [[ "$*" =~ "--chain gnosis" ]]; then
+  elif [[ "${NETWORK}" = "gnosis" ]]; then
     echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
     __prune="--prune=htc --prune.r.before=19469077"
   else
