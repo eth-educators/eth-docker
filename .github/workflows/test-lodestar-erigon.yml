@@ -36,7 +36,7 @@ jobs:
         run: ./.github/check-service.sh consensus
       - name: Test Lodestar VC
         run: ./.github/check-service.sh validator
-      - name: Test Geth
+      - name: Test Erigon
         run: ./.github/check-service.sh execution
       - name: Set Lodestar/Erigon w/ VC
         run: |
