@@ -94,15 +94,6 @@ case "$CLIENT" in
     __file='/etc/grafana/provisioning/dashboards/ssv_node_dashboard.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' >"${__file}"
     ;;&
-  *blox-ssv2.yml* )
-    # SSV Operator Dashboard
-    __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator_performance.json'
-    __file='/etc/grafana/provisioning/dashboards/ssv_operator_dashboard.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.templating.list[0].current |= {selected: false, text: "ssv2-node", value: "ssv2-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv2-node", "value": "ssv2-node" } ] | .templating.list[0].query = "ssv2-node"' >"${__file}"
-    __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
-    __file='/etc/grafana/provisioning/dashboards/ssv_node_dashboard.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.templating.list[0].current |= {selected: false, text: "ssv2-node", value: "ssv2-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv2-node", "value": "ssv2-node" } ] | .templating.list[0].query = "ssv2-node"' >"${__file}"
-    ;;&
   * )
     # Home staking dashboard
     __revision=$(wget -t 3 -T 10 -qO - https://grafana.com/api/dashboards/17846 | jq .revision)
