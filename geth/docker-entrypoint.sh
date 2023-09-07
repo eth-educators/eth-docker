@@ -51,7 +51,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
     touch /var/lib/goethereum/setupdone
   fi
 else
-  __network="--${NETWORK} --http.api web3,eth,net"
+  __network="--${NETWORK}"
 fi
 
 # Set verbosity
