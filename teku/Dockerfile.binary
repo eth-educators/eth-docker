@@ -1,9 +1,11 @@
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
-FROM consensys/teku:${DOCKER_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
 #Next two are unused but included to avoid warnings
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 ARG USER=teku
 ARG UID=10002

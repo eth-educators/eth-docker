@@ -1,9 +1,11 @@
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
-FROM hyperledger/besu:${DOCKER_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
 # Unused but included to avoid warnings
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 ARG USER=besu
 ARG UID=10001

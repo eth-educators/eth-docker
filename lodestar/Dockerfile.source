@@ -2,15 +2,17 @@ FROM node:20-alpine as build
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 RUN apk update && apk add --no-cache git g++ make python3 bash && rm -rf /var/cache/apk/*
 #RUN ln -s /usr/bin/python3 /usr/bin/python
 
 WORKDIR /usr/app
 
-RUN bash -c "cd .. && rm -rf app && git clone https://github.com/ChainSafe/lodestar.git app && cd app && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:ls-pr; git checkout ls-pr; else git checkout ${BUILD_TARGET}; fi && yarn install --non-interactive --frozen-lockfile && yarn build"
+RUN bash -c "cd .. && rm -rf app && git clone ${SRC_REPO} app && cd app && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:ls-pr; git checkout ls-pr; else git checkout ${BUILD_TARGET}; fi && yarn install --non-interactive --frozen-lockfile && yarn build"
 
 FROM node:20-alpine
 

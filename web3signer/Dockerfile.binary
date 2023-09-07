@@ -1,8 +1,9 @@
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
-FROM flyway/flyway:9 as flyway
+FROM flyway/flyway:latest as flyway
 
-FROM consensys/web3signer:${DOCKER_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
 ARG USER=web3signer
 ARG UID=10000

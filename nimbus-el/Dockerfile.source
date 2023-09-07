@@ -3,14 +3,16 @@ FROM debian:bookworm-slim as builder
 
 # Included here to avoid build-time complaints
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 RUN apt-get update && apt-get install -y build-essential git ca-certificates librocksdb-dev
 
 WORKDIR /usr/src
 
-RUN bash -c "git clone https://github.com/status-im/nimbus-eth1 && cd nimbus-eth1 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make update && make -j$(nproc) nimbus"
+RUN bash -c "git clone ${SRC_REPO} nimbus-eth1 && cd nimbus-eth1 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make update && make -j$(nproc) nimbus"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bookworm-slim

@@ -1,11 +1,12 @@
 from python:3.10-bookworm as builder
 
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 RUN mkdir -p /src
 
 WORKDIR /src
-RUN bash -c "git clone https://github.com/ethereum/staking-deposit-cli.git && cd staking-deposit-cli && git config advice.detachedHead false && git fetch --all --tags \
+RUN bash -c "git clone ${SRC_REPO} staking-deposit-cli && cd staking-deposit-cli && git config advice.detachedHead false && git fetch --all --tags \
   && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:deposit-pr; git checkout deposit-pr; else git checkout ${BUILD_TARGET}; fi"
 
 FROM python:3.10-alpine

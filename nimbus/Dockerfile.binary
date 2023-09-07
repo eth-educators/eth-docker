@@ -1,10 +1,13 @@
 ARG DOCKER_TAG
 ARG DOCKER_VC_TAG
+ARG DOCKER_REPO
+ARG DOCKER_VC_REPO
 
-FROM statusim/nimbus-eth2:${DOCKER_TAG} as consensus
+FROM ${DOCKER_REPO}:${DOCKER_TAG} as consensus
 
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 ARG USER=user
 ARG UID=10002
@@ -35,7 +38,7 @@ USER ${USER}
 
 ENTRYPOINT ["nimbus_beacon_node"]
 
-FROM statusim/nimbus-validator-client:${DOCKER_VC_TAG} as validator
+FROM ${DOCKER_VC_REPO}:${DOCKER_VC_TAG} as validator
 
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET
