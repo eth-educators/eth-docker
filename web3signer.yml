@@ -13,7 +13,8 @@ services:
     build:
       context: ./web3signer
       args:
-        - DOCKER_TAG=${W3S_DOCKER_TAG}
+        - DOCKER_TAG=${W3S_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${W3S_DOCKER_REPO:-consensys/web3signer}
       dockerfile: Dockerfile.binary
     image: web3signer:local
     user: web3signer

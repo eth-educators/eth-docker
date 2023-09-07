@@ -14,8 +14,10 @@ services:
       context: ./nimbus-el
       dockerfile: ${NIMEL_DOCKERFILE}
       args:
-        - BUILD_TARGET=${NIMEL_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${NIMEL_DOCKER_TAG}
+        - BUILD_TARGET=${NIMEL_SRC_BUILD_TARGET:-master}
+        - SRC_REPO=${NIMEL_SRC_REPO:-https://github.com/status-im/nimbus-eth1}
+        - DOCKER_TAG=${NIMEL_DOCKER_TAG:-nonesuch}
+        - DOCKER_REPO=${NIMEL_DOCKER_REPO:-nonesuch}
     stop_grace_period: 5m
     stop_signal: SIGINT
     image: nimbus-el:local

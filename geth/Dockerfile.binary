@@ -1,9 +1,11 @@
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
-FROM ethereum/client-go:${DOCKER_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 ARG USER=geth
 ARG UID=10001

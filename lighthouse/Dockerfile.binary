@@ -1,9 +1,11 @@
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
-FROM sigp/lighthouse:${DOCKER_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
 # Unused, this is here to avoid build time complaints
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 ARG USER=lhconsensus
 ARG UID=10002

@@ -14,7 +14,8 @@ services:
       context: ./flashbots
       dockerfile: ${MEV_DOCKERFILE}
       args:
-        - DOCKER_TAG=${MEV_DOCKER_TAG}
+        - DOCKER_TAG=${MEV_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${MEV_DOCKER_REPO:-flashbots/mev-boost}
     image: mev-boost:local
     entrypoint:
       - /app/mev-boost

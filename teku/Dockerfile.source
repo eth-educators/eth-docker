@@ -3,13 +3,15 @@ FROM eclipse-temurin:17-jdk-jammy as builder
 
 # This is here to avoid build-time complaints
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 RUN apt-get update && apt-get install -y ca-certificates git
 
 WORKDIR /usr/src
-RUN bash -c "git clone https://github.com/ConsenSys/teku.git \
+RUN bash -c "git clone ${SRC_REPO} teku \
   && cd teku \
   && git config advice.detachedHead false \
   && git fetch --all --tags \

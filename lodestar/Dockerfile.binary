@@ -1,9 +1,11 @@
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
-FROM chainsafe/lodestar:${DOCKER_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
 # Here only to avoid build-time errors
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec git && rm -rf /var/cache/apk/*
 

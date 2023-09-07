@@ -12,8 +12,10 @@ x-build: &lh-build
   context: ./lighthouse
   dockerfile: ${LH_DOCKERFILE}
   args:
-    - BUILD_TARGET=${LH_SRC_BUILD_TARGET}
-    - DOCKER_TAG=${LH_DOCKER_TAG}
+    - BUILD_TARGET=${LH_SRC_BUILD_TARGET:-stable}
+    - SRC_REPO=${LH_SRC_REPO:-https://github.com/sigp/lighthouse}
+    - DOCKER_TAG=${LH_DOCKER_TAG:-latest-modern}
+    - DOCKER_REPO=${LH_DOCKER_REPO:-sigp/lighthouse}
 
 services:
   consensus:

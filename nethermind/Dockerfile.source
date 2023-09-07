@@ -2,14 +2,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
+ARG DOCKER_REPO
 
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 WORKDIR /
 
 RUN apt-get update -y && apt-get install -y git
 RUN bash -c "\
-    git clone https://github.com/NethermindEth/nethermind && \
+    git clone ${SRC_REPO} nethermind && \
     cd nethermind && \
     git config advice.detachedHead false && \
     git fetch --all --tags && \

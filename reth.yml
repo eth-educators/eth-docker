@@ -14,8 +14,10 @@ services:
       context: ./reth
       dockerfile: ${RETH_DOCKERFILE}
       args:
-        - BUILD_TARGET=${RETH_SRC_BUILD_TARGET}
-        - DOCKER_TAG=${RETH_DOCKER_TAG}
+        - BUILD_TARGET=${RETH_SRC_BUILD_TARGET:-main}
+        - SRC_REPO=${RETH_SRC_REPO:-https://github.com/paradigmxyz/reth}
+        - DOCKER_TAG=${RETH_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${RETH_DOCKER_REPO:-ghcr.io/paradigmxyz/reth}
     stop_grace_period: 5m
     stop_signal: SIGINT
     image: reth:local

@@ -1,11 +1,15 @@
 ARG DOCKER_TAG
 ARG DOCKER_VC_TAG
-FROM gcr.io/prysmaticlabs/prysm/beacon-chain:${DOCKER_TAG} as ccsource
+ARG DOCKER_REPO
+ARG DOCKER_VC_REPO
+
+FROM ${DOCKER_REPO}:${DOCKER_TAG} as clsource
 
 FROM debian:bookworm-slim as consensus
 
 #Included here to avoid build-time complaints
 ARG BUILD_TARGET
+ARG SRC_REPO
 
 ARG USER=prysmconsensus
 ARG UID=10002
@@ -36,7 +40,7 @@ RUN adduser \
 RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 777 /var/lib/prysm/ee-secret
 
 # Cannot assume buildkit, hence no chmod
-COPY --from=ccsource --chown=${USER}:${USER} /app/cmd/beacon-chain/beacon-chain /usr/local/bin/
+COPY --from=clsource --chown=${USER}:${USER} /app/cmd/beacon-chain/beacon-chain /usr/local/bin/
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
@@ -45,7 +49,7 @@ USER ${USER}
 
 ENTRYPOINT ["beacon-chain"]
 
-FROM gcr.io/prysmaticlabs/prysm/validator:${DOCKER_VC_TAG} as vcsource
+FROM ${DOCKER_VC_REPO}:${DOCKER_VC_TAG} as vcsource
 
 FROM consensus as validator
 
