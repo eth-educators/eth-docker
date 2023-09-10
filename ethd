@@ -2090,7 +2090,8 @@ query_checkpoint_beacon() {
                 RAPID_SYNC_URL="https://goerli.beaconstate.info"
                 ;;
             "holesky")
-                RAPID_SYNC_URL="https://holesky.beaconstate.info"
+                #RAPID_SYNC_URL="https://holesky.beaconstate.info"
+                RAPID_SYNC_URL=""
                 ;;
             "mainnet")
                 RAPID_SYNC_URL="https://beaconstate.info"
