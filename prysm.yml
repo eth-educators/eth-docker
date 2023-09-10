@@ -231,7 +231,7 @@ services:
       - KEY_API_PORT=${KEY_API_PORT:-7500}
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - CL_NODE=${CL_NODE}
-      - PRYSM="true"
+      - PRYSM=true
     depends_on:
       - validator
     entrypoint:
