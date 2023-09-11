@@ -58,8 +58,6 @@ services:
       - 0.0.0.0
       - --ws.port
       - ${EL_WS_PORT:-8546}
-      - --ws.api
-      - web3,eth,net
       - --ws.origins=*
       - --metrics
       - --metrics.expensive
