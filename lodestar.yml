@@ -153,6 +153,7 @@ services:
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
+      - --force
 
   validator-keys:
     profiles: ["tools"]

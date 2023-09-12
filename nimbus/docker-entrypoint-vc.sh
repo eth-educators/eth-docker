@@ -34,12 +34,19 @@ fi
 
 __log_level="--log-level=${LOG_LEVEL^^}"
 
+# Web3signer URL
+if [ "${WEB3SIGNER}" = "true" ]; then
+  __w3s_url="--web3-signer-url=http://web3signer:9000"
+else
+  __w3s_url=""
+fi
+
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__log_level} ${__doppel} ${__mev_boost} ${VC_EXTRAS}
+  exec "$@" ${__w3s_url} ${__log_level} ${__doppel} ${__mev_boost} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${__mev_boost} ${VC_EXTRAS}
+  exec "$@" ${__w3s_url} "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${__mev_boost} ${VC_EXTRAS}
 fi
