@@ -86,12 +86,12 @@ else
 fi
 
 # Detect existing DB; use PBSS if fresh
-#if [ -d "/var/lib/goethereum/geth/chaindata/" ]; then
-#  __pbbsme=""
-#else
-#  echo "Choosing PBSS for fresh sync"
-#  __pbbsme="--trie.path-based"
-#fi
+if [ -d "/var/lib/goethereum/geth/chaindata/" ]; then
+  __pbss=""
+else
+  echo "Choosing PBSS for fresh sync"
+  __pbss="--state.scheme path"
+fi
 
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
@@ -105,5 +105,5 @@ if [ -f /var/lib/goethereum/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
+  exec "$@" ${__pbss} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
 fi
