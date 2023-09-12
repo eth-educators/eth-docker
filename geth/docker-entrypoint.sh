@@ -46,9 +46,8 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   networkid="$(jq -r '.config.chainId' "/var/lib/goethereum/testnet/${config_dir}/genesis.json")"
   set +e
   __network="--bootnodes=${bootnodes} --networkid=${networkid} --http.api=eth,net,web3,debug,admin,txpool"
-  if [ ! -f /var/lib/goethereum/setupdone ]; then
+  if [ ! -d "/var/lib/goethereum/geth/chaindata/" ]; then
     geth init --state.scheme path --datadir /var/lib/goethereum "/var/lib/goethereum/testnet/${config_dir}/genesis.json"
-    touch /var/lib/goethereum/setupdone
   fi
 else
   __network="--${NETWORK}"
