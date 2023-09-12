@@ -84,6 +84,8 @@ elif [[ "${value}" =~ "nethermind.yml" ]]; then
   fi
 fi
 
+echo "The auto-prune.sh script is deprecated and will be removed with Dencun. Please migrate to PBSS on Geth, integrated auto prune on Nethermind, and Grafana alerting for disk space."
+
 # If under kbyte threshold or 10% free, alert
 if [ "$FREE_DISK" -lt "${__kbyte_threshold}" ] || [ "$PERCENT_FREE" -lt "${__percent_threshold}" ]; then
   if [ "$__dryrun" -eq 0 ]; then
