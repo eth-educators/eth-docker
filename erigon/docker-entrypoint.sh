@@ -47,9 +47,8 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   networkid="$(jq -r '.config.chainId' "/var/lib/erigon/testnet/${config_dir}/genesis.json")"
   set +e
   __network="--bootnodes=${bootnodes} --networkid=${networkid} --http.api=eth,erigon,engine,web3,net,debug,trace,txpool,admin"
-  if [ ! -f /var/lib/erigon/setupdone ]; then
+  if [ ! -d /var/lib/erigon/chaindata ]; then
     erigon init --datadir /var/lib/erigon "/var/lib/erigon/testnet/${config_dir}/genesis.json"
-    touch /var/lib/erigon/setupdone
   fi
 else
   __network="--chain ${NETWORK} --http.api web3,eth,net,engine"
@@ -73,8 +72,14 @@ else
   elif [[ "${NETWORK}" = "gnosis" ]]; then
     echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
     __prune="--prune=htc --prune.r.before=19469077"
+  elif [[ "${NETWORK}" = "holesky" ]]; then
+    echo "holesky: Running without prune.r for eth deposit contract"
+    __prune="--prune=htc"
+  elif [[ "${NETWORK}" =~ ^https?:// ]]; then
+    echo "Custom testnet: Running without prune.r for eth deposit contract"
+    __prune="--prune=htc"
   else
-    echo "Unable to determine eth deposit contract, running without prune.r.before"
+    echo "Unable to determine eth deposit contract, running without prune.r"
     __prune="--prune=htc"
   fi
 fi
