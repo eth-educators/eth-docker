@@ -195,6 +195,14 @@ check_for_snap() {
     fi
 }
 
+install-bash-completions() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "Skipping installation of tab completions (not supported on OSX)"
+    else
+        ${__auto_sudo} ln -s "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/bash-completion" "$(pkg-config --variable=completionsdir bash-completion)/ethd"
+    fi
+}
+
 install() {
     check_for_snap
     set -e
@@ -285,6 +293,7 @@ install() {
         echo "Go ahead and 'source ~/.profile' or log out and back in."
         echo "After that, you can use the command 'ethd'."
     fi
+    install-bash-completions
     set +e
     return 0
 }
