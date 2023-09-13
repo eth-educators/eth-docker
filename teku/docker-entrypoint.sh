@@ -20,7 +20,7 @@ if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
       echo '[req]'; \
       echo 'distinguished_name=req'; \
       echo '[san]'; \
-      echo 'subjectAltName=DNS:localhost,DNS:consensus,DNS:validator,IP:127.0.0.1')
+      echo 'subjectAltName=DNS:localhost,DNS:consensus,DNS:validator,DNS:vc,IP:127.0.0.1')
     openssl pkcs12 -export -in /var/lib/teku/teku-keyapi.crt -inkey /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.keystore -name teku-keyapi -passout pass:"$__password"
 fi
 
