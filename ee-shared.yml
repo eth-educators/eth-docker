@@ -4,4 +4,4 @@ version: "3.9"
 services:
   execution:
     ports:
-      - ${HOST_IP:-}${EE_PORT}:${EE_PORT:-8551}/tcp
+      - ${SHARE_IP:-}${EE_PORT}:${EE_PORT:-8551}/tcp

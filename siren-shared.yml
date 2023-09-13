@@ -1,0 +1,6 @@
+# To be used in conjunction with siren.yml
+version: "3.9"
+services:
+  siren:
+    ports:
+      - ${SHARE_IP:-}${SIREN_PORT}:80/tcp

@@ -2,7 +2,4 @@ version: "3.9"
 services:
   grafana:
     ports:
-      - ${HOST_IP:-}${GRAFANA_PORT}:${GRAFANA_PORT}/tcp
-#  prometheus:
-#    ports:
-#      - 9090:9090/tcp
+      - ${SHARE_IP:-}${GRAFANA_PORT}:${GRAFANA_PORT}/tcp

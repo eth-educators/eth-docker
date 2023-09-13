@@ -31,6 +31,12 @@ services:
     entrypoint: choose-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     <<: *logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prom.entrypoints=web,websecure
+      - traefik.http.routers.prom.rule=Host(`${PROM_HOST}.${DOMAIN}`)
+      - traefik.http.routers.prom.tls.certresolver=letsencrypt
+      - traefik.http.services.prom.loadbalancer.server.port=9090
 
   ethereum-metrics-exporter:
     restart: "unless-stopped"

@@ -3,4 +3,4 @@ version: "3.9"
 services:
   prometheus:
     ports:
-      - ${HOST_IP:-}${PROMETHEUS_PORT:-9090}:9090/tcp
+      - ${SHARE_IP:-}${PROMETHEUS_PORT:-9090}:9090/tcp

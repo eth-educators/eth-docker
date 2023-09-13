@@ -63,6 +63,13 @@ services:
       - --unencrypted-http-transport
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${VC_HOST:-vc}.service=${VC_HOST:-vc}
+      - traefik.http.routers.${VC_HOST:-vc}.entrypoints=websecure
+      - traefik.http.routers.${VC_HOST:-vc}.rule=Host(`${VC_HOST:-vc}.${DOMAIN}`)
+      - traefik.http.routers.${VC_HOST:-vc}.tls.certresolver=letsencrypt
+      - traefik.http.services.${VC_HOST:-vc}.loadbalancer.server.port=${KEY_API_PORT:-7500}
 
   validator-exit:
     profiles: ["tools"]

@@ -61,6 +61,7 @@ services:
       - 0.0.0.0
       - --http-port
       - ${CL_REST_PORT:-5052}
+      - --http-allow-origin=*
       - --listen-address
       - 0.0.0.0
       - --port
@@ -80,6 +81,17 @@ services:
       - --validator-monitor-auto
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${CL_HOST:-cl}.service=${CL_HOST:-cl}
+      - traefik.http.routers.${CL_HOST:-cl}.entrypoints=websecure
+      - traefik.http.routers.${CL_HOST:-cl}.rule=Host(`${CL_HOST:-cl}.${DOMAIN}`)
+      - traefik.http.routers.${CL_HOST:-cl}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${CL_HOST:-cl}lb.service=${CL_HOST:-cl}
+      - traefik.http.routers.${CL_HOST:-cl}lb.entrypoints=websecure
+      - traefik.http.routers.${CL_HOST:-cl}lb.rule=Host(`${CL_LB:-cl-lb}.${DOMAIN}`)
+      - traefik.http.routers.${CL_HOST:-cl}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${CL_HOST:-cl}.loadbalancer.server.port=${CL_REST_PORT:-5052}
 
   validator:
     restart: "unless-stopped"
@@ -129,6 +141,13 @@ services:
       - ${FEE_RECIPIENT}
     depends_on:
       - consensus
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${VC_HOST:-vc}.service=${VC_HOST:-vc}
+      - traefik.http.routers.${VC_HOST:-vc}.entrypoints=websecure
+      - traefik.http.routers.${VC_HOST:-vc}.rule=Host(`${VC_HOST:-vc}.${DOMAIN}`)
+      - traefik.http.routers.${VC_HOST:-vc}.tls.certresolver=letsencrypt
+      - traefik.http.services.${VC_HOST:-vc}.loadbalancer.server.port=${KEY_API_PORT:-7500}
 
   validator-exit:
     profiles: ["tools"]
