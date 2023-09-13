@@ -1,5 +1,0 @@
-version: "3.9"
-services:
-  validator:
-    ports:
-      - 127.0.0.1:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp
