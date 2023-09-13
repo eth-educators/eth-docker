@@ -1,0 +1,39 @@
+completions() {
+    local cur prev
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD - 1]}
+
+    case ${COMP_CWORD} in
+        1)
+            COMPREPLY=($(compgen -W "install config keys update up start down stop restart version logs cmd terminate prune-geth prune-nethermind resync-execution resync-consensus attach-geth" -- ${cur}))
+            ;;
+        2)
+            case ${prev} in
+                logs|restart|down|stop)
+                    COMPREPLY=($(docker container ls --filter "name=eth-docker-*" --format "{{.Names}}" | sed 's/eth-docker-\(.*\)-[0-9]/\1/'))
+                ;;
+                keys)
+                    COMPREPLY=($(compgen -W "list import delete register get-recipient set-recipient delete-recipient get-gas set-gas delete-gas get-api-token create-prysm-wallet get-prysm-wallet prepare-address-change send-address-change sign-exit send-exit" -- ${cur}))
+                ;;
+                *)
+                    COMPREPLY=()
+                ;;
+            esac
+            ;;
+        3)
+            case ${prev} in
+                sign-exit)
+                    COMPREPLY=($(compgen -W "0x from-keystore" -- ${cur}) )
+                ;;
+                *)
+                    COMPREPLY=()
+                ;;
+            esac
+            ;;
+        *)
+            COMPREPLY=()
+            ;;
+    esac
+}
+
+complete -F completions ethd
