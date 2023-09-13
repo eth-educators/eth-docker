@@ -29,6 +29,10 @@ case "$CLIENT" in
 esac
 
 case "$CLIENT" in
+  *web3signer.yml* ) cat /etc/prometheus/web3signer-prom.yml >> /etc/prometheus/prometheus.yml ;;
+esac
+
+case "$CLIENT" in
   *ssv.yml* ) cat /etc/prometheus/ssv-prom.yml >> /etc/prometheus/prometheus.yml ;;
 esac
 
