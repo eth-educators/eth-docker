@@ -2009,18 +2009,25 @@ query_custom_execution_client() {
 
 query_execution_client() {
     if [ "${NETWORK}" = "gnosis" ]; then
-      EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?" 9 60 2 \
-      "nethermind.yml" "Nethermind (.NET)" \
-      "erigon.yml" "Erigon (Go)" 3>&1 1>&2 2>&3)
-    elif [ "${NETWORK}" = "zhejiang" ]; then
-      EXECUTION_CLIENT=nethermind.yml
+      if uname -a | grep -q aarch64; then
+        EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+        "Which execution client do you want to run?" 9 60 2 \
+        "nethermind.yml" "Nethermind (.NET)" \
+        "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+      else
+        EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+        "Which execution client do you want to run?" 9 60 2 \
+        "nethermind.yml" "Nethermind (.NET)" \
+        "erigon.yml" "Erigon (Go)" \
+        "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+      fi
     elif uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 9 60 3 \
       "besu.yml" "Besu (Java)" \
       "nethermind.yml" "Nethermind (.NET)" \
-      "geth.yml" "Geth (Go)" 3>&1 1>&2 2>&3)
+      "geth.yml" "Geth (Go)" \
+      "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 12 60 5 \
