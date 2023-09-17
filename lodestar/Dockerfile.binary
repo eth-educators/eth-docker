@@ -50,4 +50,4 @@ COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
 
-ENTRYPOINT ["node", "--max-old-space-size=6144", "/usr/app/node_modules/.bin/lodestar"]
+ENTRYPOINT ["node", "--max-old-space-size=16384", "/usr/app/node_modules/.bin/lodestar"]
