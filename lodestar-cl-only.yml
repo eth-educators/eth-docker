@@ -45,7 +45,7 @@ services:
     entrypoint:
       - docker-entrypoint.sh
       - node
-      - --max-old-space-size=4096
+      - --max-old-space-size=16384
       - /usr/app/node_modules/.bin/lodestar
       - beacon
       - --dataDir
