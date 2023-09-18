@@ -1466,8 +1466,8 @@ __i_haz_web3signer() {
     fi
 
     var="WEB3SIGNER"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-    if [ ! "${value}" = "true" ]; then
+    __w3s=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    if [ ! "${__w3s}" = "true" ]; then
         return
     fi
 
@@ -1571,6 +1571,7 @@ keys() {
     fi
 
     __i_haz_web3signer
+    __command="${1:-}"
 
     __owner_uid=$(id -u "${OWNER}")
     if [ "${1:-}" = "import" ]; then
@@ -1769,6 +1770,20 @@ keys() {
     else
         #__i_haz_keys_service
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
+    fi
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+
+    if [ "${__command}" = "import" ] || [ "${__command}" = "register" ] || [ "${__command}" = "delete" ]; then
+        # I do mean to match literally
+        # shellcheck disable=SC2076
+        if [[ "${__w3s}" = "true" ]] && [[ "${value}" =~ "teku.yml" ]]; then
+            echo "Sending SIGHUP to Teku to load web3signer keys"
+            docompose exec consensus kill -SIGHUP 1
+        elif [[ "${__w3s}" = "true" ]] && [[ "${value}" =~ "teku-vc-only.yml" ]]; then
+            echo "Sending SIGHUP to Teku to load web3signer keys"
+            docompose exec validator kill -SIGHUP 1
+        fi
     fi
 }
 
