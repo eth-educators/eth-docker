@@ -444,8 +444,8 @@ validator-delete() {
                 exit 1
                 ;;
         esac
-        # Remove remote registration
-        if [ "${WEB3SIGNER}" = "true" ]; then
+        # Remove remote registration, but not for Teku
+        if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
             __api_container=${__vc_api_container}
             __api_port=${__vc_api_port}
             __api_tls=${__vc_api_tls}
@@ -483,6 +483,8 @@ validator-delete() {
                     exit 1
                     ;;
             esac
+        else
+            echo "This client loads web3signer keys at startup, no registration to remove."
         fi
     done
 }
@@ -494,7 +496,8 @@ validator-import() {
 
     __num_dirs=$(find /validator_keys -maxdepth 1 -type d -name '0x*' | wc -l)
     if [ "$__pass" -eq 1 ] && [ "$__num_dirs" -gt 0 ]; then
-        echo "Found $__num_dirs directories starting with 0x. If these are from eth2-val-tools, please copy the keys and secrets directories into .eth/validator_keys instead."
+        echo "Found $__num_dirs directories starting with 0x. If these are from eth2-val-tools, please copy the keys \
+and secrets directories into .eth/validator_keys instead."
         echo
     fi
 
@@ -705,8 +708,8 @@ validator-import() {
                 exit 1
                 ;;
         esac
-        # Add remote registration
-        if [ "${WEB3SIGNER}" = "true" ]; then
+        # Add remote registration, but not for Teku
+        if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
             __api_container=${__vc_api_container}
             __api_port=${__vc_api_port}
             __api_tls=${__vc_api_tls}
@@ -754,6 +757,8 @@ validator-import() {
                     exit 1
                     ;;
             esac
+        else
+            echo "This client loads web3signer keys at startup, skipping registration via keymanager."
         fi
         echo
     done < <(find "$__key_root_dir" -maxdepth "$__depth" -name '*keystore*.json')
@@ -782,6 +787,11 @@ validator-register() {
         echo "WEB3SIGNER is not \"true\" in .env, cannot register web3signer keys with the validator client."
         echo "Aborting."
         exit 1
+    fi
+
+    if [ "${W3S_NOREG:-false}" = "true" ]; then
+        echo "This client loads web3signer keys at startup, skipping registration via keymanager."
+        exit 0
     fi
 
     __api_path=eth/v1/keystores

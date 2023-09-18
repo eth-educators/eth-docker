@@ -134,6 +134,7 @@ services:
       - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
       - KEY_API_PORT=${KEY_API_PORT:-7500}
       - WEB3SIGNER=${WEB3SIGNER:-false}
+      - W3S_NOREG=true
       - CL_NODE=${CL_NODE}
     depends_on:
       - consensus
