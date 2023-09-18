@@ -38,6 +38,7 @@ services:
       - CL_EXTRAS=${CL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
+      - NODE_OPTIONS=${LODESTAR_HEAP:---max-old-space-size=4096}
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -45,7 +46,6 @@ services:
     entrypoint:
       - docker-entrypoint.sh
       - node
-      - --max-old-space-size=16384
       - /usr/app/node_modules/.bin/lodestar
       - beacon
       - --dataDir
@@ -105,7 +105,7 @@ services:
     entrypoint:
       - docker-entrypoint-vc.sh
       - node
-      - --max-old-space-size=4096
+      - --max-old-space-size=2048
       - /usr/app/node_modules/.bin/lodestar
       - validator
       - --dataDir
@@ -141,7 +141,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
-      - --max-old-space-size=4096
+      - --max-old-space-size=2048
       - /usr/app/node_modules/.bin/lodestar
       - validator
       - voluntary-exit

@@ -44,7 +44,7 @@ services:
     entrypoint:
       - docker-entrypoint-vc.sh
       - node
-      - --max-old-space-size=4096
+      - --max-old-space-size=2048
       - /usr/app/node_modules/.bin/lodestar
       - validator
       - --dataDir
@@ -80,7 +80,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
       - node
-      - --max-old-space-size=4096
+      - --max-old-space-size=2048
       - /usr/app/node_modules/.bin/lodestar
       - validator
       - voluntary-exit
