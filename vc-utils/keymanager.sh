@@ -391,13 +391,50 @@ validator-delete() {
     fi
 
     for __pubkey in "${__pubkeys[@]}"; do
+        # Remove remote registration, with a path not to
+        if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
+            get-token
+            __api_path=eth/v1/remotekeys
+            __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
+            __http_method=DELETE
+            call_api
+            case $__code in
+                200) ;;
+                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+            esac
+
+            __status=$(echo "$__result" | jq -r '.data[].status')
+            case ${__status,,} in
+                error)
+                    echo "Remote registration for validator ${__pubkey} was found but an error was encountered trying \
+to delete it:"
+                    echo "$__result" | jq -r '.data[].message'
+                    ;;
+                not_active)
+                    echo "Validator ${__pubkey} is not actively loaded."
+                    ;;
+                deleted)
+                    echo "Remote registration for validator ${__pubkey} deleted."
+                    ;;
+                not_found)
+                    echo "The validator ${__pubkey} was not found in the registration list."
+                    ;;
+                *)
+                    echo "Unexpected status $__status. This may be a bug"
+                    exit 1
+                    ;;
+            esac
+        else
+            echo "This client loads web3signer keys at startup, no registration to remove."
+        fi
+
         if [ "${WEB3SIGNER}" = "true" ]; then
             __token=NIL
-            __vc_api_container=${__api_container}
             __api_container=web3signer
-            __vc_api_port=${__api_port}
             __api_port=9000
-            __vc_api_tls=${__api_tls}
             __api_tls=false
         else
             get-token
@@ -444,48 +481,6 @@ validator-delete() {
                 exit 1
                 ;;
         esac
-        # Remove remote registration, but not for Teku
-        if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
-            __api_container=${__vc_api_container}
-            __api_port=${__vc_api_port}
-            __api_tls=${__vc_api_tls}
-
-            get-token
-            __api_path=eth/v1/remotekeys
-            __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
-            __http_method=DELETE
-            call_api
-            case $__code in
-                200) ;;
-                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-                403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-                500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-                *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
-            esac
-
-            __status=$(echo "$__result" | jq -r '.data[].status')
-            case ${__status,,} in
-                error)
-                    echo "Remote registration for validator ${__pubkey} was found but an error was encountered trying to delete it:"
-                    echo "$__result" | jq -r '.data[].message'
-                    ;;
-                not_active)
-                    echo "Validator ${__pubkey} is not actively loaded."
-                    ;;
-                deleted)
-                    echo "Remote registration for validator ${__pubkey} deleted."
-                    ;;
-                not_found)
-                    echo "The validator ${__pubkey} was not found in the registration list."
-                    ;;
-                *)
-                    echo "Unexpected status $__status. This may be a bug"
-                    exit 1
-                    ;;
-            esac
-        else
-            echo "This client loads web3signer keys at startup, no registration to remove."
-        fi
     done
 }
 
@@ -708,7 +703,7 @@ and secrets directories into .eth/validator_keys instead."
                 exit 1
                 ;;
         esac
-        # Add remote registration, but not for Teku
+        # Add remote registration, with a path not to
         if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
             __api_container=${__vc_api_container}
             __api_port=${__vc_api_port}
