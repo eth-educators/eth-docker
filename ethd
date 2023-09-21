@@ -1774,17 +1774,17 @@ keys() {
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
-    if [ "${__command}" = "import" ] || [ "${__command}" = "register" ] || [ "${__command}" = "delete" ]; then
-        # I do mean to match literally
-        # shellcheck disable=SC2076
-        if [[ "${__w3s}" = "true" ]] && [[ "${value}" =~ "teku.yml" ]]; then
-            echo "Sending SIGHUP to Teku to load web3signer keys"
-            docompose exec consensus kill -SIGHUP 1
-        elif [[ "${__w3s}" = "true" ]] && [[ "${value}" =~ "teku-vc-only.yml" ]]; then
-            echo "Sending SIGHUP to Teku to load web3signer keys"
-            docompose exec validator kill -SIGHUP 1
-        fi
-    fi
+#    if [ "${__command}" = "import" ] || [ "${__command}" = "register" ] || [ "${__command}" = "delete" ]; then
+#        # I do mean to match literally
+#        # shellcheck disable=SC2076
+#        if [[ "${__w3s}" = "true" ]] && [[ "${value}" =~ "teku.yml" ]]; then
+#            echo "Sending SIGHUP to Teku to load web3signer keys"
+#            docompose exec consensus kill -SIGHUP 1
+#        elif [[ "${__w3s}" = "true" ]] && [[ "${value}" =~ "teku-vc-only.yml" ]]; then
+#            echo "Sending SIGHUP to Teku to load web3signer keys"
+#            docompose exec validator kill -SIGHUP 1
+#        fi
+#    fi
 }
 
 keyimport() {

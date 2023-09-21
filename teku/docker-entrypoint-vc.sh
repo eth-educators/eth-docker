@@ -65,16 +65,16 @@ fi
 
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--validators-external-signer-url http://web3signer:9000 --validators-external-signer-public-keys external-signer"
-  while true; do
-    if curl -s -m 5 http://web3signer:9000 &> /dev/null; then
-        echo "web3signer is up, starting Teku"
-        break
-    else
-        echo "Waiting for web3signer to be reachable..."
-        sleep 5
-    fi
-  done
+  __w3s_url="--validators-external-signer-url http://web3signer:9000"
+#  while true; do
+#    if curl -s -m 5 http://web3signer:9000 &> /dev/null; then
+#        echo "web3signer is up, starting Teku"
+#        break
+#    else
+#        echo "Waiting for web3signer to be reachable..."
+#        sleep 5
+#    fi
+#  done
 else
   __w3s_url=""
 fi
