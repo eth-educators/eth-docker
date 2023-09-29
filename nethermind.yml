@@ -42,8 +42,7 @@ services:
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
-      - dotnet
-      - /nethermind/Nethermind.Runner.dll
+      - /nethermind/nethermind
       - --datadir
       - /var/lib/nethermind
       - --Init.WebSocketsEnabled

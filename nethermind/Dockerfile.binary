@@ -36,7 +36,8 @@ RUN set -eux; \
 
 # This only goes so far. keystore, logs and nethermind_db are volumes and need to be chown'd in the entrypoint
 RUN chown -R ${USER}:${USER} /nethermind
-RUN mkdir -p /var/lib/nethermind/ee-secret && chown -R ${USER}:${USER} /var/lib/nethermind && chmod -R 700 /var/lib/nethermind && chmod 777 /var/lib/nethermind/ee-secret
+RUN mkdir -p /var/lib/nethermind/ee-secret && chown -R ${USER}:${USER} /var/lib/nethermind \
+&& chmod -R 700 /var/lib/nethermind && chmod 777 /var/lib/nethermind/ee-secret
 
 # Cannot assume buildkit, hence no chmod
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
@@ -45,4 +46,4 @@ RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
-ENTRYPOINT ["dotnet","/nethermind/Nethermind.Runner.dll"]
+ENTRYPOINT ["./nethermind"]
