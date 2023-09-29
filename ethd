@@ -2623,7 +2623,7 @@ version() {
             echo
             ;;&
         *nethermind.yml* )
-            docompose exec execution dotnet /nethermind/Nethermind.Runner.dll --version
+            docompose exec execution /nethermind/nethermind --version
             echo
             ;;&
         *erigon.yml* )
