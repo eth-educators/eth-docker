@@ -224,8 +224,8 @@ continue? (no/yes) " yn
             exit 0
         fi
         if [ -z "$(command -v docker)" ]; then
-            ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release \
-                whiptail bc chrony
+            ${__auto_sudo} apt-get update
+            ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail chrony pkg-config
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor \
             --yes -o /etc/apt/keyrings/docker.gpg
@@ -251,7 +251,7 @@ continue? (no/yes) " yn
     elif [[ "$__distro" =~ "debian" ]]; then
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail bc chrony
+            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail chrony pkg-config
             __major_version=$(lsb_release -r | cut -f2)
             if [ "${__major_version}" -lt 10 ]; then
                 echo "This script cannot install docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
@@ -265,7 +265,8 @@ continue? (no/yes) " yn
                 https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
                 | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+                docker-buildx-plugin
             echo "Installed docker-ce and docker-compose-plugin"
         else
             echo "Docker is already installed"
