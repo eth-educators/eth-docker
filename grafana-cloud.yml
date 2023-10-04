@@ -103,6 +103,7 @@ services:
     <<: *logging
 
   cadvisor:
+    restart: "unless-stopped"
     image: gcr.io/cadvisor/cadvisor:v0.47.2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
