@@ -758,10 +758,20 @@ envmigrate() {
             if [ "${var}" = "COMPOSE_FILE" ]; then
                 migrate_compose_file
             fi
+            if [ "${var}" = "CL_QUIC_PORT" ]; then
+                __cl_port=$(sed -n -e "s/^CL_P2P_PORT=\(.*\)/\1/p" ".env.source" || true)
+                if [ -n "${__cl_port}" ] && [ "${__cl_port}" = "${value}" ]; then
+                    value=$((value + 1))
+                    echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with CL_P2P_PORT"
+                fi
+            fi
             if [[ "${var}" = "NETWORK" && "${value}" =~ "prater" ]]; then
                 value="goerli"
             fi
             if [[ "${var}" = "HOST_IP" && "${value: -1}" != ":" ]]; then
+                value="${value}:" # ComposeV1 requires this so I can do v6
+            fi
+            if [[ "${var}" = "SHARE_IP" && "${value: -1}" != ":" ]]; then
                 value="${value}:" # ComposeV1 requires this so I can do v6
             fi
             # Handle & in GRAFFITI gracefully
