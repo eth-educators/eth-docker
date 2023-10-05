@@ -1888,7 +1888,7 @@ spec? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
             exitstatus=$?
             if [ $exitstatus -eq 0 ]; then
               if [[ ${NETWORK} =~ ^https?:// ]]; then
-                echo "Your customer testnet URL is: ${NETWORK}"
+                echo "Your custom testnet URL is: ${NETWORK}"
                 break
               else
                 whiptail --msgbox "${NETWORK} is not a valid URL. You can try again or Cancel on the next \
