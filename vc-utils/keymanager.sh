@@ -242,9 +242,7 @@ exit-sign() {
         *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
     esac
     # This is only reached for 200
-    if jq -e '.data != null' <<< "${__result}" &>/dev/null; then
-        __result=$(echo "${__result}" | jq -c '.data')
-    fi
+    __result=$(echo "${__result}" | jq -c '.data')
 
     echo "${__result}" >"/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
     exitstatus=$?
