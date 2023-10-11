@@ -890,13 +890,13 @@ migrate_compose_file() {
         lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml geth-grafana.yml \
         erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml lh-stats-validator.yml \
         traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml el-traefik.yml ee-traefik.yml \
-        prometheus-traefik.yml )
+        prometheus-traefik.yml grafana-localhost.yml )
     TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml \
         lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml \
         lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml \
         prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml lighthouse-vc-only.yml \
         lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml lodestar.yml traefik-cf.yml \
-        validator-keyapi-shared.yml validator-keyapi-shared.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "")
+        validator-keyapi-shared.yml validator-keyapi-shared.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "")
 
     __old_grafana=0
     __new_grafana=0
