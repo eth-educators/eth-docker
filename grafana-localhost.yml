@@ -1,8 +1,0 @@
-version: "3.9"
-services:
-  grafana:
-    ports:
-      - 127.0.0.1:${GRAFANA_PORT}:${GRAFANA_PORT}/tcp
-  prometheus:
-    ports:
-      - 127.0.0.1:9090:9090/tcp
