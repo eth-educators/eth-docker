@@ -19,3 +19,4 @@ promtail/custom-lokiurl.yml
 ssv-config/password.pass
 ssv-config/password
 ssv-config/encrypted_private_key.json
+ssv-config/config.yaml
