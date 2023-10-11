@@ -16,3 +16,6 @@ ssv-config.yaml.bak
 blox-ssv-config.yaml
 blox-ssv-config.yaml.bak
 promtail/custom-lokiurl.yml
+ssv-config/password.pass
+ssv-config/password
+ssv-config/encrypted_private_key.json

@@ -1,8 +1,10 @@
-OperatorPrivateKey: YOURPRIVATEKEYHERE
 ssv:
   Network: jato-v2
   ValidatorOptions:
     BuilderProposals: true
+KeyStore:
+  PrivateKeyFile: /config/encrypted_private_key.json
+  PasswordFile: /config/password.pass
 p2p:
   DiscoveryType: discv5
   TcpPort: 13001

@@ -13,7 +13,7 @@ services:
     image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
     user: 12000:12000
     volumes:
-      - ./ssv-config.yaml:/config.yaml
+      - ./ssv-config:/config
       - ssv-data:/tmp
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -21,13 +21,8 @@ services:
       - ${SSV_P2P_PORT_UDP}:${SSV_P2P_PORT_UDP}/udp
     <<: *logging
     environment:
-      - CONFIG_PATH=/config.yaml
+      - CONFIG_PATH=/config/config.yaml
       - HOME=/tmp
     command: make BUILD_PATH=/go/bin/ssvnode start-node
-  ssv-generate-keys:
-    profiles: ["tools"]
-    restart: "no"
-    image: bloxstaking/ssv-node:${SSV_NODE_TAG:-latest}
-    command: /go/bin/ssvnode generate-operator-keys
 volumes:
   ssv-data:

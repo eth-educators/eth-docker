@@ -161,9 +161,13 @@ prep_conffiles() {
     if [ ! -f "./prometheus/custom-prom.yml" ]; then
         ${__as_owner} touch "./prometheus/custom-prom.yml"
     fi
-# Create ssv-config.yml if it doesn't exist
-    if [ ! -f "./ssv-config.yaml" ]; then
-        ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
+# Move ssv-config.yaml
+    if [ -f "./ssv-config.yaml" ]; then
+        ${__as_owner} mv ./ssv-config.yaml ssv-config/config.yaml
+    fi
+# Create config.yaml if it doesn't exist
+    if [ ! -f "ssv-config/config.yaml" ]; then
+        ${__as_owner} cp ssv-config/config-sample.yaml ssv-config/config.yaml
     fi
 }
 
@@ -946,26 +950,26 @@ ssv_switch() {
     echo "SSV Node stopped and database deleted."
     echo ""
     cp blox-ssv-config.yaml blox-ssv-config.yaml.bak
-    cp blox-ssv-config.yaml ssv-config.yaml
+    cp blox-ssv-config.yaml ssv-config/config.yaml
     rm blox-ssv-config.yaml
     echo "Backup copy blox-ssv-config.yaml.bak created"
-    echo "Making changes to ssv-config.yaml"
+    echo "Making changes to ssv-config/config.yaml"
     var="NETWORK"
     NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     sed -i'' 's/blox-ssv2.yml/ssv.yml/' .env.source
-    if ! grep -q "LogFilePath:" ssv-config.yaml; then
-      sed -i'' '/global:/a\  LogFilePath: /tmp/ssv/debug.log' ssv-config.yaml
+    if ! grep -q "LogFilePath:" ssv-config/config.yaml; then
+      sed -i'' '/global:/a\  LogFilePath: /tmp/ssv/debug.log' ssv-config/config.yaml
     fi
-    if ! grep -q "MetricsAPIPort:" ssv-config.yaml; then
-      sed -i'' '$a\MetricsAPIPort: 15000' ssv-config.yaml
+    if ! grep -q "MetricsAPIPort:" ssv-config/config.yaml; then
+      sed -i'' '$a\MetricsAPIPort: 15000' ssv-config/config.yaml
     fi
-    if ! grep -q "ssv:" ssv-config.yaml; then
-      sed -i '/^  Network:/d' ssv-config.yaml # Remove old eth2 Network line if present
-      sed -i'' '$a\ssv:' ssv-config.yaml
+    if ! grep -q "ssv:" ssv-config/config.yaml; then
+      sed -i '/^  Network:/d' ssv-config/config.yaml # Remove old eth2 Network line if present
+      sed -i'' '$a\ssv:' ssv-config/config.yaml
       if [ "${NETWORK}" = "goerli" ]; then
-        sed -i'' '$a\  Network: jato-v2' ssv-config.yaml
+        sed -i'' '$a\  Network: jato-v2' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
-        sed -i'' '$a\  Network: mainnet' ssv-config.yaml
+        sed -i'' '$a\  Network: mainnet' ssv-config/config.yaml
       else
         echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running ./ethd update again"
         echo "Aborting."
@@ -2451,17 +2455,31 @@ config() {
         query_validator_client
         ;;
       "ssv")
-        if [ ! -f "./ssv-config.yaml" ]; then
-            ${__as_owner} cp ./ssv-config-sample.yaml ./ssv-config.yaml
+        if [ ! -f "./ssv-config/config.yaml" ]; then
+            ${__as_owner} cp ./ssv-config/config-sample.yaml ./ssv-config/config.yaml
         fi
         if [ "${NETWORK}" = "goerli" ]; then
-          sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config.yaml
+          sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
         elif [ "${NETWORK}" = "mainnet" ]; then
-          sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config.yaml
+          sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
         else
           echo "${NETWORK} is not something that works with SSV. This needs to be fixed when running ./ethd config again"
           echo "Aborting."
           exit 1
+        fi
+        if [ ! -f "./ssv-config/password.pass" ]; then
+            echo "Creating password file for encrypted SSV secret key"
+            head -c 16 /dev/urandom | base64 | tr -d '[:space:]' >./ssv-config/password.pass
+            ${__auto_sudo} chown 12000:12000 ./ssv-config/password.pass
+            ${__auto_sudo} chmod 600 ./ssv-config/password.pass
+        fi
+        if [ ! -f "./ssv-config/encrypted_private_key.json" ]; then
+            echo "Creating encrypted operator private key"
+            dodocker run --name ssv-node-key-generation -v "$(pwd)/ssv-config/password.pass":/password.pass \
+                -it bloxstaking/ssv-node:latest /go/bin/ssvnode generate-operator-keys \
+                --password-file=/password.pass && dodocker cp ssv-node-key-generation:/encrypted_private_key.json \
+                ./ssv-config/encrypted_private_key.json && dodocker rm ssv-node-key-generation
+            ${__auto_sudo} chown 12000:12000 ./ssv-config/encrypted_private_key.json
         fi
         query_consensus_only_client
         ;;
