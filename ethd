@@ -1763,7 +1763,24 @@ keys() {
     elif [ "${1:-}" = "send-exit" ]; then
         var="CL_NODE"
         CL_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-        network_name="$(basename "$(pwd)")_default"
+        network_name="$(docompose config | awk '
+            BEGIN {
+                found_networks=0;
+                found_default=0;
+            }
+            /networks:/ {
+                found_networks=1;
+                next;
+            }
+            found_networks && /default:/ {
+                found_default=1;
+                next;
+            }
+            found_default && /^ *name:/ {
+                print $2;
+                exit;
+            }
+        ')"
         if ! dodocker image ls --format "{{.Repository}}:{{.Tag}}" | grep -q "vc-utils:local"; then
           if ! dpkg-query -W -f='${Status}' docker-ce 2>/dev/null | grep -q "ok installed"; then
             dodocker build -t vc-utils:local ./vc-utils
