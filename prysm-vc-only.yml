@@ -97,22 +97,14 @@ services:
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    build:
-      target: validator
-      <<: *prysm-build
-    image: prysm-validator:local
-    user: prysmvalidator
+    image: ${PRYSM_DOCKER_CTL_REPO}:${PRYSM_DOCKER_CTL_TAG}
     volumes:
       - prysmvalidator-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
     entrypoint:
+      - /app/cmd/prysmctl/prysmctl
       - validator
-      - --verbosity
-      - ${LOG_LEVEL}
-      - --datadir
-      - /var/lib/prysm
-      - accounts
-      - voluntary-exit
+      - exit
       - --wallet-dir=/var/lib/prysm/
       - --beacon-rpc-provider=${CL_NODE:-http://consensus:4000}
       - --wallet-password-file=/var/lib/prysm/password.txt
