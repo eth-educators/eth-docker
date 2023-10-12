@@ -59,6 +59,15 @@ services:
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
 
+  validator-exit:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:3
+    entrypoint:
+      - /bin/sh
+      - -c
+      - echo "Legacy exit not supported with Nimbus validator client. Please use ./ethd keys sign-exit instead, then submit to beaconcha.in or use ./ethd keys send-exit"
+
   validator-keys:
     profiles: ["tools"]
     restart: "no"
