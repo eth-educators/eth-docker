@@ -1,5 +1,5 @@
 from python:3.10-alpine as builder
-#from python:3.11-alpine as builder
+#from python:3.12-alpine as builder
 
 ARG BUILD_TARGET
 ARG SRC_REPO
