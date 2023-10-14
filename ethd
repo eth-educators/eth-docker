@@ -2147,6 +2147,7 @@ query_execution_client() {
       "besu.yml" "Besu (Java)" \
       "geth.yml" "Geth (Go)" \
       "erigon.yml" "Erigon (Go)" \
+      "reth.yml" "Reth (Rust) - alpha release" \
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     fi
 
