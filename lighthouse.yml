@@ -57,7 +57,7 @@ services:
       - --disable-upnp
       - --datadir
       - /var/lib/lighthouse
-      - --http
+      - --gui
       - --http-address
       - 0.0.0.0
       - --http-port
@@ -81,7 +81,6 @@ services:
       - 0.0.0.0
       - --metrics-port
       - "8008"
-      - --validator-monitor-auto
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
     labels:
