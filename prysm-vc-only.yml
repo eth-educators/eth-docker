@@ -134,8 +134,6 @@ services:
       - --${NETWORK}
       - --backup-dir=/validator_keys
       - --backup-password-file=/var/lib/prysm/password.txt
-    depends_on:
-      - consensus
 
   validator-keys:
     profiles: ["tools"]
