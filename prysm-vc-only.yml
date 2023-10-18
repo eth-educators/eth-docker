@@ -68,7 +68,6 @@ services:
       - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --enable-builder
       - --wallet-password-file
       - /var/lib/prysm/password.txt
     labels:
