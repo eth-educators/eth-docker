@@ -34,6 +34,7 @@ services:
       - --entrypoints.websecure.address=:${TRAEFIK_WEB_PORT}
       - --metrics
       - --metrics.prometheus
+      - --global.sendAnonymousUsage
     ports:
       - ${HOST_IP:-}${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
       - ${HOST_IP:-}${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
