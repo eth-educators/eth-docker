@@ -101,7 +101,7 @@ upgrade_compose() {
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release
     __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
     if [ "${__major_version}" -lt 20 ]; then
-      echo "This script cannot update compose on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
+      echo "This script cannot update Docker Compose on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
       exit 0
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -128,7 +128,7 @@ upgrade_compose() {
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
     __major_version=$(lsb_release -r | cut -f2)
     if [ "${__major_version}" -lt 10 ]; then
-        echo "This script cannot update compose on Debian ${__major_version}. Consider upgrading to 11 or 12."
+        echo "This script cannot update Docker Compose on Debian ${__major_version}. Consider upgrading to 11 or 12."
         exit 0
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -152,7 +152,7 @@ upgrade_compose() {
     ${__auto_sudo} apt-get remove -y docker-compose
     echo "Removed docker-compose"
   else
-    echo "This script does not know how to update compose on $__distro"
+    echo "This script does not know how to update Docker Compose on $__distro"
   fi
 }
 
@@ -2784,7 +2784,7 @@ determine_distro
 handle_root
 prep_conffiles
 
-# Don't check for docker before it's installed
+# Don't check for Docker before it's installed
 if [ "$command" = "install" ]; then
     $command "$@"
     exit "$?"
@@ -2821,7 +2821,7 @@ check_disk_space
 
 if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
-  echo "You updated compose to V2."
+  echo "You updated Docker Compose to V2."
   echo "The \"docker-compose\" command is gone and replaced with \"docker compose\"."
   echo "You can create yourself an alias for \"docker-compose\"."
   echo
