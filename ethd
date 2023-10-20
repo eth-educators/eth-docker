@@ -2230,7 +2230,7 @@ query_checkpoint_beacon() {
                 RAPID_SYNC_URL="https://beaconstate.info"
                 ;;
             "gnosis")
-                RAPID_SYNC_URL="https://checkpoint.gnosischain.com/"
+                RAPID_SYNC_URL="https://checkpoint.gnosis.gateway.fm"
                 ;;
             *)
                 RAPID_SYNC_URL=""
