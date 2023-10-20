@@ -41,7 +41,7 @@ determine_sudo() {
         systemctl status docker >/dev/null
         result=$?
         if [ ! "${result}" -eq 0 ]; then
-            echo "The docker daemon is not running. Please check docker installation."
+            echo "The Docker daemon is not running. Please check Docker installation."
             echo "\"sudo systemctl status docker\" and \"sudo journalctl -fu docker\" will be helpful."
             echo "Aborting."
             exit 1
@@ -50,7 +50,7 @@ determine_sudo() {
 
     __maybe_sudo=""
     if ! docker images >/dev/null 2>&1; then
-        echo "Will use sudo to access docker"
+        echo "Will use sudo to access Docker"
         __maybe_sudo="sudo"
     fi
 }
@@ -73,13 +73,13 @@ determine_compose() {
     if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
-      echo "Eth Docker will stop supporting it with Dencun, sometime fall 2023."
+      echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
       echo ""
-      echo "It is recommended that you replace compose V1 with compose V2."
+      echo "It is recommended that you replace Compose V1 with Compose V2."
       while true; do
-        read -rp "Do you want to update compose to V2? (yes/no) " yn
+        read -rp "Do you want to update Docker Compose to V2? (yes/no) " yn
         case $yn in
-          [Nn]* ) echo "Please be sure to update compose yourself!"; break;;
+          [Nn]* ) echo "Please be sure to update Docker Compose yourself!"; break;;
            * ) upgrade_compose; break;;
         esac
       done
@@ -93,10 +93,10 @@ determine_compose() {
 
 upgrade_compose() {
   if ! type -P docker-compose >/dev/null 2>&1; then
-    echo "Compose has already been updated to V2"
+    echo "Docker Compose has already been updated to V2"
     return
   fi
-  echo "Updating compose to V2"
+  echo "Updating Docker Compose to V2"
   if [[ "$__distro" = "ubuntu" ]]; then
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release
     __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
@@ -112,7 +112,7 @@ upgrade_compose() {
         https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
         | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y docker-compose-plugin
+    ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
     echo "Installed docker-compose-plugin"
     __old_compose=0
     __compose_exe="docker compose"
@@ -139,7 +139,7 @@ upgrade_compose() {
         https://download.docker.com/linux/debian  $(lsb_release -cs) stable" \
         | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y docker-compose-plugin
+    ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
     echo "Installed docker-compose-plugin"
     __old_compose=0
     __compose_exe="docker compose"
@@ -184,14 +184,14 @@ handle_root() {
 check_for_snap() {
     if [[ "$__distro" = "ubuntu" && -n "$(command -v snap)" ]] && snap list 2>/dev/null | grep -qw 'docker'; then
         echo
-        echo "WARNING! Snap docker package detected. This WILL result in issues."
+        echo "WARNING! Snap Docker package detected. This WILL result in issues."
         echo "Removing the package will delete volumes and require a resync,"
         echo "as well as re-import of all validator keys."
         echo
         echo "Doing so is still highly recommended however."
         echo
         echo "The exact steps depend a little on whether there already is"
-        echo "an apt version of docker installed as well, but in a nutshell"
+        echo "an apt version of Docker installed as well, but in a nutshell"
         echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
         echo "and then a reboot, and as needed install docker.io or docker-ce with apt,"
         echo "re-import keys and restart Eth Docker."
@@ -215,7 +215,7 @@ install-bash-completions() {
 install() {
     check_for_snap
     set -e
-    read -rp "This will attempt to install docker and make your user part of the docker group. Do you wish to \
+    read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
 continue? (no/yes) " yn
     case $yn in
         [Yy]* ) ;;
@@ -224,7 +224,7 @@ continue? (no/yes) " yn
     if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
         if [ "${__major_version}" -lt 20 ]; then
-            echo "This script cannot install docker on Ubuntu ${__major_version}. Consider upgrading to 22.04"
+            echo "This script cannot install Docker on Ubuntu ${__major_version}. Consider upgrading to 22.04"
             exit 0
         fi
         if [ -z "$(command -v docker)" ]; then
@@ -258,7 +258,7 @@ continue? (no/yes) " yn
             ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail chrony pkg-config
             __major_version=$(lsb_release -r | cut -f2)
             if [ "${__major_version}" -lt 10 ]; then
-                echo "This script cannot install docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
+                echo "This script cannot install Docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
                 exit 0
             fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -284,7 +284,7 @@ continue? (no/yes) " yn
             echo "Your user is already part of the docker group"
         fi
     else
-        echo "This script does not know how to install docker on $__distro"
+        echo "This script does not know how to install Docker on $__distro"
     fi
 
     if ! [[ "$__distro" = "ubuntu" ]] || [[ "$__distro" =~ "debian" ]]; then
@@ -1026,7 +1026,7 @@ resync-execution() {
     esac
 
     if ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__el_volume}"; then
-        echo "Did not find docker volume for ${__el_client}. Nothing to do."
+        echo "Did not find Docker volume for ${__el_client}. Nothing to do."
         return
     fi
 
@@ -1067,7 +1067,7 @@ resync-consensus() {
 
     if [ ! "${__cl_volume}" = "wipe-db" ] && ! dodocker volume ls -q \
         | grep -q "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
-        echo "Did not find docker volume for ${__cl_client}. Nothing to do."
+        echo "Did not find Docker volume for ${__cl_client}. Nothing to do."
         return
     fi
 
@@ -1350,7 +1350,7 @@ execution | grep Full\" to see whether it is."
     if [ $exitstatus -ne 0 ]; then
         echo "Unable to start prune, error code ${exitstatus}. This is likely a bug."
         echo "An attempt to run it returned this: ${prune_result}"
-        echo 'The command attempted was: docker-compose run --rm set-prune-marker "curl -s \
+        echo 'The command attempted was: docker compose run --rm set-prune-marker "curl -s \
 --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} \
 -H Content-Type:\ application/json http://execution:8545"'
         exit ${exitstatus}
@@ -2707,7 +2707,7 @@ printhelp() {
     echo ""
     echo "subcommands:"
     echo "  install"
-    echo "     attempts to install docker and docker-compose for you"
+    echo "     attempts to install Docker and Docker Compose for you"
     echo "  config"
     echo "     configures Eth Docker with your choice of Ethereum clients"
     echo "  keys ACTION"
@@ -2728,7 +2728,7 @@ printhelp() {
     echo "  logs"
     echo "     shows logs"
     echo "  cmd <command>"
-    echo "     executes an arbitrary docker compose command. Use \"cmd help\" to list them"
+    echo "     executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
     echo "  terminate"
     echo "     stops the Ethereum node and destroys all data stores"
     echo "  prune-geth"
@@ -2830,7 +2830,7 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
 elif [ "${__old_compose}" -eq 1 ]; then
   echo
   echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on."
-  echo "Eth Docker will stop supporting it with Dencun, sometime fall 2023."
+  echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
   echo ""
   echo "A switch to docker-ce is recommended. It is *not* mandatory. This is unfortunately a manual step that "
   echo "Eth Docker cannot do for you."
