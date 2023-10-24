@@ -1,0 +1,27 @@
+# For scraping with central-proxy-docker, when all you want is the metrics exporter
+
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  ethereum-metrics-exporter:
+    restart: "unless-stopped"
+    build:
+      context: ./eth-metrics
+    image: ethereum-metrics-exporter:local
+    environment:
+      - CLIENT=${COMPOSE_FILE}
+    entrypoint:
+      - docker-entrypoint.sh
+      - /ethereum-metrics-exporter
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9090
+    <<: *logging
