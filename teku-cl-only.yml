@@ -87,6 +87,10 @@ services:
       - traefik.http.routers.${CL_HOST:-cl}lb.rule=Host(`${CL_LB:-cl-lb}.${DOMAIN}`)
       - traefik.http.routers.${CL_HOST:-cl}lb.tls.certresolver=letsencrypt
       - traefik.http.services.${CL_HOST:-cl}.loadbalancer.server.port=${CL_REST_PORT:-5052}
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8008
+
 volumes:
   tekuconsensus-data:
   jwtsecret:

@@ -78,6 +78,10 @@ services:
       - --keymanager-allow-origin=*
       - --keymanager-token-file=/var/lib/nimbus/api-token.txt
       - --suggested-fee-recipient=${FEE_RECIPIENT}
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8008
 
   wipe-db:
     profiles: ["tools"]

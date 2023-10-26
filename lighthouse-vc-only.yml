@@ -70,6 +70,9 @@ services:
       - traefik.http.routers.${VC_HOST:-vc}.rule=Host(`${VC_HOST:-vc}.${DOMAIN}`)
       - traefik.http.routers.${VC_HOST:-vc}.tls.certresolver=letsencrypt
       - traefik.http.services.${VC_HOST:-vc}.loadbalancer.server.port=${KEY_API_PORT:-7500}
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8009
 
   validator-exit:
     profiles: ["tools"]
