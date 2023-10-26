@@ -83,6 +83,10 @@ services:
       - "8008"
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8008
 
   validator:
     restart: "unless-stopped"
@@ -143,6 +147,9 @@ services:
       - traefik.http.routers.prysm.rule=Host(`${PRYSM_HOST}.${DOMAIN}`)
       - traefik.http.routers.prysm.tls.certresolver=letsencrypt
       - traefik.http.services.prysm.loadbalancer.server.port=${KEY_API_PORT:-7500}
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8009
 
   create-wallet:
     profiles: ["tools"]

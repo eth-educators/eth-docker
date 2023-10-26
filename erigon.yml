@@ -116,6 +116,9 @@ services:
       - traefik.http.routers.${EE_HOST:-ee}.rule=Host(`${EE_HOST:-ee}.${DOMAIN}`)
       - traefik.http.routers.${EE_HOST:-ee}.tls.certresolver=letsencrypt
       - traefik.http.services.${EE_HOST:-ee}.loadbalancer.server.port=${EE_PORT:-8551}
+      - metrics.scrape=true
+      - metrics.path=/debug/metrics/prometheus
+      - metrics.port=6060
 volumes:
   erigon-el-data:
   jwtsecret:

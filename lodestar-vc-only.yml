@@ -67,6 +67,10 @@ services:
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
       - --force
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8008
 
   validator-exit:
     profiles: ["tools"]
