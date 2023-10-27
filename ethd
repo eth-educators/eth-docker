@@ -2547,7 +2547,7 @@ config() {
     if [ -n "${GRAFANA_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
     fi
-    if [ "${MEV_BOOST}" = "true" ]; then
+    if [ "${MEV_BOOST}" = "true" ] && [ ! "${__deployment}" = "rocket" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
     fi
     if { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
