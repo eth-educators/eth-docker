@@ -22,7 +22,8 @@ services:
       - web3signer-keys:/var/lib/web3signer
       - /etc/localtime:/etc/localtime:ro
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
@@ -46,6 +47,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=web3signer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      start_period: 5s
+      interval: 10s
+      timeout: 5s
     volumes:
       - web3signer-slashing-data:/var/lib/postgresql/data/
 

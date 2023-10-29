@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-#set -euo pipefail
-set -uo pipefail
+set -Eeuo pipefail
 
 __docker_exe="docker"
 __compose_exe="docker compose"
@@ -40,6 +39,7 @@ determine_distro() {
 
 
 determine_sudo() {
+    set +e
     if [[ "$__distro" =~ "debian" || "$__distro" = "ubuntu" ]]; then
         systemctl status docker >/dev/null
         result=$?
@@ -50,6 +50,7 @@ determine_sudo() {
             exit 1
         fi
     fi
+    set -e
 
     __maybe_sudo=""
     if ! docker images >/dev/null 2>&1; then
@@ -77,7 +78,7 @@ upgrade_compose() {
     __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
     if [ "${__major_version}" -lt 20 ]; then
       echo "This script cannot update Docker Compose on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
-      exit 0
+      exit 130
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
     ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor --yes \
@@ -104,7 +105,7 @@ upgrade_compose() {
     __major_version=$(lsb_release -r | cut -f2)
     if [ "${__major_version}" -lt 10 ]; then
         echo "This script cannot update Docker Compose on Debian ${__major_version}. Consider upgrading to 11 or 12."
-        exit 0
+        exit 130
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
     ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor --yes \
@@ -208,7 +209,7 @@ check_for_snap() {
         echo "Do join us on EthStaker Discord to work through this issue."
         echo
         echo "Aborting, this is not safe"
-        exit 1
+        exit 130
     fi
 }
 
@@ -217,26 +218,29 @@ install-bash-completions() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "Skipping installation of tab completions (not supported on OSX)"
     else
-        ${__auto_sudo} ln -s "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/bash-completion" \
-        "$(pkg-config --variable=completionsdir bash-completion)/ethd"
+        if [ ! -f "$(pkg-config --variable=completionsdir bash-completion)/ethd" ]; then
+            echo "Installing bash completions for ethd"
+            ${__auto_sudo} ln -s "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/bash-completion" \
+            "$(pkg-config --variable=completionsdir bash-completion)/ethd" || true
+        fi
     fi
 }
 
 
 install() {
     check_for_snap
-    set -e
+
     read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
 continue? (no/yes) " yn
     case $yn in
         [Yy]* ) ;;
-        * ) echo "Aborting, no changes made"; exit 0;;
+        * ) echo "Aborting, no changes made"; return 0;;
     esac
     if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
         if [ "${__major_version}" -lt 20 ]; then
             echo "This script cannot install Docker on Ubuntu ${__major_version}. Consider upgrading to 22.04"
-            exit 0
+            exit 130
         fi
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
@@ -270,7 +274,7 @@ continue? (no/yes) " yn
             __major_version=$(lsb_release -r | cut -f2)
             if [ "${__major_version}" -lt 10 ]; then
                 echo "This script cannot install Docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
-                exit 0
+                exit 130
             fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
@@ -299,15 +303,16 @@ continue? (no/yes) " yn
     fi
 
     if ! [[ "$__distro" = "ubuntu" ]] || [[ "$__distro" =~ "debian" ]]; then
-        exit 0
+        return 0
     fi
 
     # We only get here on Ubuntu or Debian
+    install-bash-completions
     __install_base=$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")
     if [ "${__install_base}" = "eth-docker" ]; then
         read -rp "Do you want to be able to call 'ethd' from anywhere? (yes/no) " yn
         case $yn in
-            [Nn]* ) exit 0;;
+            [Nn]* ) return 0;;
             * ) ;;
         esac
         if grep -q "alias ethd" ~/.profile; then
@@ -321,8 +326,7 @@ continue? (no/yes) " yn
         echo "Go ahead and 'source ~/.profile' or log out and back in."
         echo "After that, you can use the command 'ethd'."
     fi
-    install-bash-completions
-    set +e
+
     return 0
 }
 
@@ -581,7 +585,7 @@ ssv_switch() {
       else
         echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running ./ethd update again"
         echo "Aborting."
-        exit 1
+        exit 130
       fi
     fi
 }
@@ -606,7 +610,7 @@ delete_erigon() {
     while true; do
         read -rp "WARNING - About to delete the Erigon database. Do you wish to continue? (Y/n) " yn
         case $yn in
-            [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 1;;
+            [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 130;;
             * ) break;;
         esac
     done
@@ -618,6 +622,144 @@ delete_erigon() {
     echo ""
     echo "Erigon stopped and database deleted."
     echo ""
+}
+
+
+pg_upgrade_error() {
+    echo
+    echo "Web3signer slashing protection database migration failed, but before removing the original data."
+    echo
+    echo "Your original Web3signer slashing protection database remains in place."
+    echo "You can safely update the node again, this time without migration, and start it."
+    echo
+    echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
+    echo
+}
+
+
+pg_upgrade_error_after() {
+    echo
+    echo "Web3signer slashing protection database migration failed, after switching to the migrated data."
+    echo
+    echo "The slashing protection database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
+    echo "an error occured, which is likely to keep your node from functioning correctly."
+    echo
+    echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
+    echo
+}
+
+
+pg_upgrade_fatal() {
+    echo
+    echo "Web3signer slashing protection database migration failed, while switching to the migrated data."
+    echo
+    echo "WARNING: You are no longer protected by the slashing protection database."
+    echo "Starting the node again could get you slashed."
+    echo
+    echo "Marking Web3signer as unsafe to start."
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-keys")":/var/lib/web3signer \
+        alpine:3 touch /var/lib/web3signer/.migration_fatal_error
+    echo
+    echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
+    echo
+}
+
+
+upgrade_postgres() {
+    # Enable this when PostgreSQL 16.2 is out and flyway supports it
+    # Consider --non-interactive for update. For this, but also other things that query via whiptail or read
+    # This is not functional yet. The upgrade container uses ubuntu and we run Postgres alpine, which leads
+    # to collation version errors. We need an upgrade container that is alpine-based.
+    # In addition, we need a multiarch container so that this works on arm64
+    return
+
+    __target_pg=16
+
+    trap 'pg_upgrade_error' ERR
+
+    # Check for web3signer
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# I do mean to match literally
+# shellcheck disable=SC2076
+    if [[ ! "${value}" =~ "web3signer.yml" ]]; then
+        return 0
+    fi
+
+    __source_pg="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        alpine:3 cat /var/lib/postgresql/data/PG_VERSION)"
+
+    if [ "${__source_pg}" -lt "${__target_pg}" ]; then
+        echo "Web3signer is using PostgreSQL ${__source_pg}. The current version is PostgreSQL ${__target_pg}."
+        echo
+        while true; do
+            read -rp "Would you like to migrate to PostgreSQL ${__target_pg}? (Y/n) " yn
+            case $yn in
+                [Nn]o | [Nn]  ) echo "Keeping PostgreSQL at version ${__source_pg}"; return 0;;
+                * ) break;;
+            esac
+        done
+    else
+        return 0
+    fi
+
+    __migrated_vol="$(basename "$(pwd)")_w3s-slashing-db-pg${__target_pg}-migrated"
+    __backup_vol="$(basename "$(pwd)")_w3s-slashing-db-pg${__source_pg}-backup"
+
+    echo "Stopping Web3signer"
+    docompose stop web3signer && docompose rm -f web3signer
+    echo "Stopping PostgreSQL"
+    docompose stop postgres && docompose rm -f postgres
+
+    echo
+    echo "Migrating database from PostgreSQL ${__source_pg} to PostgreSQL ${__target_pg}"
+    echo "If this step fails, the Web3signer slashing protection database is no longer protecting you."
+    echo "In failure case, do not start Web3signer again, instead seek help on Ethstaker Discord."
+    echo
+
+    dodocker pull "tianon/postgres-upgrade:${__source_pg}-to-${__target_pg}"
+    dodocker volume create "${__migrated_vol}"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/${__source_pg}/data" \
+        -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
+        "tianon/postgres-upgrade:${__source_pg}-to-${__target_pg}"
+    # Adjust ownership. We use 70; postgres-upgrade creates it with 999
+    dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
+        alpine:3 chown -R 70:70 /var/lib/postgres
+    # Conversion can leave us with a pg_hba.conf that does not allow connections
+    dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
+        alpine:3 sh -c 'grep -qxE "host\s+all\s+all\s+all\s+scram-sha-256" /var/lib/postgres/pg_hba.conf \
+        || echo "host    all             all             all                     scram-sha-256" \
+        >> /var/lib/postgres/pg_hba.conf'
+
+    echo
+    echo "Migration complete, copying data in web3signer-slashing-data volume to backup"
+    dodocker volume create "${__backup_vol}"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
+        alpine:3 cp -a /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
+
+    trap 'pg_upgrade_fatal' ERR
+    echo "Moving migrated data to web3signer-slashing-data volume"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        alpine:3 rm -rf /var/lib/postgresql/data/*
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
+        alpine:3 cp -a "/var/lib/postgresql/${__target_pg}/data/." /var/lib/postgresql/data/
+
+    trap 'pg_upgrade_error_after' ERR
+    dodocker volume remove "${__migrated_vol}"
+
+    echo
+    echo "Adjusting PostgreSQL Docker tag"
+    var="PG_DOCKER_TAG"
+# This gets used, but shellcheck doesn't recognize that
+# shellcheck disable=SC2034
+    PG_DOCKER_TAG=16-alpine
+    set_value_in_env
+    echo "Web3signer has been stopped. You'll need to run \"./ethd up\" to start it again."
+    echo
+    echo "A copy of your old slashing protection database is in the Docker volume ${__backup_vol}."
+    echo "Confirm that everything works, and then delete it with \"docker volume rm ${__backup_vol}\"."
 }
 
 
@@ -647,7 +789,7 @@ envmigrate() {
     fi
 
     if [ ! -f "./${ENV_FILE}" ]; then
-        return
+        return 0
     fi
 
     ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID \
@@ -777,7 +919,7 @@ valid address is set" 16 75
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
         ${__as_owner} rm .env.original
-        return
+        return 0
     fi
     # Check for CL and EL, nag if we have only one without the other
     var="COMPOSE_FILE"
@@ -845,7 +987,7 @@ update() {
     elif [ "$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
-        exit 1
+        exit 130
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -858,7 +1000,7 @@ update() {
     elif [ "${__free_space}" -lt 1048576 ]; then
         echo "You have less than 1 GiB of space left on ${__docker_dir}."
         echo "Aborting, as an update is not safe."
-        exit 1
+        exit 130
     fi
 
     if [ -z "${ETHDSECUNDO-}" ]; then
@@ -869,10 +1011,12 @@ update() {
             ${__as_owner} git remote set-head origin -a
         fi
         # Do not track changes to ext-network.yml
+        set +e
         ${__as_owner} git update-index --assume-unchanged ext-network.yml
         ${__as_owner} git config pull.rebase false
         ${__as_owner} git pull
         export GITEXITCODE=$?
+        set -e
         # BASH_SOURCE so newer code gets to do the update. Use an ENV var
         # to avoid infinite loop
         export ETHDSECUNDO=1
@@ -891,7 +1035,7 @@ update() {
                 if [ -n "${__targetcli}" ]; then
                     echo "Error: --keep-targets and --refresh-targets cannot be used together; use either option once \
 only"
-                    exit 1
+                    exit 130
                 fi
                 __keeptargets=1
                 __targetcli="--keep-targets"
@@ -901,7 +1045,7 @@ only"
                 if [ -n "${__targetcli}" ]; then
                     echo "Error: --keep-targets and --refresh-targets cannot be used together; use either option once \
 only"
-                    exit 1
+                    exit 130
                 fi
                 __keeptargets=0
                 __targetcli="--refresh-targets"
@@ -909,7 +1053,7 @@ only"
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 1
+                exit 130
                 ;;
         esac
     done
@@ -996,6 +1140,15 @@ value."
       fi
     fi
 
+    if [[ "$__distro" =~ "debian" ]]; then
+      __major_version=$(lsb_release -r | cut -f2)
+      if [ "${__major_version}" -lt 10 ]; then
+         echo
+         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version"
+         echo
+      fi
+    fi
+
     unset ETHDSECUNDO
     unset GITEXITCODE
     if [[ "${ETHDSWITCHED-}" -eq 1 ]]; then
@@ -1005,6 +1158,7 @@ value."
         echo
     fi
     delete_erigon
+    upgrade_postgres
     # If this is called by an older version of ethd, envmigrate
     # is in its own bash instance: Need to kill the ethd parent
 # shellcheck disable=SC2009
@@ -1041,19 +1195,19 @@ resync-execution() {
         *reth.yml* ) __el_volume='reth-el-data'; __el_client="reth";;
         *besu.yml* ) __el_volume='besu-eth1-data'; __el_client="besu";;
         *nethermind.yml* ) __el_volume='nm-eth1-data'; __el_client="nethermind";;
-        * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return;;
+        * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
     esac
 
     if ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__el_volume}"; then
         echo "Did not find Docker volume for ${__el_client}. Nothing to do."
-        return
+        return 0
     fi
 
     echo "This will stop ${__el_client} and delete its database to force a resync."
     read -rp "WARNING - resync may take days. Do you wish to continue? (No/yes) " yn
     case $yn in
         [Yy][Ee][Ss] ) ;;
-        * ) echo "Aborting."; exit 1;;
+        * ) echo "Aborting."; exit 130;;
     esac
 
     echo "Stopping ${__el_client} container"
@@ -1088,7 +1242,7 @@ resync-consensus() {
     if [ ! "${__cl_volume}" = "wipe-db" ] && ! dodocker volume ls -q \
         | grep -q "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
         echo "Did not find Docker volume for ${__cl_client}. Nothing to do."
-        return
+        return 0
     fi
 
     # Can we checkpoint sync?
@@ -1102,7 +1256,7 @@ resync-consensus() {
     fi
     case $yn in
         [Yy][Ee][Ss] ) ;;
-        * ) echo "Aborting."; exit 1;;
+        * ) echo "Aborting."; exit 130;
     esac
 
     echo "Stopping ${__cl_client} container"
@@ -1123,12 +1277,12 @@ resync-consensus() {
 attach-geth() {
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 1
+        exit 130
     fi
 
     if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Geth, aborting."
-        exit 1
+        exit 130
     fi
 
     docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
@@ -1149,19 +1303,19 @@ prune-geth() {
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 1
+                exit 130
                 ;;
         esac
     done
 
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 1
+        exit 130
     fi
 
     if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Geth, aborting."
-        exit 1
+        exit 130
     fi
 
     # Check for archive node
@@ -1169,7 +1323,7 @@ prune-geth() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" ]]; then
         echo "Geth is an archive node: Aborting."
-        return
+        return 130
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -1179,7 +1333,7 @@ prune-geth() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        return
+        return 130
     fi
 
     if [ "${__free_space}" -lt 41943040 ]; then
@@ -1187,27 +1341,29 @@ prune-geth() {
         df -h "${__docker_dir}"
         echo ""
         echo "Aborting."
-        exit 1
+        exit 130
     fi
 
     rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
     regex='^EL_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
         echo "Unable to determine EL_RPC_PORT, aborting."
-        exit 1
+        exit 130
     else
         rpc_port="${BASH_REMATCH[1]}"
     fi
 
+    set +e
     sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" \
         --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing",\
         "params":[],"id":1}')
     exitstatus=$?
+    set -e
     if [ $exitstatus -ne 0 ]; then
         echo "Unable to connect to Geth: Is it running?"
         echo "Output: ${sync_status}"
         echo "Aborting."
-        exit 1
+        exit 130
     fi
 
     if [[ ! "${sync_status}" =~ "false" ]]; then
@@ -1215,13 +1371,13 @@ prune-geth() {
         echo "${sync_status}"
         echo ""
         echo "Aborting."
-        exit 1
+        exit 130
     fi
 
     node_logs=$(docompose logs --no-color --tail 1000 execution)
     if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
         echo "Geth has not finished generating a state snapshot yet, aborting."
-        exit 1
+        exit 130
     fi
 
     regex='\[([0-9][0-9]-[0-9][0-9])\|([0-9][0-9]:[0-9][0-9]):[0-9.]*\][[:space:]]*Generated state'
@@ -1230,7 +1386,7 @@ prune-geth() {
         now_time=$(date +"%s")
         if [ $((snap_time+2100)) -gt "$now_time" ]; then
             echo "Please wait 35 minutes after snapshot generation finished. Aborting."
-            exit 1
+            exit 130
         fi
     fi
 
@@ -1242,7 +1398,7 @@ prune-geth() {
           read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
           case $yn in
               [Yy][Ee][Ss] ) break;;
-              * ) echo "Aborting, no changes made"; exit 1;;
+              * ) echo "Aborting, no changes made"; exit 130;;
           esac
       done
     fi
@@ -1278,19 +1434,19 @@ prune-nethermind() {
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 1
+                exit 130
                 ;;
         esac
     done
 
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 1
+        exit 130
     fi
 
     if ! grep -q '^COMPOSE_FILE=.*nethermind\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Nethermind, aborting."
-        exit 1
+        exit 130
     fi
 
     # Check for archive node
@@ -1298,7 +1454,7 @@ prune-nethermind() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [[ "${value}" = "true" ]]; then
         echo "Nethermind is an archive node: Aborting."
-        return
+        return 130
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -1308,7 +1464,7 @@ prune-nethermind() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        return
+        return 130
     fi
 
     if [ "${__free_space}" -lt 262144000 ]; then
@@ -1316,26 +1472,28 @@ prune-nethermind() {
         df -h "${__docker_dir}"
         echo ""
         echo "Aborting."
-        exit 1
+        exit 130
     fi
 
     rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
     regex='^EL_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
         echo "Unable to determine EL_RPC_PORT, aborting."
-        exit 1
+        exit 130
     else
         rpc_port="${BASH_REMATCH[1]}"
     fi
 
+    set +e
     sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" --header \
     'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
+    set -e
     if [ $exitstatus -ne 0 ]; then
         echo "Unable to connect to Nethermind: Is it running?"
         echo "Output: ${sync_status}"
         echo "Aborting."
-        exit 1
+        exit 130
     fi
 
     if [[ ! "${sync_status}" =~ "false" ]]; then
@@ -1343,7 +1501,7 @@ prune-nethermind() {
         echo "${sync_status}"
         echo ""
         echo "Aborting."
-        exit 1
+        exit 130
     fi
 
     var="AUTOPRUNE_NM"
@@ -1358,7 +1516,7 @@ execution | grep Full\" to see whether it is."
           read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
           case $yn in
               [Yy][Ee][Ss] ) break;;
-              * ) echo "Aborting, no changes made"; exit 1;;
+              * ) echo "Aborting, no changes made"; exit 130;;
           esac
       done
     fi
@@ -1367,9 +1525,11 @@ execution | grep Full\" to see whether it is."
     echo "Starting Nethermind prune"
     echo ""
 
+    set +e
     prune_result=$(docompose exec -T execution wget -qO- "http://localhost:1337" --header \
     'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"admin_prune","params":[],"id":1}')
     exitstatus=$?
+    set -e
     if [ $exitstatus -ne 0 ]; then
         echo "Unable to start prune, error code ${exitstatus}. This is likely a bug."
         echo "An attempt to run it returned this: ${prune_result}"
@@ -1381,7 +1541,7 @@ execution | grep Full\" to see whether it is."
     echo "Nethermind returns ${prune_result}"
     if [[ ! "${prune_result}" =~ "Starting" ]]; then
         echo "Unable to start prune. This is likely a bug."
-        exit 1
+        exit 130
     fi
     echo ""
     echo "Prune is running, you can observe it with \"./ethd logs -f --tail 500 execution | grep Full\""
@@ -1394,10 +1554,9 @@ execution | grep Full\" to see whether it is."
 
 
 prep-keyimport() {
-    set -Eeuo pipefail
     if [ ! -f "./${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 1
+        exit 130
     fi
 
     var="COMPOSE_FILE"
@@ -1407,7 +1566,7 @@ prep-keyimport() {
     if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "lighthouse.yml" ]] && [[ ! "${value}" =~ "teku.yml" ]] \
        && [[ ! "${value}" =~ "nimbus.yml" ]] && [[ ! "${value}" =~ "lodestar.yml" ]] && [[ ! "${value}" =~ "vc-only.yml" ]]; then
         echo "You do not appear to be running a validator client. Aborting."
-        exit 1
+        exit 130
     fi
 
     __non_interactive=0
@@ -1421,11 +1580,11 @@ prep-keyimport() {
             --path)
                 if [ -z "${2+x}" ]; then
                     echo "--path requires a directory path, aborting"
-                    exit 1
+                    exit 130
                 fi
                 if [ ! -d "$2" ]; then
                     echo "$2 is not a directory"
-                    exit 1
+                    exit 130
                 fi
                 if [ "$(realpath "$2")" = "$(realpath ".eth/validator_keys")" ]; then
                     echo "$2 is the default path, doing nothing special"
@@ -1438,7 +1597,7 @@ prep-keyimport() {
                 unset IFS
                 if [ -z "$files" ]; then
                     echo "No .json files found in $2, aborting"
-                    exit 1
+                    exit 130
                 fi
                 IFS=$'\n'
                 files=$(find ./.eth/validator_keys -maxdepth 1 -name '*.json')
@@ -1456,14 +1615,14 @@ prep-keyimport() {
             --non-interactive)
                 if [ -z "${KEYSTORE_PASSWORD+x}" ]; then
                     echo "KEYSTORE_PASSWORD not set or empty, aborting"
-                    exit 1
+                    exit 130
                 fi
                 __non_interactive=1
                 shift
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 1
+                exit 130
                 ;;
         esac
     done
@@ -1473,7 +1632,7 @@ prep-keyimport() {
 __i_haz_ethdo() {
     if [ ! -f ".env" ]; then
         echo "Eth Docker has not been configured. Please run ./ethd config first."
-        exit 1
+        exit 0
     fi
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
@@ -1487,7 +1646,7 @@ __i_haz_ethdo() {
         read -rp "Do you want me to make this change for you? (n/y)" yn
         case $yn in
             [Yy] );;
-            * ) exit 1;;
+            * ) exit 0;;
         esac
         if [ -n "${value}" ]; then
           COMPOSE_FILE="${value}:ethdo.yml"
@@ -1504,13 +1663,13 @@ __i_haz_ethdo() {
 __i_haz_web3signer() {
     if [ ! -f ".env" ]; then
         echo "Eth Docker has not been configured. Please run ./ethd config first."
-        exit 1
+        exit 0
     fi
 
     var="WEB3SIGNER"
     __w3s=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     if [ ! "${__w3s}" = "true" ]; then
-        return
+        return 0
     fi
 
     var="COMPOSE_FILE"
@@ -1526,13 +1685,13 @@ __i_haz_web3signer() {
         read -rp "Do you want me to make this change for you? (n/y)" yn
         case $yn in
             [Yy] );;
-            * ) exit 1;;
+            * ) exit 0;;
         esac
         if [ -n "${value}" ]; then
           COMPOSE_FILE="${value}:web3signer.yml"
         else
           echo "You do not have a validator client in Eth Docker. web3signer cannot be used without one."
-          exit 1
+          exit 0
         fi
         set_value_in_env
         echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
@@ -1551,7 +1710,7 @@ __i_haz_keys_service() {
         echo "sign exit messages with ethdo."
         echo ""
         echo "Aborting."
-        exit 1
+        exit 130
     fi
     return 0
 }
@@ -1612,7 +1771,7 @@ __keys_usage() {
 keys() {
     if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
         __keys_usage
-        return
+        return 0
     fi
 
     __i_haz_web3signer
@@ -1635,7 +1794,7 @@ keys() {
 # shellcheck disable=SC2076
         if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "prysm-vc-only.yml" ]]; then
             echo "You do not appear to be using a Prysm validator. Aborting."
-            exit 1
+            exit 130
         fi
         if docompose run --rm create-wallet; then
             docompose stop validator
@@ -1645,12 +1804,14 @@ keys() {
     elif [ "${1:-}" = "prepare-address-change" ]; then
         __i_haz_ethdo
         echo "Generating offline prep file"
+        set +e
         docompose run --rm ethdo validator credentials set --prepare-offline
         exitstatus=$?
+        set -e
         if [ "${exitstatus}" -ne 0 ]; then
             echo "Running ethdo failed, unfortunately. Is the CL running and synced?"
             echo "Please try again after fixing root cause. Aborting."
-            return 1
+            return 130
         fi
         echo
         echo "Downloading ethdo"
@@ -1759,6 +1920,7 @@ keys() {
             else
                 __pubkey="0x${__pubkey}"
             fi
+            set +e
             # __offline may be empty, don't quote it
             # shellcheck disable=SC2086
             __json=$(docompose run --rm ethdo validator exit --validator "${__keyfile}" --json --timeout 2m \
@@ -1779,6 +1941,7 @@ keys() {
                 echo "Creating an exit message for validator ${__pubkey} from file ${__keyfile} failed"
                 (( failed++ ))
             fi
+            set -e
         done
         echo
         echo "Created pre-signed exit messages for ${created} validators"
@@ -1875,12 +2038,18 @@ down() {
 
 
 terminate() {
+    if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
+        echo "There are no data stores - Docker volumes - left to remove for this Ethereum node."
+        stop
+        return 0
+    fi
+
     while true; do
         read -rp "WARNING - this action will destroy all data stores for this Ethereum node. Do you wish to continue? \
 (No/Yes) " yn
         case $yn in
             [Yy][Ee][Ss] ) break;;
-            * ) echo "Aborting, no changes made"; exit 1;;
+            * ) echo "Aborting, no changes made"; exit 130;;
         esac
     done
 
@@ -1911,9 +2080,10 @@ cmd() {
 
 
 query_network() {
+    set +e
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
-    "Which network do you want to run on?" 12 60 6 \
+    "Which network do you want to run on?" 13 60 6 \
     "holesky" "Holešovice Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain" \
@@ -1946,19 +2116,21 @@ screen.\n\nCustom testnets only work with a URL to fetch their configuration fro
               fi
             else
               echo "You chose Cancel"
-              exit 1
+              exit 130
             fi
           done
           ;;
       *)
           echo "You chose Cancel"
-          exit 1
+          exit 130
           ;;
     esac
+    set -e
 }
 
 
 query_deployment() {
+    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
       "What kind of deployment do you want to run?" 11 80 3 \
@@ -1980,16 +2152,18 @@ query_deployment() {
     fi
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your deployment choice is: ${__deployment}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
 
 query_validator_client() {
+    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
       "Which validator client do you want to run?" 9 65 3 \
@@ -2031,16 +2205,18 @@ query_validator_client() {
     fi
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
 
 query_consensus_client() {
+    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
@@ -2068,16 +2244,18 @@ query_consensus_client() {
     fi
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
 
 query_consensus_only_client() {
+    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
       "Which consensus client do you want to run?" 10 65 3 \
@@ -2103,11 +2281,12 @@ query_consensus_only_client() {
     fi
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
@@ -2122,22 +2301,26 @@ query_custom_execution_client() {
         var="JWT_SECRET"
         JWT_SECRET=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     fi
+    set +e
     EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom \
 execution client? (right-click to paste)" 10 60 "${EL_CUSTOM_NODE}" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your custom execution client is: $EL_CUSTOM_NODE"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 
     while true; do
+        set +e
         JWT_SECRET=$(whiptail --title "Configure JWT secret" --inputbox "What is the JWT secret shared with the \
 execution client? (right-click to paste)" 10 60 "${JWT_SECRET}" 3>&1 1>&2 2>&3)
 
         exitstatus=$?
+        set -e
         if [ $exitstatus -eq 0 ]; then
             if [[ ${#JWT_SECRET} -eq 64 ]]; then
               echo "JWT Secret set. Please make sure it matches on CL and EL."
@@ -2148,13 +2331,14 @@ again or Cancel on the next screen." 10 75
             fi
         else
             echo "You chose Cancel."
-            exit 1
+            exit 130
         fi
     done
 }
 
 
 query_execution_client() {
+    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       if uname -a | grep -q aarch64; then
         EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
@@ -2177,7 +2361,7 @@ query_execution_client() {
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?" 12 60 5 \
+      "Which execution client do you want to run?" 13 60 6 \
       "nethermind.yml" "Nethermind (.NET)" \
       "besu.yml" "Besu (Java)" \
       "geth.yml" "Geth (Go)" \
@@ -2187,9 +2371,10 @@ query_execution_client() {
     fi
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -ne 0 ]; then
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 
     if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
@@ -2237,15 +2422,17 @@ query_remote_beacon() {
         var="CL_NODE"
         REMOTE_BEACON=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     fi
+    set +e
     REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote \
 consensus client? (right-click to paste)" 10 60 "${REMOTE_BEACON}" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your remote consensus client is:" "${REMOTE_BEACON}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
@@ -2276,15 +2463,17 @@ query_checkpoint_beacon() {
         esac
     fi
 
+    set +e
     RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint URL" --inputbox "What is the URL for your checkpoint \
 provider? (right-click to paste)" 10 60 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "Your checkpoint URL is:" "${RAPID_SYNC_URL}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
@@ -2293,15 +2482,17 @@ query_graffiti() {
     var="GRAFFITI"
     GRAFFITI=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
+    set +e
     GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
 (up to 32 characters)" 10 37 "${GRAFFITI}" 3>&1 1>&2 2>&3)
 
     exitstatus=$?
+    set -e
     if [ $exitstatus -eq 0 ]; then
         echo "your Graffiti is:" "${GRAFFITI}"
     else
         echo "You chose Cancel."
-        exit 1
+        exit 130
     fi
 }
 
@@ -2318,6 +2509,7 @@ query_coinbase() {
     FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
     while true; do
+        set +e
         if [ "${__during_update}" -eq 1 ] || [ ! "${__deployment}" = rpc ]; then
             FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want \
 transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" \
@@ -2329,6 +2521,7 @@ address? Yes even on an RPC node. Can be any address at all. (right-click to pas
         fi
 
         exitstatus=$?
+        set -e
         if [ $exitstatus -eq 0 ]; then
             if [[ ${FEE_RECIPIENT} == 0x* && ${#FEE_RECIPIENT} -eq 42 ]]; then
               echo "Your rewards address is: ${FEE_RECIPIENT}"
@@ -2355,7 +2548,7 @@ screen.\n\nThe client will not start successfully until a valid ETH rewards addr
             if ps $PPID | grep -q "ethd"; then
                 kill $PPID
             fi
-            exit 1
+            exit 130
         fi
     done
 }
@@ -2363,7 +2556,7 @@ screen.\n\nThe client will not start successfully until a valid ETH rewards addr
 
 query_mev() {
     if [ "${NETWORK}" = "gnosis" ]; then
-        return
+        return 0
     fi
     if [ "${__deployment}" = "ssv" ]; then
         MEV_BOOST="true"
@@ -2393,7 +2586,7 @@ https://0xa15b52576bcbf1072f4a011c0f99f9fb6c66f3e1ff321f11f461d15e31b1cb359caa09
 https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1eea11168503240ac35d101c9135@mainnet-relay.securerpc.com"
                 ;;
         esac
-        return
+        return 0
     fi
     var="MEV_BOOST"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
@@ -2405,7 +2598,7 @@ want to use MEV Boost?" 10 60); then
             MEV_BOOST="true"
             MEV_RELAYS=""
         fi
-        return
+        return 0
     fi
     if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 60) then
         MEV_BOOST="true"
@@ -2453,15 +2646,17 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
                     ;;
             esac
         fi
+        set +e
         MEV_RELAYS=$(whiptail --title "Configure MEV relays" --inputbox "What MEV relay(s) do you want to use? \
 (right-click to paste)" 10 60 "${MEV_RELAYS}" 3>&1 1>&2 2>&3)
 
         exitstatus=$?
+        set -e
         if [ $exitstatus -eq 0 ]; then
             echo "Your MEV relay(s): ${MEV_RELAYS}"
         else
             echo "You chose Cancel."
-            exit 0
+            exit 130
         fi
     else
         MEV_BOOST="false"
@@ -2527,7 +2722,7 @@ config() {
         else
           echo "${NETWORK} is not something that works with SSV. This needs to be fixed when running ./ethd config again"
           echo "Aborting."
-          exit 1
+          exit 130
         fi
         if [ ! -f "./ssv-config/password.pass" ]; then
             echo "Creating password file for encrypted SSV secret key"
@@ -2550,7 +2745,7 @@ config() {
         ;;
       *)
         echo "Unknown deployment ${__deployment}, this is a bug."
-        exit 1
+        exit 130
         ;;
     esac
 
@@ -2803,6 +2998,24 @@ printhelp() {
 }
 
 
+handle_error() {
+    if [[ ! $- =~ e ]]; then
+        # set +e, do nothing
+        return 0
+    fi
+
+    local exit_code=$1
+    if [ "$exit_code" -eq 127 ]; then
+        printhelp
+    elif [ "$exit_code" -eq 130 ]; then
+        echo "ethd terminated"
+    else
+        echo "ethd failed with error $exit_code"
+    fi
+}
+
+trap 'handle_error $?' ERR
+
 if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
     exit 0
@@ -2820,7 +3033,7 @@ fi
 
 if [ "${OWNER}" == "root" ]; then
     echo "Please install Eth Docker as a non-root user."
-    exit 1
+    exit 0
 fi
 
 ENV_FILE=.env
@@ -2846,25 +3059,20 @@ determine_compose
 
 if ! type -P whiptail >/dev/null 2>&1; then
     echo "Please install the package whiptail or newt before running this script"
-    exit 1
+    exit 0
 fi
 
 if ! dodocker images >/dev/null 2>&1; then
     echo "Please ensure you can call $__docker_exe before running this script."
-    exit 1
+    exit 0
 fi
 
 if ! docompose --help >/dev/null 2>&1; then
     echo "Please ensure you can call $__compose_exe before running this script"
-    exit 1
+    exit 0
 fi
 
 $command "$@"
-
-__result=$?
-if [ "$__result" -eq 127 ]; then
-    printhelp
-fi
 
 check_disk_space
 
