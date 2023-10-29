@@ -668,9 +668,6 @@ pg_upgrade_fatal() {
 upgrade_postgres() {
     # Enable this when PostgreSQL 16.2 is out and flyway supports it
     # Consider --non-interactive for update. For this, but also other things that query via whiptail or read
-    # This is not functional yet. The upgrade container uses ubuntu and we run Postgres alpine, which leads
-    # to collation version errors. We need an upgrade container that is alpine-based.
-    # In addition, we need a multiarch container so that this works on arm64
     return
 
     __target_pg=16
@@ -717,11 +714,11 @@ upgrade_postgres() {
     echo "In failure case, do not start Web3signer again, instead seek help on Ethstaker Discord."
     echo
 
-    dodocker pull "tianon/postgres-upgrade:${__source_pg}-to-${__target_pg}"
+    dodocker pull "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
     dodocker volume create "${__migrated_vol}"
     dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/${__source_pg}/data" \
         -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
-        "tianon/postgres-upgrade:${__source_pg}-to-${__target_pg}"
+        "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
     # Adjust ownership. We use 70; postgres-upgrade creates it with 999
     dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
         alpine:3 chown -R 70:70 /var/lib/postgres
@@ -754,7 +751,7 @@ upgrade_postgres() {
     var="PG_DOCKER_TAG"
 # This gets used, but shellcheck doesn't recognize that
 # shellcheck disable=SC2034
-    PG_DOCKER_TAG=16-alpine
+    PG_DOCKER_TAG=16-bookworm # To bookworm to avoid collation errors - also a faster PostgreSQL
     set_value_in_env
     echo "Web3signer has been stopped. You'll need to run \"./ethd up\" to start it again."
     echo
