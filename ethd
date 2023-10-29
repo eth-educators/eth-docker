@@ -621,6 +621,117 @@ delete_erigon() {
 }
 
 
+pg_upgrade_error() {
+    echo
+    echo "Web3signer slashing protection database migration failed at line $LINENO."
+    echo
+    echo "WARNING: You are no longer protected by the slashing protection database."
+    echo "Starting the node again could get you slashed."
+    echo
+    echo "Please come to Ethstaker Discord to troubleshoot this."
+    echo
+}
+
+
+upgrade_postgres() {
+    # Enable this when PostgreSQL 16.2 is out and flyway supports it
+    # Consider --non-interactive for update. For this, but also other things that query via whiptail or read
+    # This is not functional yet. The upgrade container uses ubuntu and we run Postgres alpine, which leads
+    # to collation version errors. We need an upgrade container that is alpine-based.
+    # In addition, we need a multiarch container so that this works on arm64
+    return
+
+    __target_pg=16
+
+    # Check for web3signer
+    var="COMPOSE_FILE"
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+# I do mean to match literally
+# shellcheck disable=SC2076
+    if [[ ! "${value}" =~ "web3signer.yml" ]]; then
+        return
+    fi
+
+    set -e
+    trap 'pg_upgrade_error $LINENO' ERR
+
+    __source_pg="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        alpine:3 cat /var/lib/postgresql/data/PG_VERSION)"
+
+    if [ "${__source_pg}" -lt "${__target_pg}" ]; then
+        echo "Web3signer is using PostgreSQL ${__source_pg}. The current version is PostgreSQL ${__target_pg}."
+        echo
+        while true; do
+            read -rp "Would you like to migrate to PostgreSQL ${__target_pg}? (Y/n) " yn
+            case $yn in
+                [Nn]o | [Nn]  ) echo "Keeping PostgreSQL at version ${__source_pg}"; return;;
+                * ) break;;
+            esac
+        done
+    else
+        return
+    fi
+
+    __migrated_vol="$(basename "$(pwd)")_w3s-slashing-db-pg${__target_pg}-migrated"
+    __backup_vol="$(basename "$(pwd)")_w3s-slashing-db-pg${__source_pg}-backup"
+
+    echo "Stopping Web3signer"
+    docompose stop web3signer && docompose rm -f web3signer
+    echo "Stopping PostgreSQL"
+    docompose stop postgres && docompose rm -f postgres
+
+    echo
+    echo "Migrating database from PostgreSQL ${__source_pg} to PostgreSQL ${__target_pg}"
+    echo "If this step fails, the Web3signer slashing protection database is no longer protecting you."
+    echo "In failure case, do not start Web3signer again, instead seek help on Ethstaker Discord."
+    echo
+
+    dodocker pull "tianon/postgres-upgrade:${__source_pg}-to-${__target_pg}"
+    dodocker volume create "${__migrated_vol}"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/${__source_pg}/data" \
+        -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
+        "tianon/postgres-upgrade:${__source_pg}-to-${__target_pg}"
+    # Adjust ownership. We use 70; postgres-upgrade creates it with 999
+    dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
+        alpine:3 chown -R 70:70 /var/lib/postgres
+    # Conversion can leave us with a pg_hba.conf that does not allow connections
+    dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
+        alpine:3 sh -c 'grep -qxE "host\s+all\s+all\s+all\s+scram-sha-256" /var/lib/postgres/pg_hba.conf \
+        || echo "host    all             all             all                     scram-sha-256" \
+        >> /var/lib/postgres/pg_hba.conf'
+
+    echo
+    echo "Migration complete, moving data in web3signer-slashing-data volume to backup"
+    dodocker volume create "${__backup_vol}"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
+        alpine:3 cp -a /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        alpine:3 rm -rf /var/lib/postgresql/data/*
+
+    echo "Moving migrated data to web3signer-slashing-data volume"
+    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+        -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
+        alpine:3 cp -a "/var/lib/postgresql/${__target_pg}/data/." /var/lib/postgresql/data/
+    dodocker volume remove "${__migrated_vol}"
+
+    echo
+    echo "Adjusting PostgreSQL Docker tag"
+    var="PG_DOCKER_TAG"
+# This gets used, but shellcheck doesn't recognize that
+# shellcheck disable=SC2034
+    PG_DOCKER_TAG=16-alpine
+    set_value_in_env
+    echo "Starting Web3signer"
+    up
+    echo
+    echo "A copy of your old slashing protection database is in the Docker volume ${__backup_vol}."
+    echo "Confirm that everything works, and then delete it with \"docker volume rm ${__backup_vol}\"."
+
+    set +e
+}
+
+
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2120
 envmigrate() {
@@ -996,6 +1107,15 @@ value."
       fi
     fi
 
+    if [[ "$__distro" =~ "debian" ]]; then
+      __major_version=$(lsb_release -r | cut -f2)
+      if [ "${__major_version}" -lt 10 ]; then
+         echo
+         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version"
+         echo
+      fi
+    fi
+
     unset ETHDSECUNDO
     unset GITEXITCODE
     if [[ "${ETHDSWITCHED-}" -eq 1 ]]; then
@@ -1005,6 +1125,7 @@ value."
         echo
     fi
     delete_erigon
+    upgrade_postgres
     # If this is called by an older version of ethd, envmigrate
     # is in its own bash instance: Need to kill the ethd parent
 # shellcheck disable=SC2009
