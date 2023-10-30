@@ -2452,6 +2452,8 @@ screen.\n\nThe client will not start successfully until a valid ETH rewards addr
                 echo "Without a FEE_RECIPIENT set in \".env\", containers will not"
                 echo "start successfully. Already running containers will keep running with the"
                 echo "old configuration until you are ready to restart them."
+            else
+                echo "Canceled config wizard."
             fi
             echo
             # If this is called by an older version of ethd, envmigrate
