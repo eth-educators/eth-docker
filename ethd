@@ -5,6 +5,7 @@ __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
 
+
 dodocker() {
     $__docker_exe "$@"
 }
@@ -902,7 +903,7 @@ envmigrate() {
             whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
 for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
 Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no \
-valid address is set" 16 75
+valid address is set" 12 75
             __during_update=1
             query_coinbase
             set_value_in_env
@@ -931,7 +932,7 @@ valid address is set" 16 75
             && ! "${value}" =~ "reth.yml" ]]; then
             whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client since \
 Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
-.env" 16 75
+.env" 12 75
         fi
     # Case 2 ... EL, do we have a CL?
     elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" \
@@ -940,7 +941,7 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
             && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
             whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client since \
 Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
-.env" 16 75
+.env" 12 75
         fi
     fi
     # Adjust EL_NODE as needed
@@ -963,6 +964,39 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
        __el_adjusted=1
     fi
     ${__as_owner} rm .env.original
+}
+
+
+nag_os_version() {
+    if [[ "$__distro" = "ubuntu" ]]; then
+      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
+      if [ "${__major_version}" -lt 20 ]; then
+         echo
+         echo "Ubuntu ${__major_version} is older than the recommended 22.04 or 20.04 version"
+         echo
+      fi
+    fi
+
+    if [[ "$__distro" =~ "debian" ]]; then
+      __major_version=$(lsb_release -r | cut -f2)
+      if [ "${__major_version}" -lt 10 ]; then
+         echo
+         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version"
+         echo
+      fi
+    fi
+}
+
+
+pull_and_build() {
+    dodocker system prune --force
+    if [ ${__old_compose} -eq 1 ]; then
+      docompose --profile tools pull --ignore-pull-failures || true
+    else
+      docompose --profile tools pull --ignore-pull-failures --quiet || true
+    fi
+    source_build
+    docompose --profile tools build --pull
 }
 
 
@@ -1066,14 +1100,7 @@ only"
         exec "${BASH_SOURCE[0]}" update $__targetcli
     fi
 
-    dodocker system prune --force
-    if [ ${__old_compose} -eq 1 ]; then
-      docompose --profile tools pull --ignore-pull-failures || true
-    else
-      docompose --profile tools pull --ignore-pull-failures --quiet || true
-    fi
-    source_build
-    docompose --profile tools build --pull
+    pull_and_build
 
     echo
     if ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
@@ -1128,23 +1155,8 @@ value."
         echo "Do not run \"./ethd up\" until git can update Eth Docker."
         echo "The current partial update risks startup failure."
     fi
-    if [[ "$__distro" = "ubuntu" ]]; then
-      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-      if [ "${__major_version}" -lt 20 ]; then
-         echo
-         echo "Ubuntu ${__major_version} is older than the recommended 22.04 or 20.04 version"
-         echo
-      fi
-    fi
 
-    if [[ "$__distro" =~ "debian" ]]; then
-      __major_version=$(lsb_release -r | cut -f2)
-      if [ "${__major_version}" -lt 10 ]; then
-         echo
-         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version"
-         echo
-      fi
-    fi
+    nag_os_version
 
     unset ETHDSECUNDO
     unset GITEXITCODE
@@ -2077,10 +2089,9 @@ cmd() {
 
 
 query_network() {
-    set +e
     # Mainnet or Testnet network
     NETWORK=$(whiptail --notags --title "Select Network" --menu \
-    "Which network do you want to run on?" 13 60 6 \
+    "Which network do you want to run on?" 13 65 6 \
     "holesky" "Holešovice Testnet" \
     "mainnet" "Ethereum Mainnet" \
     "gnosis" "Gnosis Chain" \
@@ -2102,68 +2113,48 @@ query_network() {
           while true; do
             NETWORK=$(whiptail --title "Configure testnet URL" --inputbox "What is github URL of your custom testnet \
 spec? (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
-            exitstatus=$?
-            if [ $exitstatus -eq 0 ]; then
-              if [[ ${NETWORK} =~ ^https?:// ]]; then
-                echo "Your custom testnet URL is: ${NETWORK}"
-                break
-              else
-                whiptail --msgbox "${NETWORK} is not a valid URL. You can try again or Cancel on the next \
-screen.\n\nCustom testnets only work with a URL to fetch their configuration from." 16 75
-              fi
+            if [[ ${NETWORK} =~ ^https?:// ]]; then
+            echo "Your custom testnet URL is: ${NETWORK}"
+            break
             else
-              echo "You chose Cancel"
-              exit 130
+            whiptail --msgbox "${NETWORK} is not a valid URL. You can try again or Cancel on the next \
+screen.\n\nCustom testnets only work with a URL to fetch their configuration from." 12 65
             fi
           done
           ;;
-      *)
-          echo "You chose Cancel"
-          exit 130
-          ;;
     esac
-    set -e
 }
 
 
 query_deployment() {
-    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-      "What kind of deployment do you want to run?" 11 80 3 \
+      "What kind of deployment do you want to run?" 9 65 2 \
       "node" "Ethereum node - consensus, execution and validator client" \
       "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-      "What kind of deployment do you want to run?" 11 80 4 \
+      "What kind of deployment do you want to run?" 10 65 3 \
       "node" "Ethereum node - consensus, execution and validator client" \
-      "rocket" "Validator client only - integrate with RocketPool" \
-      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
+      "rpc" "Ethereum RPC node - consensus and execution client" \
+      "rocket" "Validator client only - integrate with RocketPool" 3>&1 1>&2 2>&3)
     else
       __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-      "What kind of deployment do you want to run?" 12 80 5 \
+      "What kind of deployment do you want to run?" 11 65 4 \
       "node" "Ethereum node - consensus, execution and validator client" \
+      "rpc" "Ethereum RPC node - consensus and execution client" \
       "rocket" "Validator client only - integrate with RocketPool" \
-      "ssv" "SSV node - consensus, execution and ssv-node" \
-      "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
+      "ssv" "SSV node - consensus, execution and ssv-node" 3>&1 1>&2 2>&3)
     fi
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your deployment choice is: ${__deployment}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your deployment choice is: ${__deployment}"
 }
 
 
 query_validator_client() {
-    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-      "Which validator client do you want to run?" 9 65 3 \
+      "Which validator client do you want to run?" 11 65 4 \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
       "teku-vc-only.yml" "Teku validator client" \
       "lodestar-vc-only.yml" "Lodestar validator client" \
@@ -2171,14 +2162,14 @@ query_validator_client() {
     elif [ "${__deployment}" = "rocket" ]; then
         if uname -a | grep -q aarch64; then
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-          "Which validator client do you want to run?" 9 65 3 \
+          "Which validator client do you want to run?" 11 65 4 \
           "lighthouse-vc-only.yml" "Lighthouse validator client" \
           "teku-vc-only.yml" "Teku validator client" \
           "lodestar-vc-only.yml" "Lodestar validator client" \
           "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
         else
           CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-          "Which validator client do you want to run?" 9 65 3 \
+          "Which validator client do you want to run?" 11 65 4 \
           "teku-vc-only.yml" "Teku validator client" \
           "lighthouse-vc-only.yml" "Lighthouse validator client" \
           "lodestar-vc-only.yml" "Lodestar validator client" \
@@ -2186,14 +2177,14 @@ query_validator_client() {
         fi
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-      "Which validator client do you want to run?" 9 65 3 \
+      "Which validator client do you want to run?" 11 65 4 \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
       "teku-vc-only.yml" "Teku validator client" \
       "lodestar-vc-only.yml" "Lodestar validator client" \
       "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
     else
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
-      "Which validator client do you want to run?" 11 65 5 \
+      "Which validator client do you want to run?" 12 65 5 \
       "teku-vc-only.yml" "Teku validator client" \
       "lighthouse-vc-only.yml" "Lighthouse validator client" \
       "lodestar-vc-only.yml" "Lodestar validator client" \
@@ -2201,22 +2192,14 @@ query_validator_client() {
       "prysm-vc-only.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
     fi
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your validator client file is:" "${CONSENSUS_CLIENT}"
 }
 
 
 query_consensus_client() {
-    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-      "Which consensus client do you want to run?" 10 65 3 \
+      "Which consensus client do you want to run?" 11 65 4 \
       "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
       "teku.yml" "Teku (Java) - consensus and validator client" \
       "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
@@ -2225,7 +2208,7 @@ query_consensus_client() {
       CONSENSUS_CLIENT=lodestar.yml
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-      "Which consensus client do you want to run?" 10 65 3 \
+      "Which consensus client do you want to run?" 11 65 4 \
       "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
       "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
       "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
@@ -2240,29 +2223,21 @@ query_consensus_client() {
       "prysm.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
     fi
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
 }
 
 
 query_consensus_only_client() {
-    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-      "Which consensus client do you want to run?" 10 65 3 \
+      "Which consensus client do you want to run?" 11 65 4 \
       "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
       "teku-cl-only.yml" "Teku (Java) - consensus client" \
       "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
       "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" 3>&1 1>&2 2>&3)
     elif uname -a | grep -q aarch64; then
       CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-      "Which consensus client do you want to run?" 10 65 3 \
+      "Which consensus client do you want to run?" 11 65 4 \
       "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
       "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
       "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
@@ -2277,14 +2252,7 @@ query_consensus_only_client() {
       "prysm-cl-only.yml" "Prysm (Go) - consensus client" 3>&1 1>&2 2>&3)
     fi
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
 }
 
 
@@ -2298,67 +2266,50 @@ query_custom_execution_client() {
         var="JWT_SECRET"
         JWT_SECRET=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     fi
-    set +e
     EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom \
-execution client? (right-click to paste)" 10 60 "${EL_CUSTOM_NODE}" 3>&1 1>&2 2>&3)
+execution client? (right-click to paste)" 10 65 "${EL_CUSTOM_NODE}" 3>&1 1>&2 2>&3)
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your custom execution client is: $EL_CUSTOM_NODE"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your custom execution client is: $EL_CUSTOM_NODE"
 
     while true; do
-        set +e
         JWT_SECRET=$(whiptail --title "Configure JWT secret" --inputbox "What is the JWT secret shared with the \
 execution client? (right-click to paste)" 10 60 "${JWT_SECRET}" 3>&1 1>&2 2>&3)
 
-        exitstatus=$?
-        set -e
-        if [ $exitstatus -eq 0 ]; then
-            if [[ ${#JWT_SECRET} -eq 64 ]]; then
-              echo "JWT Secret set. Please make sure it matches on CL and EL."
-              break
-            else
-              whiptail --msgbox "The JWT secret needs to be exactly 32 bytes, 64 hex characters long. You can try \
-again or Cancel on the next screen." 10 75
-            fi
+        if [[ ${#JWT_SECRET} -eq 64 ]]; then
+            echo "JWT Secret set. Please make sure it matches on CL and EL."
+            break
         else
-            echo "You chose Cancel."
-            exit 130
+            whiptail --msgbox "The JWT secret needs to be exactly 32 bytes, 64 hex characters long. You can try \
+again or Cancel on the next screen." 10 65
         fi
     done
 }
 
 
 query_execution_client() {
-    set +e
     if [ "${NETWORK}" = "gnosis" ]; then
       if uname -a | grep -q aarch64; then
         EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-        "Which execution client do you want to run?" 9 60 2 \
+        "Which execution client do you want to run?" 9 65 2 \
         "nethermind.yml" "Nethermind (.NET)" \
         "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
       else
         EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-        "Which execution client do you want to run?" 9 60 2 \
+        "Which execution client do you want to run?" 10 65 3 \
         "nethermind.yml" "Nethermind (.NET)" \
         "erigon.yml" "Erigon (Go)" \
         "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
       fi
     elif uname -a | grep -q aarch64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?" 9 60 3 \
+      "Which execution client do you want to run?" 11 65 4 \
       "besu.yml" "Besu (Java)" \
       "nethermind.yml" "Nethermind (.NET)" \
       "geth.yml" "Geth (Go)" \
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?" 13 60 6 \
+      "Which execution client do you want to run?" 13 65 6 \
       "nethermind.yml" "Nethermind (.NET)" \
       "besu.yml" "Besu (Java)" \
       "geth.yml" "Geth (Go)" \
@@ -2367,35 +2318,24 @@ query_execution_client() {
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     fi
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -ne 0 ]; then
-        echo "You chose Cancel."
-        exit 130
-    fi
-
     if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
         unset EXECUTION_CLIENT
         query_custom_execution_client
         EL_NODE="${EL_CUSTOM_NODE}"
     else
         echo "Your execution client file is:" "${EXECUTION_CLIENT}"
-	if [[ "${CONSENSUS_CLIENT}" =~ "nimbus-" ]]; then
-            EL_NODE="http://execution:8551"
-	else
-# This gets used, but shellcheck doesn't recognize that
-# shellcheck disable=SC2034
-            EL_NODE="http://execution:8551"
-	fi
-	if [ "${EXECUTION_CLIENT}" = "erigon.yml" ]; then
-	    echo "Please remember to set your EL_WS_PORT to match EL_RPC_PORT for Erigon"
-	fi
+    # This gets used, but shellcheck doesn't recognize that
+    # shellcheck disable=SC2034
+        EL_NODE="http://execution:8551"
+        if [ "${EXECUTION_CLIENT}" = "erigon.yml" ]; then
+            echo "Please remember to set your EL_WS_PORT to match EL_RPC_PORT for Erigon"
+        fi
     fi
 }
 
 
 query_grafana() {
-    if (whiptail --title "Grafana" --yesno "Do you want to use Grafana dashboards?" 10 60) then
+    if (whiptail --title "Grafana" --yesno "Do you want to use Grafana dashboards?" 10 65) then
         if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS doesn't do well with / bind mount - leave node-exporter, cadvisor and loki/promtail off by default
             GRAFANA_CLIENT="grafana-rootless.yml:grafana-shared.yml"
@@ -2419,18 +2359,10 @@ query_remote_beacon() {
         var="CL_NODE"
         REMOTE_BEACON=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
     fi
-    set +e
     REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote \
 consensus client? (right-click to paste)" 10 60 "${REMOTE_BEACON}" 3>&1 1>&2 2>&3)
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your remote consensus client is:" "${REMOTE_BEACON}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your remote consensus client is:" "${REMOTE_BEACON}"
 }
 
 
@@ -2460,18 +2392,10 @@ query_checkpoint_beacon() {
         esac
     fi
 
-    set +e
     RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint URL" --inputbox "What is the URL for your checkpoint \
-provider? (right-click to paste)" 10 60 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
+provider? (right-click to paste)" 10 65 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "Your checkpoint URL is:" "${RAPID_SYNC_URL}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "Your checkpoint URL is:" "${RAPID_SYNC_URL}"
 }
 
 
@@ -2479,23 +2403,15 @@ query_graffiti() {
     var="GRAFFITI"
     GRAFFITI=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
-    set +e
     GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
-(up to 32 characters)" 10 37 "${GRAFFITI}" 3>&1 1>&2 2>&3)
+(up to 32 characters)" 10 65 "${GRAFFITI}" 3>&1 1>&2 2>&3)
 
-    exitstatus=$?
-    set -e
-    if [ $exitstatus -eq 0 ]; then
-        echo "your Graffiti is:" "${GRAFFITI}"
-    else
-        echo "You chose Cancel."
-        exit 130
-    fi
+    echo "your Graffiti is:" "${GRAFFITI}"
 }
 
 
 query_rapid_sync() {
-    if (whiptail --title "Checkpoint Sync" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 60) then
+    if (whiptail --title "Checkpoint Sync" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 65) then
         query_checkpoint_beacon
     fi
 }
@@ -2506,14 +2422,14 @@ query_coinbase() {
     FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
 
     while true; do
-        set +e
+        set +e # Can't rely on the error handler here because of the special-casing below for update()
         if [ "${__during_update}" -eq 1 ] || [ ! "${__deployment}" = rpc ]; then
             FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want \
-transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 60 "${FEE_RECIPIENT}" \
+transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 65 "${FEE_RECIPIENT}" \
 3>&1 1>&2 2>&3)
         else
             FEE_RECIPIENT=$(whiptail --title "Configure fee recipient" --inputbox "What is the fallback fee recipient \
-address? Yes even on an RPC node. Can be any address at all. (right-click to paste, CANNOT be an ENS)" 10 60 \
+address? Yes even on an RPC node. Can be any address at all. (right-click to paste, CANNOT be an ENS)" 10 65 \
 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
         fi
 
@@ -2525,10 +2441,9 @@ address? Yes even on an RPC node. Can be any address at all. (right-click to pas
               break
             else
               whiptail --msgbox "${FEE_RECIPIENT} is not a valid ETH address. You can try again or Cancel on the next \
-screen.\n\nThe client will not start successfully until a valid ETH rewards address has been set." 16 75
+screen.\n\nThe client will not start successfully until a valid ETH rewards address has been set." 16 65
             fi
         else
-            echo "You chose Cancel."
             if [ $__during_update -eq 1 ]; then
                 echo
                 echo "Please make requested changes manually or run \"./ethd update\" again"
@@ -2591,13 +2506,13 @@ https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1e
     # shellcheck disable=SC2076
     if [[ "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" ]]; then
         if (whiptail --title "MEV Boost" --yesno "Is MEV Boost configured on your remote consensus client and do you \
-want to use MEV Boost?" 10 60); then
+want to use MEV Boost?" 10 65); then
             MEV_BOOST="true"
             MEV_RELAYS=""
         fi
         return 0
     fi
-    if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 60) then
+    if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 65) then
         MEV_BOOST="true"
         if [ "${value}" = "true" ]; then
             var="MEV_RELAYS"
@@ -2643,18 +2558,10 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
                     ;;
             esac
         fi
-        set +e
         MEV_RELAYS=$(whiptail --title "Configure MEV relays" --inputbox "What MEV relay(s) do you want to use? \
-(right-click to paste)" 10 60 "${MEV_RELAYS}" 3>&1 1>&2 2>&3)
+(right-click to paste)" 10 65 "${MEV_RELAYS}" 3>&1 1>&2 2>&3)
 
-        exitstatus=$?
-        set -e
-        if [ $exitstatus -eq 0 ]; then
-            echo "Your MEV relay(s): ${MEV_RELAYS}"
-        else
-            echo "You chose Cancel."
-            exit 130
-        fi
+        echo "Your MEV relay(s): ${MEV_RELAYS}"
     else
         MEV_BOOST="false"
         MEV_RELAYS=""
@@ -2675,16 +2582,45 @@ set_value_in_env() {
 }
 
 
+handle_error() {
+    if [[ ! $- =~ e ]]; then
+        # set +e, do nothing
+        return 0
+    fi
+
+    local exit_code=$1
+    if [ "$exit_code" -eq 127 ]; then
+        printhelp
+    elif [ "$exit_code" -eq 130 ]; then
+        echo "ethd terminated"
+    else
+        echo "ethd failed with error $exit_code"
+    fi
+}
+
+
+handle_config_cancel() {
+    if [[ ! $- =~ e ]]; then
+        # set +e, do nothing
+        return 0
+    fi
+
+    local exit_code=$1
+    if [ "$exit_code" -eq 1 ]; then
+        echo "Canceled config wizard."
+    elif [ "$exit_code" -eq 127 ]; then
+        printhelp
+    elif [ "$exit_code" -eq 130 ]; then
+        echo "ethd terminated"
+    else
+        echo "ethd failed with error $exit_code"
+    fi
+}
+
+
 config() {
     check_for_snap
-    if [[ "$__distro" = "ubuntu" ]]; then
-      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-      if [ "${__major_version}" -lt 20 ]; then
-         echo
-         echo "Ubuntu ${__major_version} is older than the recommended versions 22.04 or 20.04"
-         echo
-      fi
-    fi
+    nag_os_version
     # Do not track changes to ext-network.yml
     ${__as_owner} git update-index --assume-unchanged ext-network.yml
     # Create ENV file if needed
@@ -2698,6 +2634,8 @@ config() {
     else
         __minty_fresh=0
     fi
+
+    trap 'handle_config_cancel $?' ERR
 
     query_network
     query_deployment
@@ -2773,6 +2711,8 @@ config() {
         query_graffiti
     fi
 
+    trap 'handle_error $?' ERR
+
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
     if [ -n "${EXECUTION_CLIENT+x}" ]; then
         COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
@@ -2827,14 +2767,7 @@ config() {
 
     ${__as_owner} rm .env.original
 
-    docompose --profile tools build --pull
-    exec 3>&1
-    exec 4>&2
-    exec 1> /dev/null
-    exec 2> /dev/null
-    docompose pull || true
-    exec 1>&3
-    exec 2>&4
+    pull_and_build
 }
 
 
@@ -2995,22 +2928,7 @@ printhelp() {
 }
 
 
-handle_error() {
-    if [[ ! $- =~ e ]]; then
-        # set +e, do nothing
-        return 0
-    fi
-
-    local exit_code=$1
-    if [ "$exit_code" -eq 127 ]; then
-        printhelp
-    elif [ "$exit_code" -eq 130 ]; then
-        echo "ethd terminated"
-    else
-        echo "ethd failed with error $exit_code"
-    fi
-}
-
+# Main body from here
 trap 'handle_error $?' ERR
 
 if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
@@ -3077,7 +2995,9 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
   echo "You updated Docker Compose to V2."
   echo "The \"docker-compose\" command is gone and replaced with \"docker compose\"."
-  echo "You can create yourself an alias for \"docker-compose\"."
+  echo
+  echo "You can create an alias for \"docker-compose\" by adding this line to your \"~/.profile\":"
+  echo "alias docker-compose=\"docker compose\""
   echo
   echo "Optionally, you can switch to docker-ce."
   echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
@@ -3085,8 +3005,9 @@ elif [ "${__old_compose}" -eq 1 ]; then
   echo
   echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on."
   echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
-  echo ""
-  echo "A switch to docker-ce is recommended. It is *not* mandatory. This is unfortunately a manual step that "
-  echo "Eth Docker cannot do for you."
+  echo
+  echo "A switch to docker-ce is recommended. It is *not* mandatory."
+  echo "This is a manual step that Eth Docker cannot do for you."
+  echo
   echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
 fi
