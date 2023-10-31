@@ -75,21 +75,15 @@ upgrade_compose() {
   fi
   echo "Updating Docker Compose to V2"
   if [[ "$__distro" = "ubuntu" ]]; then
-    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release
+    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y lsb-release
     __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
     if [ "${__major_version}" -lt 20 ]; then
-      echo "This script cannot update Docker Compose on Ubuntu ${__major_version}. Consider upgrading to 22.04 or 20.04"
+      echo "This script cannot update Docker Compose on Ubuntu ${__major_version}."
+      echo "Consider upgrading to 20.04 and then 22.04."
       exit 130
     fi
-    ${__auto_sudo} mkdir -p /etc/apt/keyrings
-    ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor --yes \
-    -o /etc/apt/keyrings/docker.gpg
-    ${__auto_sudo} echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
-        | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
+    ${__auto_sudo} apt-get install -y docker-compose-v2 docker-buildx
     echo "Installed docker-compose-plugin"
     __old_compose=0
     __compose_exe="docker compose"
@@ -105,7 +99,8 @@ upgrade_compose() {
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
     __major_version=$(lsb_release -r | cut -f2)
     if [ "${__major_version}" -lt 10 ]; then
-        echo "This script cannot update Docker Compose on Debian ${__major_version}. Consider upgrading to 11 or 12."
+        echo "This script cannot update Docker Compose on Debian ${__major_version}."
+        echo "Consider upgrading to 10, then 11 and then 12."
         exit 130
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -972,7 +967,7 @@ nag_os_version() {
       __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
       if [ "${__major_version}" -lt 20 ]; then
          echo
-         echo "Ubuntu ${__major_version} is older than the recommended 22.04 or 20.04 version"
+         echo "Ubuntu ${__major_version} is older than the recommended 22.04 or 20.04 version."
          echo
       fi
     fi
@@ -981,7 +976,7 @@ nag_os_version() {
       __major_version=$(lsb_release -r | cut -f2)
       if [ "${__major_version}" -lt 10 ]; then
          echo
-         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version"
+         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version."
          echo
       fi
     fi
@@ -3008,8 +3003,6 @@ elif [ "${__old_compose}" -eq 1 ]; then
   echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on."
   echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
   echo
-  echo "A switch to docker-ce is recommended. It is *not* mandatory."
-  echo "This is a manual step that Eth Docker cannot do for you."
-  echo
-  echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
+  echo "You can install it with \"sudo apt update && sudo apt install docker-compose-v2\"."
+  echo "You can remove the old docker-compose with \"sudo apt-mark manual docker.io && sudo apt --autoremove remove docker-compose\"."
 fi
