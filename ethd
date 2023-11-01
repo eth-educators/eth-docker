@@ -84,7 +84,7 @@ upgrade_compose() {
     fi
     ${__auto_sudo} apt-get update
     ${__auto_sudo} apt-get install -y docker-compose-v2 docker-buildx
-    echo "Installed docker-compose-plugin"
+    echo "Installed docker-compose-v2"
     __old_compose=0
     __compose_exe="docker compose"
     __compose_upgraded=1
@@ -1110,7 +1110,7 @@ reset to defaults."
         echo
         echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
         echo
-        diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak
+        diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak || true
         if [ "$__pre_merge" -eq 1 ]; then
             echo
             echo "You appear to be coming from a pre-merge setup."
