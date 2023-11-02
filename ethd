@@ -1252,7 +1252,7 @@ resync-consensus() {
 
 
 attach-geth() {
-    if [ ! -f "./${ENV_FILE}" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 130
     fi
@@ -1285,7 +1285,7 @@ prune-geth() {
         esac
     done
 
-    if [ ! -f "./${ENV_FILE}" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 130
     fi
@@ -1416,7 +1416,7 @@ prune-nethermind() {
         esac
     done
 
-    if [ ! -f "./${ENV_FILE}" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 130
     fi
@@ -1531,7 +1531,7 @@ execution | grep Full\" to see whether it is."
 
 
 prep-keyimport() {
-    if [ ! -f "./${ENV_FILE}" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
         exit 130
     fi
@@ -2568,11 +2568,11 @@ handle_error() {
         echo "$__me failed with error $exit_code on line $2"
         if [ "$__during_update" -eq 1 ]; then
             echo
-            echo "This happened during $__me update, which is a bug."
+            echo "This happened during $__me update ${__params}, which is a bug."
             if [ "$__during_migrate" -eq 1 ]; then
                 cp "${ENV_FILE}".source "${ENV_FILE}"
                 echo
-                echo "Restored your ${ENV_FILE} file, which was partially migrated. Please verify it looks correct."
+                echo "Restored your ${ENV_FILE} file, to undo partial migration. Please verify it looks correct."
             fi
         fi
         if [ "$__during_postgres" -eq 1 ]; then
@@ -2599,7 +2599,7 @@ handle_error() {
             fi
         fi
         if [ -n "${__command}" ]; then
-            echo "This happened during $__me ${__command}"
+            echo "This happened during $__me ${__command} ${__params}"
         fi
         echo
         echo "If this was an unexpected failure, please save the logs and come to Ethstaker Discord to troubleshoot this."
@@ -2950,6 +2950,7 @@ fi
 
 __command="$1"
 shift
+__params=$*
 
 determine_distro
 handle_root
@@ -2982,7 +2983,7 @@ if ! docompose --help >/dev/null 2>&1; then
 fi
 
 case "$__command" in
-    config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
+    help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
         |resync-execution|resync-consensus|attach-geth|keyimport)
         $__command "$@";;
     *)
