@@ -2559,54 +2559,50 @@ handle_error() {
     fi
 
     local exit_code=$1
+    echo
     if [ "$exit_code" -eq 130 ]; then
         echo "$__me terminated"
     elif [ "$__during_config" -eq 1 ] && [ "$exit_code" -eq 1 ]; then
         echo "Canceled config wizard."
     else
-        echo
         echo "$__me failed with error $exit_code on line $2"
-        if [ "$__during_update" -eq 1 ]; then
-            echo
-            echo "This happened during $__me update ${__params}, which is a bug."
-            if [ "$__during_migrate" -eq 1 ]; then
-                cp "${ENV_FILE}" "${ENV_FILE}".partial
-                cp "${ENV_FILE}".source "${ENV_FILE}"
-                echo
-                echo "Restored your ${ENV_FILE} file, to undo partial migration. Please verify it looks correct."
-                echo "The partially migrated file is in ${ENV_FILE}.partial for troubleshooting."
-            fi
-        fi
-        if [ "$__during_postgres" -eq 1 ]; then
-            echo
-            if [ "$__during_migrate" -eq 1 ] && [ "$__migrated" -eq 0 ]; then
-                echo "Web3signer slashing protection database migration failed, while switching to the migrated data."
-                echo
-                echo "WARNING: You are no longer protected by the slashing protection database."
-                echo "Starting the node again could get you slashed."
-                echo
-                echo "Marking Web3signer as unsafe to start."
-                dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-keys")":/var/lib/web3signer \
-                    alpine:3 touch /var/lib/web3signer/.migration_fatal_error
-            elif [ "$__migrated" -eq 1 ]; then
-                echo "Web3signer slashing protection database migration failed, after switching to the migrated data."
-                echo
-                echo "The slashing protection database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
-                echo "an error occured, which is likely to keep your node from functioning correctly."
-            else
-                echo "Web3signer slashing protection database migration failed, but before removing the original data."
-                echo
-                echo "Your original Web3signer slashing protection database remains in place."
-                echo "You can safely update the node again, this time without migration, and start it."
-            fi
-        fi
-        if [ -n "${__command}" ]; then
-            echo "This happened during $__me ${__command} ${__params}"
-        fi
-        echo
-        echo "If this was an unexpected failure, please save the logs and come to Ethstaker Discord to troubleshoot this."
-        echo
     fi
+    if [ -n "${__command}" ]; then
+        echo "This happened during $__me ${__command} ${__params}"
+    fi
+    if [ "$__during_update" -eq 1 ] && [ "$__during_migrate" -eq 1 ]; then
+        cp "${ENV_FILE}" "${ENV_FILE}".partial
+        cp "${ENV_FILE}".source "${ENV_FILE}"
+        echo
+        echo "Restored your ${ENV_FILE} file, to undo partial migration. Please verify it looks correct."
+        echo "The partially migrated file is in ${ENV_FILE}.partial for troubleshooting."
+    fi
+    if [ "$__during_postgres" -eq 1 ]; then
+        echo
+        if [ "$__during_migrate" -eq 1 ] && [ "$__migrated" -eq 0 ]; then
+            echo "Web3signer slashing protection database migration failed, while switching to the migrated data."
+            echo
+            echo "WARNING: You are no longer protected by the slashing protection database."
+            echo "Starting the node again could get you slashed."
+            echo
+            echo "Marking Web3signer as unsafe to start."
+            dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-keys")":/var/lib/web3signer \
+                alpine:3 touch /var/lib/web3signer/.migration_fatal_error
+        elif [ "$__migrated" -eq 1 ]; then
+            echo "Web3signer slashing protection database migration failed, after switching to the migrated data."
+            echo
+            echo "The slashing protection database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
+            echo "an error occured, which is likely to keep your node from functioning correctly."
+        else
+            echo "Web3signer slashing protection database migration failed, but before removing the original data."
+            echo
+            echo "Your original Web3signer slashing protection database remains in place."
+            echo "You can safely update the node again, this time without migration, and start it."
+        fi
+    fi
+    echo
+    echo "If this was an unexpected failure, please save the logs and come to Ethstaker Discord to troubleshoot this."
+    echo
 }
 
 
