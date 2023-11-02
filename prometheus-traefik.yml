@@ -1,0 +1,11 @@
+# To be used in conjunction with grafana.yml
+# Please be very cautious, prometheus is not authenticated by default
+version: "3.9"
+services:
+  execution:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROM_HOST:-prom}.entrypoints=web,websecure
+      - traefik.http.routers.${PROM_HOST:-prom}.rule=Host(`${PROM_HOST:-prom}.${DOMAIN}`)
+      - traefik.http.routers.${PROM_HOST:-prom}.tls.certresolver=letsencrypt
+      - traefik.http.services.${PROM_HOST:-prom}.loadbalancer.server.port=9090
