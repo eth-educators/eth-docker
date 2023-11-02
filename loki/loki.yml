@@ -44,3 +44,5 @@ schema_config:
 
 limits_config:
   retention_period: 30d
+  ingestion_rate_mb: 128
+  ingestion_burst_size_mb: 512

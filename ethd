@@ -777,10 +777,9 @@ envmigrate() {
     var=ENV_VERSION
     __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
     __source_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-# Not yet - I want invis to find that bug. After that, enable this
-#    if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" = "${__source_ver}" ]]; then # No changes in template, do nothing
-#      return 0
-#    fi
+    if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" = "${__source_ver}" ]]; then # No changes in template, do nothing
+      return 0
+    fi
 
     if [ "${__keep_targets}" -eq 0 ]; then
       echo "Refreshing build targets in ${ENV_FILE}"
