@@ -138,7 +138,7 @@ determine_compose() {
     __compose_exe="docker-compose"
     __old_compose=1
     __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
-    if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${command}" = "update" ]; then # Don't run this twice
+    if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${__command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
       echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
@@ -340,9 +340,9 @@ check_disk_space() {
     fi
 
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     var="AUTOPRUNE_NM"
-    auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
 # Literal match intended
 # shellcheck disable=SC2076
@@ -385,7 +385,7 @@ with \"./ethd prune-geth\"."
 source_build() {
 # Check whether there's a source-built client and if so, force it with --no-cache
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
     case "${value}" in
         *deposit-cli.yml* )
@@ -395,7 +395,7 @@ source_build() {
     case "${value}" in
         *mev-boost.yml* )
             var="MEV_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache mev-boost
             fi
@@ -404,42 +404,42 @@ source_build() {
     case "${value}" in
         *reth.yml* )
             var="RETH_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache execution
             fi
             ;;
         *geth.yml* )
             var="GETH_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache execution
             fi
             ;;
         *besu.yml* )
             var="BESU_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache execution
             fi
             ;;
         *nethermind.yml* )
             var="NM_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache execution
             fi
             ;;
         *erigon.yml* )
             var="ERIGON_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache execution
             fi
             ;;
         *nimbus-el.yml* )
             var="NIMEL_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache execution
             fi
@@ -448,35 +448,35 @@ source_build() {
     case "${value}" in
         *lighthouse.yml* | *lighthouse-cl-only.yml* )
             var="LH_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache consensus
             fi
             ;;
         *teku.yml* | *teku-cl-only.yml* )
             var="TEKU_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache consensus
             fi
             ;;
         *lodestar.yml* | *lodestar-cl-only.yml* )
             var="LS_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache consensus
             fi
             ;;
         *nimbus.yml* | *nimbus-cl-only.yml* )
             var="NIM_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache consensus
             fi
             ;;
         *prysm.yml* | *prysm-cl-only.yml* )
             var="PRYSM_DOCKERFILE"
-            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
             if [ "${build}" = "Dockerfile.source" ]; then
                 docompose build --pull --no-cache consensus
             fi
@@ -563,8 +563,8 @@ ssv_switch() {
     echo "Backup copy blox-ssv-config.yaml.bak created"
     echo "Making changes to ssv-config/config.yaml"
     var="NETWORK"
-    NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
-    sed -i'' 's/blox-ssv2.yml/ssv.yml/' .env.source
+    NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+    sed -i'' 's/blox-ssv2.yml/ssv.yml/' "${ENV_FILE}".source
     if ! grep -q "LogFilePath:" ssv-config/config.yaml; then
       sed -i'' '/global:/a\  LogFilePath: /tmp/ssv/debug.log' ssv-config/config.yaml
     fi
@@ -590,7 +590,7 @@ ssv_switch() {
 delete_erigon() {
     # Check for Erigon
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
     if [[ ! "${value}" =~ "erigon.yml" ]]; then
@@ -621,58 +621,17 @@ delete_erigon() {
 }
 
 
-pg_upgrade_error() {
-    echo
-    echo "Web3signer slashing protection database migration failed, but before removing the original data."
-    echo
-    echo "Your original Web3signer slashing protection database remains in place."
-    echo "You can safely update the node again, this time without migration, and start it."
-    echo
-    echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
-    echo
-}
-
-
-pg_upgrade_error_after() {
-    echo
-    echo "Web3signer slashing protection database migration failed, after switching to the migrated data."
-    echo
-    echo "The slashing protection database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
-    echo "an error occured, which is likely to keep your node from functioning correctly."
-    echo
-    echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
-    echo
-}
-
-
-pg_upgrade_fatal() {
-    echo
-    echo "Web3signer slashing protection database migration failed, while switching to the migrated data."
-    echo
-    echo "WARNING: You are no longer protected by the slashing protection database."
-    echo "Starting the node again could get you slashed."
-    echo
-    echo "Marking Web3signer as unsafe to start."
-    dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-keys")":/var/lib/web3signer \
-        alpine:3 touch /var/lib/web3signer/.migration_fatal_error
-    echo
-    echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
-    echo
-}
-
-
 upgrade_postgres() {
     # Enable this when PostgreSQL 16.2 is out and flyway supports it
     # Consider --non-interactive for update. For this, but also other things that query via whiptail or read
     return
 
     __target_pg=16
-
-    trap 'pg_upgrade_error' ERR
+    __during_postgres=1
 
     # Check for web3signer
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
     if [[ ! "${value}" =~ "web3signer.yml" ]]; then
@@ -731,7 +690,7 @@ upgrade_postgres() {
         -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
         alpine:3 cp -a /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
 
-    trap 'pg_upgrade_fatal' ERR
+    __during_migrate=1
     echo "Moving migrated data to web3signer-slashing-data volume"
     dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
         alpine:3 rm -rf /var/lib/postgresql/data/*
@@ -739,7 +698,7 @@ upgrade_postgres() {
         -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
         alpine:3 cp -a "/var/lib/postgresql/${__target_pg}/data/." /var/lib/postgresql/data/
 
-    trap 'pg_upgrade_error_after' ERR
+    __migrated=1
     dodocker volume remove "${__migrated_vol}"
 
     echo
@@ -753,6 +712,7 @@ upgrade_postgres() {
     echo
     echo "A copy of your old slashing protection database is in the Docker volume ${__backup_vol}."
     echo "Confirm that everything works, and then delete it with \"docker volume rm ${__backup_vol}\"."
+    __during_postgres=0
 }
 
 
@@ -781,7 +741,7 @@ envmigrate() {
         exec "${BASH_SOURCE[0]}" update ${__keep}
     fi
 
-    if [ ! -f "./${ENV_FILE}" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         return 0
     fi
 
@@ -814,25 +774,33 @@ envmigrate() {
     NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN \
             EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
 
-    if [ "${EUID}" -eq 0 ]; then
-      # Previous version of this tool when run as root may have created a root-owned .env.bak
-      if [ -f ./"${ENV_FILE}".bak ]; then
-          ${__as_owner} rm "${ENV_FILE}".bak
-      fi
+    var=ENV_VERSION
+    __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
+    __source_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+# Not yet - I want invis to find that bug. After that, enable this
+#    if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" = "${__source_ver}" ]]; then # No changes in template, do nothing
+#      return 0
+#    fi
+
+    if [ "${__keep_targets}" -eq 0 ]; then
+      echo "Refreshing build targets in ${ENV_FILE}"
+    else
+      echo "Migrating ${ENV_FILE} to version ${__target_ver}"
     fi
     ${__as_owner} cp "${ENV_FILE}" "${ENV_FILE}".source
     __during_migrate=1
+    __migrated=1
     ${__as_owner} cp default.env "${ENV_FILE}"
     # Detect pre-merge
-    if grep -q "FALLBACK_NODE1" ".env.source"; then
+    if grep -q "FALLBACK_NODE1" "${ENV_FILE}.source"; then
       __pre_merge=1
-      ${__as_owner} cp .env.source .env.premerge
+      ${__as_owner} cp "${ENV_FILE}".source "${ENV_FILE}".premerge
     else
       __pre_merge=0
     fi
 
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
 # Literal match intended
 # shellcheck disable=SC2076
     if [[ "${value}" =~ "blox-ssv2.yml" ]]; then
@@ -841,13 +809,13 @@ envmigrate() {
 
     # Migrate over user settings
     for var in "${ALL_VARS[@]}"; do
-        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
         if [ -n "${value}" ] || [ "${var}" = "GRAFFITI" ] || [ "${var}" = "MEV_RELAYS" ]; then
             if [ "${var}" = "COMPOSE_FILE" ]; then
                 migrate_compose_file
             fi
             if [ "${var}" = "CL_QUIC_PORT" ]; then
-                __cl_port=$(sed -n -e "s/^CL_P2P_PORT=\(.*\)/\1/p" ".env.source" || true)
+                __cl_port=$(sed -n -e "s/^CL_P2P_PORT=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
                 if [ -n "${__cl_port}" ] && [ "${__cl_port}" = "${value}" ]; then
                     value=$((value + 1))
                     echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with CL_P2P_PORT"
@@ -866,10 +834,10 @@ envmigrate() {
             sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
         fi
     done
-    if [ "$__keeptargets" = "1" ]; then
+    if [ "${__keep_targets}" -eq 1 ]; then
       # Migrate over build targets
       for var in "${TARGET_VARS[@]}"; do
-          value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
+          value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
           if [ -n "${value}" ]; then
               sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
           fi
@@ -878,14 +846,14 @@ envmigrate() {
     # Move value from old variable name(s) to new one(s)
     for index in "${!OLD_VARS[@]}"; do
         var=${OLD_VARS[index]}
-        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env.source" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
         if [ -n "${value}" ]; then
             sed -i'.original' -e "s~^\(${NEW_VARS[index]}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
         fi
     done
     # Check whether we run a CL or VC, if so nag about FEE_RECIPIENT
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     # It's CL&VC, CL-only, or VC-only
 # I do mean to match literally
 # shellcheck disable=SC2076
@@ -894,7 +862,7 @@ envmigrate() {
         || "${value}" =~ "-vc-only.yml" ]]; then
         # Check for rewards
         var="FEE_RECIPIENT"
-        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
             whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
 for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
@@ -909,14 +877,14 @@ valid address is set" 12 75
     # Ditto do not nag if we switched branch, as the code that does
     # the check won't be accurate
     var="DISTRIBUTED"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
-        ${__as_owner} rm .env.original
+        ${__as_owner} rm "${ENV_FILE}".original
         return 0
     fi
     # Check for CL and EL, nag if we have only one without the other
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     # Case 1 ... CL, do we have an EL?
 # I do mean to match literally
 # shellcheck disable=SC2076
@@ -927,7 +895,7 @@ valid address is set" 12 75
             && ! "${value}" =~ "reth.yml" ]]; then
             whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client since \
 Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
-.env" 12 75
+${ENV_FILE}" 12 75
         fi
     # Case 2 ... EL, do we have a CL?
     elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" \
@@ -936,14 +904,14 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
             && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
             whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client since \
 Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
-.env" 12 75
+${ENV_FILE}" 12 75
         fi
     fi
     # Adjust EL_NODE as needed
     __el_adjusted=0
     __el_infura=0
     var="EL_NODE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
     if [[ "${value}" =~ "infura.io" ]]; then
@@ -958,8 +926,9 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
        set_value_in_env
        __el_adjusted=1
     fi
-    ${__as_owner} rm .env.original
+    ${__as_owner} rm "${ENV_FILE}".original
     __during_migrate=0
+    echo "${ENV_FILE} updated successfully"
 }
 
 
@@ -1051,7 +1020,7 @@ update() {
         exec "${BASH_SOURCE[0]}" update "$@"
     fi
 
-    __keeptargets=1
+    __keep_targets=1
     __targetcli=""
     while :
     do
@@ -1065,7 +1034,7 @@ update() {
 only"
                     exit 130
                 fi
-                __keeptargets=1
+                __keep_targets=1
                 __targetcli="--keep-targets"
                 shift
                 ;;
@@ -1075,7 +1044,7 @@ only"
 only"
                     exit 130
                 fi
-                __keeptargets=0
+                __keep_targets=0
                 __targetcli="--refresh-targets"
                 shift
                 ;;
@@ -1089,7 +1058,7 @@ only"
 # shellcheck disable=SC2119
     envmigrate
 
-    if [ "${__switched_branch-}" -eq 1 ]; then
+    if [ "${__switched_branch:-0}" -eq 1 ]; then
         # This code has changed, run it again on the new branch
         export ETHDSECUNDO=1 #Not strictly necessary but this way we don't rely on what happens earlier
         export ETHDSWITCHED=1
@@ -1099,12 +1068,12 @@ only"
     pull_and_build
 
     echo
-    if ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
+    if [ "${__migrated}" -eq 1 ] && ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
         ${__as_owner} cp "${ENV_FILE}".source "${ENV_FILE}".bak
         ${__as_owner} rm "${ENV_FILE}".source
         echo "Your ${ENV_FILE} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${ENV_FILE}.bak."
-        if [ $__keeptargets = "0" ]; then
+        if [ "${__keep_targets}" -eq 0 ]; then
             echo "NB: If you made changes to the source or binary build targets, these have been \
 reset to defaults."
         fi
@@ -1115,25 +1084,27 @@ reset to defaults."
         if [ "$__pre_merge" -eq 1 ]; then
             echo
             echo "You appear to be coming from a pre-merge setup."
-            echo "A copy of your original settings is in .env.premerge"
+            echo "A copy of your original settings is in ${ENV_FILE}.premerge"
             echo
             echo "Pay special attention to EL_NODE, as failover is no longer supported."
             echo
-            echo "Decide whether to use mev-boost. Please see MEV_BOOST in .env for details."
+            echo "Decide whether to use mev-boost. Please see MEV_BOOST in ${ENV_FILE} for details."
         fi
     else
         echo "No changes made to ${ENV_FILE} during update"
-        ${__as_owner} rm "${ENV_FILE}".source
+        if [ -f "${ENV_FILE}".source ]; then
+            ${__as_owner} rm "${ENV_FILE}".source || true
+        fi
     fi
-    if [ "$__el_infura" -eq 1 ]; then
+    if [ "${__el_infura:-0}" -eq 1 ]; then
         echo
         echo "Detected use of an Infura project as an EL or failover EL. This is no longer supported with merge."
         echo "Please adjust your EL_NODE variable manually."
     fi
-    if [ "$__el_adjusted" -eq 1 ]; then
+    if [ "${__el_adjusted:-0}" -eq 1 ]; then
         echo
         echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
-    elif [ "$__pre_merge" -eq 1 ]; then
+    elif [ "${__pre_merge:-0}" -eq 1 ]; then
         echo
         echo "Your EL_NODE variable has not been adjusted to use the new Engine API port, as you had a non-standard \
 value."
@@ -1193,7 +1164,7 @@ value."
 resync-execution() {
     # Check for EL client
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
     case "${value}" in
         *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
@@ -1230,7 +1201,7 @@ resync-execution() {
 resync-consensus() {
     # Check for CL client
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
     case "${value}" in
         *lighthouse.yml* ) __cl_volume='lhbeacon-data'; __cl_client="lighthouse";;
@@ -1253,7 +1224,7 @@ resync-consensus() {
 
     # Can we checkpoint sync?
     var="RAPID_SYNC_URL"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     echo "This will stop ${__cl_client} and delete its database to force a resync."
     if [ -z "${value}" ]; then
         read -rp "WARNING - RAPID_SYNC_URL not set, resync may take days. Do you wish to continue? (No/yes) " yn
@@ -1326,7 +1297,7 @@ prune-geth() {
 
     # Check for archive node
     var="ARCHIVE_NODE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [[ "${value}" = "true" ]]; then
         echo "Geth is an archive node: Aborting."
         return 130
@@ -1457,7 +1428,7 @@ prune-nethermind() {
 
     # Check for archive node
     var="ARCHIVE_NODE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [[ "${value}" = "true" ]]; then
         echo "Nethermind is an archive node: Aborting."
         return 130
@@ -1511,7 +1482,7 @@ prune-nethermind() {
     fi
 
     var="AUTOPRUNE_NM"
-    auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
     if [ $__non_interactive = 0 ]; then
       while true; do
@@ -1566,7 +1537,7 @@ prep-keyimport() {
     fi
 
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # Literal match intended
 # shellcheck disable=SC2076
     if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "lighthouse.yml" ]] && [[ ! "${value}" =~ "teku.yml" ]] \
@@ -1636,17 +1607,17 @@ prep-keyimport() {
 
 
 __i_haz_ethdo() {
-    if [ ! -f ".env" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         echo "Eth Docker has not been configured. Please run ./ethd config first."
         exit 0
     fi
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # Literal match intended
 # shellcheck disable=SC2076
     if [[ ! "${value}" =~ "ethdo.yml" ]]; then
-        echo "Please edit the .env file and make sure \":ethdo.yml\" is added to the \"COMPOSE_FILE\" line"
-        echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
+        echo "Please edit the ${ENV_FILE} file and make sure \":ethdo.yml\" is added to the \"COMPOSE_FILE\" line"
+        echo "For example, \"nano ${ENV_FILE}\" will open the nano text editor with the \"${ENV_FILE}\" file loaded."
         echo "Without it, this step cannot be run"
         echo
         read -rp "Do you want me to make this change for you? (n/y)" yn
@@ -1658,7 +1629,7 @@ __i_haz_ethdo() {
           COMPOSE_FILE="${value}:ethdo.yml"
         else
           COMPOSE_FILE="ethdo.yml"
-          echo "You do not have a CL in Eth Docker. Please make sure CL_NODE in .env points at an available one"
+          echo "You do not have a CL in Eth Docker. Please make sure CL_NODE in ${ENV_FILE} points at an available one"
         fi
         set_value_in_env
         echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
@@ -1667,25 +1638,25 @@ __i_haz_ethdo() {
 
 
 __i_haz_web3signer() {
-    if [ ! -f ".env" ]; then
+    if [ ! -f "${ENV_FILE}" ]; then
         echo "Eth Docker has not been configured. Please run ./ethd config first."
         exit 0
     fi
 
     var="WEB3SIGNER"
-    __w3s=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    __w3s=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [ ! "${__w3s}" = "true" ]; then
         return 0
     fi
 
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # Literal match intended
 # shellcheck disable=SC2076
     if [[ ! "${value}" =~ "web3signer.yml" ]]; then
-        echo "WEB3SIGNER=true in .env, but web3signer.yml is not in use"
-        echo "Please edit the .env file and make sure \":web3signer.yml\" is added to the \"COMPOSE_FILE\" line"
-        echo "For example, \"nano .env\" will open the nano text editor with the \".env\" file loaded."
+        echo "WEB3SIGNER=true in ${ENV_FILE}, but web3signer.yml is not in use"
+        echo "Please edit the ${ENV_FILE} file and make sure \":web3signer.yml\" is added to the \"COMPOSE_FILE\" line"
+        echo "For example, \"nano ${ENV_FILE}\" will open the nano text editor with the \"${ENV_FILE}\" file loaded."
         echo "Without it, ./ethd keys cannot be run"
         echo
         read -rp "Do you want me to make this change for you? (n/y)" yn
@@ -1737,7 +1708,7 @@ __keys_usage() {
     echo
     echo "  get-recipient 0xPUBKEY"
     echo "      List fee recipient set for the validator with public key 0xPUBKEY"
-    echo "      Validators will use FEE_RECIPIENT in .env by default, if not set individually"
+    echo "      Validators will use FEE_RECIPIENT in ${ENV_FILE} by default, if not set individually"
     echo "  set-recipient 0xPUBKEY 0xADDRESS"
     echo "      Set individual fee recipient for the validator with public key 0xPUBKEY"
     echo "  delete-recipient 0xPUBKEY"
@@ -1795,7 +1766,7 @@ keys() {
         fi
     elif [ "${1:-}" = "create-prysm-wallet" ]; then
         var="COMPOSE_FILE"
-        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # Literal match intended
 # shellcheck disable=SC2076
         if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "prysm-vc-only.yml" ]]; then
@@ -1960,7 +1931,7 @@ keys() {
     #elif [ "${1:-}" = "send-exit" ] && ! __i_haz_keys_service silent; then
     elif [ "${1:-}" = "send-exit" ]; then
         var="CL_NODE"
-        CL_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        CL_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
         network_name="$(docompose config | awk '
             BEGIN {
                 found_networks=0;
@@ -2003,7 +1974,7 @@ keys() {
         docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
     fi
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 }
 
 
@@ -2259,9 +2230,9 @@ query_custom_execution_client() {
         JWT_SECRET=""
     else
         var="EL_NODE"
-        EL_CUSTOM_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        EL_CUSTOM_NODE=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
         var="JWT_SECRET"
-        JWT_SECRET=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        JWT_SECRET=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     fi
     EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom \
 execution client? (right-click to paste)" 10 65 "${EL_CUSTOM_NODE}" 3>&1 1>&2 2>&3)
@@ -2354,7 +2325,7 @@ query_remote_beacon() {
         fi
     else
         var="CL_NODE"
-        REMOTE_BEACON=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+        REMOTE_BEACON=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     fi
     REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote \
 consensus client? (right-click to paste)" 10 60 "${REMOTE_BEACON}" 3>&1 1>&2 2>&3)
@@ -2365,7 +2336,7 @@ consensus client? (right-click to paste)" 10 60 "${REMOTE_BEACON}" 3>&1 1>&2 2>&
 
 query_checkpoint_beacon() {
     var="RAPID_SYNC_URL"
-    RAPID_SYNC_URL=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    RAPID_SYNC_URL=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [ -z "${RAPID_SYNC_URL}" ]; then
         case "${NETWORK}" in
             "sepolia")
@@ -2398,7 +2369,7 @@ provider? (right-click to paste)" 10 65 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
 
 query_graffiti() {
     var="GRAFFITI"
-    GRAFFITI=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    GRAFFITI=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
     GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
 (up to 32 characters)" 10 65 "${GRAFFITI}" 3>&1 1>&2 2>&3)
@@ -2416,7 +2387,7 @@ query_rapid_sync() {
 
 query_coinbase() {
     var="FEE_RECIPIENT"
-    FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
     while true; do
         set +e # Can't rely on the error handler here because of the special-casing below for update()
@@ -2446,7 +2417,7 @@ screen.\n\nThe client will not start successfully until a valid ETH rewards addr
                 echo "Please make requested changes manually or run \"./ethd update\" again"
                 echo "before running \"./ethd up\"."
                 echo
-                echo "Without a FEE_RECIPIENT set in \".env\", containers will not"
+                echo "Without a FEE_RECIPIENT set in \"${ENV_FILE}\", containers will not"
                 echo "start successfully. Already running containers will keep running with the"
                 echo "old configuration until you are ready to restart them."
             else
@@ -2500,7 +2471,7 @@ https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1e
         return 0
     fi
     var="MEV_BOOST"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     # I do mean to match literally
     # shellcheck disable=SC2076
     if [[ "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" ]]; then
@@ -2515,7 +2486,7 @@ want to use MEV Boost?" 10 65); then
         MEV_BOOST="true"
         if [ "${value}" = "true" ]; then
             var="MEV_RELAYS"
-            MEV_RELAYS=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+            MEV_RELAYS=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
         else
             case "${NETWORK}" in
                 "sepolia")
@@ -2588,42 +2559,51 @@ handle_error() {
     fi
 
     local exit_code=$1
-    if [ "$exit_code" -eq 127 ]; then
-        printhelp
-    elif [ "$exit_code" -eq 130 ]; then
+    if [ "$exit_code" -eq 130 ]; then
         echo "ethd terminated"
+    elif [ "$__during_config" -eq 1 ] && [ "$exit_code" -eq 1 ]; then
+        echo "Canceled config wizard."
     else
         echo
         echo "ethd failed with error $exit_code on line $2"
         if [ "$__during_update" -eq 1 ]; then
             echo
             echo "This happened during ethd update, which is a bug."
-            echo "Please come to Ethstaker Discord with logs to help me track this down."
             if [ "$__during_migrate" -eq 1 ]; then
-                cp .env.source .env
+                cp "${ENV_FILE}".source "${ENV_FILE}"
                 echo
-                echo "Restored your .env file, which was partially migrated. Please verify it looks correct."
+                echo "Restored your ${ENV_FILE} file, which was partially migrated. Please verify it looks correct."
             fi
         fi
-    fi
-}
-
-
-handle_config_cancel() {
-    if [[ ! $- =~ e ]]; then
-        # set +e, do nothing
-        return 0
-    fi
-
-    local exit_code=$1
-    if [ "$exit_code" -eq 1 ]; then
-        echo "Canceled config wizard."
-    elif [ "$exit_code" -eq 127 ]; then
-        printhelp
-    elif [ "$exit_code" -eq 130 ]; then
-        echo "ethd terminated"
-    else
-        echo "ethd failed with error $exit_code"
+        if [ "$__during_postgres" -eq 1 ]; then
+            echo
+            if [ "$__during_migrate" -eq 1 ] && [ "$__migrated" -eq 0 ]; then
+                echo "Web3signer slashing protection database migration failed, while switching to the migrated data."
+                echo
+                echo "WARNING: You are no longer protected by the slashing protection database."
+                echo "Starting the node again could get you slashed."
+                echo
+                echo "Marking Web3signer as unsafe to start."
+                dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-keys")":/var/lib/web3signer \
+                    alpine:3 touch /var/lib/web3signer/.migration_fatal_error
+            elif [ "$__migrated" -eq 1 ]; then
+                echo "Web3signer slashing protection database migration failed, after switching to the migrated data."
+                echo
+                echo "The slashing protection database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
+                echo "an error occured, which is likely to keep your node from functioning correctly."
+            else
+                echo "Web3signer slashing protection database migration failed, but before removing the original data."
+                echo
+                echo "Your original Web3signer slashing protection database remains in place."
+                echo "You can safely update the node again, this time without migration, and start it."
+            fi
+        fi
+        if [ -n "${__command}" ]; then
+            echo "This happened during ethd ${__command}"
+        fi
+        echo
+        echo "If this was an unexpected failure, please save the logs and come to Ethstaker Discord to troubleshoot this."
+        echo
     fi
 }
 
@@ -2635,17 +2615,15 @@ config() {
     ${__as_owner} git update-index --assume-unchanged ext-network.yml
     # Create ENV file if needed
     if ! [[ -f "${ENV_FILE}" ]]; then
-        ENV_TEMPLATE="default.env"
+        echo "Your configuration file template is: default.env"
 
-        echo "Your configuration file template is:" "${ENV_TEMPLATE}"
-
-        ${__as_owner} cp "${ENV_TEMPLATE}" "${ENV_FILE}"
+        ${__as_owner} cp default.env "${ENV_FILE}"
         __minty_fresh=1
     else
         __minty_fresh=0
     fi
 
-    trap 'handle_config_cancel $?' ERR
+    __during_config=1
 
     query_network
     query_deployment
@@ -2721,7 +2699,7 @@ config() {
         query_graffiti
     fi
 
-    trap 'handle_error $?' ERR
+    __during_config=0
 
     COMPOSE_FILE="${CONSENSUS_CLIENT}"
     if [ -n "${EXECUTION_CLIENT+x}" ]; then
@@ -2786,7 +2764,7 @@ version() {
     grep "^This is" README.md
     echo ""
     var="COMPOSE_FILE"
-    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" ".env" || true)
+    value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     # Client versions
     case "${value}" in
         *ssv.yml* )
@@ -2880,15 +2858,11 @@ version() {
 }
 
 
-printhelp() {
+help() {
     me=$(basename "${BASH_SOURCE[0]}")
-    echo "usage: ${me} [help|-h|--help] <subcommand>"
+    echo "usage: ${me} [-h|--help] <command>"
     echo ""
-    echo "optional arguments:"
-    echo "  help | -h | --help"
-    echo "    print this message and exit"
-    echo ""
-    echo "subcommands:"
+    echo "commands:"
     echo "  install"
     echo "     attempts to install Docker and Docker Compose for you"
     echo "  config"
@@ -2898,7 +2872,7 @@ printhelp() {
     echo "     Run without ACTION to get help text"
     echo "  update [--refresh-targets] "
     echo "     updates all client versions and Eth Docker itself"
-    echo "     --refresh-targets will reset your custom build targets in .env to defaults"
+    echo "     --refresh-targets will reset your custom build targets in ${ENV_FILE} to defaults"
     echo "  up|start"
     echo "     starts the Ethereum node, or restarts containers that had their image or"
     echo "     configuration changed"
@@ -2910,7 +2884,7 @@ printhelp() {
     echo "     prints the version(s) of currently running client(s)"
     echo "  logs"
     echo "     shows logs"
-    echo "  cmd <command>"
+    echo "  cmd <compose-command>"
     echo "     executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
     echo "  terminate"
     echo "     stops the Ethereum node and destroys all data stores"
@@ -2925,9 +2899,11 @@ printhelp() {
     echo "     removes the consensus layer database and forces a resync."
     echo "  attach-geth"
     echo "     launches an interactive geth attach repl"
+    echo "  help"
+    echo "      print this help screen"
     echo ""
     echo ""
-    echo "The logs subcommand can be appended by flags and specify the container(s). example: "
+    echo "The logs command can be appended by flags and specify the container(s). example: "
     echo ""
     echo "  $me logs -f --tail 50 execution"
     echo "    shows logs only for execution service"
@@ -2939,10 +2915,17 @@ printhelp() {
 
 
 # Main body from here
+ENV_FILE=.env
+__during_config=0
+__during_update=0
+__during_postgres=0
+__during_migrate=0
+__migrated=0
+__command=""
 trap 'handle_error $? $LINENO' ERR
 
-if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
-    printhelp
+if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]]; then
+    help
     exit 0
 fi
 
@@ -2961,11 +2944,7 @@ if [ "${OWNER}" == "root" ]; then
     exit 0
 fi
 
-ENV_FILE=.env
-__during_update=0
-__during_migrate=0
-
-command="$1"
+__command="$1"
 shift
 
 determine_distro
@@ -2973,8 +2952,8 @@ handle_root
 prep_conffiles
 
 # Don't check for Docker before it's installed
-if [ "$command" = "install" ]; then
-    $command "$@"
+if [ "$__command" = "install" ]; then
+    $__command "$@"
     exit "$?"
 fi
 
@@ -2998,7 +2977,15 @@ if ! docompose --help >/dev/null 2>&1; then
     exit 0
 fi
 
-$command "$@"
+case "$__command" in
+    config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
+        |resync-execution|resync-consensus|attach-geth|keyimport)
+        $__command "$@";;
+    *)
+        echo "Unrecognized command $__command"
+        help
+        ;;
+esac
 
 check_disk_space
 
