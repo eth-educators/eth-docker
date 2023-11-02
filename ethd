@@ -2570,9 +2570,11 @@ handle_error() {
             echo
             echo "This happened during $__me update ${__params}, which is a bug."
             if [ "$__during_migrate" -eq 1 ]; then
+                cp "${ENV_FILE}" "${ENV_FILE}".partial
                 cp "${ENV_FILE}".source "${ENV_FILE}"
                 echo
                 echo "Restored your ${ENV_FILE} file, to undo partial migration. Please verify it looks correct."
+                echo "The partially migrated file is in ${ENV_FILE}.partial for troubleshooting."
             fi
         fi
         if [ "$__during_postgres" -eq 1 ]; then
