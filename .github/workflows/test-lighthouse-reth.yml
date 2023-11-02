@@ -32,12 +32,12 @@ jobs:
         run: ./ethd up
       - name: Pause for 30 seconds
         run: sleep 30
+      - name: Test Reth
+        run: ./.github/check-service.sh execution
       - name: Test Lighthouse CL
         run: ./.github/check-service.sh consensus
       - name: Test Lighthouse VC
         run: ./.github/check-service.sh validator
-      - name: Test Reth
-        run: ./.github/check-service.sh execution
       - name: Set Lighthouse/Reth w/ VC
         run: |
           source ./.github/helper.sh
@@ -48,9 +48,9 @@ jobs:
         run: ./ethd up
       - name: Pause for 30 seconds
         run: sleep 30
+      - name: Test Reth
+        run: ./.github/check-service.sh execution
       - name: Test Lighthouse CL
         run: ./.github/check-service.sh consensus
       - name: Test Lighthouse VC
         run: ./.github/check-service.sh validator
-      - name: Test Reth
-        run: ./.github/check-service.sh execution
