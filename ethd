@@ -821,6 +821,7 @@ envmigrate() {
       fi
     fi
     ${__as_owner} cp "${ENV_FILE}" "${ENV_FILE}".source
+    __during_migrate=1
     ${__as_owner} cp default.env "${ENV_FILE}"
     # Detect pre-merge
     if grep -q "FALLBACK_NODE1" ".env.source"; then
@@ -899,7 +900,6 @@ envmigrate() {
 for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
 Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no \
 valid address is set" 12 75
-            __during_update=1
             query_coinbase
             set_value_in_env
         fi
@@ -959,6 +959,7 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
        __el_adjusted=1
     fi
     ${__as_owner} rm .env.original
+    __during_migrate=0
 }
 
 
@@ -998,6 +999,7 @@ pull_and_build() {
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
+    __during_update=1
     if [[ $(${__as_owner} git status --porcelain) ]]; then
         __dirty=1
     else
@@ -1083,7 +1085,6 @@ only"
                 ;;
         esac
     done
-
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2119
     envmigrate
@@ -1185,6 +1186,7 @@ value."
         echo
         ${__as_owner} git status --porcelain
     fi
+    __during_update=0
 }
 
 
@@ -2591,7 +2593,18 @@ handle_error() {
     elif [ "$exit_code" -eq 130 ]; then
         echo "ethd terminated"
     else
-        echo "ethd failed with error $exit_code"
+        echo
+        echo "ethd failed with error $exit_code on line $2"
+        if [ "$__during_update" -eq 1 ]; then
+            echo
+            echo "This happened during ethd update, which is a bug."
+            echo "Please come to Ethstaker Discord with logs to help me track this down."
+            if [ "$__during_migrate" -eq 1 ]; then
+                cp .env.source .env
+                echo
+                echo "Restored your .env file, which was partially migrated. Please verify it looks correct."
+            fi
+        fi
     fi
 }
 
@@ -2926,7 +2939,7 @@ printhelp() {
 
 
 # Main body from here
-trap 'handle_error $?' ERR
+trap 'handle_error $? $LINENO' ERR
 
 if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     printhelp
@@ -2950,6 +2963,7 @@ fi
 
 ENV_FILE=.env
 __during_update=0
+__during_migrate=0
 
 command="$1"
 shift
