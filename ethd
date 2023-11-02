@@ -198,7 +198,7 @@ check_for_snap() {
         echo
         echo "The exact steps depend a little on whether there already is"
         echo "an apt version of Docker installed as well, but in a nutshell"
-        echo '"./ethd stop" followed by "sudo snap remove --purge docker"'
+        echo "\"$__me stop\" followed by \"sudo snap remove --purge docker\""
         echo "and then a reboot, and as needed install docker.io or docker-ce with apt,"
         echo "re-import keys and restart Eth Docker."
         echo
@@ -350,10 +350,10 @@ check_disk_space() {
         echo ""
         echo "You are running Nethermind and have less than 300 GiB of free disk space."
         if [ "${auto_prune}" = true ]; then
-          echo "It should currently be auto-pruning, check logs with \"./ethd logs -f --tail 500 execution | grep \
+          echo "It should currently be auto-pruning, check logs with \"$__me logs -f --tail 500 execution | grep \
 Full\". Free space:"
         else
-          echo "If the below reads above 250 GiB free, prune it with \"./ethd prune-nethermind\""
+          echo "If the below reads above 250 GiB free, prune it with \"$__me prune-nethermind\""
         fi
         echo ""
         df -h "${__docker_dir}"
@@ -361,10 +361,10 @@ Full\". Free space:"
     elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
         echo ""
         echo "You are running Geth and have less than 100 GiB of free disk space."
-        echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"./ethd resync-execution\"."
+        echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"$__me resync-execution\"."
         echo ""
         echo "Alternatively, if you don't feel ready for a resync and have more than 40 GiB free, you can prune \
-with \"./ethd prune-geth\"."
+with \"$__me prune-geth\"."
         echo ""
         df -h "${__docker_dir}"
         echo ""
@@ -579,7 +579,7 @@ ssv_switch() {
       elif [ "${NETWORK}" = "mainnet" ]; then
         sed -i'' '$a\  Network: mainnet' ssv-config/config.yaml
       else
-        echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running ./ethd update again"
+        echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running $__me update again"
         echo "Aborting."
         exit 130
       fi
@@ -708,7 +708,7 @@ upgrade_postgres() {
 # shellcheck disable=SC2034
     PG_DOCKER_TAG=16-bookworm # To bookworm to avoid collation errors - also a faster PostgreSQL
     set_value_in_env
-    echo "Web3signer has been stopped. You'll need to run \"./ethd up\" to start it again."
+    echo "Web3signer has been stopped. You'll need to run \"$__me up\" to start it again."
     echo
     echo "A copy of your old slashing protection database is in the Docker volume ${__backup_vol}."
     echo "Confirm that everything works, and then delete it with \"docker volume rm ${__backup_vol}\"."
@@ -866,7 +866,7 @@ envmigrate() {
         if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
             whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
 for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
-Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"./ethd up\" will fail if no \
+Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"$__me up\" will fail if no \
 valid address is set" 12 75
             query_coinbase
             set_value_in_env
@@ -1112,14 +1112,14 @@ value."
     fi
     echo
     if [ -z "${GITEXITCODE+x}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
-        echo "An \"./ethd up\" command will start using the new images and configuration."
+        echo "An \"$__me up\" command will start using the new images and configuration."
     else
         echo "WARNING"
         echo
         echo "Updating Eth Docker failed during \"git pull\""
         echo
         echo "Please try \"git pull\" manually."
-        echo "Do not run \"./ethd up\" until git can update Eth Docker."
+        echo "Do not run \"$__me up\" until git can update Eth Docker."
         echo "The current partial update risks startup failure."
     fi
 
@@ -1368,7 +1368,7 @@ prune-geth() {
     fi
 
     if [ $__non_interactive = 0 ]; then
-      echo "Geth PBSS is available. Consider answering \"No\" and using \"./ethd resync-execution\" instead of prune."
+      echo "Geth PBSS is available. Consider answering \"No\" and using \"$__me resync-execution\" instead of prune."
       echo "PBSS continually prunes, making manual pruning runs a thing of the past."
       echo ""
       while true; do
@@ -1387,7 +1387,7 @@ prune-geth() {
     docompose stop execution && docompose rm -f execution
     start
     echo ""
-    echo "Prune is running, you can observe it with './ethd logs -f execution'"
+    echo "Prune is running, you can observe it with '$__me logs -f execution'"
     echo ""
     echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting \
 database\". During the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
@@ -1487,7 +1487,7 @@ prune-nethermind() {
     if [ $__non_interactive = 0 ]; then
       while true; do
           if [ "${auto_prune}" = true ]; then
-              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"./ethd logs -f --tail 500 \
+              echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"$__me logs -f --tail 500 \
 execution | grep Full\" to see whether it is."
           fi
           read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
@@ -1521,7 +1521,7 @@ execution | grep Full\" to see whether it is."
         exit 130
     fi
     echo ""
-    echo "Prune is running, you can observe it with \"./ethd logs -f --tail 500 execution | grep Full\""
+    echo "Prune is running, you can observe it with \"$__me logs -f --tail 500 execution | grep Full\""
     echo ""
     echo "Please do not restart the node or restart Nethermind until prune is done."
     echo ""
@@ -1608,7 +1608,7 @@ prep-keyimport() {
 
 __i_haz_ethdo() {
     if [ ! -f "${ENV_FILE}" ]; then
-        echo "Eth Docker has not been configured. Please run ./ethd config first."
+        echo "Eth Docker has not been configured. Please run $__me config first."
         exit 0
     fi
     var="COMPOSE_FILE"
@@ -1639,7 +1639,7 @@ __i_haz_ethdo() {
 
 __i_haz_web3signer() {
     if [ ! -f "${ENV_FILE}" ]; then
-        echo "Eth Docker has not been configured. Please run ./ethd config first."
+        echo "Eth Docker has not been configured. Please run $__me config first."
         exit 0
     fi
 
@@ -1657,7 +1657,7 @@ __i_haz_web3signer() {
         echo "WEB3SIGNER=true in ${ENV_FILE}, but web3signer.yml is not in use"
         echo "Please edit the ${ENV_FILE} file and make sure \":web3signer.yml\" is added to the \"COMPOSE_FILE\" line"
         echo "For example, \"nano ${ENV_FILE}\" will open the nano text editor with the \"${ENV_FILE}\" file loaded."
-        echo "Without it, ./ethd keys cannot be run"
+        echo "Without it, $__me keys cannot be run"
         echo
         read -rp "Do you want me to make this change for you? (n/y)" yn
         case $yn in
@@ -1980,7 +1980,7 @@ keys() {
 
 keyimport() {
     echo "The legacy keyimport command has been removed."
-    echo "Please try ./ethd keys import instead."
+    echo "Please try $__me keys import instead."
 }
 
 
@@ -2414,8 +2414,8 @@ screen.\n\nThe client will not start successfully until a valid ETH rewards addr
         else
             if [ $__during_update -eq 1 ]; then
                 echo
-                echo "Please make requested changes manually or run \"./ethd update\" again"
-                echo "before running \"./ethd up\"."
+                echo "Please make requested changes manually or run \"$__me update\" again"
+                echo "before running \"$__me up\"."
                 echo
                 echo "Without a FEE_RECIPIENT set in \"${ENV_FILE}\", containers will not"
                 echo "start successfully. Already running containers will keep running with the"
@@ -2560,15 +2560,15 @@ handle_error() {
 
     local exit_code=$1
     if [ "$exit_code" -eq 130 ]; then
-        echo "ethd terminated"
+        echo "$__me terminated"
     elif [ "$__during_config" -eq 1 ] && [ "$exit_code" -eq 1 ]; then
         echo "Canceled config wizard."
     else
         echo
-        echo "ethd failed with error $exit_code on line $2"
+        echo "$__me failed with error $exit_code on line $2"
         if [ "$__during_update" -eq 1 ]; then
             echo
-            echo "This happened during ethd update, which is a bug."
+            echo "This happened during $__me update, which is a bug."
             if [ "$__during_migrate" -eq 1 ]; then
                 cp "${ENV_FILE}".source "${ENV_FILE}"
                 echo
@@ -2599,7 +2599,7 @@ handle_error() {
             fi
         fi
         if [ -n "${__command}" ]; then
-            echo "This happened during ethd ${__command}"
+            echo "This happened during $__me ${__command}"
         fi
         echo
         echo "If this was an unexpected failure, please save the logs and come to Ethstaker Discord to troubleshoot this."
@@ -2643,7 +2643,7 @@ config() {
         elif [ "${NETWORK}" = "mainnet" ]; then
           sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
         else
-          echo "${NETWORK} is not something that works with SSV. This needs to be fixed when running ./ethd config again"
+          echo "${NETWORK} is not something that works with SSV. This needs to be fixed when running $__me config again"
           echo "Aborting."
           exit 130
         fi
@@ -2859,8 +2859,7 @@ version() {
 
 
 help() {
-    me=$(basename "${BASH_SOURCE[0]}")
-    echo "usage: ${me} [-h|--help] <command>"
+    echo "usage: $__me [-h|--help] <command>"
     echo ""
     echo "commands:"
     echo "  install"
@@ -2890,7 +2889,7 @@ help() {
     echo "     stops the Ethereum node and destroys all data stores"
     echo "  prune-geth"
     echo "     legacy command - stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
-    echo "     consider a resync with PBSS instead, \"$me resync-execution\""
+    echo "     consider a resync with PBSS instead, \"$__me resync-execution\""
     echo "  prune-nethermind"
     echo "     restarts the Nethermind execution client and prunes its DB."
     echo "  resync-execution"
@@ -2905,7 +2904,7 @@ help() {
     echo ""
     echo "The logs command can be appended by flags and specify the container(s). example: "
     echo ""
-    echo "  $me logs -f --tail 50 execution"
+    echo "  $__me logs -f --tail 50 execution"
     echo "    shows logs only for execution service"
     echo ""
     echo "✍️ Give feedback and report issues on GitHub:"
@@ -2922,6 +2921,11 @@ __during_postgres=0
 __during_migrate=0
 __migrated=0
 __command=""
+__me=$(basename "${BASH_SOURCE[0]}")
+if ! grep -q "alias ethd" ~/.profile; then
+    __me="./$__me"
+fi
+
 trap 'handle_error $? $LINENO' ERR
 
 if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]]; then
