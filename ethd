@@ -979,6 +979,7 @@ update() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "$(pwd)") and __free_space is ${__free_space}"
+        exit 130
     elif [ "$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
@@ -2564,6 +2565,9 @@ handle_error() {
         echo "Canceled config wizard."
     else
         echo "$__me failed with error $exit_code on line $2"
+        echo
+        echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
+        echo
     fi
     if [ -n "${__command}" ]; then
         echo "This happened during $__me ${__command} ${__params}"
@@ -2598,9 +2602,6 @@ handle_error() {
             echo "You can safely update the node again, this time without migration, and start it."
         fi
     fi
-    echo
-    echo "If this was an unexpected failure, please save the logs and come to Ethstaker Discord to troubleshoot this."
-    echo
 }
 
 
