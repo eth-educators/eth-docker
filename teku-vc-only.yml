@@ -58,6 +58,16 @@ services:
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
       - --validators-keystore-locking-enabled=false
+      - --metrics-enabled=true
+      - --metrics-port=8009
+      - --metrics-interface=0.0.0.0
+      - --metrics-host-allowlist=*
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8009
+
+
 
   validator-exit:
     profiles: ["tools"]

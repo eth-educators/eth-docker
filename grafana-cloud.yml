@@ -22,21 +22,21 @@ services:
     build:
       context: ./prometheus
     image: prometheus:local
+    user: root
     volumes:
       - prom-data:/prometheus
-      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
       - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
-    entrypoint: choose-config.sh
+    entrypoint: make-config.sh
     command: ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
     <<: *logging
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.prom.entrypoints=web,websecure
-      - traefik.http.routers.prom.rule=Host(`${PROM_HOST}.${DOMAIN}`)
-      - traefik.http.routers.prom.tls.certresolver=letsencrypt
-      - traefik.http.services.prom.loadbalancer.server.port=9090
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9090
 
   ethereum-metrics-exporter:
     restart: "unless-stopped"
@@ -49,6 +49,10 @@ services:
       - docker-entrypoint.sh
       - /ethereum-metrics-exporter
     <<: *logging
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9090
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -68,6 +72,10 @@ services:
       - /sys:/host/sys:ro
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9100
 
   blackbox-exporter:
     restart: "unless-stopped"
@@ -75,9 +83,9 @@ services:
     volumes:
       - ./prometheus/blackbox.yml:/config/blackbox.yml
       - /etc/localtime:/etc/localtime:ro
-    <<: *logging
     command:
       - --config.file=/config/blackbox.yml
+    <<: *logging
 
   json-exporter:
     restart: "unless-stopped"
@@ -85,10 +93,14 @@ services:
     volumes:
       - ./prometheus/json.yml:/config/json.yml
       - /etc/localtime:/etc/localtime:ro
-    <<: *logging
     command:
       - --config.file
       - /config/json.yml
+    <<: *logging
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=7979
 
   cryptowat-exporter:
     restart: "unless-stopped"
@@ -101,6 +113,10 @@ services:
       - CRYPTOWAT_CACHESECONDS=300
       - TZ=Europe/Zurich
     <<: *logging
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9745
 
   cadvisor:
     restart: "unless-stopped"
@@ -115,6 +131,10 @@ services:
       - --docker_only
       - --housekeeping_interval=30s
     <<: *logging
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8080
 
   promtail:
     image: grafana/promtail:latest
@@ -130,6 +150,10 @@ services:
       SERVER_LABEL_HOSTNAME: ${LOGS_LABEL:-notset}
     restart: "unless-stopped"
     <<: *logging
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9080
 
 volumes:
   prom-data:
