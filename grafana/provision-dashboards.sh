@@ -79,7 +79,11 @@ case "$CLIENT" in
     # reth_dashboard
     __url='https://raw.githubusercontent.com/paradigmxyz/reth/main/etc/grafana/dashboards/overview.json'
     __file='/etc/grafana/provisioning/dashboards/reth_dashboard.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Reth Dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
+# sed is correct this way
+# shellcheck disable=SC2016
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Reth Dashboard"' \
+        | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' \
+        | sed 's/{instance=~\\"\$instance\\"}//g' | sed 's/instance=~\\"\$instance\\",//g' >"${__file}"
     ;;&
   *nethermind* )
     # nethermind_dashboard
@@ -103,14 +107,16 @@ case "$CLIENT" in
 # shellcheck disable=SC2016
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Operator Performance Dashboard"' \
         | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
-        | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
+        | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/instance=~\\"\$instance\.\*\\",//g' \
+        | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
     __file='/etc/grafana/provisioning/dashboards/ssv_node_dashboard.json'
 # sed is correct this way
 # shellcheck disable=SC2016
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Node Dashboard"' \
         | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
-        | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
+        | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/instance=~\\"\$instance\.\*\\",//g' \
+        | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     ;;&
   * )
     # Home staking dashboard
