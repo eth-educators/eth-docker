@@ -2641,7 +2641,7 @@ config() {
         elif [ "${NETWORK}" = "mainnet" ]; then
           sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
         else
-          echo "${NETWORK} is not something that works with SSV. This needs to be fixed when running $__me config again"
+          echo "${NETWORK} is not something that works with SSV. Please choose Goerli or Mainnet when running $__me config again"
           echo "Aborting."
           exit 130
         fi
