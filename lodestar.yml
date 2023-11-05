@@ -135,7 +135,7 @@ services:
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
-      - metrics.port=8008
+      - metrics.port=8009
 
   validator-exit:
     profiles: ["tools"]

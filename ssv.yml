@@ -24,5 +24,10 @@ services:
       - CONFIG_PATH=/config/config.yaml
       - HOME=/tmp
     command: make BUILD_PATH=/go/bin/ssvnode start-node
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=15000
+
 volumes:
   ssv-data:

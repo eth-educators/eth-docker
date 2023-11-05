@@ -39,6 +39,10 @@ services:
       - --slashing-protection-db-username=postgres
       - --slashing-protection-db-password=postgres
       - --slashing-protection-pruning-enabled=true
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=9001
 
   postgres:
     restart: "unless-stopped"

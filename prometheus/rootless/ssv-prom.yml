@@ -1,0 +1,5 @@
+  - job_name: ssv
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+        - ssv-node:15000

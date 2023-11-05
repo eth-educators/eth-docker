@@ -17,6 +17,7 @@ services:
     volumes:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
+      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
     entrypoint: choose-config.sh
