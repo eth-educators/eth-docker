@@ -575,10 +575,13 @@ ssv_switch() {
       sed -i'' '$a\ssv:' ssv-config/config.yaml
       if [ "${NETWORK}" = "goerli" ]; then
         sed -i'' '$a\  Network: jato-v2' ssv-config/config.yaml
+      elif [ "${NETWORK}" = "holesky" ]; then
+        sed -i'' '$a\  Network: holesky' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
         sed -i'' '$a\  Network: mainnet' ssv-config/config.yaml
       else
-        echo "${NETWORK} is not something that works with SSV. This needs to be fixed before running $__me update again"
+        echo "${NETWORK} is not something that works with SSV."
+        echo "Please fix this manually before running $__me update again."
         echo "Aborting."
         exit 130
       fi
@@ -2638,10 +2641,13 @@ config() {
         fi
         if [ "${NETWORK}" = "goerli" ]; then
           sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
+        elif [ "${NETWORK}" = "holesky" ]; then
+          sed -i'' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
         elif [ "${NETWORK}" = "mainnet" ]; then
           sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
         else
-          echo "${NETWORK} is not something that works with SSV. Please choose Goerli or Mainnet when running $__me config again"
+          echo "${NETWORK} is not something that works with SSV."
+          echo "Please choose Holešovice, Mainnet or Görli when running $__me config again"
           echo "Aborting."
           exit 130
         fi
