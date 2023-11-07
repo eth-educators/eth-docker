@@ -102,7 +102,7 @@ recipient-get() {
     call_api
     case $__code in
         200) echo "The fee recipient for the validator with public key $__pubkey is:"; echo "$__result" | jq -r '.data.ethaddress'; exit 0;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -127,7 +127,7 @@ recipient-set() {
     case $__code in
         202) echo "The fee recipient for the validator with public key $__pubkey was updated."; exit 0;;
         400) echo "The pubkey or address was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -147,7 +147,7 @@ recipient-delete() {
     call_api
     case $__code in
         204) echo "The fee recipient for the validator with public key $__pubkey was set back to default."; exit 0;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "A fee recipient was found, but cannot be deleted. It may be in a configuration file. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -168,7 +168,7 @@ gas-get() {
     case $__code in
         200) echo "The execution gas limit for the validator with public key $__pubkey is:"; echo "$__result" | jq -r '.data.gas_limit'; exit 0;;
         400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -193,7 +193,7 @@ gas-set() {
     case $__code in
         202) echo "The gas limit for the validator with public key $__pubkey was updated."; exit 0;;
         400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -214,7 +214,7 @@ gas-delete() {
     case $__code in
         204) echo "The gas limit for the validator with public key $__pubkey was set back to default."; exit 0;;
         400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "A gas limit was found, but cannot be deleted. It may be in a configuration file. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
         404) echo "The key was not found on the server, nothing to delete. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -235,7 +235,7 @@ exit-sign() {
     case $__code in
         200) echo "Signed voluntary exit for validator with public key $__pubkey";;
         400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -292,7 +292,7 @@ __validator-list-call() {
     call_api
     case $__code in
         200);;
-        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
@@ -355,7 +355,7 @@ validator-delete() {
         read -rp "Do you wish to continue with key deletion? (No/yes) " yn
         case $yn in
             [Yy][Ee][Ss]) ;;
-            * ) echo "Aborting key deletion"; exit 0;;
+            * ) echo "Aborting key deletion"; exit 130;;
         esac
         if [ "${WEB3SIGNER}" = "true" ]; then
             __token=NIL
@@ -398,7 +398,7 @@ validator-delete() {
             call_api
             case $__code in
                 200) ;;
-                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
                 403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
                 500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
                 *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
@@ -422,7 +422,7 @@ to delete it:"
                     ;;
                 *)
                     echo "Unexpected status $__status. This may be a bug"
-                    exit 1
+                    exit 70
                     ;;
             esac
         else
@@ -431,8 +431,11 @@ to delete it:"
 
         if [ "${WEB3SIGNER}" = "true" ]; then
             __token=NIL
+            __vc_api_container=${__api_container}
             __api_container=web3signer
+            __vc_api_port=${__api_port}
             __api_port=9000
+            __vc_api_tls=${__api_tls}
             __api_tls=false
         else
             get-token
@@ -445,7 +448,7 @@ to delete it:"
         case $__code in
             200) ;;
             400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
             403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
@@ -476,9 +479,15 @@ to delete it:"
                 ;;
             * )
                 echo "Unexpected status $__status. This may be a bug"
-                exit 1
+                exit 70
                 ;;
         esac
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __api_container=${__vc_api_container}
+            __api_port=${__vc_api_port}
+            __api_tls=${__vc_api_tls}
+        fi
+        echo
     done
 }
 
@@ -539,7 +548,7 @@ and secrets directories into .eth/validator_keys instead."
             read -rp "I understand these dire warnings and wish to proceed with key import (No/yes) " yn
             case $yn in
                 [Yy][Ee][Ss]) break;;
-                [Nn]* ) echo "Aborting import"; exit 0;;
+                [Nn]* ) echo "Aborting import"; exit 130;;
                 * ) echo "Please answer yes or no.";;
             esac
         done
@@ -669,7 +678,7 @@ and secrets directories into .eth/validator_keys instead."
         case $__code in
             200) ;;
             400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
             403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
@@ -698,7 +707,7 @@ and secrets directories into .eth/validator_keys instead."
                 ;;
             *)
                 echo "Unexpected status $__status. This may be a bug"
-                exit 1
+                exit 70
                 ;;
         esac
         # Add remote registration, with a path not to
@@ -720,7 +729,7 @@ and secrets directories into .eth/validator_keys instead."
             call_api
             case $__code in
                 200) ;;
-                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+                401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
                 403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
                 500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
                 *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
@@ -747,7 +756,7 @@ and secrets directories into .eth/validator_keys instead."
                     ;;
                 *)
                     echo "Unexpected status $__status. This may be a bug"
-                    exit 1
+                    exit 70
                     ;;
             esac
         else
@@ -823,7 +832,7 @@ validator-register() {
         call_api
         case $__code in
             200) ;;
-            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
             403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
@@ -853,7 +862,7 @@ validator-register() {
                 ;;
             *)
                 echo "Unexpected status $__status. This may be a bug"
-                exit 1
+                exit 70
                 ;;
         esac
     done <<< "${__w3s_pubkeys}"
@@ -953,7 +962,7 @@ if [ "$(id -u)" = '0' ]; then
             ;;
         create-prysm-wallet)
             echo "There's a bug in ethd; this command should have been handled one level higher. Please report this."
-            exit 1
+            exit 70
             ;;
         get-prysm-wallet)
             get-prysm-wallet
@@ -1044,9 +1053,11 @@ case "$3" in
         ;;
     prepare-address-change)
         echo "This should have been handled one layer up in ethd. This is a bug, please report."
+        exit 70
         ;;
     send-address-change)
         echo "This should have been handled one layer up in ethd. This is a bug, please report."
+        exit 70
         ;;
     *)
         usage
