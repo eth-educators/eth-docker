@@ -1236,7 +1236,7 @@ resync-consensus() {
     fi
     case $yn in
         [Yy][Ee][Ss] ) ;;
-        * ) echo "Aborting."; exit 130;
+        * ) echo "Aborting."; exit 130;;
     esac
 
     echo "Stopping ${__cl_client} container"
@@ -2564,17 +2564,17 @@ handle_error() {
     local exit_code=$1
     echo
     if [ "$exit_code" -eq 130 ]; then
-        echo "$__me terminated"
+        echo "$__me terminated by user"
     elif [ "$__during_config" -eq 1 ] && [ "$exit_code" -eq 1 ]; then
         echo "Canceled config wizard."
     else
         echo "$__me failed with error $exit_code on line $2"
+        if [ -n "${__command}" ]; then
+            echo "This happened during $__me ${__command} ${__params}"
+        fi
         echo
         echo "Please save the logs and come to Ethstaker Discord to troubleshoot this."
         echo
-    fi
-    if [ -n "${__command}" ]; then
-        echo "This happened during $__me ${__command} ${__params}"
     fi
     if [ "$__during_update" -eq 1 ] && [ "$__during_migrate" -eq 1 ]; then
         cp "${ENV_FILE}" "${ENV_FILE}".partial
