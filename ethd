@@ -48,7 +48,7 @@ determine_sudo() {
             echo "The Docker daemon is not running. Please check Docker installation."
             echo "\"sudo systemctl status docker\" and \"sudo journalctl -fu docker\" will be helpful."
             echo "Aborting."
-            exit 130
+            exit 1
         fi
     fi
     set -e
@@ -80,7 +80,7 @@ upgrade_compose() {
     if [ "${__major_version}" -lt 20 ]; then
       echo "This script cannot update Docker Compose on Ubuntu ${__major_version}."
       echo "Consider upgrading to 20.04 and then 22.04."
-      exit 130
+      exit 1
     fi
     ${__auto_sudo} apt-get update
     ${__auto_sudo} apt-get install -y docker-compose-v2 docker-buildx
@@ -101,7 +101,7 @@ upgrade_compose() {
     if [ "${__major_version}" -lt 10 ]; then
         echo "This script cannot update Docker Compose on Debian ${__major_version}."
         echo "Consider upgrading to 10, then 11 and then 12."
-        exit 130
+        exit 1
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
     ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor --yes \
@@ -205,7 +205,7 @@ check_for_snap() {
         echo "Do join us on EthStaker Discord to work through this issue."
         echo
         echo "Aborting, this is not safe"
-        exit 130
+        exit 1
     fi
 }
 
@@ -236,7 +236,7 @@ continue? (no/yes) " yn
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
         if [ "${__major_version}" -lt 20 ]; then
             echo "This script cannot install Docker on Ubuntu ${__major_version}. Consider upgrading to 22.04"
-            exit 130
+            exit 1
         fi
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
@@ -270,7 +270,7 @@ continue? (no/yes) " yn
             __major_version=$(lsb_release -r | cut -f2)
             if [ "${__major_version}" -lt 10 ]; then
                 echo "This script cannot install Docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
-                exit 130
+                exit 1
             fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
@@ -336,7 +336,7 @@ check_disk_space() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        return
+        exit 70
     fi
 
     var="COMPOSE_FILE"
@@ -583,7 +583,7 @@ ssv_switch() {
         echo "${NETWORK} is not something that works with SSV."
         echo "Please fix this manually before running $__me update again."
         echo "Aborting."
-        exit 130
+        exit 1
       fi
     fi
 }
@@ -982,11 +982,11 @@ update() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "$(pwd)") and __free_space is ${__free_space}"
-        exit 130
+        exit 70
     elif [ "$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
-        exit 130
+        exit 1
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -996,11 +996,11 @@ update() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        exit 130
+        exit 70
     elif [ "${__free_space}" -lt 1048576 ]; then
         echo "You have less than 1 GiB of space left on ${__docker_dir}."
         echo "Aborting, as an update is not safe."
-        exit 130
+        exit 1
     fi
 
     if [ -z "${ETHDSECUNDO-}" ]; then
@@ -1035,7 +1035,7 @@ update() {
                 if [ -n "${__targetcli}" ]; then
                     echo "Error: --keep-targets and --refresh-targets cannot be used together; use either option once \
 only"
-                    exit 130
+                    exit 1
                 fi
                 __keep_targets=1
                 __targetcli="--keep-targets"
@@ -1045,7 +1045,7 @@ only"
                 if [ -n "${__targetcli}" ]; then
                     echo "Error: --keep-targets and --refresh-targets cannot be used together; use either option once \
 only"
-                    exit 130
+                    exit 1
                 fi
                 __keep_targets=0
                 __targetcli="--refresh-targets"
@@ -1053,7 +1053,7 @@ only"
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 130
+                exit 1
                 ;;
         esac
     done
@@ -1257,12 +1257,12 @@ resync-consensus() {
 attach-geth() {
     if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 130
+        exit 1
     fi
 
     if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Geth, aborting."
-        exit 130
+        exit 1
     fi
 
     docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
@@ -1283,19 +1283,19 @@ prune-geth() {
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 130
+                exit 1
                 ;;
         esac
     done
 
     if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 130
+        exit 1
     fi
 
     if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Geth, aborting."
-        exit 130
+        exit 1
     fi
 
     # Check for archive node
@@ -1303,7 +1303,7 @@ prune-geth() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [[ "${value}" = "true" ]]; then
         echo "Geth is an archive node: Aborting."
-        return 130
+        exit 1
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -1313,7 +1313,7 @@ prune-geth() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        return 130
+        exit 70
     fi
 
     if [ "${__free_space}" -lt 41943040 ]; then
@@ -1321,14 +1321,14 @@ prune-geth() {
         df -h "${__docker_dir}"
         echo ""
         echo "Aborting."
-        exit 130
+        exit 1
     fi
 
     rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
     regex='^EL_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
         echo "Unable to determine EL_RPC_PORT, aborting."
-        exit 130
+        exit 1
     else
         rpc_port="${BASH_REMATCH[1]}"
     fi
@@ -1343,7 +1343,7 @@ prune-geth() {
         echo "Unable to connect to Geth: Is it running?"
         echo "Output: ${sync_status}"
         echo "Aborting."
-        exit 130
+        exit 1
     fi
 
     if [[ ! "${sync_status}" =~ "false" ]]; then
@@ -1351,13 +1351,13 @@ prune-geth() {
         echo "${sync_status}"
         echo ""
         echo "Aborting."
-        exit 130
+        exit 1
     fi
 
     node_logs=$(docompose logs --no-color --tail 1000 execution)
     if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
         echo "Geth has not finished generating a state snapshot yet, aborting."
-        exit 130
+        exit 1
     fi
 
     regex='\[([0-9][0-9]-[0-9][0-9])\|([0-9][0-9]:[0-9][0-9]):[0-9.]*\][[:space:]]*Generated state'
@@ -1366,7 +1366,7 @@ prune-geth() {
         now_time=$(date +"%s")
         if [ $((snap_time+2100)) -gt "$now_time" ]; then
             echo "Please wait 35 minutes after snapshot generation finished. Aborting."
-            exit 130
+            exit 1
         fi
     fi
 
@@ -1414,19 +1414,19 @@ prune-nethermind() {
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 130
+                exit 1
                 ;;
         esac
     done
 
     if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 130
+        exit 1
     fi
 
     if ! grep -q '^COMPOSE_FILE=.*nethermind\.yml' "${ENV_FILE}" 2>/dev/null ; then
         echo "You do not appear to be using Nethermind, aborting."
-        exit 130
+        exit 1
     fi
 
     # Check for archive node
@@ -1434,7 +1434,7 @@ prune-nethermind() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [[ "${value}" = "true" ]]; then
         echo "Nethermind is an archive node: Aborting."
-        return 130
+        exit 1
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -1444,7 +1444,7 @@ prune-nethermind() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        return 130
+        exit 70
     fi
 
     if [ "${__free_space}" -lt 262144000 ]; then
@@ -1452,14 +1452,14 @@ prune-nethermind() {
         df -h "${__docker_dir}"
         echo ""
         echo "Aborting."
-        exit 130
+        exit 1
     fi
 
     rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
     regex='^EL_RPC_PORT=([0-9]+)'
     if [[ ! "${rpc_line}" =~ ${regex} ]]; then
         echo "Unable to determine EL_RPC_PORT, aborting."
-        exit 130
+        exit 1
     else
         rpc_port="${BASH_REMATCH[1]}"
     fi
@@ -1473,7 +1473,7 @@ prune-nethermind() {
         echo "Unable to connect to Nethermind: Is it running?"
         echo "Output: ${sync_status}"
         echo "Aborting."
-        exit 130
+        exit 1
     fi
 
     if [[ ! "${sync_status}" =~ "false" ]]; then
@@ -1481,7 +1481,7 @@ prune-nethermind() {
         echo "${sync_status}"
         echo ""
         echo "Aborting."
-        exit 130
+        exit 1
     fi
 
     var="AUTOPRUNE_NM"
@@ -1521,7 +1521,7 @@ execution | grep Full\" to see whether it is."
     echo "Nethermind returns ${prune_result}"
     if [[ ! "${prune_result}" =~ "Starting" ]]; then
         echo "Unable to start prune. This is likely a bug."
-        exit 130
+        exit 70
     fi
     echo ""
     echo "Prune is running, you can observe it with \"$__me logs -f --tail 500 execution | grep Full\""
@@ -1536,7 +1536,7 @@ execution | grep Full\" to see whether it is."
 prep-keyimport() {
     if [ ! -f "${ENV_FILE}" ]; then
         echo "${ENV_FILE} configuration file not found, aborting."
-        exit 130
+        exit 1
     fi
 
     var="COMPOSE_FILE"
@@ -1546,7 +1546,7 @@ prep-keyimport() {
     if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "lighthouse.yml" ]] && [[ ! "${value}" =~ "teku.yml" ]] \
        && [[ ! "${value}" =~ "nimbus.yml" ]] && [[ ! "${value}" =~ "lodestar.yml" ]] && [[ ! "${value}" =~ "vc-only.yml" ]]; then
         echo "You do not appear to be running a validator client. Aborting."
-        exit 130
+        exit 1
     fi
 
     __non_interactive=0
@@ -1560,11 +1560,11 @@ prep-keyimport() {
             --path)
                 if [ -z "${2+x}" ]; then
                     echo "--path requires a directory path, aborting"
-                    exit 130
+                    exit 1
                 fi
                 if [ ! -d "$2" ]; then
                     echo "$2 is not a directory"
-                    exit 130
+                    exit 1
                 fi
                 if [ "$(realpath "$2")" = "$(realpath ".eth/validator_keys")" ]; then
                     echo "$2 is the default path, doing nothing special"
@@ -1577,7 +1577,7 @@ prep-keyimport() {
                 unset IFS
                 if [ -z "$files" ]; then
                     echo "No .json files found in $2, aborting"
-                    exit 130
+                    exit 1
                 fi
                 IFS=$'\n'
                 files=$(find ./.eth/validator_keys -maxdepth 1 -name '*.json')
@@ -1595,14 +1595,14 @@ prep-keyimport() {
             --non-interactive)
                 if [ -z "${KEYSTORE_PASSWORD+x}" ]; then
                     echo "KEYSTORE_PASSWORD not set or empty, aborting"
-                    exit 130
+                    exit 1
                 fi
                 __non_interactive=1
                 shift
                 ;;
             *)
                 echo "Error: Unknown option: $1" >&2
-                exit 130
+                exit 1
                 ;;
         esac
     done
@@ -1626,7 +1626,7 @@ __i_haz_ethdo() {
         read -rp "Do you want me to make this change for you? (n/y)" yn
         case $yn in
             [Yy] );;
-            * ) exit 0;;
+            * ) exit 130;;
         esac
         if [ -n "${value}" ]; then
           COMPOSE_FILE="${value}:ethdo.yml"
@@ -1665,13 +1665,13 @@ __i_haz_web3signer() {
         read -rp "Do you want me to make this change for you? (n/y)" yn
         case $yn in
             [Yy] );;
-            * ) exit 0;;
+            * ) exit 130;;
         esac
         if [ -n "${value}" ]; then
           COMPOSE_FILE="${value}:web3signer.yml"
         else
           echo "You do not have a validator client in Eth Docker. web3signer cannot be used without one."
-          exit 0
+          exit 1
         fi
         set_value_in_env
         echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
@@ -1690,7 +1690,7 @@ __i_haz_keys_service() {
         echo "sign exit messages with ethdo."
         echo ""
         echo "Aborting."
-        exit 130
+        exit 1
     fi
     return 0
 }
@@ -1774,7 +1774,7 @@ keys() {
 # shellcheck disable=SC2076
         if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "prysm-vc-only.yml" ]]; then
             echo "You do not appear to be using a Prysm validator. Aborting."
-            exit 130
+            exit 1
         fi
         if docompose run --rm create-wallet; then
             docompose stop validator
@@ -1791,7 +1791,7 @@ keys() {
         if [ "${exitstatus}" -ne 0 ]; then
             echo "Running ethdo failed, unfortunately. Is the CL running and synced?"
             echo "Please try again after fixing root cause. Aborting."
-            return 130
+            exit 1
         fi
         echo
         echo "Downloading ethdo"
@@ -2646,7 +2646,7 @@ config() {
           echo "${NETWORK} is not something that works with SSV."
           echo "Please choose Holešovice, Mainnet or Görli when running $__me config again"
           echo "Aborting."
-          exit 130
+          exit 1
         fi
         if [ ! -f "./ssv-config/password.pass" ]; then
             echo "Creating password file for encrypted SSV secret key"
@@ -2669,7 +2669,7 @@ config() {
         ;;
       *)
         echo "Unknown deployment ${__deployment}, this is a bug."
-        exit 130
+        exit 70
         ;;
     esac
 
