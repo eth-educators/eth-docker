@@ -1335,8 +1335,7 @@ prune-geth() {
 
     set +e
     sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" \
-        --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing",\
-        "params":[],"id":1}')
+    --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
     exitstatus=$?
     set -e
     if [ $exitstatus -ne 0 ]; then
