@@ -3,7 +3,7 @@
 # For remote validator setups only. Please be very cautious when exposing your consensus API port
 version: "3.9"
 services:
-  execution:
+  consensus:
     labels:
       - traefik.enable=true
       - traefik.http.routers.${CL_HOST:-cl}.service=${CL_HOST:-cl}
