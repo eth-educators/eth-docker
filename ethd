@@ -295,7 +295,7 @@ continue? (no/yes) " yn
             echo "Your user is already part of the docker group"
         fi
     else
-        echo "${__project_name$} does not know how to install Docker on $__distro"
+        echo "${__project_name} does not know how to install Docker on $__distro"
     fi
 
     if ! [[ "$__distro" = "ubuntu" ]] || [[ "$__distro" =~ "debian" ]]; then
