@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+__project_name="Eth Docker"
+__app_name="Ethereum node"
+__sample_service="consensus"
 __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
 
 
 dodocker() {
-    $__docker_exe "$@"
+    $__docker_sudo $__docker_exe "$@"
 }
 
 
 docompose() {
-    $__compose_exe "$@"
+# I want word splitting here
+# shellcheck disable=SC2086
+    $__docker_sudo $__compose_exe "$@"
 }
 
 
@@ -36,10 +41,22 @@ determine_distro() {
     [ "$__distro" == "" ] && __distro=$__uname
     unset __uname
     __distro=$(echo "$__distro" | tr "[:upper:]" "[:lower:]")
+
+    if [[ "$__distro" = "ubuntu" ]]; then
+      if ! dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -q "ok installed"; then
+        ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
+      fi
+      __os_major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
+    elif [[ "$__distro" =~ "debian" ]]; then
+      if ! dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -q "ok installed"; then
+        ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
+      fi
+      __os_major_version=$(lsb_release -r | cut -f2)
+    fi
 }
 
 
-determine_sudo() {
+handle_docker_sudo() {
     set +e
     if [[ "$__distro" =~ "debian" || "$__distro" = "ubuntu" ]]; then
         systemctl status docker >/dev/null
@@ -53,17 +70,21 @@ determine_sudo() {
     fi
     set -e
 
-    __maybe_sudo=""
+    __docker_sudo=""
     if ! docker images >/dev/null 2>&1; then
         echo "Will use sudo to access Docker"
-        __maybe_sudo="sudo"
+        __docker_sudo="sudo"
     fi
 }
 
 
-determine_docker() {
-    if [ -n "$__maybe_sudo" ]; then
-        __docker_exe="sudo $__docker_exe"
+handle_root() {
+    if [ "${EUID}" -eq 0 ]; then
+        __as_owner="sudo -u ${OWNER}"
+        __auto_sudo=""
+    else
+        __as_owner=""
+        __auto_sudo="sudo"
     fi
 }
 
@@ -75,10 +96,8 @@ upgrade_compose() {
   fi
   echo "Updating Docker Compose to V2"
   if [[ "$__distro" = "ubuntu" ]]; then
-    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y lsb-release
-    __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-    if [ "${__major_version}" -lt 20 ]; then
-      echo "This script cannot update Docker Compose on Ubuntu ${__major_version}."
+    if [ "${__os_major_version}" -lt 20 ]; then
+      echo "${__project_name} cannot update Docker Compose on Ubuntu ${__os_major_version}."
       echo "Consider upgrading to 20.04 and then 22.04."
       exit 1
     fi
@@ -96,10 +115,9 @@ upgrade_compose() {
     ${__auto_sudo} apt-get remove -y docker-compose
     echo "Removed docker-compose"
   elif [[ "$__distro" =~ "debian" ]]; then
-    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
-    __major_version=$(lsb_release -r | cut -f2)
-    if [ "${__major_version}" -lt 10 ]; then
-        echo "This script cannot update Docker Compose on Debian ${__major_version}."
+    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg
+    if [ "${__os_major_version}" -lt 10 ]; then
+        echo "${__project_name} cannot update Docker Compose on Debian ${__os_major_version}."
         echo "Consider upgrading to 10, then 11 and then 12."
         exit 1
     fi
@@ -124,12 +142,12 @@ upgrade_compose() {
     ${__auto_sudo} apt-get remove -y docker-compose
     echo "Removed docker-compose"
   else
-    echo "This script does not know how to update Docker Compose on $__distro"
+    echo "${__project_name} does not know how to update Docker Compose on $__distro"
   fi
 }
 
 
-determine_compose() {
+check_compose_version() {
 # Check for Compose V2 (docker compose) vs Compose V1 (docker-compose)
   if docker compose version >/dev/null 2>&1; then
     __compose_exe="docker compose"
@@ -137,7 +155,7 @@ determine_compose() {
   else
     __compose_exe="docker-compose"
     __old_compose=1
-    __compose_version=$($__maybe_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
+    __compose_version=$($__docker_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
     if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${__command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
@@ -152,10 +170,6 @@ determine_compose() {
         esac
       done
     fi
-  fi
-
-  if [ -n "$__maybe_sudo" ]; then
-    __compose_exe="sudo $__compose_exe"
   fi
 }
 
@@ -176,31 +190,17 @@ prep_conffiles() {
 }
 
 
-handle_root() {
-    if [ "${EUID}" -eq 0 ]; then
-        __as_owner="sudo -u ${OWNER}"
-        __auto_sudo=""
-    else
-        __as_owner=""
-        __auto_sudo="sudo"
-    fi
-}
-
-
 check_for_snap() {
     if [[ "$__distro" = "ubuntu" && -n "$(command -v snap)" ]] && snap list 2>/dev/null | grep -qw 'docker'; then
         echo
         echo "WARNING! Snap Docker package detected. This WILL result in issues."
-        echo "Removing the package will delete volumes and require a resync,"
-        echo "as well as re-import of all validator keys."
+        echo "Removing the package will delete volumes and require a resync."
         echo
         echo "Doing so is still highly recommended however."
         echo
-        echo "The exact steps depend a little on whether there already is"
-        echo "an apt version of Docker installed as well, but in a nutshell"
-        echo "\"$__me stop\" followed by \"sudo snap remove --purge docker\""
-        echo "and then a reboot, and as needed install docker.io or docker-ce with apt,"
-        echo "re-import keys and restart Eth Docker."
+        echo "The exact steps depend a little on whether there already is an apt version of Docker installed as well,"
+        echo "but in a nutshell \"$__me stop\" followed by \"sudo snap remove --purge docker\" followed by a reboot,"
+        echo "and as needed install docker-ce or docker.io with apt."
         echo
         echo "Do join us on EthStaker Discord to work through this issue."
         echo
@@ -233,14 +233,14 @@ continue? (no/yes) " yn
         * ) echo "Aborting, no changes made"; return 0;;
     esac
     if [[ "$__distro" = "ubuntu" ]]; then
-        __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-        if [ "${__major_version}" -lt 20 ]; then
-            echo "This script cannot install Docker on Ubuntu ${__major_version}. Consider upgrading to 22.04"
+        if [ "${__os_major_version}" -lt 20 ]; then
+            echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
+            echo "Consider upgrading to 20.04 and then 22.04."
             exit 1
         fi
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release whiptail chrony pkg-config
+            ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor \
             --yes -o /etc/apt/keyrings/docker.gpg
@@ -266,10 +266,10 @@ continue? (no/yes) " yn
     elif [[ "$__distro" =~ "debian" ]]; then
         if [ -z "$(command -v docker)" ]; then
             ${__auto_sudo} apt-get update
-            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release whiptail chrony pkg-config
-            __major_version=$(lsb_release -r | cut -f2)
-            if [ "${__major_version}" -lt 10 ]; then
-                echo "This script cannot install Docker on Debian ${__major_version}. Consider upgrading to 11 or 12."
+            ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
+            if [ "${__os_major_version}" -lt 10 ]; then
+                echo "${__project_name} cannot install Docker on Debian ${__os_major_version}."
+                echo "Consider upgrading to 10, then 11 and then 12."
                 exit 1
             fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -295,7 +295,7 @@ continue? (no/yes) " yn
             echo "Your user is already part of the docker group"
         fi
     else
-        echo "This script does not know how to install Docker on $__distro"
+        echo "${__project_name$} does not know how to install Docker on $__distro"
     fi
 
     if ! [[ "$__distro" = "ubuntu" ]] || [[ "$__distro" =~ "debian" ]]; then
@@ -935,19 +935,17 @@ ${ENV_FILE}" 12 75
 
 nag_os_version() {
     if [[ "$__distro" = "ubuntu" ]]; then
-      __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
-      if [ "${__major_version}" -lt 20 ]; then
+      if [ "${__os_major_version}" -lt 20 ]; then
          echo
-         echo "Ubuntu ${__major_version} is older than the recommended 22.04 or 20.04 version."
+         echo "Ubuntu ${__os_major_version} is older than the recommended 22.04 or 20.04 version."
          echo
       fi
     fi
 
     if [[ "$__distro" =~ "debian" ]]; then
-      __major_version=$(lsb_release -r | cut -f2)
-      if [ "${__major_version}" -lt 10 ]; then
+      if [ "${__os_major_version}" -lt 10 ]; then
          echo
-         echo "Debian ${__major_version} is older than the recommended 10, 11 or 12 version."
+         echo "Debian ${__os_major_version} is older than the recommended 10, 11 or 12 version."
          echo
       fi
     fi
@@ -2952,8 +2950,8 @@ __command="$1"
 shift
 __params=$*
 
-determine_distro
 handle_root
+determine_distro
 prep_conffiles
 
 # Don't check for Docker before it's installed
@@ -2962,23 +2960,21 @@ if [ "$__command" = "install" ]; then
     exit "$?"
 fi
 
-determine_sudo
-determine_docker
-determine_compose
-
+handle_docker_sudo
+check_compose_version
 
 if ! type -P whiptail >/dev/null 2>&1; then
-    echo "Please install the package whiptail or newt before running this script"
+    echo "Please install the package whiptail or newt before running ${__project_name}."
     exit 0
 fi
 
 if ! dodocker images >/dev/null 2>&1; then
-    echo "Please ensure you can call $__docker_exe before running this script."
+    echo "Please ensure you can call $__docker_exe before running ${__project_name}."
     exit 0
 fi
 
 if ! docompose --help >/dev/null 2>&1; then
-    echo "Please ensure you can call $__compose_exe before running this script"
+    echo "Please ensure you can call $__compose_exe before running ${__project_name}."
     exit 0
 fi
 
