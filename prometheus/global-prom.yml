@@ -1,4 +1,8 @@
 # A scrape configuration scraping by Docker labels, plus a few static jobs
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_timeout:      12s # Timeout must be shorter than the interval
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
 scrape_configs:
   - job_name: 'docker'
     docker_sd_configs:
@@ -23,6 +27,16 @@ scrape_configs:
          - __address__
          - __meta_docker_container_label_metrics_port
          target_label: __address__
+       - action: replace  # Permit override of 'job' using metrics.job label
+         regex: (.+)
+         source_labels:
+         - __meta_docker_container_label_metrics_job
+         target_label: job
+       - action: replace  # Permit override of scrape interval using metrics.interval label
+         regex: (.+)
+         source_labels:
+         - __meta_docker_container_label_metrics_interval
+         target_label: __scrape_interval__
   - job_name: 'ping_google'
     metrics_path: /probe
     params:
@@ -53,6 +67,7 @@ scrape_configs:
         replacement: blackbox-exporter:9115
   - job_name: 'json'
     metrics_path: /probe
+    scrape_interval: 300s
     params:
       module: [default]
     static_configs:

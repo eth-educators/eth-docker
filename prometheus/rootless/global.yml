@@ -1,5 +1,9 @@
 # A scrape configuration containing exactly one endpoint to scrape:
 # Here it's Prometheus itself.
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_timeout:      12s # Timeout must be shorter than the interval
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
 scrape_configs:
   - job_name: 'prometheus'
     scrape_interval: 5s
@@ -51,6 +55,7 @@ scrape_configs:
     static_configs:
     - targets: ['json-exporter:7979']
   - job_name: 'json'
+    scrape_interval: 300s
     metrics_path: /probe
     params:
       module: [default]
