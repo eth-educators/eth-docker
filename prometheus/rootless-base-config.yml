@@ -1,0 +1,31 @@
+# Prometheus config for rootless setups.
+# No access to the Docker socket - so scrapers must be included directly
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_timeout:      12s # Timeout must be shorter than the interval
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+# Directories with extra scraping targets
+scrape_config_files:
+  - /etc/prometheus/conf.d/*.yml  # Mounted folder, place extra scraping configs in conf.d to include
+
+# These targets are always present, so include directly here
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['prometheus:9090']
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['node-exporter:9100']
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+  - job_name: 'ethereum-metrics-exporter'
+    static_configs:
+      - targets: ['ethereum-metrics-exporter:9090']
+  - job_name: 'cryptowat'
+    scrape_interval: 300s
+    static_configs:
+      - targets: ['cryptowat-exporter:9745']

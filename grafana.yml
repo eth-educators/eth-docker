@@ -18,16 +18,7 @@ services:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
-    environment:
-      - CLIENT=${COMPOSE_FILE}
-    entrypoint: make-config.sh
-    command:
-      - /bin/prometheus
-      - --storage.tsdb.path=/prometheus
-      - --storage.tsdb.retention.time=40d
-      - --web.console.libraries=/usr/share/prometheus/console_libraries
-      - --web.console.templates=/usr/share/prometheus/consoles
+      - ./prometheus/conf.d/:/etc/prometheus/conf.d/:ro
     <<: *logging
     labels:
       - metrics.scrape=true
