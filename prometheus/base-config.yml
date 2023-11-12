@@ -1,3 +1,12 @@
+# This file is not intended to be modified - any changes here could be overwritten next time you update.
+# If you just need to add some new scrape targets to Prometheus, place these in the conf.d folder.
+# You can use the existing files as inspiration, and the docs are here:
+# https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+#
+# If you need to override the settings in this file, or add other top-level configuration
+# (e.g.) remote_write config, please use custom-prom.yml.
+# The modifications in that file will supercede the settings here (or extend, in the case of lists)
+
 global:
   scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   scrape_timeout:      12s # Timeout must be shorter than the interval

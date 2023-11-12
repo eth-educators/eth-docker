@@ -47,30 +47,50 @@ select_clients() {
   fi
 }
 
-# CLIENT is only set for rootless mode
-if [ -z "${CLIENT:-}" ]; then
-  echo "No Client information passed, running in Docker target detection mode"
-  if [ -s custom-prom.yml ]; then
-    echo "Applying custom configuration"
-    # $item isn't a shell variable, single quotes OK here
-    # shellcheck disable=SC2016
-    yq eval-all '. as $item ireduce ({}; . *+ $item)' base-config.yml custom-prom.yml > /etc/prometheus/prometheus.yml
+__config_file=/etc/prometheus/prometheus.yml
+prepare_config() {
+  # CLIENT is only set for rootless mode
+  if [ -z "${CLIENT:-}" ]; then
+    echo "No Client information passed, running in Docker target detection mode"
+    if [ -s custom-prom.yml ]; then
+      echo "Applying custom configuration"
+      # $item isn't a shell variable, single quotes OK here
+      # shellcheck disable=SC2016
+      yq eval-all '. as $item ireduce ({}; . *+ $item)' base-config.yml custom-prom.yml > "${__config_file}"
+    else
+      echo "No custom configuration detected"
+      cp base-config.yml "${__config_file}"
+    fi
   else
-    echo "No custom configuration detected"
-    cp base-config.yml /etc/prometheus/prometheus.yml
+    echo "Client information detected, compiling prometheus config"
+    select_clients
+    if [ -s custom-prom.yml ]; then
+      echo "Applying custom configuration"
+      # $item isn't a shell variable, single quotes OK here
+      # shellcheck disable=SC2016
+      yq eval-all '. as $item ireduce ({}; . *+ $item)' rootless-base-config.yml custom-prom.yml > "${__config_file}"
+    else
+      echo "No custom configuration detected"
+      cp rootless-base-config.yml "${__config_file}"
+    fi
   fi
+}
+
+# Check if --config.file was passed in the command arguments
+# If it was, then display a warning and skip all our manual processing
+for var in "$@"; do
+  case "$var" in
+    --config.file* )
+      echo "WARNING - Manual setting of --config.file found, bypassing automated config preparation in favour of supplied argument"
+      /bin/prometheus "$@"
+  esac
+done
+
+# If config override is set, then use custom-prom.yml without modification
+if [ -n "${CONFIG_OVERRIDE:-}" ]; then
+  __config_file="$(readlink -f custom-prom.yml)"
 else
-  echo "Client information detected, compiling prometheus config"
-  select_clients
-  if [ -s custom-prom.yml ]; then
-    echo "Applying custom configuration"
-    # $item isn't a shell variable, single quotes OK here
-    # shellcheck disable=SC2016
-    yq eval-all '. as $item ireduce ({}; . *+ $item)' rootless-base-config.yml custom-prom.yml > /etc/prometheus/prometheus.yml
-  else
-    echo "No custom configuration detected"
-    cp rootless-base-config.yml /etc/prometheus/prometheus.yml
-  fi
+  prepare_config
 fi
 
-/bin/prometheus "$@" --config.file=/etc/prometheus/prometheus.yml
+/bin/prometheus "$@" --config.file="${__config_file}"

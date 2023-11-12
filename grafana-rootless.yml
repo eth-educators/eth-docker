@@ -21,6 +21,7 @@ services:
       - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
     environment:
       - CLIENT=${COMPOSE_FILE}
+      - CONFIG_OVERRIDE=${PROM_CFG_OVERRIDE:-}
     command:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=40d
