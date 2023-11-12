@@ -13,19 +13,19 @@ services:
     restart: "unless-stopped"
     build:
       context: ./prometheus
-      args:
-        CLIENT: ${COMPOSE_FILE}
     image: prometheus:local
     volumes:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
       - ./prometheus/conf.d/:/etc/prometheus/conf.d/:ro
+      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
+    environment:
+      - CLIENT=${COMPOSE_FILE}
     command:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=40d
       - --web.console.libraries=/usr/share/prometheus/console_libraries
       - --web.console.templates=/usr/share/prometheus/consoles
-      - --config.file=/etc/prometheus/rootless.yml
     <<: *logging
     depends_on:
       - blackbox-exporter

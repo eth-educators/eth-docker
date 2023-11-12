@@ -8,6 +8,7 @@ global:
 # Directories with extra scraping targets
 scrape_config_files:
   - /etc/prometheus/conf.d/*.yml  # Mounted folder, place extra scraping configs in conf.d to include
+  - /etc/prometheus/rootless.d/*.yml  # Populated when container starts based on .env settings
 
 # These targets are always present, so include directly here
 scrape_configs:

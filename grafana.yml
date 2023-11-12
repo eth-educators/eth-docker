@@ -19,6 +19,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./prometheus/conf.d/:/etc/prometheus/conf.d/:ro
+      - ./prometheus/custom-prom.yml:/etc/prometheus/custom-prom.yml:ro
+    command:
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=40d
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
     <<: *logging
     labels:
       - metrics.scrape=true

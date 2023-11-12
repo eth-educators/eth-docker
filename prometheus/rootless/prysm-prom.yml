@@ -1,3 +1,4 @@
+scrape_configs:
   - job_name: 'validator'
     scrape_interval: 5s
     static_configs:
