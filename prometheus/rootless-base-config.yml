@@ -27,13 +27,9 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
     - targets: ['prometheus:9090']
-  - job_name: 'node_exporter'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['node-exporter:9100']
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['cadvisor:8080']
   - job_name: 'ethereum-metrics-exporter'
     static_configs:
       - targets: ['ethereum-metrics-exporter:9090']
+  - job_name: 'json-exporter'
+    static_configs:
+      - targets: ['json-exporter:7979']

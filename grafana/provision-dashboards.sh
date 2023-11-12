@@ -9,6 +9,7 @@ if [ "$(id -u)" = '0' ]; then
   exec su-exec grafana "$0" "$@"
 fi
 
+shopt -s extglob
 case "$CLIENT" in
   *prysm* )
     #  prysm_small
@@ -118,6 +119,20 @@ case "$CLIENT" in
         | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/instance=~\\"\$instance\.\*\\",//g' \
         | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     ;;&
+  !(*grafana-rootless*) )
+      # cadvisor and node exporter dashboard
+      __id=10619
+      __revision=$(wget -t 3 -T 10 -qO - https://grafana.com/api/dashboards/${__id} | jq .revision)
+      __url="https://grafana.com/api/dashboards/${__id}/revisions/${__revision}/download"
+      __file='/etc/grafana/provisioning/dashboards/docker-host-container-overview.json'
+      wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
+      # Log file dashboard (via loki)
+      __id=18700
+      __revision=$(wget -t 3 -T 10 -qO - https://grafana.com/api/dashboards/${__id} | jq .revision)
+      __url="https://grafana.com/api/dashboards/${__id}/revisions/${__revision}/download"
+      __file='/etc/grafana/provisioning/dashboards/eth-docker-logs.json'
+      wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_LOKI}" then "Loki" else . end)' >"${__file}"
+    ;;&
   * )
     # Home staking dashboard
     __id=17846
@@ -131,18 +146,6 @@ case "$CLIENT" in
     __url="https://grafana.com/api/dashboards/${__id}/revisions/${__revision}/download"
     __file='/etc/grafana/provisioning/dashboards/ethereum-metrics-exporter-single.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
-    # cadvisor and node exporter dashboard
-    __id=10619
-    __revision=$(wget -t 3 -T 10 -qO - https://grafana.com/api/dashboards/${__id} | jq .revision)
-    __url="https://grafana.com/api/dashboards/${__id}/revisions/${__revision}/download"
-    __file='/etc/grafana/provisioning/dashboards/docker-host-container-overview.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
-    # Log file dashboard (via loki)
-    __id=18700
-    __revision=$(wget -t 3 -T 10 -qO - https://grafana.com/api/dashboards/${__id} | jq .revision)
-    __url="https://grafana.com/api/dashboards/${__id}/revisions/${__revision}/download"
-    __file='/etc/grafana/provisioning/dashboards/eth-docker-logs.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_LOKI}" then "Loki" else . end)' >"${__file}"
     ;;
 esac
 
