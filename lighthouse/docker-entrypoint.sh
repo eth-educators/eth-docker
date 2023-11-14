@@ -75,7 +75,8 @@ else
 fi
 
 if [ "${IPV6}" = "true" ]; then
-  __ipv6="--listen-address :: --port6 ${CL_P2P_PORT:-9000}"
+  echo "Configuring Lighthouse to listen on IPv6 ports"
+  __ipv6="--listen-address :: --port6 ${CL_P2P_PORT:-9000} --quic-port6 ${CL_QUIC_PORT:-9001}"
 else
   __ipv6=""
 fi

@@ -38,6 +38,8 @@ services:
       - CL_EXTRAS=${CL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
+      - IPV6=${IPV6:-false}
+      - CL_P2P_PORT=${CL_P2P_PORT:-9000}
       - NODE_OPTIONS=${LODESTAR_HEAP:---max-old-space-size=4096}
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp

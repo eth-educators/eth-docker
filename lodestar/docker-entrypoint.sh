@@ -84,6 +84,13 @@ else
   __rapid_sync=""
 fi
 
+if [ "${IPV6}" = "true" ]; then
+  echo "Configuring Lodestar to listen on IPv6 ports"
+  __ipv6="--listenAddress6 :: --port6 ${CL_P2P_PORT:-9000}"
+else
+  __ipv6=""
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__mev_boost} ${__beacon_stats} ${__rapid_sync} ${CL_EXTRAS}
+exec "$@" ${__ipv6} ${__network} ${__mev_boost} ${__beacon_stats} ${__rapid_sync} ${CL_EXTRAS}
