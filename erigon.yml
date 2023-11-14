@@ -26,6 +26,7 @@ services:
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
+      - IPV6=${IPV6:-false}
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
