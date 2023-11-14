@@ -43,7 +43,7 @@ if [ -n "${RAPID_SYNC_URL:+x}" ]; then
         echo "Teku archive node cannot use checkpoint sync: Syncing from genesis."
         __rapid_sync=""
     else
-        __rapid_sync="--initial-state=${RAPID_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
+        __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
         echo "Checkpoint sync enabled"
     fi
 else
