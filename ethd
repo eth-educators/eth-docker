@@ -2566,7 +2566,7 @@ handle_error() {
     elif [ "$__during_config" -eq 1 ] && [ "$exit_code" -eq 1 ]; then
         echo "Canceled config wizard."
     else
-        echo "$__me failed with error $exit_code on line $2"
+        echo "$__me terminated with exit code $exit_code on line $2"
         if [ -n "${__command}" ]; then
             echo "This happened during $__me ${__command} ${__params}"
         fi
