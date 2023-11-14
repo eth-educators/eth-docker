@@ -27,6 +27,7 @@ services:
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
+      - IPV6=${IPV6:-false}
     volumes:
       - geth-eth1-data:/var/lib/goethereum
       - /etc/localtime:/etc/localtime:ro

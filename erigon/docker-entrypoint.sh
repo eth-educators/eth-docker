@@ -84,6 +84,13 @@ else
   fi
 fi
 
+if [ "${IPV6}" = "true" ]; then
+  echo "Configuring Erigon for discv5 for IPv6 advertisements"
+  __ipv6="--v5disc"
+else
+  __ipv6=""
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
+exec "$@" ${__ipv6} ${__network} ${__prune} ${EL_EXTRAS}

@@ -98,6 +98,13 @@ else
   fi
 fi
 
+if [ "${IPV6}" = "true" ]; then
+  echo "Configuring Geth for discv5 for IPv6 advertisements"
+  __ipv6="--discv5"
+else
+  __ipv6=""
+fi
+
 if [ -f /var/lib/goethereum/prune-marker ]; then
   rm -f /var/lib/goethereum/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -110,5 +117,5 @@ if [ -f /var/lib/goethereum/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__pbss} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
+  exec "$@" ${__pbss} ${__ipv6} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
 fi
