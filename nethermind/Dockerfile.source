@@ -1,5 +1,5 @@
 # Partially from Nethermind github
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 ARG DOCKER_REPO
@@ -21,7 +21,7 @@ RUN bash -c "\
     git submodule update --init --recursive && \
     dotnet publish src/Nethermind/Nethermind.Runner -c release -o out"
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install libsnappy-dev libc6-dev libc6 ca-certificates gosu tzdata wget git && rm -rf /var/lib/apt/lists/*
 
