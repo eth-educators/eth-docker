@@ -1025,7 +1025,11 @@ update() {
       current_branch=$(${__as_owner} git rev-parse --abbrev-ref HEAD)
       if [ ! "${current_branch}" = "${value}" ]; then
         ${__as_owner} git fetch --tags
-        ${__as_owner} git checkout -b "${value}" "${value}"
+        if ${__as_owner} git show-ref --verify --quiet --heads branchname; then
+          ${__as_owner} git checkout "${value}"
+        else
+          ${__as_owner} git checkout -b "${value}" "${value}"
+        fi
       fi
     fi
     export GITEXITCODE=$?
