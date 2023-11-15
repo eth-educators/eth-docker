@@ -969,7 +969,6 @@ pull_and_build() {
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
-  __ethd_pinned=""
   __during_update=1
   if [[ $(${__as_owner} git status --porcelain) ]]; then
     __dirty=1
@@ -1018,15 +1017,13 @@ update() {
     var="ETH_DOCKER_TAG"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [ -z "${value}" ] || [ "${value}" = "latest" ]; then
+      export ETHDPINNED=""
       ${__as_owner} git checkout main
       ${__as_owner} git pull
     else
-      __ethd_pinned="${value}"
-      current_branch=$(${__as_owner} git rev-parse --abbrev-ref HEAD)
-      if [ ! "${current_branch}" = "${value}" ]; then
-        ${__as_owner} git fetch --tags
-        ${__as_owner} git checkout -B "tag-${value}" "tags/${value}"
-      fi
+      export ETHDPINNED="${value}"
+      ${__as_owner} git fetch --tags
+      ${__as_owner} git checkout -B "tag-${value}" "tags/${value}"
     fi
     export GITEXITCODE=$?
     set -e
@@ -1171,8 +1168,8 @@ value."
     echo
     ${__as_owner} git status --porcelain
   fi
-  if [ -n "${__ethd_pinned}" ]; then
-    echo "Eth Docker version is pinned to ${__ethd_pinned} in \".env\"."
+  if [ -n "${ETHDPINNED}" ]; then
+    echo "Eth Docker version is pinned to ${ETHDPINNED} in \".env\"."
     echo "Please make sure to run compatible client versions."
   fi
   __during_update=0
