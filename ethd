@@ -1168,7 +1168,7 @@ value."
     echo
     ${__as_owner} git status --porcelain
   fi
-  if [ -n "${ETHDPINNED}" ]; then
+  if [ -n "${ETHDPINNED:-}" ]; then
     echo "Eth Docker version is pinned to ${ETHDPINNED} in \".env\"."
     echo "Please make sure to run compatible client versions."
   fi
