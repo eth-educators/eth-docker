@@ -1,8 +1,6 @@
 # Additional config for Prometheus. Modifications here will override the global settings, however
 # in the case of lists (e.g. scrape_configs) new items will be added.
-# This means that it's not possible to override existing scrape target configuration.
-# If you need to do this, you can se PROM_CFG_OVERRIDE in your .env, and this file will be used
-# as the only source of Prometheus configuration.
+# This means that it's not possible to override existing scrape target configurations.
 
 global:
   label_limit: 2000

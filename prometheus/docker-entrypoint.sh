@@ -3,6 +3,8 @@
 set -eu
 
 select_clients() {
+  # Start from scratch every time
+  rm -rf /etc/prometheus/rootless.d
   mkdir -p /etc/prometheus/rootless.d
 
   case "$CLIENT" in
@@ -52,27 +54,22 @@ prepare_config() {
   # CLIENT is only set for rootless mode
   if [ -z "${CLIENT:-}" ]; then
     echo "No Client information passed, running in Docker target detection mode"
-    if [ -s custom-prom.yml ]; then
-      echo "Applying custom configuration"
-      # $item isn't a shell variable, single quotes OK here
-      # shellcheck disable=SC2016
-      yq eval-all '. as $item ireduce ({}; . *+ $item)' base-config.yml custom-prom.yml > "${__config_file}"
-    else
-      echo "No custom configuration detected"
-      cp base-config.yml "${__config_file}"
-    fi
+    __base_config=base-config.yml
   else
     echo "Client information detected, compiling prometheus config"
     select_clients
-    if [ -s custom-prom.yml ]; then
-      echo "Applying custom configuration"
-      # $item isn't a shell variable, single quotes OK here
-      # shellcheck disable=SC2016
-      yq eval-all '. as $item ireduce ({}; . *+ $item)' rootless-base-config.yml custom-prom.yml > "${__config_file}"
-    else
-      echo "No custom configuration detected"
-      cp rootless-base-config.yml "${__config_file}"
-    fi
+    __base_config=rootless-base-config.yml
+  fi
+
+  # Merge custom config overrides, if provided
+  if [ -s custom-prom.yml ]; then
+    echo "Applying custom configuration"
+    # $item isn't a shell variable, single quotes OK here
+    # shellcheck disable=SC2016
+    yq eval-all '. as $item ireduce ({}; . *+ $item)' "${__base_config}" custom-prom.yml > "${__config_file}"
+  else
+    echo "No custom configuration detected"
+    cp "${__base_config}" "${__config_file}"
   fi
 }
 
@@ -86,11 +83,5 @@ for var in "$@"; do
   esac
 done
 
-# If config override is set, then use custom-prom.yml without modification
-if [ -n "${CONFIG_OVERRIDE:-}" ]; then
-  __config_file="$(readlink -f custom-prom.yml)"
-else
-  prepare_config
-fi
-
+prepare_config
 /bin/prometheus "$@" --config.file="${__config_file}"

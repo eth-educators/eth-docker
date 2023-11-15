@@ -6,7 +6,7 @@ FROM prom/prometheus:latest
 
 COPY --from=yq /usr/bin/yq /usr/local/bin/yq
 
-COPY base-config.yml rootless-base-config.yml custom-prom.yml ./
+COPY base-config.yml rootless-base-config.yml ./
 COPY ./rootless/*.yml ./rootless/
 COPY ./docker-entrypoint.sh /
 
