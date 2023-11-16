@@ -813,7 +813,7 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
   for var in "${ALL_VARS[@]}"; do
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
     if [ -n "${value}" ] || [ "${var}" = "GRAFFITI" ] || [ "${var}" = "MEV_RELAYS" ] \
-        || [ "${var}" = "ETH_DOCKER_TAG" ]; then
+        || [ "${var}" = "ETH_DOCKER_TAG" ] || [ "${var}" = "RAPID_SYNC_URL" ]; then
       if [ "${var}" = "COMPOSE_FILE" ]; then
         migrate_compose_file
       fi
