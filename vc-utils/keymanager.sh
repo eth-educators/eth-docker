@@ -390,7 +390,8 @@ validator-delete() {
 
     for __pubkey in "${__pubkeys[@]}"; do
         # Remove remote registration, with a path not to
-        if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
+        if [ "${WEB3SIGNER}" = "true" ]; then
+          if [ -z "${W3S_NOREG+x}" ]; then
             get-token
             __api_path=eth/v1/remotekeys
             __api_data="{\"pubkeys\":[\"$__pubkey\"]}"
@@ -425,8 +426,9 @@ to delete it:"
                     exit 70
                     ;;
             esac
-        else
+          else
             echo "This client loads web3signer keys at startup, no registration to remove."
+          fi
         fi
 
         if [ "${WEB3SIGNER}" = "true" ]; then
@@ -711,7 +713,8 @@ and secrets directories into .eth/validator_keys instead."
                 ;;
         esac
         # Add remote registration, with a path not to
-        if [ -z "${W3S_NOREG+x}" ] && [ "${WEB3SIGNER}" = "true" ]; then
+        if [ "${WEB3SIGNER}" = "true" ]; then
+          if [ -z "${W3S_NOREG+x}" ]; then
             __api_container=${__vc_api_container}
             __api_port=${__vc_api_port}
             __api_tls=${__vc_api_tls}
@@ -759,8 +762,9 @@ and secrets directories into .eth/validator_keys instead."
                     exit 70
                     ;;
             esac
-        else
+          else
             echo "This client loads web3signer keys at startup, skipping registration via keymanager."
+          fi
         fi
         echo
     done < <(find "$__key_root_dir" -maxdepth "$__depth" -name '*keystore*.json')
