@@ -1767,7 +1767,6 @@ keys() {
   fi
 
   __i_haz_web3signer
-  __command="${1:-}"
 
   __owner_uid=$(id -u "${OWNER}")
   if [ "${1:-}" = "import" ]; then
