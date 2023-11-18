@@ -2,46 +2,48 @@
 
 set -eu
 
+cd /etc/prometheus
+
 select_clients() {
   # Start from scratch every time
-  rm -rf /etc/prometheus/rootless.d
-  mkdir -p /etc/prometheus/rootless.d
+  rm -rf rootless.d
+  mkdir rootless.d
 
   case "$CLIENT" in
-    *lighthouse.yml* )  cp ./rootless/lh-prom.yml /etc/prometheus/rootless.d ;;
-    *lighthouse-cl-only* ) cp ./rootless/lhcc-prom.yml /etc/prometheus/rootless.d ;;
-    *prysm.yml* ) cp ./rootless/prysm-prom.yml /etc/prometheus/rootless.d ;;
-    *prysm-cl-only* ) cp ./rootless/prysmcc-prom.yml /etc/prometheus/rootless.d ;;
-    *nimbus.yml* ) cp ./rootless/nimbus-prom.yml /etc/prometheus/rootless.d ;;
-    *nimbus-cl-only* ) cp ./rootless/nimbus-prom.yml /etc/prometheus/rootless.d ;;
-    *teku.yml* ) cp ./rootless/teku-prom.yml /etc/prometheus/rootless.d ;;
-    *teku-cl-only* ) cp ./rootless/teku-prom.yml /etc/prometheus/rootless.d ;;
-    *lodestar.yml* ) cp ./rootless/ls-prom.yml /etc/prometheus/rootless.d ;;
-    *lodestar-cl-only* ) cp ./rootless/lscc-prom.yml /etc/prometheus/rootless.d ;;
+    *lighthouse.yml* )  cp ./rootless/lh-prom.yml ./rootless.d ;;
+    *lighthouse-cl-only* ) cp ./rootless/lhcc-prom.yml ./rootless.d ;;
+    *prysm.yml* ) cp ./rootless/prysm-prom.yml ./rootless.d ;;
+    *prysm-cl-only* ) cp ./rootless/prysmcc-prom.yml ./rootless.d ;;
+    *nimbus.yml* ) cp ./rootless/nimbus-prom.yml ./rootless.d ;;
+    *nimbus-cl-only* ) cp ./rootless/nimbus-prom.yml ./rootless.d ;;
+    *teku.yml* ) cp ./rootless/teku-prom.yml ./rootless.d ;;
+    *teku-cl-only* ) cp ./rootless/teku-prom.yml ./rootless.d ;;
+    *lodestar.yml* ) cp ./rootless/ls-prom.yml ./rootless.d ;;
+    *lodestar-cl-only* ) cp ./rootless/lscc-prom.yml ./rootless.d ;;
     * ) ;;
   esac
 
   case "$CLIENT" in
-    *geth* ) cp ./rootless/geth-prom.yml /etc/prometheus/rootless.d ;;
-    *erigon* ) cp ./rootless/erigon-prom.yml /etc/prometheus/rootless.d ;;
-    *besu* ) cp ./rootless/besu-prom.yml /etc/prometheus/rootless.d ;;
-    *nethermind* ) cp ./rootless/nethermind-prom.yml /etc/prometheus/rootless.d ;;
-    *reth* ) cp ./rootless/reth-prom.yml /etc/prometheus/rootless.d ;;
+    *geth* ) cp ./rootless/geth-prom.yml ./rootless.d ;;
+    *erigon* ) cp ./rootless/erigon-prom.yml ./rootless.d ;;
+    *besu* ) cp ./rootless/besu-prom.yml ./rootless.d ;;
+    *nethermind* ) cp ./rootless/nethermind-prom.yml ./rootless.d ;;
+    *reth* ) cp ./rootless/reth-prom.yml ./rootless.d ;;
   esac
 
   case "$CLIENT" in
-    *web3signer.yml* ) cp ./rootless/web3signer-prom.yml /etc/prometheus/rootless.d ;;
+    *web3signer.yml* ) cp ./rootless/web3signer-prom.yml ./rootless.d ;;
   esac
 
   case "$CLIENT" in
-    *ssv.yml* ) cp ./rootless/ssv-prom.yml /etc/prometheus/rootless.d ;;
+    *ssv.yml* ) cp ./rootless/ssv-prom.yml ./rootless.d ;;
   esac
 
   case "$CLIENT" in
-    *traefik-* ) cp ./rootless/traefik-prom.yml /etc/prometheus/rootless.d ;;
+    *traefik-* ) cp ./rootless/traefik-prom.yml ./rootless.d ;;
   esac
 
-  __num_files="$(find /etc/prometheus/rootless.d -type f | wc -l)"
+  __num_files="$(find ./rootless.d -type f | wc -l)"
   if [ "$__num_files" -gt 0 ]; then
     echo "Activated $__num_files configuration files"
   else
@@ -84,4 +86,4 @@ for var in "$@"; do
 done
 
 prepare_config
-/bin/prometheus "$@" --config.file="${__config_file}"
+exec /bin/prometheus "$@" --config.file="${__config_file}"
