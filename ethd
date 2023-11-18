@@ -2004,17 +2004,18 @@ upgrade() {
 
 
 start() {
-  docompose up -d --remove-orphans
+  docompose up -d --remove-orphans "$@"
 }
 
-
+# Passed by user
+# shellcheck disable=SC2120
 up() {
-  start
+  start "$@"
 }
 
 
 run() {
-  start
+  start "$@"
 }
 
 
@@ -2025,6 +2026,22 @@ stop() {
 
 down() {
   stop "$@"
+}
+
+
+restart() {
+  stop "$@"
+  start "$@"
+}
+
+
+logs() {
+  docompose logs "$@"
+}
+
+
+cmd() {
+  docompose "$@"
 }
 
 
@@ -2051,22 +2068,6 @@ terminate() {
   echo
   echo "All containers stopped and all volumes deleted"
   echo
-}
-
-
-restart() {
-  stop "$@"
-  start
-}
-
-
-logs() {
-  docompose logs "$@"
-}
-
-
-cmd() {
-  docompose "$@"
 }
 
 
@@ -2863,53 +2864,53 @@ help() {
   echo
   echo "commands:"
   echo "  install"
-  echo "     attempts to install Docker and Docker Compose for you"
+  echo "    attempts to install Docker and Docker Compose for you"
   echo "  config"
-  echo "     configures Eth Docker with your choice of Ethereum clients"
+  echo "    configures Eth Docker with your choice of Ethereum clients"
   echo "  keys ACTION"
-  echo "     list, delete, import keys; their fee recipients; and gas fees"
-  echo "     Run without ACTION to get help text"
+  echo "    list, delete, import keys; their fee recipients; and gas fees"
+  echo "    Run without ACTION to get help text"
   echo "  update [--refresh-targets] "
-  echo "     updates all client versions and Eth Docker itself"
-  echo "     --refresh-targets will reset your custom build targets in ${ENV_FILE} to defaults"
-  echo "  up|start"
-  echo "     starts the Ethereum node, or restarts containers that had their image or"
-  echo "     configuration changed"
+  echo "    updates all client versions and Eth Docker itself"
+  echo "    --refresh-targets will reset your custom build targets in ${ENV_FILE} to defaults"
+  echo "  up|start [service-name]"
+  echo "    starts the Ethereum node, or restarts containers that had their image or"
+  echo "    configuration changed. Can also start a specific service by name"
   echo "  down|stop [service-name]"
-  echo "     stops the Ethereum node, or a specific service by name"
+  echo "    stops the Ethereum node, or a specific service by name"
   echo "  restart [service-name]"
-  echo "     restarts the Ethereum node, or a specific service by name, a combination of down and up"
+  echo "    restarts the Ethereum node, or a specific service by name, a combination of down and up"
   echo "  version"
-  echo "     prints the version(s) of currently running client(s)"
+  echo "    prints the version(s) of currently running client(s)"
   echo "  logs"
-  echo "     shows logs"
+  echo "    shows logs"
   echo "  cmd <compose-command>"
-  echo "     executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
+  echo "    executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
   echo "  terminate"
-  echo "     stops the Ethereum node and destroys all data stores"
+  echo "    stops the Ethereum node and destroys all data stores"
   echo "  prune-geth"
-  echo "     legacy command - stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
-  echo "     consider a resync with PBSS instead, \"$__me resync-execution\""
+  echo "    legacy command - stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
+  echo "    consider a resync with PBSS instead, \"$__me resync-execution\""
   echo "  prune-nethermind"
-  echo "     restarts the Nethermind execution client and prunes its DB."
+  echo "    restarts the Nethermind execution client and prunes its DB."
   echo "  resync-execution"
-  echo "     removes the execution layer database and forces a resync."
+  echo "    removes the execution layer database and forces a resync."
   echo "  resync-consensus"
-  echo "     removes the consensus layer database and forces a resync."
+  echo "    removes the consensus layer database and forces a resync."
   echo "  attach-geth"
-  echo "     launches an interactive geth attach repl"
+  echo "    launches an interactive geth attach repl"
   echo "  help"
-  echo "      print this help screen"
+  echo "    print this help screen"
   echo
+  echo "The logs command can be appended by flags and specify the container(s). Example: "
   echo
-  echo "The logs command can be appended by flags and specify the container(s). example: "
-  echo ""
   echo "  $__me logs -f --tail 50 execution"
   echo "    shows logs only for execution service"
   echo
   echo "✍️ Give feedback and report issues on GitHub:"
   echo "  * https://github.com/eth-educators/eth-docker"
-  echo
+  echo "🤗 Get support on Discord:"
+  echo "  * http://discord.gg/ethstaker"
 }
 
 
