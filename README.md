@@ -29,4 +29,9 @@ please read the [contribution guidelines](CONTRIBUTING.md) so you can run lint c
 
 ## Version
 
-This is Eth Docker v2.3.9
+Eth Docker uses a "semver-ish" scheme.
+- First digit, major shifts in how things work. The last one was Ethereum merge. I do not expect another shift that
+large.
+- Second through fourth digit, [semver](https://semver.org/).
+
+This is Eth Docker v2.3.10.0
