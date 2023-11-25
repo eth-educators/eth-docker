@@ -1,15 +1,13 @@
+ARG YQ_TAG=4.35.2@sha256:54e3310f27cb1776b2d2a8c66e4644fe5691a066c62583c82e6eadeb531a3c6c
+ARG YQ_REPO=mikefarah/yq
+FROM $YQ_REPO:$YQ_TAG AS yq
+
 FROM prom/prometheus:latest
 
-COPY ./*-prom.yml /etc/prometheus/
-COPY ./rootless/*.yml /etc/prometheus/rootless/
-COPY --chown=nobody:nobody ./make-config.sh /usr/local/bin/
-COPY --chown=nobody:nobody ./rootless/choose-config.sh /usr/local/bin/
-# Belt and suspenders
-RUN chmod -R 755 /usr/local/bin/*
-USER root
-RUN chown nobody:nobody /etc/prometheus/*.yml
-RUN chown nobody:nobody /etc/prometheus/rootless/*.yml
-USER nobody
+COPY --from=yq /usr/bin/yq /usr/local/bin/yq
 
-ENTRYPOINT make-config.sh
-CMD ["/bin/prometheus", "--storage.tsdb.path=/prometheus", "--web.console.libraries=/usr/share/prometheus/console_libraries", "--web.console.templates=/usr/share/prometheus/consoles"]
+COPY base-config.yml rootless-base-config.yml /etc/prometheus/
+COPY ./rootless/*.yml /etc/prometheus/rootless/
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT [ "docker-entrypoint.sh" ]

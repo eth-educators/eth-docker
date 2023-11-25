@@ -1,3 +1,4 @@
+scrape_configs:
   - job_name: ssv
     metrics_path: /metrics
     static_configs:
