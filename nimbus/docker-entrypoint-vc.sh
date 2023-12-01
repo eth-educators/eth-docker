@@ -37,6 +37,15 @@ __log_level="--log-level=${LOG_LEVEL^^}"
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
   __w3s_url="--web3-signer-url=http://web3signer:9000"
+  while true; do
+    if curl -s -m 5 http://web3signer:9000 &> /dev/null; then
+        echo "Web3signer is up, starting Nimbus"
+        break
+    else
+        echo "Waiting for Web3signer to be reachable..."
+        sleep 5
+    fi
+  done
 else
   __w3s_url=""
 fi
