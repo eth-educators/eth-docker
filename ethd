@@ -1017,6 +1017,7 @@ update() {
         ${__as_owner} git remote set-head origin -a
       else
         ${__as_owner} git checkout main
+        ${__as_owner} git branch -D master
       fi
     fi
     # Do not track changes to ext-network.yml
