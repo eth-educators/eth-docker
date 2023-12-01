@@ -493,17 +493,17 @@ migrate_compose_file() {
     lh-validator.yml lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml \
     prysm-consensus-rest.yml prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml \
     lh-cl-only.yml nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml \
-    traefik-cf-v6.yml validator-keyapi-localport.yml consensus-keyapi-localport.yml v6-network.yml prysm-web.yml \
-    blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml teku-grafana.yml \
-    geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml \
+    traefik-cf-v6.yml validator-keyapi-localport.yml consensus-keyapi-localport.yml v6-network.yml nimbus.yml teku.yml \
+    prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml \
+    teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml \
     lh-stats-validator.yml traefik-shared.yml lighthouse-slasher.yml prysm-slasher.yml grafana-localhost.yml )
   TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse-base.yml \
     lighthouse-vc-only.yml lighthouse-slasher.yml teku-base.yml teku-vc-only.yml lighthouse-cl-only.yml \
     lighthouse-vc-only.yml lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml \
     prysm-cl-only.yml prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse-base.yml \
     lighthouse-vc-only.yml lighthouse-cl-only.yml nethermind.yml lighthouse.yml teku.yml nimbus.yml prysm.yml \
-    lodestar.yml traefik-cf.yml validator-keyapi-shared.yml consensus-keyapi-shared.yml ipv6.yml \
-    "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
+    lodestar.yml traefik-cf.yml validator-keyapi-shared.yml consensus-keyapi-shared.yml ipv6.yml nimbus-legacy.yml \
+    teku-legacy.yml "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" )
 
   __old_grafana=0
   __new_grafana=0
@@ -529,8 +529,14 @@ migrate_compose_file() {
     fi
     for index in "${!FROM_YML[@]}"; do
       if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
-        __ymlfile=${TO_YML[index]}
-        break
+# ENV version 3 and earlier use the legacy files
+        if [[ "${__ymlfile}" = "nimbus.yml" ]] || [[ "${__ymlfile}" = "teku.yml" ]] \
+            && [[ -n "${__source_ver}" ]] && [[ "${__source_ver}" -gt 3 ]]; then
+          break
+        else
+          __ymlfile=${TO_YML[index]}
+          break
+        fi
       fi
     done
     if [ -n "${__ymlfile}" ]; then
@@ -897,7 +903,8 @@ valid address is set" 12 75
 # I do mean to match literally
 # shellcheck disable=SC2076
   if [[ "${value}" =~ "prysm.yml" || "${value}" =~ "lighthouse.yml" || "${value}" =~ "teku.yml" \
-    || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || "${value}" =~ "-cl-only.yml" ]]; then
+    || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || "${value}" =~ "-cl-only.yml" \
+    || "${value}" =~ "-legacy.yml" ]]; then
     if [[ ! "${value}" =~ "geth.yml" && ! "${value}" =~ "besu.yml" && ! "${value}" =~ "erigon.yml" \
       && ! "${value}" =~ "nethermind.yml"  && ! "${value}" =~ "nimbus-el.yml" \
       && ! "${value}" =~ "reth.yml" ]]; then
@@ -909,7 +916,8 @@ ${ENV_FILE}" 12 75
   elif [[ "${value}" =~ "geth.yml" || "${value}" =~ "besu.yml" || "${value}" =~ "erigon.yml" \
     || "${value}" =~ "nethermind.yml" || "${value}" =~ "nimbus-el.yml" || "${value}" =~ "reth.yml" ]]; then
     if [[ ! "${value}" =~ "prysm.yml"  && ! "${value}" =~ "lighthouse.yml"  && ! "${value}" =~ "teku.yml"  \
-      && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" ]]; then
+      && ! "${value}" =~ "nimbus.yml"  && ! "${value}" =~ "lodestar.yml"  && ! "${value}" =~ "-cl-only.yml" \
+      && ! "${value}" =~ "-legacy.yml" ]]; then
       whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client since \
 Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
 ${ENV_FILE}" 12 75
@@ -1231,10 +1239,10 @@ resync-consensus() {
   case "${value}" in
     *lighthouse.yml* ) __cl_volume='lhbeacon-data'; __cl_client="lighthouse";;
     *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
-    *teku.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
-    *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
-    *nimbus.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
-    *nimbus-cl-only.yml* ) __cl_volume='nimbus-consensus-data'; __cl_client="nimbus";;
+    *teku-legacy.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
+    *teku.yml* | *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
+    *nimbus-legacy.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
+    *nimbus.yml* | *nimbus-cl-only.yml* ) __cl_volume='nimbus-consensus-data'; __cl_client="nimbus";;
     *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
     *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
     *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;

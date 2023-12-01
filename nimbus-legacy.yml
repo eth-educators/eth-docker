@@ -28,7 +28,7 @@ services:
     user: user
     stop_grace_period: 1m
     volumes:
-      - nimbus-consensus-data:/var/lib/nimbus
+      - nimbus-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
@@ -37,15 +37,15 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}
+      - DOPPELGANGER=${DOPPELGANGER}
       - LOG_LEVEL=${LOG_LEVEL}
-      - DOPPELGANGER=false
       - CL_EXTRAS=${CL_EXTRAS:-}
-      - VC_EXTRAS=
+      - VC_EXTRAS=${VC_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - GRAFFITI=${GRAFFITI:-}
-      - DEFAULT_GRAFFITI=true
-      - WEB3SIGNER=false
-      - EMBEDDED_VC=false
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
+      - EMBEDDED_VC=true
     ports:
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
@@ -72,46 +72,6 @@ services:
       - --metrics
       - --metrics-port=8008
       - --metrics-address=0.0.0.0
-      - --suggested-fee-recipient=${FEE_RECIPIENT}
-      - --in-process-validators=false
-    labels:
-      - metrics.scrape=true
-      - metrics.path=/metrics
-      - metrics.port=8008
-
-  validator:
-    restart: "unless-stopped"
-    build:
-      target: validator
-      <<: *nimbus-build
-    image: nimbus-validator:local
-    user: user
-    volumes:
-      - nimbus-vc-data:/var/lib/nimbus
-      - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/nimbus/ee-secret
-    environment:
-      - MEV_BOOST=${MEV_BOOST}
-      - DOPPELGANGER=${DOPPELGANGER}
-      - LOG_LEVEL=${LOG_LEVEL}
-      - VC_EXTRAS=${VC_EXTRAS:-}
-      - GRAFFITI=${GRAFFITI:-}
-      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
-      - WEB3SIGNER=${WEB3SIGNER:-false}
-    networks:
-      default:
-        aliases:
-          - vc
-    <<: *logging
-    entrypoint:
-      - docker-entrypoint-vc.sh
-      - /usr/local/bin/nimbus_validator_client
-      - --data-dir=/var/lib/nimbus
-      - --non-interactive
-      - --beacon-node=${CL_NODE}
-      - --metrics
-      - --metrics-port=8009
-      - --metrics-address=0.0.0.0
       - --keymanager
       - --keymanager-port=${KEY_API_PORT:-7500}
       - --keymanager-address=0.0.0.0
@@ -121,16 +81,41 @@ services:
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
-      - metrics.port=8009
+      - metrics.port=8008
+
+  wipe-db:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:3
+    user: "10002"
+    volumes:
+      - nimbus-data:/var/lib/nimbus
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        rm -rf /var/lib/nimbus/db/*
+        rm /var/lib/nimbus/setupdone
 
   validator-exit:
     profiles: ["tools"]
     restart: "no"
-    image: alpine:3
+    build:
+      target: consensus
+      <<: *nimbus-build
+    image: nimbus:local
+    user: root
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./.eth/validator_keys:/validator_keys
     entrypoint:
-      - /bin/sh
-      - -c
-      - echo "Legacy exit not supported with Nimbus validator client. Please use ./ethd keys sign-exit instead, then submit to beaconcha.in or use ./ethd keys send-exit"
+      - validator-exit.sh
+      - /usr/local/bin/nimbus_beacon_node
+      - --log-level=${LOG_LEVEL}
+      - deposits
+      - exit
+      - --rest-url=http://consensus:5052
+      - --validator=
 
   validator-keys:
     profiles: ["tools"]
@@ -140,7 +125,7 @@ services:
     image: vc-utils:local
     user: root
     volumes:
-      - nimbus-vc-data:/var/lib/nimbus
+      - nimbus-data:/var/lib/nimbus
       - ./.eth/validator_keys:/validator_keys
       - ./.eth/exit_messages:/exit_messages
       - /etc/localtime:/etc/localtime:ro
@@ -150,13 +135,12 @@ services:
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - CL_NODE=${CL_NODE}
     depends_on:
-      - validator
+      - consensus
     entrypoint:
       - keymanager.sh
       - /var/lib/nimbus/api-token.txt
-      - vc
+      - consensus
 
 volumes:
-  nimbus-consensus-data:
-  nimbus-vc-data:
+  nimbus-data:
   jwtsecret:

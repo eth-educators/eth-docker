@@ -17,38 +17,65 @@ x-build: &teku-build
     - DOCKER_REPO=${TEKU_DOCKER_REPO:-consensys/teku}
 
 services:
-  validator:
+  consensus:
     restart: "unless-stopped"
     build:
       <<: *teku-build
     image: teku:local
     user: teku
+    stop_grace_period: 1m
     volumes:
       - teku-data:/var/lib/teku
       - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/teku/ee-secret
     environment:
-      - JAVA_OPTS=${TEKU_HEAP:--Xmx2g}
+      - JAVA_OPTS=${TEKU_HEAP:--Xmx4g}
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
+      - MEV_NODE=${MEV_NODE}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
+      - CL_EXTRAS=${CL_EXTRAS:-}
       - VC_EXTRAS=${VC_EXTRAS:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - DOPPELGANGER=${DOPPELGANGER:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER:-false}
+      - EMBEDDED_VC=true
       - NETWORK=${NETWORK}
+    ports:
+      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
-          - vc
+          - eth2
     <<: *logging
     entrypoint:
-      - docker-entrypoint-vc.sh
+      - docker-entrypoint.sh
       - /opt/teku/bin/teku
-      - validator-client
-      - --beacon-node-api-endpoints=${CL_NODE:-http://consensus:5052}
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
+      - --ee-endpoint=${EL_NODE}
+      - --ee-jwt-secret-file
+      - /var/lib/teku/ee-secret/jwtsecret
+      - --eth1-deposit-contract-max-request-size=1000
+      - --p2p-port=${CL_P2P_PORT:-9000}
+      - --p2p-peer-upper-bound=${CL_MAX_PEER_COUNT:-100}
+      - --p2p-peer-lower-bound=${CL_MIN_PEER_COUNT:-64}
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-      - --validators-early-attestations-enabled=false
+      - --logging=${LOG_LEVEL}
+      - --rest-api-host-allowlist=*
+      - --rest-api-enabled=true
+      - --rest-api-interface=0.0.0.0
+      - --rest-api-port=${CL_REST_PORT:-5052}
+      - --beacon-liveness-tracking-enabled=true
+      - --metrics-enabled=true
+      - --metrics-port=8008
+      - --metrics-interface=0.0.0.0
+      - --metrics-host-allowlist=*
       - --validator-api-enabled=true
       - --validator-api-interface=0.0.0.0
       - --validator-api-port=${KEY_API_PORT:-7500}
@@ -58,14 +85,23 @@ services:
       - --validator-api-keystore-password-file=/var/lib/teku/teku-keyapi.password
       - --validators-proposer-default-fee-recipient=${FEE_RECIPIENT}
       - --validators-keystore-locking-enabled=false
-      - --metrics-enabled=true
-      - --metrics-port=8009
-      - --metrics-interface=0.0.0.0
-      - --metrics-host-allowlist=*
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
-      - metrics.port=8009
+      - metrics.port=8008
+
+  wipe-db:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:3
+    user: "10002"
+    volumes:
+      - teku-data:/var/lib/teku
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        rm -rf /var/lib/teku/beacon/*
 
   validator-exit:
     profiles: ["tools"]
@@ -80,9 +116,10 @@ services:
     entrypoint:
       - /opt/teku/bin/teku
       - voluntary-exit
-      - --beacon-node-api-endpoint=${CL_NODE:-http://consensus:5052}
+      - --beacon-node-api-endpoint=http://consensus:5052
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
       - --validator-keys=/var/lib/teku/validator/key-manager/local:/var/lib/teku/validator/key-manager/local-passwords
+      - --include-keymanager-keys=true
 
   validator-keys:
     profiles: ["tools"]
@@ -103,11 +140,12 @@ services:
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - CL_NODE=${CL_NODE}
     depends_on:
-      - validator
+      - consensus
     entrypoint:
       - keymanager.sh
       - /var/lib/teku/validator/key-manager/validator-api-bearer
-      - vc
+      - consensus
 
 volumes:
   teku-data:
+  jwtsecret:
