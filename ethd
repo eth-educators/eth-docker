@@ -629,9 +629,6 @@ upgrade_postgres() {
 # Consider --non-interactive for update. For this, but also other things that query via whiptail or read
   return
 
-  __target_pg=16
-  __during_postgres=1
-
   # Check for web3signer
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -641,7 +638,15 @@ upgrade_postgres() {
     return 0
   fi
 
-  __source_pg="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+  __source_vol="$(basename "$(pwd)")_web3signer-slashing-data"
+  if [ -z "$(dodocker volume ls -q -f "name=${__source_vol}")" ]; then
+    return 0
+  fi
+
+  __target_pg=16
+  __during_postgres=1
+
+  __source_pg="$(dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
     alpine:3 cat /var/lib/postgresql/data/PG_VERSION)"
 
   if [ "${__source_pg}" -lt "${__target_pg}" ]; then
@@ -658,8 +663,8 @@ upgrade_postgres() {
     return 0
   fi
 
-  __migrated_vol="$(basename "$(pwd)")_w3s-slashing-db-pg${__target_pg}-migrated"
-  __backup_vol="$(basename "$(pwd)")_w3s-slashing-db-pg${__source_pg}-backup"
+  __migrated_vol="$(basename "$(pwd)")_web3signer-slashing-data-pg${__target_pg}-migrated"
+  __backup_vol="$(basename "$(pwd)")_web3signer-slashing-data-pg${__source_pg}-backup"
 
   echo "Stopping Web3signer"
   docompose stop web3signer && docompose rm -f web3signer
@@ -674,7 +679,7 @@ upgrade_postgres() {
 
   dodocker pull "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
   dodocker volume create "${__migrated_vol}"
-  dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/${__source_pg}/data" \
+  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/${__source_pg}/data" \
    -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
    "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
 # Adjust ownership. We use 70; postgres-upgrade creates it with 999
@@ -689,15 +694,15 @@ upgrade_postgres() {
   echo
   echo "Migration complete, copying data in web3signer-slashing-data volume to backup"
   dodocker volume create "${__backup_vol}"
-  dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
     -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
     alpine:3 cp -a /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
 
   __during_migrate=1
   echo "Moving migrated data to web3signer-slashing-data volume"
-  dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
     alpine:3 rm -rf /var/lib/postgresql/data/*
-  dodocker run --rm -v "$(dodocker volume ls -q -f "name=web3signer-slashing-data")":"/var/lib/postgresql/data" \
+  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
     -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
     alpine:3 cp -a "/var/lib/postgresql/${__target_pg}/data/." /var/lib/postgresql/data/
 
@@ -1005,10 +1010,14 @@ update() {
 
   if [ -z "${ETHDSECUNDO-}" ]; then
     if ${__as_owner} git branch | grep -q master; then
-      ${__as_owner} git branch -m master main
-      ${__as_owner} git fetch origin
-      ${__as_owner} git branch -u origin/main main
-      ${__as_owner} git remote set-head origin -a
+      if ! ${__as_owner} git branch | grep -q main; then
+        ${__as_owner} git branch -m master main
+        ${__as_owner} git fetch origin
+        ${__as_owner} git branch -u origin/main main
+        ${__as_owner} git remote set-head origin -a
+      else
+        ${__as_owner} git checkout main
+      fi
     fi
     # Do not track changes to ext-network.yml
     set +e
