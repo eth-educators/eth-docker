@@ -1010,10 +1010,14 @@ update() {
 
   if [ -z "${ETHDSECUNDO-}" ]; then
     if ${__as_owner} git branch | grep -q master; then
-      ${__as_owner} git branch -m master main
-      ${__as_owner} git fetch origin
-      ${__as_owner} git branch -u origin/main main
-      ${__as_owner} git remote set-head origin -a
+      if ! ${__as_owner} git branch | grep -q main; then
+        ${__as_owner} git branch -m master main
+        ${__as_owner} git fetch origin
+        ${__as_owner} git branch -u origin/main main
+        ${__as_owner} git remote set-head origin -a
+      else
+        ${__as_owner} git checkout main
+      fi
     fi
     # Do not track changes to ext-network.yml
     set +e
