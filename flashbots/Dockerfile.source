@@ -1,0 +1,41 @@
+# Build in a stock Go build container
+FROM golang:1.21-alpine as builder
+
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
+ARG DOCKER_REPO
+
+ARG BUILD_TARGET
+ARG SRC_REPO
+
+RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash
+
+WORKDIR /src
+RUN bash -c "git clone ${SRC_REPO} mev-boost && cd mev-boost && git config advice.detachedHead false && git fetch --all --tags && \
+if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:mev-pr; git checkout mev-pr; else git checkout ${BUILD_TARGET}; fi && \
+make build"
+
+# Pull all binaries into a second stage deploy container
+FROM alpine:3
+
+ARG USER=mev
+ARG UID=10666
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN mkdir -p /app && chown -R ${USER}:${USER} /app
+
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /src/mev-boost/mev-boost /app/
+# Belt and suspenders
+RUN chmod -R 755 /app/*
+
+USER ${USER}
+
+ENTRYPOINT ["/app/mev-boost"]

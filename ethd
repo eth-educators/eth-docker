@@ -482,6 +482,16 @@ source_build() {
       fi
       ;;
   esac
+# This built twice for some reason - more discovery needed
+#  case "${value}" in
+#    *mev-boost.yml* )
+#      var="MEV_DOCKERFILE"
+#      build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+#      if [ "${build}" = "Dockerfile.source" ]; then
+#          docompose build --pull --no-cache mev-boost
+#      fi
+#      ;;
+#  esac
 }
 
 
