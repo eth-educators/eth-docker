@@ -631,8 +631,7 @@ delete_erigon() {
 
 
 upgrade_postgres() {
-# Enable this when PostgreSQL 16.2 is out and flyway supports it
-# Consider --non-interactive for update. For this, but also other things that query via whiptail or read
+# Enable this when ready
   return
 
   # Check for web3signer
@@ -658,15 +657,47 @@ upgrade_postgres() {
   if [ "${__source_pg}" -lt "${__target_pg}" ]; then
     echo "Web3signer is using PostgreSQL ${__source_pg}. The current version is PostgreSQL ${__target_pg}."
     echo
-    while true; do
-      read -rp "Would you like to migrate to PostgreSQL ${__target_pg}? (Y/n) " yn
-      case $yn in
-        [Nn]o | [Nn]  ) echo "Keeping PostgreSQL at version ${__source_pg}"; return 0;;
-        * ) break;;
-      esac
-    done
+    if [ "${__non_interactive:-0}" -eq 0 ]; then
+      while true; do
+        read -rp "Would you like to migrate to PostgreSQL ${__target_pg}? (Y/n) " yn
+        case $yn in
+          [Nn]o | [Nn]  ) echo "Keeping PostgreSQL at version ${__source_pg}"; return 0;;
+          * ) break;;
+        esac
+      done
+    fi
   else
     return 0
+  fi
+
+  __source_size="$(dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
+    alpine:3 du -s /var/lib/postgresql/data/ | awk '{print $1}')"
+
+  re='^[0-9]+$'
+  if ! [[ "${__source_size}" =~ $re ]] ; then
+    echo "Unable to determine database size. This is likely a bug."
+    echo "__source_size is ${__source_size}"
+    return 70
+  fi
+
+  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
+  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
+
+  re='^[0-9]+$'
+  if ! [[ "${__free_space}" =~ $re ]] ; then
+    echo "Unable to determine free disk space. This is likely a bug."
+    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
+    return 70
+  fi
+
+  if [[ "${__free_space}" -lt $(( (__source_size * 2) + 10485760 )) ]]; then
+    echo
+    echo "You don't have enough space free to migrate the database."
+    echo "It is $(( __source_size / 1024 / 1024 )) GiB in size and you need twice as much free again."
+    echo
+    df -h "${__docker_dir}"
+    echo
+    return
   fi
 
   __migrated_vol="$(basename "$(pwd)")_web3signer-slashing-data-pg${__target_pg}-migrated"
@@ -717,10 +748,14 @@ upgrade_postgres() {
 
   echo
   echo "Adjusting PostgreSQL Docker tag"
+  if [ ! -f "${ENV_FILE}.source" ]; then # update() didn't migrate env, let's make sure .env.source exists
+    cp "${ENV_FILE}" "${ENV_FILE}.source"
+    __pre_merge=0
+  fi
   var="PG_DOCKER_TAG"
 # This gets used, but shellcheck doesn't recognize that
 # shellcheck disable=SC2034
-  PG_DOCKER_TAG=16-bookworm # To bookworm to avoid collation errors - also a faster PostgreSQL
+  PG_DOCKER_TAG=${__target_pg}-bookworm # To bookworm to avoid collation errors - also a faster PostgreSQL
   set_value_in_env
   echo "Web3signer has been stopped. You'll need to run \"$__me up\" to start it again."
   echo
@@ -878,12 +913,17 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
     var="FEE_RECIPIENT"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
-      whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
-for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
-Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"$__me up\" will fail if no \
-valid address is set" 12 75
-      query_coinbase
-      set_value_in_env
+      if [ "${__non_interactive:-0}" -eq 0 ]; then
+        whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
+  for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
+  Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"$__me up\" will fail if no \
+  valid address is set" 12 75
+        query_coinbase
+        set_value_in_env
+      else
+        echo "A fee recipient ETH wallet address is required in order to start the client. Please set one in \".env\"."
+        echo "CAUTION: \"$__me up\" will fail if no valid address is set."
+      fi
     fi
   fi
 
@@ -892,8 +932,9 @@ valid address is set" 12 75
   # the check won't be accurate
   var="DISTRIBUTED"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-  if [[ "${value}" = "true" || "${__switched_branch-}" -eq 1 ]]; then
+  if [[ "${value}" = "true" || "${__switched_branch:-0}" -eq 1 || "${__non_interactive:-0}" -eq 1 ]]; then
     ${__as_owner} rm "${ENV_FILE}".original
+    __during_migrate=0
     return 0
   fi
   # Check for CL and EL, nag if we have only one without the other
@@ -983,6 +1024,7 @@ pull_and_build() {
 # shellcheck disable=SC2120
 update() {
   __during_update=1
+
   if [[ $(${__as_owner} git status --porcelain) ]]; then
     __dirty=1
   else
@@ -1077,12 +1119,20 @@ update() {
         __targetcli="--refresh-targets"
         shift
         ;;
+      --non-interactive)
+        __non_interactive=1
+        shift
+        ;;
       *)
         echo "Error: Unknown option: $1" >&2
         exit 1
         ;;
     esac
   done
+  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
+
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2119
   envmigrate
@@ -1095,6 +1145,9 @@ update() {
   fi
 
   pull_and_build
+
+  delete_erigon
+  upgrade_postgres
 
   echo
   if [ "${__migrated}" -eq 1 ] && ! cmp -s "${ENV_FILE}" "${ENV_FILE}".source; then
@@ -1162,8 +1215,6 @@ value."
     echo "You were migrated to the $(${__as_owner} git name-rev --name-only HEAD) branch of Eth Docker"
     echo
   fi
-  delete_erigon
-  upgrade_postgres
   # If this is called by an older version of ethd, envmigrate
   # is in its own bash instance: Need to kill the ethd parent
 # shellcheck disable=SC2009
@@ -1317,6 +1368,9 @@ prune-geth() {
         ;;
     esac
   done
+  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
 
   if [ ! -f "${ENV_FILE}" ]; then
     echo "${ENV_FILE} configuration file not found, aborting."
@@ -1447,6 +1501,9 @@ prune-nethermind() {
         ;;
     esac
   done
+  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
 
   if [ ! -f "${ENV_FILE}" ]; then
     echo "${ENV_FILE} configuration file not found, aborting."
@@ -1635,6 +1692,9 @@ prep-keyimport() {
         ;;
     esac
   done
+  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
 }
 
 
@@ -1859,6 +1919,9 @@ keys() {
 
     __non_interactive=0
     if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
+      __non_interactive=1
+    fi
+    if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
       __non_interactive=1
     fi
 
@@ -2887,10 +2950,10 @@ help() {
   echo "    attempts to install Docker and Docker Compose for you"
   echo "  config"
   echo "    configures Eth Docker with your choice of Ethereum clients"
-  echo "  keys ACTION"
+  echo "  keys ACTION [--non-interactive]"
   echo "    list, delete, import keys; their fee recipients; and gas fees"
   echo "    Run without ACTION to get help text"
-  echo "  update [--refresh-targets] "
+  echo "  update [--refresh-targets] [--non-interactive]"
   echo "    updates all client versions and Eth Docker itself"
   echo "    --refresh-targets will reset your custom build targets in ${ENV_FILE} to defaults"
   echo "  up|start [service-name]"
@@ -2908,10 +2971,10 @@ help() {
   echo "    executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
   echo "  terminate"
   echo "    stops the Ethereum node and destroys all data stores"
-  echo "  prune-geth"
+  echo "  prune-geth [--non-interactive]"
   echo "    legacy command - stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
   echo "    consider a resync with PBSS instead, \"$__me resync-execution\""
-  echo "  prune-nethermind"
+  echo "  prune-nethermind [--non-interactive]"
   echo "    restarts the Nethermind execution client and prunes its DB."
   echo "  resync-execution"
   echo "    removes the execution layer database and forces a resync."
@@ -2921,6 +2984,8 @@ help() {
   echo "    launches an interactive geth attach repl"
   echo "  help"
   echo "    print this help screen"
+  echo
+  echo "  Instead of \"--non-interactive\" you may also use the \"DEBIAN_FRONTEND=noninteractive\" environment variable"
   echo
   echo "The logs command can be appended by flags and specify the container(s). Example: "
   echo
