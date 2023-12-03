@@ -22,7 +22,7 @@ ARG USER=user
 ARG UID=10002
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
-  ca-certificates bash tzdata git \
+  ca-certificates bash tzdata git curl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -60,6 +60,11 @@ FROM debian:bookworm-slim as validator
 
 ARG USER=user
 ARG UID=10000
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+  ca-certificates bash tzdata curl \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
