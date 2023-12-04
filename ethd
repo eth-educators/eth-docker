@@ -1200,7 +1200,7 @@ update() {
         ;;
     esac
   done
-  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
     __non_interactive=1
   fi
 
@@ -1439,7 +1439,7 @@ prune-geth() {
         ;;
     esac
   done
-  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
     __non_interactive=1
   fi
 
@@ -1572,7 +1572,7 @@ prune-nethermind() {
         ;;
     esac
   done
-  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
     __non_interactive=1
   fi
 
@@ -1763,7 +1763,7 @@ prep-keyimport() {
         ;;
     esac
   done
-  if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
     __non_interactive=1
   fi
 }
@@ -1992,7 +1992,7 @@ keys() {
     if echo "$@" | grep -q '.*--non-interactive.*' 2>/dev/null ; then
       __non_interactive=1
     fi
-    if [ "${DEBIAN_FRONTEND:-}" = "noninteractive" ]; then
+    if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
       __non_interactive=1
     fi
 
@@ -3058,7 +3058,7 @@ help() {
   echo "  help"
   echo "    print this help screen"
   echo
-  echo "  Instead of \"--non-interactive\" you may also use the \"DEBIAN_FRONTEND=noninteractive\" environment variable"
+  echo "  Instead of \"--non-interactive\" you may also use the \"ETHD_FRONTEND=noninteractive\" environment variable"
   echo
   echo "The logs command can be appended by flags and specify the container(s). Example: "
   echo
