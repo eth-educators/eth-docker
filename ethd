@@ -327,6 +327,35 @@ continue? (no/yes) " yn
 }
 
 
+space() {
+  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
+  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
+
+  re='^[0-9]+$'
+  if ! [[ "${__free_space}" =~ $re ]] ; then
+    echo "Unable to determine free disk space. This is likely a bug."
+    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
+    exit 70
+  fi
+  echo
+  echo "You have $(( __free_space / 1024 / 1024 )) GiB free on ${__docker_dir}"
+  echo
+  if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
+    echo "There are no Docker volumes for this copy of ${__project_name}"
+  else
+    echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
+    dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+  fi
+  echo
+  echo "Here's the system output for total and used space on ${__docker_dir}"
+  df -h "${__docker_dir}"
+  echo
+  echo "If your Consensys Layer client takes more than 200 GiB of space, you can resync it with"
+  echo "\"${__me} resync-consensus\"."
+  echo
+  echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+}
+
 # Warn user if space is low, so they can prune
 check_disk_space() {
   __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -2980,6 +3009,8 @@ help() {
   echo "    removes the execution layer database and forces a resync."
   echo "  resync-consensus"
   echo "    removes the consensus layer database and forces a resync."
+  echo "  space"
+  echo "    show Docker volume space usage"
   echo "  attach-geth"
   echo "    launches an interactive geth attach repl"
   echo "  help"
@@ -3068,7 +3099,7 @@ fi
 
 case "$__command" in
   help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
-      |resync-execution|resync-consensus|attach-geth|keyimport)
+      |resync-execution|resync-consensus|attach-geth|keyimport|space)
     $__command "$@";;
   *)
     echo "Unrecognized command $__command"
