@@ -222,6 +222,73 @@ gas-delete() {
     esac
 }
 
+graffiti-get() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/graffiti
+    __api_data=""
+    __http_method=GET
+    call_api
+    case $__code in
+        200) echo "The graffiti for the validator with public key $__pubkey is:"; echo "$__result" | jq -r '.data.graffiti'; exit 0;;
+        400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
+        403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+    esac
+}
+
+graffiti-set() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    if [ -z "$__graffiti" ]; then
+      echo "Please specify a graffiti string"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/graffiti
+    __api_data="{\"graffiti\": \"$__graffiti\" }"
+    __http_method=POST
+    call_api
+    case $__code in
+        202) echo "The graffiti for the validator with public key $__pubkey was updated."; exit 0;;
+        400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
+        403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+    esac
+}
+
+graffiti-delete() {
+    if [ -z "$__pubkey" ]; then
+      echo "Please specify a validator public key"
+      exit 0
+    fi
+    get-token
+    __api_path=eth/v1/validator/$__pubkey/graffiti
+    __api_data=""
+    __http_method=DELETE
+    call_api
+    case $__code in
+        204) echo "The graffiti for the validator with public key $__pubkey was set back to default."; exit 0;;
+        400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
+        403) echo "A graffiti was found, but cannot be deleted. It may be in a configuration file. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
+        404) echo "The key was not found on the server, nothing to delete. Message: $(echo "$__result" | jq -r '.message')"; exit 0;;
+        500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+        *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
+    esac
+}
+
 exit-sign() {
     if [ -z "$__pubkey" ]; then
       echo "Please specify a validator public key"
@@ -922,6 +989,14 @@ usage() {
     echo "  delete-gas 0xPUBKEY"
     echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
     echo
+    echo "  get-graffiti 0xPUBKEY"
+    echo "      List graffiti set for the validator with public key 0xPUBKEY"
+    echo "      Validators will use GRAFFITI in .env by default, if not set individually"
+    echo "  set-graffiti 0xPUBKEY amount"
+    echo "      Set individual graffiti for the validator with public key 0xPUBKEY"
+    echo "  delete-graffiti 0xPUBKEY"
+    echo "      Delete individual graffiti for the validator with public key 0xPUBKEY"
+    echo
     echo "  get-api-token"
     echo "      Print the token for the keymanager API running on port ${__api_port}."
     echo "      This is also the token for the Prysm Web UI"
@@ -1047,6 +1122,19 @@ case "$3" in
     delete-gas)
         __pubkey=$4
         gas-delete
+        ;;
+    get-graffiti)
+        __pubkey=$4
+        graffiti-get
+        ;;
+    set-graffiti)
+        __pubkey=$4
+        __graffiti=$5
+        graffiti-set
+        ;;
+    delete-graffiti)
+        __pubkey=$4
+        graffiti-delete
         ;;
     sign-exit)
         __pubkey=$4

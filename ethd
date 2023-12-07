@@ -1894,6 +1894,14 @@ __keys_usage() {
   echo "  delete-gas 0xPUBKEY"
   echo "      Delete individual execution gas limit for the validator with public key 0xPUBKEY"
   echo
+  echo "  get-graffiti 0xPUBKEY"
+  echo "      List graffiti set for the validator with public key 0xPUBKEY"
+  echo "      Validators will use GRAFFITI in .env by default, if not set individually"
+  echo "  set-graffiti 0xPUBKEY amount"
+  echo "      Set individual graffiti for the validator with public key 0xPUBKEY"
+  echo "  delete-graffiti 0xPUBKEY"
+  echo "      Delete individual graffiti for the validator with public key 0xPUBKEY"
+  echo
   echo "  get-api-token"
   echo "      Print the token for the keymanager API running on port ${KEY_API_PORT:-7500}."
   echo "      This is also the token for the Prysm Web UI"
