@@ -169,7 +169,7 @@ services:
       - grafana-data:/var/lib/grafana
       - grafana-config:/etc/grafana
       - /etc/localtime:/etc/localtime:ro
-    entrypoint: ["provision-dashboards.sh"]
+    entrypoint: ["provision.sh"]
     command: /run.sh
     <<: *logging
     labels:

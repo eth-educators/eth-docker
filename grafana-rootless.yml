@@ -81,7 +81,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - prometheus
-    entrypoint: ["provision-dashboards.sh"]
+    entrypoint: ["provision.sh"]
     command: /run.sh
     <<: *logging
     labels:
