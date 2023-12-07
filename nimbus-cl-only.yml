@@ -78,6 +78,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=8008
+      - metrics.instance=consensus
 
 # Uses keystore-m file and CL, so does belong here
   validator-exit:

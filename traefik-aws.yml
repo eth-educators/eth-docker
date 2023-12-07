@@ -50,6 +50,8 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=8080
+      - metrics.instance=traefik
     <<: *logging
+
 volumes:
   certs:

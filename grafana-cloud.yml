@@ -38,6 +38,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9090
+      - metrics.instance=prometheus
 
   ethereum-metrics-exporter:
     restart: "unless-stopped"
@@ -54,6 +55,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9090
+      - metrics.instance=ethereum-metrics-exporter
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -77,6 +79,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9100
+      - metrics.instance=node-exporter
 
   blackbox-exporter:
     restart: "unless-stopped"
@@ -102,6 +105,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=7979
+      - metrics.instance=json-exporter
 
   cadvisor:
     restart: "unless-stopped"
@@ -120,6 +124,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=8080
+      - metrics.instance=cadvisor
 
   promtail:
     image: grafana/promtail:latest
@@ -139,6 +144,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9080
+      - metrics.instance=promtail
 
 volumes:
   prom-data:

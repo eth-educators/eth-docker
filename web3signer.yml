@@ -43,6 +43,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9001
+      - metrics.instance=web3signer
 
   postgres:
     restart: "unless-stopped"

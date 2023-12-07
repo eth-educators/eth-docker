@@ -70,6 +70,14 @@ handle_docker_sudo() {
   fi
   set -e
 
+  __docker_version=$(docker --version | awk '{ gsub(/,/, "", $3); print $3 }')
+  __docker_major_version=$(docker --version | awk '{ split($3, version, "."); print version[1]; }')
+  if [ "${__docker_major_version}" -lt 23 ]; then
+    __old_docker=1
+    echo "Docker ${__docker_version} detected"
+  else
+    __old_docker=0
+  fi
   __docker_sudo=""
   if ! docker images >/dev/null 2>&1; then
     echo "Will use sudo to access Docker"
@@ -3168,4 +3176,13 @@ elif [ "${__old_compose}" -eq 1 ]; then
   echo
   echo "You can install it with \"sudo apt update && sudo apt install docker-compose-v2\"."
   echo "You can remove the old docker-compose with \"sudo apt-mark manual docker.io && sudo apt --autoremove remove docker-compose\"."
+fi
+
+if [ "${__old_docker}" -eq 1 ]; then
+  echo
+  echo "Docker version ${__docker_version} detected. This version no longer receives security updates."
+  echo "Please update to a current version."
+  echo
+  echo "This should be as simple as \"sudo apt update && sudo apt dist-upgrade\" on Debian/Ubuntu"
+  echo "or updating Docker Desktop on macOS and Windows."
 fi

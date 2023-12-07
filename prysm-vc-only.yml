@@ -79,6 +79,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=8009
+      - metrics.instance=validator
 
   create-wallet:
     profiles: ["tools"]

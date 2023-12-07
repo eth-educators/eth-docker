@@ -97,6 +97,8 @@ services:
       - metrics.scrape=true
       - metrics.path=/debug/metrics/prometheus
       - metrics.port=6060
+      - metrics.instance=execution
+
 volumes:
   erigon-el-data:
   jwtsecret:

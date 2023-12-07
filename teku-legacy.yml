@@ -89,6 +89,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=8008
+      - metrics.instance=consensus
 
   wipe-db:
     profiles: ["tools"]
