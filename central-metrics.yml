@@ -24,4 +24,5 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9090
+      - metrics.instance=ethereum-metrics-exporter
     <<: *logging

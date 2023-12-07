@@ -80,6 +80,8 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=6060
+      - metrics.instance=execution
+
 volumes:
   besu-eth1-data:
   jwtsecret:
