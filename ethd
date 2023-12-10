@@ -532,7 +532,7 @@ source_build() {
           docompose build --pull --no-cache consensus
       fi
       ;;
-    *teku.yml* | *teku-cl-only.yml* )
+    *teku.yml* | *teku-legacy.yml* | *teku-cl-only.yml* )
       var="TEKU_DOCKERFILE"
       build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
       if [ "${build}" = "Dockerfile.source" ]; then
@@ -546,7 +546,7 @@ source_build() {
           docompose build --pull --no-cache consensus
       fi
       ;;
-    *nimbus.yml* | *nimbus-cl-only.yml* )
+    *nimbus.yml* | *nimbus-legacy.yml* | *nimbus-cl-only.yml* )
       var="NIM_DOCKERFILE"
       build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
       if [ "${build}" = "Dockerfile.source" ]; then
@@ -610,7 +610,7 @@ migrate_compose_file() {
       if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
 # ENV version 3 and earlier use the legacy files
         if [[ "${__ymlfile}" = "nimbus.yml" ]] || [[ "${__ymlfile}" = "teku.yml" ]] \
-            && [[ -n "${__source_ver}" ]] && [[ "${__source_ver}" -gt 3 ]]; then
+            && [[ -n "${__source_ver:-}" ]] && [[ "${__source_ver}" -gt 3 ]]; then
           break
         else
           __ymlfile=${TO_YML[index]}
@@ -987,7 +987,7 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
 # shellcheck disable=SC2076
   if [[ "${value}" =~ "prysm.yml" || "${value}" =~ "lighthouse.yml" || "${value}" =~ "teku.yml" \
     || "${value}" =~ "nimbus.yml" || "${value}" =~ "lodestar.yml" || "${value}" =~ "-cl-only.yml" \
-    || "${value}" =~ "-vc-only.yml" ]]; then
+    || "${value}" =~ "-legacy.yml" || "${value}" =~ "-vc-only.yml" ]]; then
     # Check for rewards
     var="FEE_RECIPIENT"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -1709,7 +1709,8 @@ prep-keyimport() {
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ ! "${value}" =~ "prysm.yml" ]] && [[ ! "${value}" =~ "lighthouse.yml" ]] && [[ ! "${value}" =~ "teku.yml" ]] \
-       && [[ ! "${value}" =~ "nimbus.yml" ]] && [[ ! "${value}" =~ "lodestar.yml" ]] && [[ ! "${value}" =~ "vc-only.yml" ]]; then
+       && [[ ! "${value}" =~ "nimbus.yml" ]] && [[ ! "${value}" =~ "lodestar.yml" ]] && \
+       [[ ! "${value}" =~ "-legacy.yml" ]] && [[ ! "${value}" =~ "vc-only.yml" ]]; then
     echo "You do not appear to be running a validator client. Aborting."
     exit 1
   fi
@@ -2777,6 +2778,27 @@ handle_error() {
 }
 
 
+check_legacy() {
+  var="COMPOSE_FILE"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+
+# Literal match intended
+# shellcheck disable=SC2076
+  if [[ "${value}" =~ "-legacy.yml" ]]; then
+    if [[ "${value}" =~ "teku-legacy.yml" ]]; then
+      __client="Teku"
+    elif [[ "${value}" =~ "nimbus-legacy.yml" ]]; then
+      __client="Nimbus"
+    else
+      __client="Mystery"
+    fi
+    if ! (whiptail --title "All-in-one detected" --yesno "All-in-one client ${__client} detected. Re-configuration requires re-import of the keys, which has to be treated like a move with 15 minutes downtime, to avoid slashing. Do you wish to continue, regardless?" 10 65 --defaultno) then
+      echo "Aborting config"
+      exit 0
+    fi
+  fi
+}
+
 config() {
   check_for_snap
   # Do not track changes to ext-network.yml
@@ -2793,6 +2815,7 @@ config() {
 
   __during_config=1
 
+  check_legacy
   query_network
   query_deployment
   case "${__deployment}" in
@@ -2972,7 +2995,7 @@ version() {
       docompose exec validator validator --version
       echo
       ;;&
-    *nimbus.yml* | *nimbus-cl-only* )
+    *nimbus.yml* | *nimbus-legacy.yml* |  *nimbus-cl-only* )
       docompose exec consensus nimbus_beacon_node --version
       echo
       ;;&
@@ -2980,7 +3003,7 @@ version() {
       docompose exec validator nimbus_validator_client --version
       echo
       ;;&
-    *teku.yml* | *teku-cl-only* )
+    *teku.yml* | *teku-legacy.yml* | *teku-cl-only* )
       docompose exec consensus /opt/teku/bin/teku --version
       echo
       ;;&
