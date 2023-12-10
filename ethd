@@ -615,8 +615,8 @@ migrate_compose_file() {
     for index in "${!FROM_YML[@]}"; do
       if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
 # ENV version 3 and earlier use the legacy files
-        if [[ "${__ymlfile}" = "nimbus.yml" ]] || [[ "${__ymlfile}" = "teku.yml" ]] \
-            && [[ -n "${__source_ver:-}" ]] && [[ "${__source_ver}" -gt 3 ]]; then
+        if [[ "${__ymlfile}" = "nimbus.yml" || "${__ymlfile}" = "teku.yml" ]] \
+            && [[ -n "${__source_ver:-}" && "${__source_ver}" -gt 3 ]]; then
           break
         else
           __ymlfile=${TO_YML[index]}
