@@ -1,3 +1,4 @@
+# Teku consensus also handles validator keys: All In One
 version: "3.9"
 x-logging: &logging
   logging:
