@@ -60,9 +60,6 @@ services:
       - --engine-api
       - --engine-api-port=${EE_PORT:-8551}
       - --engine-api-address=0.0.0.0
-      - --engine-api-ws
-      - --engine-api-ws-port=8552
-      - --engine-api-ws-address=0.0.0.0
       - --max-peers=${EL_MAX_PEER_COUNT:-25}
       - --log-level=${LOG_LEVEL}
     labels:
