@@ -2247,6 +2247,8 @@ terminate() {
 
 
 query_network() {
+  var="NETWORK"
+  __prev_network=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
   NETWORK=$(whiptail --notags --title "Select Network" --menu \
   "Which network do you want to run on?" 13 65 6 \
   "holesky" "Holešovice Testnet" \
@@ -2280,6 +2282,11 @@ screen.\n\nCustom testnets only work with a URL to fetch their configuration fro
       done
       ;;
   esac
+  if [ ! "${NETWORK}" = "${__prev_network}" ]; then
+    __network_change=1
+  else
+    __network_change=0
+  fi
 }
 
 
@@ -2524,8 +2531,12 @@ consensus client? (right-click to paste)" 10 60 "${REMOTE_BEACON}" 3>&1 1>&2 2>&
 
 
 query_checkpoint_beacon() {
-  var="RAPID_SYNC_URL"
-  RAPID_SYNC_URL=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  if [ "${__minty_fresh}" -eq 1 ] || [ "${__network_change}" -eq 1 ]; then
+    RAPID_SYNC_URL=""
+  else
+    var="RAPID_SYNC_URL"
+    RAPID_SYNC_URL=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  fi
   if [ -z "${RAPID_SYNC_URL}" ]; then
     case "${NETWORK}" in
       "sepolia")
@@ -2549,10 +2560,10 @@ query_checkpoint_beacon() {
     esac
   fi
 
-  RAPID_SYNC_URL=$(whiptail --title "Configure checkpoint URL" --inputbox "What is the URL for your checkpoint \
-provider? (right-click to paste)" 10 65 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
+  RAPID_SYNC_URL=$(whiptail --title "Configure CL checkpoint sync URL" --inputbox "What is the URL for your CL \
+checkpoint sync provider? (right-click to paste)" 10 65 "${RAPID_SYNC_URL}" 3>&1 1>&2 2>&3)
 
-  echo "Your checkpoint URL is:" "${RAPID_SYNC_URL}"
+  echo "Your checkpoint sync URL is:" "${RAPID_SYNC_URL}"
 }
 
 
@@ -2568,9 +2579,11 @@ query_graffiti() {
 
 
 query_rapid_sync() {
-  if (whiptail --title "Checkpoint Sync" --yesno "Do you want to use CL rapid sync with remote checkpoint?" 10 65) then
-      query_checkpoint_beacon
+  if [[ "${NETWORK}" =~ ^https?:// ]]; then
+    RAPID_SYNC_URL=""
+    return
   fi
+  query_checkpoint_beacon
 }
 
 

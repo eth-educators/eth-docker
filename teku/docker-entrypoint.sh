@@ -41,13 +41,13 @@ fi
 if [ -n "${RAPID_SYNC_URL:+x}" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Teku archive node cannot use checkpoint sync: Syncing from genesis."
-        __rapid_sync=""
+        __rapid_sync="--ignore-weak-subjectivity-period-enabled=true"
     else
         __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
         echo "Checkpoint sync enabled"
     fi
 else
-    __rapid_sync=""
+    __rapid_sync="--ignore-weak-subjectivity-period-enabled=true"
 fi
 
 if [[ "${NETWORK}" =~ ^https?:// ]]; then
@@ -69,9 +69,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   fi
   bootnodes="$(paste -s -d, "/var/lib/teku/testnet/${config_dir}/bootstrap_nodes.txt")"
   set +e
-  if [ -z "${__rapid_sync}" ]; then
-    __rapid_sync="--initial-state=/var/lib/teku/testnet/${config_dir}/genesis.ssz"
-  fi
+  __rapid_sync="--initial-state=/var/lib/teku/testnet/${config_dir}/genesis.ssz --ignore-weak-subjectivity-period-enabled=true"
   __network="--network=/var/lib/teku/testnet/${config_dir}/config.yaml --p2p-discovery-bootnodes=${bootnodes} \
 --data-storage-non-canonical-blocks-enabled=true --Xlog-include-p2p-warnings-enabled \
 --metrics-block-timing-tracking-enabled --Xmetrics-blob-sidecars-storage-enabled=true --Xtrusted-setup=/var/lib/teku/testnet/${config_dir}/trusted_setup.txt \
