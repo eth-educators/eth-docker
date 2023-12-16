@@ -42,12 +42,18 @@ if [ -n "${RAPID_SYNC_URL:+x}" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Teku archive node cannot use checkpoint sync: Syncing from genesis."
         __rapid_sync="--ignore-weak-subjectivity-period-enabled=true"
+      if [ "${NETWORK}" = "holesky" ]; then
+        __rapid_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
+      fi
     else
         __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
         echo "Checkpoint sync enabled"
     fi
 else
     __rapid_sync="--ignore-weak-subjectivity-period-enabled=true"
+    if [ "${NETWORK}" = "holesky" ]; then
+      __rapid_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
+    fi
 fi
 
 if [[ "${NETWORK}" =~ ^https?:// ]]; then
