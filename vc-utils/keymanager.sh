@@ -655,7 +655,7 @@ and secrets directories into .eth/validator_keys instead."
     __registered=0
     __reg_skipped=0
     __reg_errored=0
-    while IFS= read -r __keyfile; do
+    for __keyfile in $(find "$__key_root_dir" -maxdepth "$__depth" -name '*keystore*.json'); do
         [ -f "$__keyfile" ] || continue
         __keydir=$(dirname "$__keyfile")
         __pubkey=0x$(jq -r '.pubkey' "$__keyfile")
@@ -834,7 +834,7 @@ and secrets directories into .eth/validator_keys instead."
           fi
         fi
         echo
-    done < <(find "$__key_root_dir" -maxdepth "$__depth" -name '*keystore*.json')
+    done
 
     echo "Imported $__imported keys"
     if [ "$WEB3SIGNER" = "true" ]; then
