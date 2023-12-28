@@ -655,7 +655,10 @@ and secrets directories into .eth/validator_keys instead."
     __registered=0
     __reg_skipped=0
     __reg_errored=0
-    for __keyfile in $(find "$__key_root_dir" -maxdepth "$__depth" -name '*keystore*.json'); do
+# See https://www.shellcheck.net/wiki/SC2044 as for why
+# Using file descriptor 3 so this doesn't conflict with the "different passwords" read
+# Could also use dialog, but would need to make sure it exists
+    while IFS= read -r -u 3 __keyfile; do
         [ -f "$__keyfile" ] || continue
         __keydir=$(dirname "$__keyfile")
         __pubkey=0x$(jq -r '.pubkey' "$__keyfile")
@@ -834,7 +837,7 @@ and secrets directories into .eth/validator_keys instead."
           fi
         fi
         echo
-    done
+    done 3< <(find "$__key_root_dir" -maxdepth "$__depth" -name '*keystore*.json')
 
     echo "Imported $__imported keys"
     if [ "$WEB3SIGNER" = "true" ]; then
