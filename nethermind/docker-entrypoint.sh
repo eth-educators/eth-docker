@@ -72,7 +72,12 @@ else
   fi
   __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
-    __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace --Pruning.FullPruningThresholdMb=375810"
+    __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace"
+    if [ "${NETWORK}" = "mainnet" ]; then
+      __prune="${__prune} --Pruning.FullPruningThresholdMb=375810"
+    else
+      __prune="${__prune} --Pruning.FullPruningThresholdMb=51200"
+    fi
   fi
   if [ "${__memtotal}" -gt 30 ]; then
     __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"

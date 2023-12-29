@@ -380,17 +380,29 @@ check_disk_space() {
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
   var="AUTOPRUNE_NM"
   auto_prune=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  var="NETWORK"
+  NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+
+  if [ "${NETWORK}" = "mainnet" ]; then
+    __min_free=314572800
+    __min_gib=300
+    __safe_prune=250
+  else
+    __min_free=31457280
+    __min_gib=30
+    __safe_prune=25
+  fi
 
 # Literal match intended
 # shellcheck disable=SC2076
-  if [[ "${value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt 314572800 ]]; then
+  if [[ "${value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt "${__min_free}" ]]; then
     echo ""
-    echo "You are running Nethermind and have less than 300 GiB of free disk space."
+    echo "You are running Nethermind and have less than ${__min_gib} GiB of free disk space."
     if [ "${auto_prune}" = true ]; then
       echo "It should currently be auto-pruning, check logs with \"$__me logs -f --tail 500 execution | grep \
 Full\". Free space:"
     else
-      echo "If the below reads above 250 GiB free, prune it with \"$__me prune-nethermind\""
+      echo "If the below reads above ${__safe_prune} GiB free, prune it with \"$__me prune-nethermind\""
     fi
     echo ""
     df -h "${__docker_dir}"
@@ -410,15 +422,35 @@ Full\". Free space:"
     echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
     echo
   elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
-    echo ""
+    echo
     echo "You are running Geth and have less than 100 GiB of free disk space."
     echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"$__me resync-execution\"."
-    echo ""
+    echo
     echo "Alternatively, if you don't feel ready for a resync and have more than 40 GiB free, you can prune \
 with \"$__me prune-geth\"."
     echo ""
     df -h "${__docker_dir}"
     echo ""
+    if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
+      echo "There are no Docker volumes for this copy of ${__project_name}"
+      echo
+    else
+      echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
+      dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+      echo
+      echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
+      echo "\"${__me} resync-consensus\"."
+      echo
+    fi
+    echo
+    echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+    echo
+  elif [[ "${value}" =~ "besu.yml" ]] && [[ "${__free_space}" -lt 52428800 ]]; then
+    echo
+    echo "You are running Besu and have less than 50 GiB of free disk space."
+    echo
+    echo "If this is a long-running Besu, you may prune trie-logs with \"$__me prune-besu\"."
+    echo
     if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
       echo "There are no Docker volumes for this copy of ${__project_name}"
       echo
@@ -440,7 +472,6 @@ with \"$__me prune-geth\"."
     df -h "${__docker_dir}"
     echo ""
     echo "Pruning does not appear an option for your client mix."
-    echo "For Besu, consider a resync."
     echo "If total space is less than 1.8 TiB, consider cloning to a larger drive."
     echo ""
     if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
@@ -1574,6 +1605,102 @@ database\". During the \"Compacting database\" stage it may not output logs for 
 }
 
 
+prune-besu() {
+# Needs to be in a release first
+  echo "Trie log pruning is not yet in a released Besu version. Aborting."
+  return 0
+  __non_interactive=0
+  while :
+  do
+    if [ -z "${1+x}" ]; then
+      break
+    fi
+    case "$1" in
+      --non-interactive)
+        __non_interactive=1
+        shift
+        ;;
+      *)
+        echo "Error: Unknown option: $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
+
+  if [ ! -f "${ENV_FILE}" ]; then
+    echo "${ENV_FILE} configuration file not found, aborting."
+    exit 1
+  fi
+
+  if ! grep -q '^COMPOSE_FILE=.*besu\.yml' "${ENV_FILE}" 2>/dev/null ; then
+    echo "You do not appear to be using Besu, aborting."
+    exit 1
+  fi
+
+  # Check for archive node
+  var="ARCHIVE_NODE"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  if [[ "${value}" = "true" ]]; then
+    echo "Besu is an archive node: Aborting."
+    exit 1
+  fi
+
+  rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
+  regex='^EL_RPC_PORT=([0-9]+)'
+  if [[ ! "${rpc_line}" =~ ${regex} ]]; then
+    echo "Unable to determine EL_RPC_PORT, aborting."
+    exit 1
+  else
+    rpc_port="${BASH_REMATCH[1]}"
+  fi
+
+  set +e
+  sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" \
+  --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+  exitstatus=$?
+  set -e
+  if [ $exitstatus -ne 0 ]; then
+    echo "Unable to connect to Besu: Is it running?"
+    echo "Output: ${sync_status}"
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [[ ! "${sync_status}" =~ "false" ]]; then
+    echo "Besu is not done syncing yet. Sync status:"
+    echo "${sync_status}"
+    echo
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [ $__non_interactive = 0 ]; then
+    while true; do
+      read -rp "WARNING - this will stop Besu and prune its trie-logs. Do you wish to continue? (No/Yes) " yn
+      case $yn in
+        [Yy][Ee][Ss] ) break;;
+        * ) echo "Aborting, no changes made"; exit 130;;
+      esac
+    done
+  fi
+
+  echo
+  echo "Starting Besu prune"
+  echo
+  docompose run --rm set-prune-marker "touch /var/lib/besu/prune-marker"
+  docompose stop execution && docompose rm -f execution
+  start
+  echo
+  echo "Prune is running, you can observe it with '$__me logs -f execution'"
+  echo
+  echo "When prune is done, Besu will automatically start again."
+  echo
+}
+
+
 prune-nethermind() {
   __non_interactive=0
   while :
@@ -1624,8 +1751,19 @@ prune-nethermind() {
     exit 70
   fi
 
-  if [ "${__free_space}" -lt 262144000 ]; then
-    echo "You do not have enough free disk space. Make sure this reads at least 250G free (Avail):"
+  var="NETWORK"
+  NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+
+  if [ "${NETWORK}" = "mainnet" ]; then
+    __min_free=262144000
+    __min_gib=250
+  else
+    __min_free=26214400
+    __min_gib=25
+  fi
+
+  if [ "${__free_space}" -lt ${__min_free} ]; then
+    echo "You do not have enough free disk space. Make sure this reads at least ${__min_gib}G free (Avail):"
     df -h "${__docker_dir}"
     echo
     echo "Aborting."
@@ -1667,7 +1805,12 @@ prune-nethermind() {
   if [ $__non_interactive = 0 ]; then
     while true; do
       if [ "${auto_prune}" = true ]; then
-        echo "Nethermind should auto-prune below 350 GiB free. Check logs with \"$__me logs -f --tail 500 \
+        if [ "${NETWORK}" = "mainnet" ]; then
+          threshold="350"
+        else
+          threshold="50"
+        fi
+        echo "Nethermind should auto-prune below ${threshold} GiB free. Check logs with \"$__me logs -f --tail 500 \
 execution | grep Full\" to see whether it is."
       fi
       read -rp "WARNING - this will prune Nethermind's database in the background. Do you wish to continue? (No/Yes) " yn
@@ -3111,6 +3254,8 @@ help() {
   echo "    consider a resync with PBSS instead, \"$__me resync-execution\""
   echo "  prune-nethermind [--non-interactive]"
   echo "    restarts the Nethermind execution client and prunes its DB."
+  echo "  prune-besu [--non-interactive]"
+  echo "    stops the Besu execution client and prunes trie-logs."
   echo "  resync-execution"
   echo "    removes the execution layer database and forces a resync."
   echo "  resync-consensus"
@@ -3205,7 +3350,7 @@ fi
 
 case "$__command" in
   help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
-      |resync-execution|resync-consensus|attach-geth|keyimport|space)
+      |prune-besu|resync-execution|resync-consensus|attach-geth|keyimport|space)
     $__command "$@";;
   *)
     echo "Unrecognized command $__command"
