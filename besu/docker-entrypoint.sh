@@ -59,6 +59,17 @@ else
   __prune="--data-storage-format=BONSAI --sync-mode=X_SNAP"
 fi
 
+if [ -f /var/lib/besu/prune-marker ]; then
+  rm -f /var/lib/besu/prune-marker
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Besu is an archive node. Not attempting to prune trie-logs: Aborting."
+    exit 1
+  fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
+  exec "$@" ${__network} ${__prune} ${EL_EXTRAS} x-trie-log prune
+else
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
+fi

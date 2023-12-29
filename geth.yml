@@ -90,6 +90,7 @@ services:
       - geth-eth1-data:/var/lib/goethereum
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
+
 volumes:
   geth-eth1-data:
   jwtsecret:
