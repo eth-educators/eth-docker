@@ -32,8 +32,13 @@ fi
 echo "Checking whether machine is online"
 echo
 ping -c 4 1.1.1.1 && { echo; echo "Machine is online, please disconnect from Internet"; exit 1; }
-ping -c 4 8.8.8.8 && { echo; echo "Machine is online, please disconnect from Internet"; exit 1; }
-echo "Safely offline. Running ethdo to prep withdrawal address change."
+__code=$?
+if [ "$__code" -eq 2 ]; then
+  echo "Safely offline. Running ethdo to prep withdrawal address change."
+else
+  echo "Ping failed, but with error code $__code - the machine may not be offline. Aborting."
+  exit 1
+fi
 echo
 while true; do
     read -rp "What is your desired Ethereum withdrawal address in 0x... format? : " __address
