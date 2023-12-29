@@ -747,9 +747,6 @@ delete_erigon() {
 
 
 upgrade_postgres() {
-# Enable this when ready
-  return
-
   # Check for web3signer
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
