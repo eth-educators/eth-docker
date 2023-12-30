@@ -78,7 +78,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   __rapid_sync="--initial-state=/var/lib/teku/testnet/${config_dir}/genesis.ssz --ignore-weak-subjectivity-period-enabled=true"
   __network="--network=/var/lib/teku/testnet/${config_dir}/config.yaml --p2p-discovery-bootnodes=${bootnodes} \
 --data-storage-non-canonical-blocks-enabled=true --Xlog-include-p2p-warnings-enabled \
---metrics-block-timing-tracking-enabled --Xmetrics-blob-sidecars-storage-enabled=true --Xtrusted-setup=/var/lib/teku/testnet/${config_dir}/trusted_setup.txt \
+--metrics-block-timing-tracking-enabled --Xmetrics-blob-sidecars-storage-enabled=true \
 --Xpeer-rate-limit=100000 --Xpeer-request-limit=1000"
 else
   __network="--network=${NETWORK}"

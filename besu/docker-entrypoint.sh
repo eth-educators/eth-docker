@@ -46,8 +46,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   bootnodes="$(paste -s -d, "/var/lib/besu/testnet/${config_dir}/bootnode.txt")"
   set +e
   __network="--genesis-file=/var/lib/besu/testnet/${config_dir}/besu.json --bootnodes=${bootnodes} \
---kzg-trusted-setup=/var/lib/besu/testnet/${config_dir}/trusted_setup.txt --Xfilter-on-enr-fork-id=true \
---rpc-http-api=ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,ENGINE,TRACE,WEB3"
+--Xfilter-on-enr-fork-id=true --rpc-http-api=ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,ENGINE,TRACE,WEB3"
 else
   __network="--network ${NETWORK} --rpc-http-api WEB3,ETH,NET"
 fi
