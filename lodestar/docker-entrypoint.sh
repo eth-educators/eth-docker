@@ -49,8 +49,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   bootnodes="$(paste -s -d, "/var/lib/lodestar/consensus/testnet/${config_dir}/bootstrap_nodes.txt")"
   set +e
   __network="--paramsFile=/var/lib/lodestar/consensus/testnet/${config_dir}/config.yaml --genesisStateFile=/var/lib/lodestar/consensus/testnet/${config_dir}/genesis.ssz \
---bootnodes=${bootnodes} --network.connectToDiscv5Bootnodes --chain.trustedSetup=/var/lib/lodestar/consensus/testnet/${config_dir}/trusted_setup.txt \
---rest.namespace=*"
+--bootnodes=${bootnodes} --network.connectToDiscv5Bootnodes --rest.namespace=*"
 else
   __network="--network ${NETWORK}"
 fi
