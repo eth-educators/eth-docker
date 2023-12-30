@@ -6,7 +6,7 @@ groups:
       interval: 5m
       rules:
         - uid: 5d2f7756-31fb-4fc1-84c3-c892751c07c0
-          title: crit_disk_space
+          title: Disk Space critically low
           condition: C
           data:
             - refId: A

@@ -6,7 +6,7 @@ groups:
       interval: 5m
       rules:
         - uid: f6e55538-a3a3-4dd3-8308-19437ee8a58d
-          title: disk_space
+          title: Disk Space low
           condition: C
           data:
             - refId: A
