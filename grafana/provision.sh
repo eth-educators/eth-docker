@@ -82,11 +82,6 @@ case "$CLIENT" in
     # reth_dashboard
     __url='https://raw.githubusercontent.com/paradigmxyz/reth/main/etc/grafana/dashboards/overview.json'
     __file='/etc/grafana/provisioning/dashboards/reth_dashboard.json'
-# sed is correct this way
-# shellcheck disable=SC2016
-#    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Reth Dashboard"' \
-#        | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' \
-#        | sed 's/{instance=~\\"\$instance\\"}//g' | sed 's/instance=~\\"\$instance\\",//g' >"${__file}"
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Reth Dashboard"' \
         | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
     ;;&
@@ -108,23 +103,11 @@ case "$CLIENT" in
     # SSV Operator Dashboard
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_operator_performance.json'
     __file='/etc/grafana/provisioning/dashboards/ssv_operator_dashboard.json'
-# sed is correct this way
-# shellcheck disable=SC2016
-#    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Operator Performance Dashboard"' \
-#        | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
-#        | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/instance=~\\"\$instance\.\*\\",//g' \
-#        | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Operator Performance Dashboard"' \
         | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
         | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
     __file='/etc/grafana/provisioning/dashboards/ssv_node_dashboard.json'
-# sed is correct this way
-# shellcheck disable=SC2016
-#    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Node Dashboard"' \
-#        | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
-#        | sed 's/{instance=~\\"\$instance\.\*\\"}//g' | sed 's/instance=~\\"\$instance\.\*\\",//g' \
-#        | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Node Dashboard"' \
         | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
         | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
@@ -137,7 +120,7 @@ case "$CLIENT" in
       __file='/etc/grafana/provisioning/dashboards/docker-host-container-overview.json'
       wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
       # Log file dashboard (via loki)
-      __id=18700
+      __id=20223
       __revision=$(wget -t 3 -T 10 -qO - https://grafana.com/api/dashboards/${__id} | jq .revision)
       __url="https://grafana.com/api/dashboards/${__id}/revisions/${__revision}/download"
       __file='/etc/grafana/provisioning/dashboards/eth-docker-logs.json'
