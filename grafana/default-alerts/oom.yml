@@ -1,0 +1,92 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: eth-docker
+      folder: eth-docker
+      interval: 5m
+      rules:
+        - uid: c4c5849a-640a-43e5-9908-fb7f403f9e75
+          title: Container OOM
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                editorMode: code
+                expr: increase(node_vmstat_oom_kill[2m])
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: max
+                refId: B
+                settings:
+                    mode: replaceNN
+                    replaceWithValue: 0
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 0s
+          annotations:
+            summary: A container ran out of memory and was killed by Linux
+          labels:
+            severity: critical
+          isPaused: false

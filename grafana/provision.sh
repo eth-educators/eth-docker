@@ -9,6 +9,8 @@ if [ "$(id -u)" = '0' ]; then
   exec su-exec grafana "$0" "$@"
 fi
 
+cp /tmp/grafana/provisioning/alerting/* /etc/grafana/provisioning/alerting/
+
 shopt -s extglob
 case "$CLIENT" in
   *prysm* )

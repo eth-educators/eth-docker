@@ -1,0 +1,92 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: eth-docker
+      folder: eth-docker
+      interval: 5m
+      rules:
+        - uid: c195f905-45da-4e49-8bd1-f5f94d1e2cf2
+          title: Memory use high
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                editorMode: code
+                exemplar: false
+                expr: 1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+                instant: false
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: mean
+                refId: B
+                settings:
+                    mode: dropNN
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.97
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 5m
+          annotations:
+            summary: memory usage is dangerously high at {{ humanizePercentage values.B.Value }}.
+          labels:
+            severity: critical
+          isPaused: false

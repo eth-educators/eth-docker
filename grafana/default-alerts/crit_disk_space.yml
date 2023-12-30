@@ -1,0 +1,89 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: eth-docker
+      folder: eth-docker
+      interval: 5m
+      rules:
+        - uid: 5d2f7756-31fb-4fc1-84c3-c892751c07c0
+          title: crit_disk_space
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                editorMode: code
+                expr: round((node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 2
+                        type: lt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 10m
+          annotations:
+            summary: Disk space critically low on {{ $labels.mountpoint }}, {{ $values.B }} percent free
+          labels:
+            severity: critical
+          isPaused: false
