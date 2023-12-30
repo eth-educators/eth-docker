@@ -1197,7 +1197,6 @@ update() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [ -z "${value}" ] || [ "${value}" = "latest" ]; then
       export ETHDPINNED=""
-      ${__as_owner} git checkout main
       ${__as_owner} git pull
     else
       export ETHDPINNED="${value}"
