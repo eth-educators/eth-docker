@@ -1197,7 +1197,11 @@ update() {
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     if [ -z "${value}" ] || [ "${value}" = "latest" ]; then
       export ETHDPINNED=""
-      ${__as_owner} git pull
+      __branch=$(git rev-parse --abbrev-ref HEAD)
+      if [[ "${__branch}" =~ ^tag-v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        git checkout main
+      fi
+      ${__as_owner} git pull origin main
     else
       export ETHDPINNED="${value}"
       ${__as_owner} git fetch --tags
