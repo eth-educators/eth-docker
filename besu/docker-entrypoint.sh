@@ -55,7 +55,8 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-format=FOREST --sync-mode=FULL"
 else
-  __prune="--data-storage-format=BONSAI --sync-mode=X_SNAP"
+  __prune="--data-storage-format=BONSAI --sync-mode=X_SNAP --Xsnapsync-synchronizer-flat-db-healing-enabled=true \
+--Xbonsai-trie-log-pruning-enabled=true"
 fi
 
 if [ -f /var/lib/besu/prune-marker ]; then
@@ -66,7 +67,7 @@ if [ -f /var/lib/besu/prune-marker ]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__prune} ${EL_EXTRAS} x-trie-log prune
+  exec "$@" ${__network} ${__prune} ${EL_EXTRAS} storage x-trie-log prune
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
