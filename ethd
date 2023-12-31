@@ -383,7 +383,7 @@ check_disk_space() {
   var="NETWORK"
   NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
-  if [ "${NETWORK}" = "mainnet" ]; then
+  if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
     __min_free=314572800
     __min_gib=300
     __safe_prune=250
@@ -1750,7 +1750,7 @@ prune-nethermind() {
   var="NETWORK"
   NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
-  if [ "${NETWORK}" = "mainnet" ]; then
+  if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
     __min_free=262144000
     __min_gib=250
   else
@@ -1801,7 +1801,7 @@ prune-nethermind() {
   if [ $__non_interactive = 0 ]; then
     while true; do
       if [ "${auto_prune}" = true ]; then
-        if [ "${NETWORK}" = "mainnet" ]; then
+        if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
           threshold="350"
         else
           threshold="50"

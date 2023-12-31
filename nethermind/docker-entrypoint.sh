@@ -73,7 +73,7 @@ else
   __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace"
-    if [ "${NETWORK}" = "mainnet" ]; then
+    if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
       __prune="${__prune} --Pruning.FullPruningThresholdMb=375810"
     else
       __prune="${__prune} --Pruning.FullPruningThresholdMb=51200"
