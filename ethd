@@ -2442,9 +2442,10 @@ screen.\n\nCustom testnets only work with a URL to fetch their configuration fro
 query_deployment() {
   if [ "${NETWORK}" = "gnosis" ]; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-    "What kind of deployment do you want to run?" 9 65 2 \
+    "What kind of deployment do you want to run?" 10 65 3 \
     "node" "Ethereum node - consensus, execution and validator client" \
-    "rpc" "Ethereum RPC node - consensus and execution client" 3>&1 1>&2 2>&3)
+    "rpc" "Ethereum RPC node - consensus and execution client" \
+    "validator" "Validator client only" 3>&1 1>&2 2>&3)
   elif uname -a | grep -q aarch64; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
     "What kind of deployment do you want to run?" 10 65 3 \
