@@ -68,7 +68,7 @@ At this point your Live USB will no longer be needed.
 
 ## Broadcast changes to the chain
 
-### Using the beacocha.in explorer
+### Using the beaconcha.in explorer
 
 Did I mention to **triple-check the withdrawal address you have set? You can only set this once!**
 
