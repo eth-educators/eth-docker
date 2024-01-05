@@ -106,7 +106,7 @@ upgrade_compose() {
   if [[ "$__distro" = "ubuntu" ]]; then
     if [ "${__os_major_version}" -lt 20 ]; then
       echo "${__project_name} cannot update Docker Compose on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 20.04 and then 22.04."
+      echo "Consider upgrading to 20.04, then 22.04 and then 24.04."
       exit 1
     fi
     ${__auto_sudo} apt-get update
@@ -124,9 +124,9 @@ upgrade_compose() {
     echo "Removed docker-compose"
   elif [[ "$__distro" =~ "debian" ]]; then
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg
-    if [ "${__os_major_version}" -lt 10 ]; then
+    if [ "${__os_major_version}" -lt 11 ]; then
         echo "${__project_name} cannot update Docker Compose on Debian ${__os_major_version}."
-        echo "Consider upgrading to 10, then 11 and then 12."
+        echo "Consider upgrading to 11 and then 12."
         exit 1
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -243,7 +243,7 @@ continue? (no/yes) " yn
   if [[ "$__distro" = "ubuntu" ]]; then
     if [ "${__os_major_version}" -lt 20 ]; then
       echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 20.04 and then 22.04."
+      echo "Consider upgrading to 20.04, then 22.04 and then 24.04."
       exit 1
     fi
     if [ -z "$(command -v docker)" ]; then
@@ -275,9 +275,9 @@ continue? (no/yes) " yn
     if [ -z "$(command -v docker)" ]; then
       ${__auto_sudo} apt-get update
       ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
-      if [ "${__os_major_version}" -lt 10 ]; then
+      if [ "${__os_major_version}" -lt 11 ]; then
         echo "${__project_name} cannot install Docker on Debian ${__os_major_version}."
-        echo "Consider upgrading to 10, then 11 and then 12."
+        echo "Consider upgrading to 11 and then 12."
         exit 1
       fi
         ${__auto_sudo} mkdir -p /etc/apt/keyrings
@@ -1112,15 +1112,15 @@ nag_os_version() {
   if [[ "$__distro" = "ubuntu" ]]; then
     if [ "${__os_major_version}" -lt 20 ]; then
      echo
-     echo "Ubuntu ${__os_major_version} is older than the recommended 22.04 or 20.04 version."
+     echo "Ubuntu ${__os_major_version} is older than the recommended 24.04, 22.04 or 20.04 version."
      echo
     fi
   fi
 
   if [[ "$__distro" =~ "debian" ]]; then
-    if [ "${__os_major_version}" -lt 10 ]; then
+    if [ "${__os_major_version}" -lt 11 ]; then
      echo
-     echo "Debian ${__os_major_version} is older than the recommended 10, 11 or 12 version."
+     echo "Debian ${__os_major_version} is older than the recommended 12 or 11 version."
      echo
     fi
   fi
