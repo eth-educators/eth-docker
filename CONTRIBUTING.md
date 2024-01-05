@@ -5,7 +5,7 @@ Contributions are welcome. All contributed code will be covered by the Apache Li
 ## Linting
 
 eth-docker CI uses [pre-commit](https://pre-commit.com/) to lint all code within the repo. Add it to your local
-copy with `pip install pre-commit` and `pre-commit install`.
+copy with `apt install pre-commit` and `pre-commit install`.
 
 This repo uses a squash-and-merge workflow to avoid extra merge commits. After forking it, create an `upstream` remote
 with `git remote add upstream https://github.com/eth-educators/eth-docker.git`, and create a git alias with
