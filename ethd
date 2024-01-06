@@ -1393,6 +1393,7 @@ resync-execution() {
     * ) echo "Aborting."; exit 130;;
   esac
 
+  __el_volume="$(basename "$(realpath .)")_${__el_volume}"
   echo "Stopping ${__el_client} container"
   docompose stop execution && docompose rm -f execution
   dodocker volume rm "$(dodocker volume ls -q -f "name=${__el_volume}")"
@@ -1442,6 +1443,7 @@ resync-consensus() {
     * ) echo "Aborting."; exit 130;;
   esac
 
+  __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
   echo "Stopping ${__cl_client} container"
   docompose stop consensus && docompose rm -f consensus
   if [ "${__cl_volume}" = "wipe-db" ]; then
@@ -1608,7 +1610,9 @@ database\". During the \"Compacting database\" stage it may not output logs for 
 prune-besu() {
 # Needs to be in a release first
   echo "Trie log pruning is not yet in a released Besu version. Aborting."
-  return 0
+  if true; then
+    return 0
+  fi
   __non_interactive=0
   while :
   do
@@ -1833,6 +1837,7 @@ execution | grep Full\" to see whether it is."
   if [ $exitstatus -ne 0 ]; then
     echo "Unable to start prune, error code ${exitstatus}. This is likely a bug."
     echo "An attempt to run it returned this: ${prune_result}"
+    # shellcheck disable=SC2028
     echo 'The command attempted was: docker compose run --rm set-prune-marker "curl -s \
 --data {\\\"method\\\":\\\"admin_prune\\\",\\\"params\\\":[],\\\"id\\\":1,\\\"jsonrpc\\\":\\\"2.0\\\"} \
 -H Content-Type:\ application/json http://execution:8545"'
@@ -2243,6 +2248,7 @@ keys() {
       exitstatus=$?
       if [ "${exitstatus}" -eq 0 ]; then
         echo "${__json}" >".eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
+# shellcheck disable=SC2320
         exitstatus=$?
         if [ "${exitstatus}" -eq 0 ]; then
           echo "Creating an exit message for validator ${__pubkey} into file \
