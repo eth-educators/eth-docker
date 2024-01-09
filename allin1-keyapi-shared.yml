@@ -1,0 +1,4 @@
+services:
+  consensus:
+    ports:
+      - ${SHARE_IP:-}:${KEY_API_PORT:-7500}:${KEY_API_PORT:-7500}/tcp

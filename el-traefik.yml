@@ -1,5 +1,4 @@
 # To be used in conjunction with erigon.yml, nethermind.yml, besu.yml, reth.yml or geth.yml
-version: "3.9"
 services:
   execution:
     labels:
