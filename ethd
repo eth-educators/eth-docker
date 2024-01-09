@@ -1545,11 +1545,6 @@ database\". During the \"Compacting database\" stage it may not output logs for 
 
 
 prune-besu() {
-# Needs to be in a release first
-  echo "Trie log pruning is not yet in a released Besu version. Aborting."
-  if true; then
-    return 0
-  fi
   __non_interactive=0
   while :
   do
