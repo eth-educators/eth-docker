@@ -712,6 +712,59 @@ ssv_switch() {
 }
 
 
+delete_reth() {
+# Enable this when Reth changes DB
+  if true; then
+    return 0
+  fi
+# Check for Reth
+  var="COMPOSE_FILE"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+# I do mean to match literally
+# shellcheck disable=SC2076
+  if [[ ! "${value}" =~ "reth.yml" ]]; then
+    return 0
+  fi
+
+# Check Reth version, only continue if on that version
+  var="RETH_DOCKER_TAG"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+# I do mean to match literally
+# shellcheck disable=SC2076
+  if [[ ! ("${value}" =~ "beta" || "${value}" = "latest") ]]; then
+    return 0
+  fi
+
+  if [ -z "$(dodocker volume ls -q -f "name=reth-el-data")" ]; then # No Reth volume
+    return 0
+  fi
+
+# Check Reth db version
+  __db_version="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=reth-el-data")":"/var/lib/reth" \
+      alpine:3 cat /var/lib/reth/db/database.version)"
+  if [ "${__db_version}" -ne "1" ]; then
+    return 0
+  fi
+
+  echo "Detected Reth. For Reth beta, it will need to be re-synced from scratch."
+  echo
+  while true; do
+    read -rp "WARNING - About to delete the Reth database. Do you wish to continue? (Y/n) " yn
+    case $yn in
+      [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 130;;
+      * ) break;;
+    esac
+  done
+
+  echo "Stopping Reth container"
+  docompose stop execution && docompose rm -f execution
+  dodocker volume rm "$(dodocker volume ls -q -f "name=reth-el-data")"
+  echo
+  echo "Reth stopped and database deleted."
+  echo
+}
+
+
 delete_erigon() {
 # Check for Erigon
   var="COMPOSE_FILE"
@@ -1269,6 +1322,7 @@ update() {
   pull_and_build
 
   delete_erigon
+  delete_reth
   upgrade_postgres
 
   echo
