@@ -122,6 +122,9 @@ services:
       - /var/lib/lighthouse
       - --beacon-nodes
       - ${CL_NODE:-http://consensus:5052}
+      - --broadcast
+      - attestations,sync-committee,blocks,subscriptions
+      - --produce-block-v3
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
@@ -208,6 +211,16 @@ services:
       - keymanager.sh
       - /var/lib/lighthouse/validators/api-token.txt
       - vc
+
+  set-cl-prune-marker:
+    profiles: ["tools"]
+    image: alpine:3
+    user: "10002:10002"
+    restart: "no"
+    volumes:
+      - lhbeacon-data:/var/lib/lighthouse
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
 
 volumes:
   lhbeacon-data:
