@@ -73,7 +73,7 @@ services:
       - --p2p-udp-port
       - ${PRYSM_UDP_PORT}
       - --p2p-max-peers
-      - ${CL_MAX_PEER_COUNT:-45}
+      - ${CL_MAX_PEER_COUNT:-70}
       - --verbosity
       - ${LOG_LEVEL}
       - --accept-terms-of-use
