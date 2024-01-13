@@ -1,0 +1,55 @@
+name: Test Grandine and Reth
+run-name: Test Grandine and Reth
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
+
+jobs:
+  test-grandine-reth:
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'test-grandine') ||
+      contains(github.event.pull_request.labels.*.name, 'test-all') ||
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create .env file
+        run: cp default.env .env
+      - name: Set Grandine/Reth
+        run: |
+          source ./.github/helper.sh
+          COMPOSE_FILE=grandine-allin1.yml:reth.yml
+          var=COMPOSE_FILE
+          set_value_in_env
+          FEE_RECIPIENT=0xDccf8451070a86183eE70D330C4c43b686E9CF86
+          var=FEE_RECIPIENT
+          set_value_in_env
+      - name: Start Grandine/Reth
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
+      - name: Test Reth
+        run: ./.github/check-service.sh execution
+      - name: Test Grandine CL
+        run: ./.github/check-service.sh consensus
+#      - name: Test Grandine VC
+#        run: ./.github/check-service.sh validator
+      - name: Set Grandine/Reth w/ Lighthouse VC
+        run: |
+          source ./.github/helper.sh
+          COMPOSE_FILE=grandine-cl-only.yml:lighthouse-vc-only.yml:reth.yml
+          var=COMPOSE_FILE
+          set_value_in_env
+      - name: Start Grandine/Reth
+        run: ./ethd up
+      - name: Pause for 30 seconds
+        run: sleep 30
+      - name: Test Reth
+        run: ./.github/check-service.sh execution
+      - name: Test Grandine CL
+        run: ./.github/check-service.sh consensus
+      - name: Test Lighthouse VC
+        run: ./.github/check-service.sh validator
