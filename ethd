@@ -1898,7 +1898,7 @@ execution | grep Full\" to see whether it is."
     exit ${exitstatus}
   fi
   echo "Nethermind returns ${prune_result}"
-  if [[ ! "${prune_result}" =~ "Starting" ]]; then
+  if [[ ! "${prune_result}" =~ [Ss]tarting ]]; then
     echo "Unable to start prune. This is likely a bug."
     exit 70
   fi
