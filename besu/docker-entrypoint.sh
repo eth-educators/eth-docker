@@ -59,6 +59,13 @@ else
 --Xbonsai-trie-log-pruning-enabled=true"
 fi
 
+__memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
+if [ "${__memtotal}" -gt 30 ]; then
+  __spec="--Xplugin-rocksdb-high-spec-enabled=true"
+else
+  __spec=""
+fi
+
 if [ -f /var/lib/besu/prune-marker ]; then
   rm -f /var/lib/besu/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -71,5 +78,5 @@ if [ -f /var/lib/besu/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
+  exec "$@" ${__network} ${__prune} ${__spec} ${EL_EXTRAS}
 fi
