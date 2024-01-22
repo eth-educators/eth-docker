@@ -90,6 +90,9 @@ services:
       # To assist with recordsize 16k in ZFS
       - --db.pagesize
       - 16K
+      # Breaking change from 2.55 on
+      - --db.size.limit
+      - 8TB
       # Memory use reduction. Not needed with 32G and does not help with 16G
       #- --batchSize
       #- 64m
