@@ -153,3 +153,7 @@ services:
 volumes:
   teku-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

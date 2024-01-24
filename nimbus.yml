@@ -165,3 +165,7 @@ volumes:
   nimbus-consensus-data:
   nimbus-vc-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}
