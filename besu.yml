@@ -56,8 +56,6 @@ services:
       - --rpc-http-max-active-connections=65536
       - --rpc-max-logs-range=65536
       - --rpc-ws-enabled
-      - --rpc-ws-api
-      - "WEB3,ETH,NET"
       - --rpc-ws-host
       - 0.0.0.0
       - --rpc-ws-port
