@@ -65,4 +65,6 @@ RUN chmod -R 755 /usr/local/bin/*
 
 USER lsconsensus
 
-ENTRYPOINT ["node", "--max-old-space-size=16384", "/usr/app/node_modules/.bin/lodestar"]
+ENV NODE_OPTIONS=--max-old-space-size=8192
+
+ENTRYPOINT ["node", "/usr/app/node_modules/.bin/lodestar"]
