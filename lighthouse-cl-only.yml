@@ -87,6 +87,16 @@ services:
       - metrics.port=8008
       - metrics.instance=consensus
 
+  set-cl-prune-marker:
+    profiles: ["tools"]
+    image: alpine:3
+    user: "10002:10002"
+    restart: "no"
+    volumes:
+      - lhconsensus-data:/var/lib/lighthouse
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
+
 volumes:
   lhconsensus-data:
   jwtsecret:

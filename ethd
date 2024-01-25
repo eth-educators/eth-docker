@@ -1912,6 +1912,102 @@ execution | grep Full\" to see whether it is."
 }
 
 
+prune-lighthouse() {
+  __non_interactive=0
+  while :
+  do
+    if [ -z "${1+x}" ]; then
+      break
+    fi
+    case "$1" in
+      --non-interactive)
+        __non_interactive=1
+        shift
+        ;;
+      *)
+        echo "Error: Unknown option: $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
+
+  if [ ! -f "${ENV_FILE}" ]; then
+    echo "${ENV_FILE} configuration file not found, aborting."
+    exit 1
+  fi
+
+  var="COMPOSE_FILE"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+# Literal match intended
+# shellcheck disable=SC2076
+  if [[ ! "${value}" =~ "lighthouse.yml" && ! "${value}" =~ "lighthouse-cl-only.yml" ]]; then
+    echo "You do not appear to be using Lighthouse, aborting."
+    exit 1
+  fi
+
+  # Check for archive node
+  var="ARCHIVE_NODE"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  if [[ "${value}" = "true" ]]; then
+    echo "Lighthouse is an archive node: Aborting."
+    exit 1
+  fi
+
+  rpc_line=$(grep '^CL_REST_PORT=' "${ENV_FILE}")
+  regex='^CL_REST_PORT=([0-9]+)'
+  if [[ ! "${rpc_line}" =~ ${regex} ]]; then
+    echo "Unable to determine CL_REST_PORT, aborting."
+    exit 1
+  else
+    rpc_port="${BASH_REMATCH[1]}"
+  fi
+
+  set +e
+  sync_status=$(docompose exec -T consensus wget -qO- "http://localhost:$rpc_port/eth/v1/node/syncing")
+  exitstatus=$?
+  set -e
+  if [ $exitstatus -ne 0 ]; then
+    echo "Unable to connect to Lighthouse: Is it running?"
+    echo "Output: ${sync_status}"
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [[ "${sync_status}" =~ "true" ]]; then # Avoid jq - if el_offline or is_optimistic or is_syncing, don't proceed
+    echo "Lighthouse is not done syncing yet. Sync status:"
+    echo "${sync_status}"
+    echo
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [ $__non_interactive = 0 ]; then
+    while true; do
+      read -rp "WARNING - this will stop Lighthouse and prune its state. Do you wish to continue? (No/Yes) " yn
+      case $yn in
+        [Yy][Ee][Ss] ) break;;
+        * ) echo "Aborting, no changes made"; exit 130;;
+      esac
+    done
+  fi
+
+  echo
+  echo "Starting Lighthouse prune"
+  echo
+  docompose run --rm set-cl-prune-marker "touch /var/lib/lighthouse/beacon/prune-marker"
+  docompose stop consensus && docompose rm -f consensus
+  start
+  echo
+  echo "Prune is running, you can observe it with '$__me logs -f consensus'"
+  echo
+  echo "When prune is done, Lighthouse will automatically start again."
+  echo
+}
+
+
 prep-keyimport() {
   if [ ! -f "${ENV_FILE}" ]; then
     echo "${ENV_FILE} configuration file not found, aborting."
@@ -3329,6 +3425,8 @@ help() {
   echo "    restarts the Nethermind execution client and prunes its DB."
   echo "  prune-besu [--non-interactive]"
   echo "    stops the Besu execution client and prunes trie-logs."
+  echo "  prune-lighthouse [--non-interactive]"
+  echo "    stops the Lighthouse consensus client and prunes state."
   echo "  resync-execution"
   echo "    removes the execution layer database and forces a resync."
   echo "  resync-consensus"
@@ -3423,7 +3521,7 @@ fi
 
 case "$__command" in
   help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
-      |prune-besu|resync-execution|resync-consensus|attach-geth|keyimport|space)
+      |prune-besu|prune-lighthouse|resync-execution|resync-consensus|attach-geth|keyimport|space)
     $__command "$@";;
   *)
     echo "Unrecognized command $__command"

@@ -54,7 +54,7 @@ if [ -n "${RAPID_SYNC_URL}" ]; then
     __prune=""
   fi
 else
-  __rapid_sync=""
+  __rapid_sync="--allow-insecure-genesis-sync"
   __prune=""
 fi
 
@@ -81,6 +81,17 @@ else
   __ipv6=""
 fi
 
+if [ -f /var/lib/lighthouse/beacon/prune-marker ]; then
+  rm -f /var/lib/lighthouse/beacon/prune-marker
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Lighthouse is an archive node. Not attempting to prune state: Aborting."
+    exit 1
+  fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS}
+  exec lighthouse db prune-states ${__network} --datadir /var/lib/lighthouse --confirm
+else
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" ${__network} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS}
+fi
