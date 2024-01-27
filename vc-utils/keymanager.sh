@@ -320,13 +320,37 @@ graffiti-delete() {
 }
 
 exit-sign() {
-    __check_pubkey "${__pubkey}"
+    if [ -z "${__pubkey}" ]; then
+      echo "Please specify a validator public key to sign an exit message for, or \"all\""
+      exit 0
+    fi
+    if [ ! "${__pubkey}" = "all" ]; then
+      __check_pubkey "${__pubkey}"
+    fi
+    __pubkeys=()
+    __api_path=eth/v1/keystores
     get-token
-    __api_path=eth/v1/validator/$__pubkey/voluntary_exit
-    __api_data=""
-    __http_method=POST
-    call_api
-    case $__code in
+    if [ "${__pubkey}" = "all" ]; then
+      __validator-list-call
+      if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
+        echo "No keys loaded, cannot sign anything"
+        return
+      else
+        __keys_to_array=$(echo "$__result" | jq -r '.data[].validating_pubkey' | tr '\n' ' ')
+# Word splitting is desired for the array
+# shellcheck disable=SC2206
+        __pubkeys+=( ${__keys_to_array} )
+      fi
+    else
+      __pubkeys+=( "${__pubkey}" )
+    fi
+
+    for __pubkey in "${__pubkeys[@]}"; do
+      __api_data=""
+      __http_method=POST
+      __api_path=eth/v1/validator/$__pubkey/voluntary_exit
+      call_api
+      case $__code in
         200) echo "Signed voluntary exit for validator with public key $__pubkey";;
         400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
@@ -334,19 +358,22 @@ exit-sign() {
         404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
-    esac
-    # This is only reached for 200
-    __result=$(echo "${__result}" | jq -c '.data')
+      esac
+      # This is only reached for 200
+      __result=$(echo "${__result}" | jq -c '.data')
 
-    echo "${__result}" >"/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
+      echo "${__result}" >"/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
 # shellcheck disable=SC2320
-    exitstatus=$?
-    if [ "${exitstatus}" -eq 0 ]; then
+      exitstatus=$?
+      if [ "${exitstatus}" -eq 0 ]; then
         echo "Writing the exit message into file ./.eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json succeeded"
-    else
+      else
         echo "Error writing exit json to file ./.eth/exit_messages/${__pubkey::10}--${__pubkey:90}-exit.json"
-    fi
+      fi
+      echo
+    done
 }
+
 
 exit-send() {
     shopt -s nullglob
@@ -1003,7 +1030,8 @@ usage() {
     echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
     echo "  delete 0xPUBKEY | all"
     echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
-    echo "      slashing protection database. \"all\" deletes all detected validators instead"
+    echo "      slashing protection database."
+    echo "      \"all\" deletes all detected validators."
     echo "  register"
     echo "      For use with web3signer only: Re-register all keys in web3signer with the validator client"
     echo
@@ -1045,8 +1073,9 @@ usage() {
     echo "  send-address-change"
     echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
     echo
-    echo "  sign-exit 0xPUBKEY"
+    echo "  sign-exit 0xPUBKEY | all"
     echo "      Create pre-signed exit message for the validator with public key 0xPUBKEY"
+    echo "      \"all\" signs an exit message for all detected validators"
     echo "  sign-exit from-keystore [--offline]"
     echo "      Create pre-signed exit messages with ethdo, from keystore files in ./.eth/validator_keys"
     echo "  send-exit"
