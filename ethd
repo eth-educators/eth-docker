@@ -2185,7 +2185,8 @@ __keys_usage() {
   echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
   echo "  delete 0xPUBKEY | all"
   echo "      Deletes the validator with public key 0xPUBKEY from the validator client, and exports its"
-  echo "      slashing protection database. \"all\" deletes all detected validators instead"
+  echo "      slashing protection database."
+  echo "      \"all\" deletes all detected validators."
   echo "  register"
   echo "      For use with web3signer only: Re-register all keys in web3signer with the validator client"
   echo
@@ -2227,12 +2228,15 @@ __keys_usage() {
   echo "  send-address-change"
   echo "      Send a change-operations.json with ethdo, setting the withdrawal address"
   echo
-  echo "  sign-exit 0xPUBKEY"
+  echo "  sign-exit 0xPUBKEY | all"
   echo "      Create pre-signed exit message for the validator with public key 0xPUBKEY"
+  echo "      \"all\" signs an exit message for all detected validators"
   echo "  sign-exit from-keystore [--offline]"
   echo "      Create pre-signed exit messages with ethdo, from keystore files in ./.eth/validator_keys"
   echo "  send-exit"
   echo "      Send pre-signed exit messages in ./.eth/exit_messages to the Ethereum chain"
+  echo
+  echo " Commands can be appended with \"--debug\" to see debug output"
 }
 
 
