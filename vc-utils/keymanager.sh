@@ -439,7 +439,7 @@ validator-delete() {
       exit 0
     fi
     if [ ! "${__pubkey}" = "all" ]; then
-      __check_pubkey
+      __check_pubkey "${__pubkey}"
     fi
     __pubkeys=()
     __api_path=eth/v1/keystores
