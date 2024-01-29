@@ -56,7 +56,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--builder --builder.urls=${MEV_NODE:-http://mev-boost:18550}"
+  __mev_boost="--builder --builder.url=${MEV_NODE:-http://mev-boost:18550}"
   echo "MEV Boost enabled"
 else
   __mev_boost=""

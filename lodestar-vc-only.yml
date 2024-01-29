@@ -90,9 +90,9 @@ services:
       - voluntary-exit
       - --dataDir
       - /var/lib/lodestar/validators
-      - --server
+      - --beaconNodes
       - ${CL_NODE:-http://consensus:5052}
-      -  --logLevel
+      - --logLevel
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
