@@ -88,8 +88,12 @@ case "$CLIENT" in
   *nethermind* )
     # nethermind_dashboard
     __url='https://raw.githubusercontent.com/NethermindEth/metrics-infrastructure/master/grafana/provisioning/dashboards/nethermind.json'
-    __file='/etc/grafana/provisioning/dashboards/nethermind_dashboard.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "prometheus_ds" then "Prometheus" else . end)' >"${__file}"
+    __file='/etc/grafana/provisioning/dashboards/nethermind_dashboardv2.json'
+    wget -t 3 -T 10 -qcO - "${__url}" >"${__file}"
+    # uid changed, removing this may undo the damage
+    if [ -f "/etc/grafana/provisioning/dashboards/nethermind_dashboard.json" ]; then
+      rm "/etc/grafana/provisioning/dashboards/nethermind_dashboard.json"
+    fi
     ;;&
   *web3signer* )
     # web3signer_dashboard
