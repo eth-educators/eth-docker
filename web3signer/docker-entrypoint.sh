@@ -7,7 +7,7 @@ if [ "$(id -u)" = '0' ]; then
 fi
 
 if [ -f /var/lib/web3signer/.migration_fatal_error ]; then
-    echo "An error occured during slashing protection database migration, that makes it unsafe to start Web3signer."
+    echo "An error occurred during slashing protection database migration, that makes it unsafe to start Web3signer."
     echo "Until this is manually remedied, Web3signer will refuse to start up."
     echo "Aborting."
     exit 1
