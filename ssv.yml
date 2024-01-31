@@ -28,7 +28,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=15000
-      - metrics.instance=ssv
+      - metrics.instance=ssv-node
 
 volumes:
   ssv-data:
