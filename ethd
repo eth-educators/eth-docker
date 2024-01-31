@@ -3098,7 +3098,7 @@ handle_error() {
       echo "Web3signer slashing protection database migration failed, after switching to the migrated data."
       echo
       echo "The slashing protection database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
-      echo "an error occured, which is likely to keep your node from functioning correctly."
+      echo "an error occurred, which is likely to keep your node from functioning correctly."
     else
       echo "Web3signer slashing protection database migration failed, but before removing the original data."
       echo

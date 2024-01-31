@@ -1,4 +1,4 @@
-# Custom Prometheus rules. Use prometheus/custom-prom.yml which will be merged intoto
+# Custom Prometheus rules. Use prometheus/custom-prom.yml which will be merged into
 # /etc/prometheus/prometheus.yml inside the prometheus container.
 #
 # You could add additional scrape targets as well as additional global sections such as remote-write.
