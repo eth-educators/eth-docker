@@ -24,7 +24,7 @@ if [[ ! -f /var/lib/nethermind/ee-secret/jwtsecret ]]; then
 fi
 
 if [[ -O "/var/lib/nethermind/ee-secret" ]]; then
-  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  # In case someone specifies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/nethermind/ee-secret
 fi
 if [[ -O "/var/lib/nethermind/ee-secret/jwtsecret" ]]; then
