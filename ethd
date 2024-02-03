@@ -1300,7 +1300,7 @@ update() {
         ;;
       *)
         echo "Error: Unknown option: $1" >&2
-        exit 1
+        shift
         ;;
     esac
   done
@@ -3393,7 +3393,23 @@ version() {
 }
 
 
-help() {
+__update_help() {
+  echo "usage: $__me update [--refresh-targets] [--non-interactive]"
+  echo
+  echo "Updates Eth Docker itself, as required the contents of \".env\", and the clients."
+  echo
+  echo "A combination of \"git pull\" for Eth Docker, some bash scripting to bring new variables from \"default.env\","
+  echo "and \"docker compose pull\" as well as \"docker compose build\" for the clients."
+  echo
+  echo "If warranted, will also offer resync when clients require it, or upgrade of PostgreSQL version."
+  echo
+  echo "\"--refresh-targets\" sets Docker tags, source targets, and repos of clients back to the defaults in \"default.env\"."
+  echo "\"--non-interactive\" does not ask questions and assumes Yes for database resyncs and migrations."
+  echo
+}
+
+
+__full_help() {
   echo "usage: $__me [-h|--help] <command>"
   echo
   echo "commands:"
@@ -3456,6 +3472,13 @@ help() {
 }
 
 
+help() {
+  case $* in
+    *update*) __update_help;;
+    *) __full_help;;
+  esac
+}
+
 # Main body from here
 ENV_FILE=.env
 __during_config=0
@@ -3471,8 +3494,8 @@ fi
 
 trap 'handle_error $? $LINENO' ERR
 
-if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]]; then
-  help
+if [[ "$#" -eq 0 || "$*" =~ "-h" ]]; then # Lazy match for -h and --help but also --histogram, so careful here
+  help "$@"
   exit 0
 fi
 
