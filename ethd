@@ -931,6 +931,46 @@ upgrade_postgres() {
 }
 
 
+__lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
+  __compose_ymls=$(sed -n -e "s/^COMPOSE_FILE=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  __dns_token=$(sed -n -e "s/^CF_DNS_API_TOKEN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  __zone_token=$(sed -n -e "s/^CF_ZONE_API_TOKEN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  __domain=$(sed -n -e "s/^DOMAIN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  if [[ ! $__compose_ymls =~ traefik-cf.yml ]]; then
+    value=""
+    return
+  elif [[ -n $__dns_token ]]; then
+    if [[ -n $__zone_token ]]; then
+      __token=$__zone_token
+    else
+      __token=$__dns_token
+    fi
+    set +e
+    value=$(docompose run --rm curl-jq sh -c \
+      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
+      -H \"Content-Type: application/json\" | jq -r '.result[0].id'" | tail -n 1)
+    __code=$?
+    if [[ "$__code" -ne 0 ]]; then
+      value=""
+      return
+    fi
+    __success=$(docompose run --rm curl-jq sh -c \
+      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
+      -H \"Content-Type: application/json\" | jq -r '.success'" | tail -n 1)
+    set -e
+    if [ "${__success}" = "true" ]; then
+      return
+    else
+      value=""
+      return
+    fi
+  else
+    value=""
+    return
+  fi
+}
+
+
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2120
 envmigrate() {
@@ -962,7 +1002,7 @@ envmigrate() {
 
   ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID \
     MEV_NODE CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL ANCIENT_DIR \
-    AUTOPRUNE_NM LOGS_LABEL CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID \
+    AUTOPRUNE_NM LOGS_LABEL CF_DNS_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID \
     GRAFANA_HOST SIREN_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP PROM_HOST HOST_IP SHARE_IP PRYSM_HOST EE_HOST \
     EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB VC_HOST DDNS_SUBDOMAIN IPV6 DDNS_PROXY RAPID_SYNC_URL \
     CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER PRYSM_PORT DOPPELGANGER \
@@ -1052,6 +1092,13 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
       fi
       # Handle & in GRAFFITI gracefully
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
+    else # empty value
+      if [ "${var}" = "CF_ZONE_ID" ]; then
+        __lookup_cf_zone
+        if [ -n "${value}" ]; then
+          sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
+        fi
+      fi
     fi
   done
   if [ "${__keep_targets}" -eq 1 ]; then
@@ -1059,6 +1106,9 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
     for var in "${TARGET_VARS[@]}"; do
       value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
       if [ -n "${value}" ]; then
+        if [[ "${var}" = "DDNS_TAG" && "${__source_ver}" -eq "7" ]]; then # Switch to ddns-updater
+          value="v2"
+        fi
         sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
       fi
     done
