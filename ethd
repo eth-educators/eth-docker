@@ -3442,11 +3442,6 @@ version() {
       docompose exec traefik traefik version
       echo
       ;;&
-    *traefik-cf.yml* )
-      echo "CloudFlare DDNS"
-      docompose exec cf-ddns grep version /app/package.json
-      echo
-      ;;&
   esac
 }
 
