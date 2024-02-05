@@ -2881,8 +2881,16 @@ query_graffiti() {
   var="GRAFFITI"
   GRAFFITI=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
-  GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
+  while true; do
+    GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
 (up to 32 characters)" 10 65 "${GRAFFITI}" 3>&1 1>&2 2>&3)
+
+    if [[ $(echo -n "${GRAFFITI}" | wc -c) -gt 32 ]]; then
+      whiptail --msgbox "The graffiti string cannot be longer than 32 characters. Emojis count as 4, each." 16 65
+    else
+      break
+    fi
+  done
 
   echo "your Graffiti is:" "${GRAFFITI}"
 }
