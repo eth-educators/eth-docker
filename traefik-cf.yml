@@ -49,26 +49,23 @@ services:
     <<: *logging
 
   cf-ddns:
-    image: ghcr.io/joshuaavalon/cloudflare-ddns:${DDNS_TAG}
+    image: qmcgaw/ddns-updater:${DDNS_TAG}
     restart: "unless-stopped"
     environment:
-      - CF_DNS__LOG_LEVEL=${LOG_LEVEL:-info}
-      - CF_DNS__AUTH__SCOPED_TOKEN=${CF_DNS_API_TOKEN}
-      - CF_DNS__DOMAINS_0__ZONE_NAME=${DOMAIN}
-      - CF_DNS__DOMAINS_0__ZONE_ID=${CF_ZONE_ID:-}
-      - CF_DNS__DOMAINS_0__NAME=${DDNS_SUBDOMAIN}.${DOMAIN}
-      - CF_DNS__DOMAINS_0__PROXIED=${DDNS_PROXY}
-      - CF_DNS__DOMAINS_0__CREATE=true
-      - CF_DNS__DOMAINS_0__TYPE=A
-      - CF_DNS__DOMAINS_1__ZONE_NAME=${DOMAIN}
-      - CF_DNS__DOMAINS_1__ZONE_ID=${CF_ZONE_ID:-}
-      - CF_DNS__DOMAINS_1__NAME=${DDNS_SUBDOMAIN}.${DOMAIN}
-      - CF_DNS__DOMAINS_1__PROXIED=${DDNS_PROXY}
-      - CF_DNS__DOMAINS_1__CREATE=true
-      - CF_DNS__DOMAINS_1__TYPE=AAAA
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - 'CONFIG={"settings": [{"provider": "cloudflare", "zone_identifier": "${CF_ZONE_ID}", "domain": "${DOMAIN}", "host": "${DDNS_SUBDOMAIN}", "ttl": 1, "token": "${CF_DNS_API_TOKEN}", "proxied": ${DDNS_PROXY}, "ip_version": "ipv4"}]}'
     volumes:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
+
+  curl-jq:
+    image: curl-jq:local
+    pull_policy: build
+    build:
+      context: ./traefik
+      dockerfile: Dockerfile.jq
+    restart: "no"
+    profiles: ["tools"]
 
 volumes:
   certs:
