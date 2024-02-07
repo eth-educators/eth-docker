@@ -1,5 +1,5 @@
 # Build Erigon in a stock Go build container
-FROM golang:1.21-alpine as builder
+FROM golang:1.22-alpine as builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
@@ -12,7 +12,7 @@ RUN apk update && apk add --no-cache make gcc g++ musl-dev linux-headers git bas
 
 WORKDIR /src
 RUN bash -c "git clone --recurse-submodules -j8 ${SRC_REPO} erigon && cd erigon && git config advice.detachedHead false && git fetch --all --tags && \
-if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:erigon-pr; git checkout erigon-pr; else git checkout ${BUILD_TARGET}; fi && make erigon"
+if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:erigon-pr; git checkout erigon-pr; else git checkout ${BUILD_TARGET}; fi && make BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon"
 
 # Pull all binaries into a second stage deploy container
 FROM alpine:3
