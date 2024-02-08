@@ -1106,7 +1106,7 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
     for var in "${TARGET_VARS[@]}"; do
       value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
       if [ -n "${value}" ]; then
-        if [[ "${var}" = "DDNS_TAG" && "${__source_ver}" -eq "7" ]]; then # Switch to ddns-updater
+        if [[ "${var}" = "DDNS_TAG" && "${__source_ver}" -lt "8" ]]; then # Switch to ddns-updater
           value="v2"
         fi
         sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
