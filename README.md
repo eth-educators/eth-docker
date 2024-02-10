@@ -16,7 +16,7 @@ For a quick testnet start, you can install prerequisites and configure Eth Docke
 
 ## Support
 
-The #software channel in [ethstaker Discord](https://discord.io/ethstaker) is the place to ask questions about Eth Docker.
+The #software channel in [ethstaker Discord](https://discord.gg/ethstaker) is the place to ask questions about Eth Docker.
 
 ## Contributions
 
