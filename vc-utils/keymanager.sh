@@ -281,7 +281,7 @@ graffiti-set() {
       echo "Please specify a graffiti string"
       exit 0
     fi
-    if [[ ${#__graffiti} -gt 32 ]]; then
+    if [[ $(echo -n "${__graffiti}" | wc -c) -gt 32 ]]; then
       echo "The graffiti string cannot be longer than 32 characters. Emojis count as 4, each."
       exit 0
     fi

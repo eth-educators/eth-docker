@@ -72,7 +72,7 @@ services:
       - 0.0.0.0
       - --execution.urls
       - ${EL_NODE}
-      - --jwt-secret
+      - --jwtSecret
       - /var/lib/lodestar/consensus/ee-secret/jwtsecret
       - --targetPeers
       - ${CL_MIN_PEER_COUNT:-50}

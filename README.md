@@ -2,7 +2,7 @@
 
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/eth-educators/eth-docker/badge)](https://www.gitpoap.io/gh/eth-educators/eth-docker)
 
-Eth Docker, a simple yet configurable way to run [Ethereum](https://ethereum.org/en/upgrades/) nodes.
+Eth Docker, a simple yet configurable way to run [Ethereum](https://ethereum.org/roadmap/) nodes.
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ For a quick testnet start, you can install prerequisites and configure Eth Docke
 
 ## Support
 
-The #software channel in [ethstaker Discord](https://discord.io/ethstaker) is the place to ask questions about Eth Docker.
+The #software channel in [ethstaker Discord](https://discord.gg/ethstaker) is the place to ask questions about Eth Docker.
 
 ## Contributions
 
@@ -34,4 +34,4 @@ Eth Docker uses a "semver-ish" scheme.
 large.
 - Second through fourth digit, [semver](https://semver.org/).
 
-This is Eth Docker v2.6.0.0
+This is Eth Docker v2.6.1.0

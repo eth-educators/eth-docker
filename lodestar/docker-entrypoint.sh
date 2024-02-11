@@ -22,7 +22,7 @@ if [ -n "${JWT_SECRET}" ]; then
 fi
 
 if [[ -O "/var/lib/lodestar/consensus/ee-secret" ]]; then
-  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  # In case someone specifies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/lodestar/consensus/ee-secret
 fi
 if [[ -O "/var/lib/lodestar/consensus/ee-secret/jwtsecret" ]]; then
@@ -56,7 +56,7 @@ fi
 
 # Check whether we should use MEV Boost
 if [ "${MEV_BOOST}" = "true" ]; then
-  __mev_boost="--builder --builder.urls=${MEV_NODE:-http://mev-boost:18550}"
+  __mev_boost="--builder --builder.url=${MEV_NODE:-http://mev-boost:18550}"
   echo "MEV Boost enabled"
 else
   __mev_boost=""

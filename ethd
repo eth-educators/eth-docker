@@ -216,7 +216,7 @@ check_for_snap() {
 
 install-bash-completions() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "Skipping installation of tab completions (not supported on OSX)"
+    echo "Skipping installation of tab completions (not supported on macOS)"
   else
     if [ ! -f "$(pkg-config --variable=completionsdir bash-completion)/ethd" ]; then
       echo "Installing bash completions for ethd"
@@ -331,46 +331,73 @@ continue? (no/yes) " yn
 }
 
 
-space() {
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
+__get_docker_free_space() { # set __free_space to what's available to Docker
+  if [[ "$OSTYPE" == "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
+    __free_space=$(dodocker run --rm -v macos-space-check:/dummy busybox df -P /dummy | awk '/[0-9]%/{print $(NF-2)}')
+  else
+    __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
+    __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
+  fi
 
   re='^[0-9]+$'
   if ! [[ "${__free_space}" =~ $re ]] ; then
     echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      echo "df reports $(dodocker run --rm -v macos-space-check:/dummy busybox df -P /dummy) and __free_space is ${__free_space}"
+    else
+      echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
+    fi
     exit 70
   fi
-  echo
-  echo "You have $(( __free_space / 1024 / 1024 )) GiB free on ${__docker_dir}"
+}
+
+
+__display_docker_dir() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
+    echo "Here's total and used space on Docker's virtual volume"
+    dodocker run --rm -v macos-space-check:/dummy busybox df -h /dummy
+  else
+    echo "Here's total and used space on ${__docker_dir}"
+    df -h "${__docker_dir}"
+  fi
+}
+
+
+__display_docker_volumes() {
   echo
   if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
     echo "There are no Docker volumes for this copy of ${__project_name}"
+    echo
   else
     echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
     dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+    echo
+    echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
+    echo "\"${__me} resync-consensus\"."
+    echo
+  fi
+  echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+  echo
+}
+
+
+space() {
+  __get_docker_free_space
+  echo
+  if [[ "$OSTYPE" == "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
+    echo "You have $(( __free_space / 1024 / 1024 )) GiB free for Docker volumes"
+  else
+    echo "You have $(( __free_space / 1024 / 1024 )) GiB free on ${__docker_dir}"
   fi
   echo
-  echo "Here's the system output for total and used space on ${__docker_dir}"
-  df -h "${__docker_dir}"
-  echo
-  echo "If your Consensys Layer client takes more than 200 GiB of space, you can resync it with"
-  echo "\"$__me resync-consensus\"."
-  echo
-  echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+  __display_docker_dir
+  __display_docker_volumes
 }
+
 
 # Warn user if space is low, so they can prune
 check_disk_space() {
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
-
-  re='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $re ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-    exit 70
-  fi
+  __get_docker_free_space
 
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -401,22 +428,8 @@ Full\". Free space:"
       echo "If the below reads above ${__safe_prune} GiB free, prune it with \"$__me prune-nethermind\""
     fi
     echo
-    df -h "${__docker_dir}"
-    echo
-    if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
-      echo "There are no Docker volumes for this copy of ${__project_name}"
-      echo
-    else
-      echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
-      dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-      echo
-      echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
-      echo "\"$__me resync-consensus\"."
-      echo
-    fi
-    echo
-    echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
-    echo
+    __display_docker_dir
+    __display_docker_volumes
   elif [[ "${value}" =~ "geth.yml" ]] && [[ "${__free_space}" -lt 104857600 ]]; then
     echo
     echo "You are running Geth and have less than 100 GiB of free disk space."
@@ -425,65 +438,24 @@ Full\". Free space:"
     echo "Alternatively, if you don't feel ready for a resync and have more than 40 GiB free, you can prune \
 with \"$__me prune-geth\"."
     echo
-    df -h "${__docker_dir}"
-    echo
-    if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
-      echo "There are no Docker volumes for this copy of ${__project_name}"
-      echo
-    else
-      echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
-      dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-      echo
-      echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
-      echo "\"$__me resync-consensus\"."
-      echo
-    fi
-    echo
-    echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
-    echo
+    __display_docker_dir
+    __display_docker_volumes
   elif [[ "${value}" =~ "besu.yml" ]] && [[ "${__free_space}" -lt 52428800 ]]; then
     echo
     echo "You are running Besu and have less than 50 GiB of free disk space."
     echo
     echo "If this is a long-running Besu, you may prune trie-logs with \"$__me prune-besu\"."
-    echo
-    if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
-      echo "There are no Docker volumes for this copy of ${__project_name}"
-      echo
-    else
-      echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
-      dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-      echo
-      echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
-      echo "\"$__me resync-consensus\"."
-      echo
-    fi
-    echo
-    echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+    __display_docker_volumes
     echo
   elif [[ "${__free_space}" -lt 52428800 ]]; then
     echo
     echo "You have less than 50 GiB of free disk space:"
     echo
-    df -h "${__docker_dir}"
+    __display_docker_dir
     echo
     echo "Pruning does not appear an option for your client mix."
     echo "If total space is less than 1.8 TiB, consider cloning to a larger drive."
-    echo
-    if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
-      echo "There are no Docker volumes for this copy of ${__project_name}"
-      echo
-    else
-      echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
-      dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-      echo
-      echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
-      echo "\"$__me resync-consensus\"."
-      echo
-    fi
-    echo
-    echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
-    echo
+    __display_docker_volumes
   fi
 }
 
@@ -846,22 +818,14 @@ upgrade_postgres() {
     return 70
   fi
 
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
-
-  re='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $re ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-    return 70
-  fi
+  __get_docker_free_space
 
   if [[ "${__free_space}" -lt $(( (__source_size * 2) + 10485760 )) ]]; then
     echo
     echo "You don't have enough space free to migrate the database."
     echo "It is $(( __source_size / 1024 / 1024 )) GiB in size and you need twice as much free again."
     echo
-    df -h "${__docker_dir}"
+    __display_docker_dir
     echo
     return
   fi
@@ -927,6 +891,46 @@ upgrade_postgres() {
   echo "A copy of your old slashing protection database is in the Docker volume ${__backup_vol}."
   echo "Confirm that everything works, and then delete it with \"docker volume rm ${__backup_vol}\"."
   __during_postgres=0
+}
+
+
+__lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
+  __compose_ymls=$(sed -n -e "s/^COMPOSE_FILE=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  __dns_token=$(sed -n -e "s/^CF_DNS_API_TOKEN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  __zone_token=$(sed -n -e "s/^CF_ZONE_API_TOKEN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  __domain=$(sed -n -e "s/^DOMAIN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+  if [[ ! $__compose_ymls =~ traefik-cf.yml ]]; then
+    value=""
+    return
+  elif [[ -n $__dns_token ]]; then
+    if [[ -n $__zone_token ]]; then
+      __token=$__zone_token
+    else
+      __token=$__dns_token
+    fi
+    set +e
+    value=$(docompose run --rm curl-jq sh -c \
+      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
+      -H \"Content-Type: application/json\" | jq -r '.result[0].id'" | tail -n 1)
+    __code=$?
+    if [[ "$__code" -ne 0 ]]; then
+      value=""
+      return
+    fi
+    __success=$(docompose run --rm curl-jq sh -c \
+      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
+      -H \"Content-Type: application/json\" | jq -r '.success'" | tail -n 1)
+    set -e
+    if [ "${__success}" = "true" ]; then
+      return
+    else
+      value=""
+      return
+    fi
+  else
+    value=""
+    return
+  fi
 }
 
 
@@ -1017,6 +1021,13 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
       fi
       # Handle & in GRAFFITI gracefully
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
+    else # empty value
+      if [ "${var}" = "CF_ZONE_ID" ]; then
+        __lookup_cf_zone
+        if [ -n "${value}" ]; then
+          sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
+        fi
+      fi
     fi
   done
   if [ "${__keep_targets}" -eq 1 ]; then
@@ -1024,6 +1035,9 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
     for var in "${TARGET_VARS[@]}"; do
       value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
       if [ -n "${value}" ]; then
+        if [[ "${var}" = "DDNS_TAG" && "${__source_ver}" -lt "8" ]]; then # Switch to ddns-updater
+          value="v2"
+        fi
         sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
       fi
     done
@@ -1156,16 +1170,9 @@ update() {
     exit 1
   fi
 
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
-
-  re='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $re ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-    exit 70
-  elif [ "${__free_space}" -lt 1048576 ]; then
-    echo "You have less than 1 GiB of space left on ${__docker_dir}."
+  __get_docker_free_space
+  if [ "${__free_space}" -lt 1048576 ]; then
+    echo "You have less than 1 GiB of space left for Docker volumes."
     echo "Aborting, as an update is not safe."
     exit 1
   fi
@@ -1229,7 +1236,7 @@ update() {
         ;;
       *)
         echo "Error: Unknown option: $1" >&2
-        exit 1
+        shift
         ;;
     esac
   done
@@ -1449,19 +1456,11 @@ prune-geth() {
     exit 1
   fi
 
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
-
-  re='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $re ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-    exit 70
-  fi
+  __get_docker_free_space
 
   if [ "${__free_space}" -lt 41943040 ]; then
     echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
-    df -h "${__docker_dir}"
+    __display_docker_dir
     echo
     echo "Aborting."
     exit 1
@@ -1680,15 +1679,7 @@ prune-nethermind() {
     exit 1
   fi
 
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
-
-  re='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $re ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-    exit 70
-  fi
+  __get_docker_free_space
 
   var="NETWORK"
   NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -1703,7 +1694,8 @@ prune-nethermind() {
 
   if [ "${__free_space}" -lt ${__min_free} ]; then
     echo "You do not have enough free disk space. Make sure this reads at least ${__min_gib}G free (Avail):"
-    df -h "${__docker_dir}"
+    echo
+    __display_docker_dir
     echo
     echo "Aborting."
     exit 1
@@ -2758,8 +2750,16 @@ query_graffiti() {
   var="GRAFFITI"
   GRAFFITI=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
-  GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
+  while true; do
+    GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
 (up to 32 characters)" 10 65 "${GRAFFITI}" 3>&1 1>&2 2>&3)
+
+    if [[ $(echo -n "${GRAFFITI}" | wc -c) -gt 32 ]]; then
+      whiptail --msgbox "The graffiti string cannot be longer than 32 characters. Emojis count as 4, each." 16 65
+    else
+      break
+    fi
+  done
 
   echo "your Graffiti is:" "${GRAFFITI}"
 }
@@ -3234,16 +3234,27 @@ version() {
       docompose exec traefik traefik version
       echo
       ;;&
-    *traefik-cf.yml* )
-      echo "CloudFlare DDNS"
-      docompose exec cf-ddns grep version /app/package.json
-      echo
-      ;;&
   esac
 }
 
 
-help() {
+__update_help() {
+  echo "usage: $__me update [--refresh-targets] [--non-interactive]"
+  echo
+  echo "Updates Eth Docker itself, as required the contents of \".env\", and the clients."
+  echo
+  echo "A combination of \"git pull\" for Eth Docker, some bash scripting to bring new variables from \"default.env\","
+  echo "and \"docker compose pull\" as well as \"docker compose build\" for the clients."
+  echo
+  echo "If warranted, will also offer resync when clients require it, or upgrade of PostgreSQL version."
+  echo
+  echo "\"--refresh-targets\" sets Docker tags, source targets, and repos of clients back to the defaults in \"default.env\"."
+  echo "\"--non-interactive\" does not ask questions and assumes Yes for database resyncs and migrations."
+  echo
+}
+
+
+__full_help() {
   echo "usage: $__me [-h|--help] <command>"
   echo
   echo "commands:"
@@ -3306,6 +3317,13 @@ help() {
 }
 
 
+help() {
+  case $* in
+    *update*) __update_help;;
+    *) __full_help;;
+  esac
+}
+
 # Main body from here
 ENV_FILE=.env
 __during_config=0
@@ -3321,8 +3339,8 @@ fi
 
 trap 'handle_error $? $LINENO' ERR
 
-if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]]; then
-  help
+if [[ "$#" -eq 0 || "$*" =~ "-h" ]]; then # Lazy match for -h and --help but also --histogram, so careful here
+  help "$@"
   exit 0
 fi
 

@@ -83,6 +83,7 @@ services:
       - "8008"
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+      - --enable-debug-rpc-endpoints
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics

@@ -12,7 +12,7 @@ if [ -n "${JWT_SECRET}" ]; then
 fi
 
 if [[ -O "/var/lib/lighthouse/beacon/ee-secret" ]]; then
-  # In case someone specificies JWT_SECRET but it's not a distributed setup
+  # In case someone specifies JWT_SECRET but it's not a distributed setup
   chmod 777 /var/lib/lighthouse/beacon/ee-secret
 fi
 if [[ -O "/var/lib/lighthouse/ee-secret/jwtsecret" ]]; then
