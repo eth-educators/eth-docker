@@ -66,7 +66,6 @@ services:
       - ${LOG_LEVEL}
       - --suggestedFeeRecipient
       - ${FEE_RECIPIENT}
-      - --force
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
@@ -91,13 +90,12 @@ services:
       - voluntary-exit
       - --dataDir
       - /var/lib/lodestar/validators
-      - --server
+      - --beaconNodes
       - ${CL_NODE:-http://consensus:5052}
-      -  --logLevel
+      - --logLevel
       - ${LOG_LEVEL}
       - --network
       - ${NETWORK}
-      - --force
 
   validator-keys:
     profiles: ["tools"]
