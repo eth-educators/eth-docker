@@ -3114,6 +3114,8 @@ config() {
   set_value_in_env
   var=EL_NODE
   set_value_in_env
+  var=JWT_SECRET
+  set_value_in_env
   var=NETWORK
   set_value_in_env
   var=MEV_BOOST
@@ -3346,13 +3348,7 @@ fi
 
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 # Use this to make sure root doesn't end up owning files
-if [[ "$OSTYPE" == "darwin"* ]]; then
-# This is a macOS-ism
-# shellcheck disable=SC2016
-  OWNER=$(stat -f '$Su' .)
-else
-  OWNER=$(stat -c '%U' .)
-fi
+OWNER=$(stat --format=%U .)
 
 if [ "${OWNER}" == "root" ]; then
   echo "Please install ${__project_name} as a non-root user."
