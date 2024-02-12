@@ -15,6 +15,11 @@ proc no {} {
     send "\t\r"
 }
 
+proc address {} {
+    global spawn_id
+    send "0xDccf8451070a86183eE70D330C4c43b686E9CF86\t\r"
+}
+
 proc default-deployment {} {
     global spawn_id
     expect "Select Network"
@@ -50,7 +55,7 @@ proc all-defaults {} {
     yes
 
     expect "Configure rewards"
-    accept_default
+    address
 
     expect "Configure Graffiti"
     accept_default
