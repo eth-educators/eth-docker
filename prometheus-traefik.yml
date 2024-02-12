@@ -5,6 +5,7 @@ services:
   execution:
     labels:
       - traefik.enable=true
+      - traefik.http.routers.${PROM_HOST:-prom}.service=${PROM_HOST:-prom}
       - traefik.http.routers.${PROM_HOST:-prom}.entrypoints=web,websecure
       - traefik.http.routers.${PROM_HOST:-prom}.rule=Host(`${PROM_HOST:-prom}.${DOMAIN}`)
       - traefik.http.routers.${PROM_HOST:-prom}.tls.certresolver=letsencrypt
