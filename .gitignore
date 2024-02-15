@@ -3,6 +3,7 @@ docker-compose.yml
 ext-network.yml
 ext-network.yml.original
 .eth/*
+.charon/*
 !.eth/README.md
 !.eth/validator_keys/.empty
 !.eth/exit_messages/.empty

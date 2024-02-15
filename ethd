@@ -964,7 +964,7 @@ envmigrate() {
     return 0
   fi
 
-  ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID \
+  ALL_VARS=( COMPOSE_FILE FEE_RECIPIENT WITHDRAWAL_CREDENTIALS EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID \
     MEV_NODE CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL ANCIENT_DIR \
     AUTOPRUNE_NM LOGS_LABEL CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID \
     GRAFANA_HOST SIREN_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP PROM_HOST HOST_IP SHARE_IP PRYSM_HOST EE_HOST \
@@ -972,7 +972,7 @@ envmigrate() {
     CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER PRYSM_PORT DOPPELGANGER \
     PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
-    EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 \
+    EL_EXTRAS CL_EXTRAS VC_EXTRAS OBOL_CLUSTER_NAME OBOL_CLUSTER_ENR_LIST ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT ERIGON_P2P_PORT_2 \
     ERIGON_P2P_PORT_3 LODESTAR_HEAP )
   TARGET_VARS=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
@@ -984,7 +984,7 @@ envmigrate() {
     NIMEL_DOCKER_REPO NIMEL_DOCKERFILE LS_SRC_BUILD_TARGET LS_SRC_REPO LS_DOCKER_TAG LS_DOCKER_REPO LS_DOCKERFILE \
     GETH_SRC_BUILD_TARGET GETH_SRC_REPO GETH_DOCKER_TAG GETH_DOCKER_REPO TRAEFIK_TAG DDNS_TAG \
     GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_SRC_REPO NM_DOCKER_TAG NM_DOCKER_REPO NM_DOCKERFILE \
-    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG \
+    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG OBOL_NODE_TAG \
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     SIREN_DOCKER_TAG SIREN_DOCKER_REPO NODE_EXPORTER_IGNORE_MOUNT_REGEX )
@@ -2600,17 +2600,26 @@ query_deployment() {
     "validator" "Validator client only" 3>&1 1>&2 2>&3)
   elif uname -a | grep -q aarch64; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-    "What kind of deployment do you want to run?" 10 65 3 \
+    "What kind of deployment do you want to run?" 10 65 4 \
     "node" "Ethereum node - consensus, execution and validator client" \
     "rpc" "Ethereum RPC node - consensus and execution client" \
+    "lido_comp" "Lido-compatible node (Community Staking / Simple DVT)" \
     "rocket" "Validator client only - integrate with RocketPool" 3>&1 1>&2 2>&3)
   else
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-    "What kind of deployment do you want to run?" 11 65 4 \
+    "What kind of deployment do you want to run?" 11 65 5 \
     "node" "Ethereum node - consensus, execution and validator client" \
     "rpc" "Ethereum RPC node - consensus and execution client" \
+    "lido_comp" "Lido-compatible node (Community Staking / Simple DVT)" \
     "rocket" "Validator client only - integrate with RocketPool" \
     "ssv" "SSV node - consensus, execution and ssv-node" 3>&1 1>&2 2>&3)
+  fi
+
+  if [ "${__deployment}" = "lido_comp" ]; then
+    __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
+    "What kind of deployment to participate in Lido protocol do you want to run?" 13 90 3 \
+    "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
+    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon-node (obol middleware)" 3>&1 1>&2 2>&3)
   fi
 
   echo "Your deployment choice is: ${__deployment}"
@@ -2901,10 +2910,25 @@ query_coinbase() {
   var="FEE_RECIPIENT"
   FEE_RECIPIENT=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
-  while true; do
-    set +e # Can't rely on the error handler here because of the special-casing below for update()
-    if [ "${__during_update}" -eq 1 ] || [ ! "${__deployment}" = rpc ]; then
-      FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want \
+    while true; do
+        set +e # Can't rely on the error handler here because of the special-casing below for update()
+        if [[ "${__deployment}" =~ "lido_" ]]; then
+            case "${NETWORK}" in
+                "goerli")
+                    FEE_RECIPIENT="0x94750381bE1AbA0504C666ee1DB118F68f0780D4"
+                    ;;
+                "mainnet")
+                    FEE_RECIPIENT="0x388c818ca8b9251b393131c08a736a67ccb19297"
+                    ;;
+                "holesky")
+                    FEE_RECIPIENT="0xE73a3602b99f1f913e72F8bdcBC235e206794Ac8"
+                    ;;
+                *)
+                    FEE_RECIPIENT="0x0000000000000000000000000000000000000000"
+                    ;;
+            esac
+        elif [ "${__during_update}" -eq 1 ] || [ ! "${__deployment}" = rpc ]; then
+            FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want \
 transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 65 "${FEE_RECIPIENT}" \
 3>&1 1>&2 2>&3)
     else
@@ -2994,7 +3018,68 @@ want to use MEV Boost?" 10 65); then
   fi
   if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 65) then
     MEV_BOOST="true"
-    if [ "${value}" = "true" ]; then
+    if [[ "${__deployment}" =~ "lido_" ]]; then
+            MEV_RELAYS=""
+            __selected=""
+            declare -A relays=()
+            case "${NETWORK}" in
+                "goerli")
+                    __selected=$(whiptail --title "Relays list" --checklist \
+                        "Choose desired relays" 15 30 6 \
+                        "Flashbots" "" ON \
+                        "Blocknative" "" ON \
+                        "Bloxroute" "" ON \
+                        "Edennetwork" "" ON \
+                        "Securerpc" "" ON \
+                        "Ultrasound" "" ON 3>&1 1>&2 2>&3)
+                    relays=(
+                        ['Flashbots']="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@builder-relay-goerli.flashbots.net"
+                        ['Blocknative']="https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-goerli.blocknative.com"
+                        ['Bloxroute']="https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com"
+                        ['Edennetwork']="https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-goerli.edennetwork.io"
+                        ['Securerpc']="https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com"
+                        ['Ultrasound']="https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
+                    )
+                    ;;
+                "mainnet")
+                    __selected=$(whiptail --title "Relays list" --checklist \
+                        "Choose desired relays" 15 40 9 \
+                        "Blocknative" "" ON \
+                        "Bloxroute (regulated)" "" ON \
+                        "Bloxroute (max profit)" "" ON \
+                        "Aestus" "" ON \
+                        "Flashbots" "" ON \
+                        "Edennetwork" "" ON \
+                        "Securerpc" "" ON \
+                        "Ultrasound" "" ON \
+                        "Agnostic" "" ON 3>&1 1>&2 2>&3)
+                    relays=(
+                        ["Blocknative"]="https://0x9000009807ed12c1f08bf4e81c6da3ba8e3fc3d953898ce0102433094e5f22f21102ec057841fcb81978ed1ea0fa8246@builder-relay-mainnet.blocknative.com"
+                        ["Bloxroute (regulated)"]="https://0xb0b07cd0abef743db4260b0ed50619cf6ad4d82064cb4fbec9d3ec530f7c5e6793d9f286c4e082c0244ffb9f2658fe88@bloxroute.regulated.blxrbdn.com"
+                        ["Bloxroute (max profit)"]="https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com"
+                        ["Aestus"]="https://0xa15b52576bcbf1072f4a011c0f99f9fb6c66f3e1ff321f11f461d15e31b1cb359caa092c71bbded0bae5b5ea401aab7e@aestus.live"
+                        ["Flashbots"]="https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.nett"
+                        ["Edennetwork"]="https://0xb3ee7afcf27f1f1259ac1787876318c6584ee353097a50ed84f51a1f21a323b3736f271a895c7ce918c038e4265918be@relay.edennetwork.io"
+                        ["Securerpc"]="https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1eea11168503240ac35d101c9135@mainnet-relay.securerpc.com"
+                        ["Ultrasound"]="https://0xa1559ace749633b997cb3fdacffb890aeebdb0f5a3b6aaa7eeeaf1a38af0a8fe88b9e4b1f61f236d2e64d95733327a62@relay.ultrasound.money"
+                        ["Agnostic"]="https://0xa7ab7a996c8584251c8f925da3170bdfd6ebc75d50f5ddc4050a6fdc77f2a3b5fce2cc750d0865e05d7228af97d69561@agnostic-relay.net"
+                    )
+                    ;;
+                  *)
+                    echo "No MEV RELAYS configured for ${NETWORK}"
+                    return
+                    ;;
+            esac
+            for i in "${!relays[@]}"; do
+                if [[ ${__selected} =~ ${i} ]]; then
+                    if [ -z "${MEV_RELAYS}" ]; then
+                        MEV_RELAYS="${relays[$i]}"
+                    else
+                        MEV_RELAYS="${MEV_RELAYS},${relays[$i]}"
+                    fi
+                fi
+            done
+    elif [ "${value}" = "true" ]; then
       var="MEV_RELAYS"
       MEV_RELAYS=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
     else
@@ -3034,14 +3119,116 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
           ;;
       esac
     fi
-    MEV_RELAYS=$(whiptail --title "Configure MEV relays" --inputbox "What MEV relay(s) do you want to use? \
+    if [[ ! "${__deployment}" =~ "lido_" ]]; then
+        MEV_RELAYS=$(whiptail --title "Configure MEV relays" --inputbox "What MEV relay(s) do you want to use? \
 (right-click to paste)" 10 65 "${MEV_RELAYS}" 3>&1 1>&2 2>&3)
+    fi
 
     echo "Your MEV relay(s): ${MEV_RELAYS}"
   else
     MEV_BOOST="false"
     MEV_RELAYS=""
   fi
+}
+
+query_lido_keys_generation() {
+    __num_validators="1"
+    __keystore_password=""
+    __num_validators=$(whiptail --title "Validators count" --inputbox "Enter the number of validators" 8 60 "${__num_validators}" 3>&1 1>&2 2>&3)
+    while true; do
+        __keystore_password=$(whiptail --title "Keystore password" --passwordbox "Enter validators keystore password (at least 8 chars)" 8 60 "${__keystore_password}" 3>&1 1>&2 2>&3)
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            if [[ ${#__keystore_password} -ge 8 ]]; then
+              echo "Keystore password set."
+              break
+            else
+              whiptail --msgbox "The keystore password secret needs to be at least 8 characters long. You can try \
+again or Cancel on the next screen." 10 75
+            fi
+        else
+            echo "You chose Cancel."
+            exit 1
+        fi
+    done
+
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your number of validators is:" "${__num_validators}"
+        EXECUTION_ADDRESS=${WITHDRAWAL_CREDENTIALS} KEYSTORE_PASSWORD=${__keystore_password} NUM_VALIDATORS=${__num_validators} NETWORK=${NETWORK} docompose -f ./lido-deposit-cli.yml run --rm deposit-cli-new
+    else
+        echo "You chose Cancel."
+        exit 1
+    fi
+}
+
+
+query_lido_obol_enr() {
+    while true; do
+        if [ -d "./.charon" ]; then
+            if [ "$(ls -A ./.charon)" ]; then
+                if (whiptail --title "Lido Obol operator ENR creation" --yesno "It seems that you already have \`.charon\` folder and it isn't empty.\nDo you want to remove it?" 10 80); then
+                    rm -rf ./.charon
+                else
+                    whiptail --title "Lido Obol operator ENR creation" --msgbox "The \`.charon\` folder must be empty or non-existent for the cluster definition to continue" 10 80
+                    continue
+                fi
+            fi
+        fi
+        break
+    done
+    __outcome__=$(docompose -f ./obol.yml run --rm charon-create-enr)
+    if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
+        __lido_obol_operator_enr_private_key_path=$(echo "${__outcome__}" | grep -e 'Created ENR private key')
+        __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
+    else
+        echo "Something went wrong. Please, try again."
+        exit 1
+    fi
+
+    echo "Your ENR is:" "${__lido_obol_operator_enr}"
+    whiptail --title "Lido Obol operator ENR creation outcome" --msgbox "${__lido_obol_operator_enr_private_key_path}\n\n1. Backup your private key!\n2. Copy your public ENR for the futher steps\n\nYour public ENR is:\n\n${__lido_obol_operator_enr}" 16 80
+}
+
+query_lido_obol_cluster_definition() {
+    while true; do
+        __cluster_definition_url=$(whiptail --title "Lido Obol cluster creation" --inputbox "\nThere are a few steps left before the launch!\n\n1. Go to https://${NETWORK}.launchpad.obol.tech/\n2. Init cluster definition (or participate in existing one if you have invite link)\n3. Follow the steps from the launchpad\n4. As a result, you will get a link with the cluster definition.\n\nPlease, put your cluster definition link below:" 17 80 "https://api.obol.tech/dv/example_link_to_your_definition" 3>&1 1>&2 2>&3)
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            __cluster_definition_json=$(curl -s "${__cluster_definition_url}")
+# shellcheck disable=SC2086
+            __cluster_definition_is_valid=$(echo "${__cluster_definition_json}" | jq 'all(.validators[]; .fee_recipient_address == "'${FEE_RECIPIENT}'" and .withdrawal_address == "'${WITHDRAWAL_CREDENTIALS}'")')
+            if [[ "${__cluster_definition_is_valid}" =~ "true" ]]; then
+                echo "Your cluster definition url is:" "${__cluster_definition_url}"
+                echo "${__cluster_definition_json}" > ./.charon/cluster-definition.json
+                break
+            else
+                whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
+            fi
+        else
+            echo "You chose Cancel."
+            exit 1
+        fi
+    done
+}
+
+query_lido_obol_cluster_dkg() {
+    while true; do
+        if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
+            __outcome__=$(docompose -f ./obol.yml run --rm charon-run-dkg)
+            if [[ "${__outcome__}" =~ "Successfully completed DKG ceremony" ]]; then
+                echo "DKG ceremony finished successfully"
+            else
+                echo "Something went wrong. Please, try again."
+                exit 1
+            fi
+            whiptail --title "Finish" --msgbox "Final steps!\n\n1. Decide between participants who will submit the keys. If you are - go back to Obol launchpad, follow the form futher and confirm that only you will submit on behalf of the cluster\n\n3. Open https://operators.lido.fi to submit your keys with '.charon/deposit-data.json' file content\n\n3. Wait for keys validation\n\n4. Run your nodes by './ethd start'" 18 85
+            break
+        else
+            whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
+        fi
+    done
 }
 
 
@@ -3150,22 +3337,25 @@ config() {
   query_network
   query_deployment
   case "${__deployment}" in
-    "node")
+    "node" | "lido_csm")
+        query_consensus_client
+        ;;
+      "lido_obol")
       query_consensus_client
       ;;
     "validator" | "rocket")
       query_validator_client
       ;;
-    "ssv")
+    "ssv" | "lido_ssv")
       if [ ! -f "./ssv-config/config.yaml" ]; then
         ${__as_owner} cp ./ssv-config/config-sample.yaml ./ssv-config/config.yaml
       fi
       if [ "${NETWORK}" = "goerli" ]; then
-        sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
+        sed -i '' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "holesky" ]; then
-        sed -i'' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
+        sed -i '' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
-        sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
+        sed -i '' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
       else
         echo "${NETWORK} is not something that works with SSV."
         echo "Please choose Holešovice, Mainnet or Görli when running $__me config again"
@@ -3208,9 +3398,33 @@ config() {
     query_mev
     query_grafana
     query_coinbase
-    if [ "${__deployment}" = "node" ]; then
+    if [[ "${__deployment}" = "node" || "${__deployment}" = "lido_csm" ]]; then
       query_graffiti
     fi
+        if [[ "${__deployment}" =~ "lido_" ]]; then
+          case "${NETWORK}" in
+              "goerli")
+                  WITHDRAWAL_CREDENTIALS="0xdc62f9e8C34be08501Cdef4EBDE0a280f576D762"
+                  ;;
+              "mainnet")
+                  WITHDRAWAL_CREDENTIALS="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
+                  ;;
+              "holesky")
+                  WITHDRAWAL_CREDENTIALS="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
+                  ;;
+              *)
+                  WITHDRAWAL_CREDENTIALS="0x0000000000000000000000000000000000000000"
+                  ;;
+          esac
+        fi
+        if [ "${__deployment}" = "lido_csm" ]; then
+          if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
+            query_lido_keys_generation
+          else
+            whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: ${WITHDRAWAL_CREDENTIALS}\nOtherwise, your keys will not be valid!" 10 80
+          fi
+          whiptail --title "Finish" --msgbox "Final steps!\n\n1. Please, open https://operators.lido.fi to submit your keys with 'deposit-data.json' file content\n\n2. Wait for keys validation\n\n3. Run your nodes by './ethd start'\n\n4. Import your keys by './ethd keys import'" 15 85
+        fi
   else
     unset EXECUTION_CLIENT
     unset GRAFANA_CLIENT
@@ -3226,23 +3440,46 @@ config() {
 
   __during_config=0
 
-  COMPOSE_FILE="${CONSENSUS_CLIENT}"
-  if [ -n "${EXECUTION_CLIENT+x}" ]; then
-    COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+  if [ "${__deployment}" = "lido_obol" ]; then
+# We are using the variable
+# shellcheck disable=SC2034
+    OBOL_NODE_BEACON_ENDPOINT="${CL_NODE}"
+    CL_NODE="http://obol-node:3600"
+    if (whiptail --title "Lido Obol cluster creation" --yesno "Do you have cluster definition url and ENR?" 10 60) then
+        query_lido_obol_cluster_definition
+        query_lido_obol_cluster_dkg
+    else
+        query_lido_obol_enr
+        query_lido_obol_cluster_definition
+        query_lido_obol_cluster_dkg
+    fi
   fi
-  if [ "${__deployment}" = "ssv" ]; then
-    COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
-  fi
-  if [ -n "${GRAFANA_CLIENT+x}" ]; then
-    COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
-  fi
-  if [ "${MEV_BOOST}" = "true" ] && [ ! "${__deployment}" = "rocket" ]; then
-    COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
-  fi
-  if { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
-  && { [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "holesky" ]; }; then
-    COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
-  fi
+
+    COMPOSE_FILE="${CONSENSUS_CLIENT}"
+    if [ -n "${EXECUTION_CLIENT+x}" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+    fi
+    if [ "${__deployment}" = "ssv" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
+    fi
+    if [ -n "${GRAFANA_CLIENT+x}" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
+    fi
+    if [ "${MEV_BOOST}" = "true" ] && [ ! "${__deployment}" = "rocket" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
+    fi
+    if [ "${__deployment}" = "lido_ssv" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
+    fi
+    if [ "${__deployment}" = "lido_obol" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:obol.yml"
+    fi
+    if [ "${__deployment}" = "lido_csm" ]; then
+        COMPOSE_FILE="${COMPOSE_FILE}:lido-deposit-cli.yml"
+    elif { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
+    && { [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "holesky" ]; }; then
+        COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
+    fi
 # Not multi-arch, this would break on ARM64
 #    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
   if [ "${__deployment}" = "rocket" ]; then
@@ -3272,6 +3509,14 @@ config() {
   set_value_in_env
   var=MEV_RELAYS
   set_value_in_env
+  if [[ "${__deployment}" =~ "lido_" ]]; then
+    var=WITHDRAWAL_CREDENTIALS
+    set_value_in_env
+  fi
+  if [ "${__deployment}" = "lido_obol" ]; then
+    var=OBOL_NODE_BEACON_ENDPOINT
+    set_value_in_env
+  fi
   if [[ "${NETWORK}" = "gnosis" ]] && [[ "${CONSENSUS_CLIENT}" =~ "nimbus" ]] ; then
 # We are using the variable
 # shellcheck disable=SC2034
@@ -3294,6 +3539,10 @@ version() {
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
   # Client versions
   case "${value}" in
+    *obol.yml* )
+      docompose exec charon-node version
+      echo
+      ;;&
     *ssv.yml* )
       docompose exec ssv-node /go/bin/ssvnode --version
       echo
