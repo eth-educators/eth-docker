@@ -1,0 +1,41 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  obol-node:
+    restart: "unless-stopped"
+    image: obolnetwork/charon:${OBOL_NODE_TAG:-latest}
+    volumes:
+      - .charon:/opt/charon/.charon
+    <<: *logging
+    environment:
+      - CHARON_BEACON_NODE_ENDPOINTS=${OBOL_NODE_BEACON_ENDPOINT:-http://consensus:5052}
+      - CHARON_P2P_RELAYS=${OBOL_P2P_RELAYS:-https://0.relay.obol.tech}
+      - CHARON_P2P_TCP_ADDRESS=0.0.0.0:${OBOL_P2P_PORT:-3610}
+      - CHARON_VALIDATOR_API_ADDRESS=0.0.0.0:3600
+      - CHARON_MONITORING_ADDRESS=0.0.0.0:3620
+      - CHARON_BUILDER_API=${BUILDER_API_ENABLED:-false}
+    ports:
+      - ${OBOL_P2P_PORT:-3610}:${OBOL_P2P_PORT:-3610}/tcp # P2P TCP libp2p
+    healthcheck:
+      test: wget -qO- http://localhost:3620/readyz
+  charon-create-enr:
+    profiles: ["tools"]
+    restart: "no"
+    image: obolnetwork/charon:${OBOL_NODE_TAG:-latest}
+    command: create enr
+    volumes:
+      - .charon:/opt/charon/.charon
+  charon-run-dkg:
+    profiles: ["tools"]
+    restart: "no"
+    image: obolnetwork/charon:${CHARON_VERSION:-latest}
+    volumes:
+      - .charon:/opt/charon/.charon
+    command: dkg
