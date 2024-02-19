@@ -127,6 +127,9 @@ case "$CLIENT" in
     __url_validator_ejector='https://raw.githubusercontent.com/ObolNetwork/lido-charon-distributed-validator-node/main/grafana/dashboards/validator_ejector_overview.json'
     __file_validator_ejector='/etc/grafana/provisioning/dashboards/validator_ejector_overview.json'
     wget -t 3 -T 10 -qcO - "${__url_validator_ejector}" | sed 's/"uid": "prometheus"/"uid": "PBFA97CFB590B2093"/g' >"${__file_validator_ejector}"
+    __url_logs='https://raw.githubusercontent.com/ObolNetwork/lido-charon-distributed-validator-node/main/grafana/dashboards/logs_dashboard.json'
+    __file_logs='/etc/grafana/provisioning/dashboards/logs_dashboard.json'
+    wget -t 3 -T 10 -qcO - "${__url_logs}" | sed 's/"uid": "loki"/"uid": "P8E80F9AEF21F6940"/g' >"${__file_logs}"
     ;;&
   !(*grafana-rootless*) )
       # cadvisor and node exporter dashboard
