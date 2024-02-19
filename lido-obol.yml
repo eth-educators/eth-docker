@@ -47,13 +47,14 @@ services:
     command: dkg
 
   validator-ejector:
+   platform: linux/amd64
    image: lidofinance/validator-ejector:${VALIDATOR_EJECTOR_VERSION:-1.3.0}
    user: ":"
    volumes:
      - ./validator-ejector:/exitmessages
    restart: unless-stopped
    environment:
-     -  EXECUTION_NODE=${VE_EXECUTION_NODE_URL:-http://execution:8551}
+     -  EXECUTION_NODE=${VE_EXECUTION_NODE_URL:-http://execution:8545}
      -  CONSENSUS_NODE=${VE_BEACON_NODE_URL:-http://consensus:5052}
      -  LOCATOR_ADDRESS=${VE_LOCATOR_ADDRESS:-0x28FAB2059C713A7F9D8c86Db49f9bb0e96Af1ef8}
      -  STAKING_MODULE_ID=${VE_STAKING_MODULE_ID:-2}

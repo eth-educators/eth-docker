@@ -116,6 +116,18 @@ case "$CLIENT" in
         | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
         | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
     ;;&
+  *lido-obol.yml* )
+    # Lido Obol Dashboard
+    __url_charon='https://raw.githubusercontent.com/ObolNetwork/lido-charon-distributed-validator-node/main/grafana/dashboards/dash_charon_overview.json'
+    __file_charon='/etc/grafana/provisioning/dashboards/charon.json'
+    wget -t 3 -T 10 -qcO - "${__url_charon}" | sed 's/"uid": "prometheus"/"uid": "PBFA97CFB590B2093"/g' >"${__file_charon}"
+    __url_single_node='https://raw.githubusercontent.com/ObolNetwork/lido-charon-distributed-validator-node/main/grafana/dashboards/single_node_dashboard.json'
+    __file_single_node='/etc/grafana/provisioning/dashboards/single_node_dashboard.json'
+    wget -t 3 -T 10 -qcO - "${__url_single_node}" | sed 's/"uid": "prometheus"/"uid": "PBFA97CFB590B2093"/g' >"${__file_single_node}"
+    __url_validator_ejector='https://raw.githubusercontent.com/ObolNetwork/lido-charon-distributed-validator-node/main/grafana/dashboards/validator_ejector_overview.json'
+    __file_validator_ejector='/etc/grafana/provisioning/dashboards/validator_ejector_overview.json'
+    wget -t 3 -T 10 -qcO - "${__url_validator_ejector}" | sed 's/"uid": "prometheus"/"uid": "PBFA97CFB590B2093"/g' >"${__file_validator_ejector}"
+    ;;&
   !(*grafana-rootless*) )
       # cadvisor and node exporter dashboard
       __id=10619

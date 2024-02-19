@@ -3494,7 +3494,7 @@ config() {
     VE_BEACON_NODE_URL="${CL_NODE}"
 # We are using the variable
 # shellcheck disable=SC2034
-    VE_EXECUTION_NODE_URL="${EL_NODE}"
+    VE_EXECUTION_NODE_URL="http://execution:8545"
     CL_NODE="http://obol-node:3600"
     case "${NETWORK}" in
       "mainnet")
