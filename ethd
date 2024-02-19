@@ -698,12 +698,12 @@ delete_reth() {
     return 0
   fi
 
-# Check Reth version, only continue if on that version
+# Check Reth version, only continue if not on alpha
   var="RETH_DOCKER_TAG"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! ("${value}" =~ "beta" || "${value}" = "latest") ]]; then
+  if [[ "${value}" =~ "alpha" ]]; then
     return 0
   fi
 
@@ -720,13 +720,15 @@ delete_reth() {
 
   echo "Detected Reth. For Reth beta, it will need to be re-synced from scratch."
   echo
-  while true; do
-    read -rp "WARNING - About to delete the Reth database. Do you wish to continue? (Y/n) " yn
-    case $yn in
-      [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 130;;
-      * ) break;;
-    esac
-  done
+  if [ "${__non_interactive:-0}" -eq 0 ]; then
+    while true; do
+      read -rp "WARNING - About to delete the Reth database. Do you wish to continue? (Y/n) " yn
+      case $yn in
+        [Nn]o | [Nn]  ) echo "No changes made"; return 0;;
+        * ) break;;
+      esac
+    done
+  fi
 
   echo "Stopping Reth container"
   docompose stop execution && docompose rm -f execution
