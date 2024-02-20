@@ -76,6 +76,8 @@ services:
       - "true"
       - --Metrics.PushGatewayUrl
       - ""
+      - --Metrics.ExposeHost
+      - 0.0.0.0
       - --Metrics.ExposePort
       - "6060"
       - --Pruning.FullPruningCompletionBehavior
