@@ -1141,7 +1141,11 @@ nag_os_version() {
 
 
 pull_and_build() {
-  dodocker system prune --force
+  if [[ "${__source_ver}" -lt "9" ]]; then # Aggressive prune to work around Docker grabbing old clients
+    dodocker system prune --force -a
+  else
+    dodocker system prune --force
+  fi
   docompose --profile tools pull
   source_build
   docompose --profile tools build --pull
