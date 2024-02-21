@@ -1,5 +1,4 @@
 # Sigma Prime Siren, for use with Lighthouse
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file

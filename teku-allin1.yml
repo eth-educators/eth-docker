@@ -1,5 +1,4 @@
 # Teku consensus also handles validator keys: All In One
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -23,6 +22,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: build
     user: teku
     stop_grace_period: 1m
     volumes:
@@ -111,6 +111,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: build
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -129,6 +130,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    pull_policy: build
     user: root
     volumes:
       - teku-data:/var/lib/teku

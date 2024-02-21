@@ -1,6 +1,5 @@
 # Prometheus federation, or other reasons to have prometheus through traefik
-version: "3.9"
 services:
   prometheus:
     ports:
-      - ${SHARE_IP:-}${PROMETHEUS_PORT:-9090}:9090/tcp
+      - ${SHARE_IP:-}:${PROMETHEUS_PORT:-9090}:9090/tcp

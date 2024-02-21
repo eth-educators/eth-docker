@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -22,6 +21,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: build
     user: teku
     stop_grace_period: 1m
     volumes:
@@ -46,8 +46,8 @@ services:
       - EMBEDDED_VC=false
       - NETWORK=${NETWORK}
     ports:
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -88,6 +88,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: build
     user: teku
     volumes:
       - teku-vc-data:/var/lib/teku
@@ -140,6 +141,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: build
     user: teku
     volumes:
       - teku-vc-data:/var/lib/teku
@@ -157,6 +159,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    pull_policy: build
     user: root
     volumes:
       - teku-vc-data:/var/lib/teku
