@@ -576,7 +576,7 @@ migrate_compose_file() {
     prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml \
     teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml \
     lh-stats-validator.yml traefik-shared.yml lh-slasher.yml lighthouse-slasher.yml prysm-slasher.yml \
-    grafana-localhost.yml )
+    grafana-localhost.yml ipv6.yml )
   TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse.yml \
     lighthouse-vc-only.yml teku-allin1.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml \
     lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml \
@@ -587,7 +587,7 @@ migrate_compose_file() {
     "" "" "" "" "" "" \
     "" "" "" "" "" "" "" \
     "" "" "" "" "" \
-    "" )
+    "" "" )
 
   IFS=":"
   set -o noglob
