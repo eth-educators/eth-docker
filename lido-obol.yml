@@ -12,7 +12,7 @@ services:
     restart: "unless-stopped"
     image: obolnetwork/charon:${CHARON_VERSION:-latest}
     volumes:
-      - .charon:/opt/charon/.charon
+      - .eth:/opt/charon/.charon
     <<: *logging
     environment:
       - CHARON_BEACON_NODE_ENDPOINTS=${OBOL_BEACON_NODE_ENDPOINT:-http://consensus:5052}
@@ -43,13 +43,13 @@ services:
     image: obolnetwork/charon:${OBOL_NODE_TAG:-latest}
     command: create enr
     volumes:
-      - .charon:/opt/charon/.charon
+      - .eth:/opt/charon/.charon
   charon-run-dkg:
     profiles: ["tools"]
     restart: "no"
     image: obolnetwork/charon:${CHARON_VERSION:-latest}
     volumes:
-      - .charon:/opt/charon/.charon
+      - .eth:/opt/charon/.charon
     command: dkg
 
   validator-ejector:
@@ -82,7 +82,7 @@ services:
     user: ":"
     volumes:
       - ./validator-ejector:/exitmessages
-      - .charon:/charon
+      - .eth:/charon
     environment:
       - LIDODVEXIT_BEACON_NODE_URL=${LIDO_DV_EXIT_BEACON_NODE_URL:-http://consensus:5052}
       - LIDODVEXIT_CHARON_RUNTIME_DIR=/charon
