@@ -31,6 +31,12 @@ services:
       - ${OBOL_P2P_PORT:-3610}:${OBOL_P2P_PORT:-3610}/tcp # P2P TCP libp2p
     healthcheck:
       test: wget -qO- http://localhost:3620/readyz
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=3620
+      - metrics.instance=obol-node
+
   charon-create-enr:
     profiles: ["tools"]
     restart: "no"
@@ -48,13 +54,13 @@ services:
 
   validator-ejector:
    platform: linux/amd64
-   image: lidofinance/validator-ejector:${VALIDATOR_EJECTOR_VERSION:-1.3.0}
+   image: lidofinance/validator-ejector:${VALIDATOR_EJECTOR_VERSION:-1.5.0}
    user: ":"
    volumes:
      - ./validator-ejector:/exitmessages
    restart: unless-stopped
    environment:
-     -  EXECUTION_NODE=${VE_EXECUTION_NODE_URL:-http://execution:8545}
+     -  EXECUTION_NODE=${VE_EXECUTION_NODE_URL:-http://execution:8551}
      -  CONSENSUS_NODE=${VE_BEACON_NODE_URL:-http://consensus:5052}
      -  LOCATOR_ADDRESS=${VE_LOCATOR_ADDRESS:-0x28FAB2059C713A7F9D8c86Db49f9bb0e96Af1ef8}
      -  STAKING_MODULE_ID=${VE_STAKING_MODULE_ID:-2}
@@ -63,7 +69,13 @@ services:
      -  MESSAGES_LOCATION=/exitmessages
      -  RUN_METRICS=true
      -  HTTP_PORT=8989
-     -  DISABLE_SECURITY_DONT_USE_IN_PRODUCTION=${DISABLE_EJECTOR_SECURITY:-false}
+     -  DISABLE_SECURITY_DONT_USE_IN_PRODUCTION=${VE_DISABLE_SECURITY:-false}
+     -  FORCE_DENCUN_FORK_MODE=true
+   labels:
+     - metrics.scrape=true
+     - metrics.path=/metrics
+     - metrics.port=8989
+     - metrics.instance=validator-ejector
 
   lido-dv-exit:
     image: obolnetwork/lido-dv-exit:${LIDO_DV_EXIT_VERSION:-20d28fd}
