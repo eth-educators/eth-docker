@@ -973,6 +973,11 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
   var=ENV_VERSION
   __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
   __source_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+# Aggressive prune to work around Docker grabbing old clients. Here so it doesn't get called during config
+  if [[ "${__source_ver}" -lt "9" ]]; then
+    dodocker system prune --force -a
+  fi
+
   if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" = "${__source_ver}" ]]; then # No changes in template, do nothing
     return 0
   fi
@@ -1141,11 +1146,7 @@ nag_os_version() {
 
 
 pull_and_build() {
-  if [[ "${__source_ver}" -lt "9" ]]; then # Aggressive prune to work around Docker grabbing old clients
-    dodocker system prune --force -a
-  else
-    dodocker system prune --force
-  fi
+  dodocker system prune --force
   docompose --profile tools pull
   source_build
   docompose --profile tools build --pull
