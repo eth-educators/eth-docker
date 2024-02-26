@@ -24,7 +24,7 @@ services:
       target: consensus
       <<: *prysm-build
     image: prysm-consensus:local
-    pull_policy: build
+    pull_policy: never
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:

@@ -21,7 +21,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
-    pull_policy: build
+    pull_policy: never
     user: lhvalidator
     environment:
       - MEV_BOOST=${MEV_BOOST}
@@ -84,7 +84,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse
@@ -111,7 +111,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - lhvalidator-data:/var/lib/lighthouse

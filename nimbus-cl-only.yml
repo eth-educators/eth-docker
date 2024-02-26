@@ -24,7 +24,7 @@ services:
       target: consensus
       <<: *nimbus-build
     image: nimbus:local
-    pull_policy: build
+    pull_policy: never
     user: user
     stop_grace_period: 1m
     volumes:
@@ -89,7 +89,7 @@ services:
       target: consensus
       <<: *nimbus-build
     image: nimbus:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - /etc/localtime:/etc/localtime:ro

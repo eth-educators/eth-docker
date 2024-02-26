@@ -21,7 +21,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
-    pull_policy: build
+    pull_policy: never
     user: lhconsensus
     stop_grace_period: 1m
     volumes:

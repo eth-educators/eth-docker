@@ -19,7 +19,7 @@ services:
         - DOCKER_REPO=${GETH_DOCKER_REPO:-ethereum/client-go}
     stop_grace_period: 5m
     image: geth:local
-    pull_policy: build
+    pull_policy: never
     user: geth
     environment:
       - JWT_SECRET=${JWT_SECRET:-}

@@ -19,7 +19,7 @@ services:
 # As of Nov 2022 Prysm's own client-stats would require source build. Using beaconcha.in's instead
 #  client-stats:
 #    image: prysm-consensus:local
-#    pull_policy: build
+#    pull_policy: never
 #    volumes:
 #      - /etc/localtime:/etc/localtime:ro
 #    entrypoint:

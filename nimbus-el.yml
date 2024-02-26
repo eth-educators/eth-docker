@@ -20,7 +20,7 @@ services:
     stop_grace_period: 5m
     stop_signal: SIGINT
     image: nimbus-el:local
-    pull_policy: build
+    pull_policy: never
     user: user
     environment:
       - JWT_SECRET=${JWT_SECRET:-}

@@ -13,7 +13,7 @@ services:
     build:
       context: ./eth-metrics
     image: ethereum-metrics-exporter:local
-    pull_policy: build
+    pull_policy: never
     environment:
       - CLIENT=${COMPOSE_FILE}
     entrypoint:

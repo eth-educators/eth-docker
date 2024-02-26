@@ -21,7 +21,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
-    pull_policy: build
+    pull_policy: never
     user: teku
     stop_grace_period: 1m
     volumes:

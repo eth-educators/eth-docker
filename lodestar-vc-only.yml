@@ -21,7 +21,7 @@ services:
     build:
       <<: *ls-build
     image: lodestar:local
-    pull_policy: build
+    pull_policy: never
     user: lsvalidator
     environment:
       - MEV_BOOST=${MEV_BOOST}
@@ -78,7 +78,7 @@ services:
     build:
       <<: *ls-build
     image: lodestar:local
-    pull_policy: build
+    pull_policy: never
     user: lsvalidator
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators
@@ -104,7 +104,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - lsvalidator-data:/var/lib/lodestar/validators

@@ -13,7 +13,7 @@ services:
       args:
         - DOCKER_TAG=${TRAEFIK_TAG}
     image: traefik-aws
-    pull_policy: build
+    pull_policy: never
     restart: "unless-stopped"
     command:
 #      - --accesslog=true

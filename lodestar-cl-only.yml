@@ -21,7 +21,7 @@ services:
     build:
       <<: *ls-build
     image: lodestar:local
-    pull_policy: build
+    pull_policy: never
     user: lsconsensus
     stop_grace_period: 1m
     volumes:

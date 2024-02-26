@@ -20,7 +20,7 @@ services:
     stop_grace_period: 5m
     stop_signal: SIGINT
     image: reth:local
-    pull_policy: build
+    pull_policy: never
     user: reth
     environment:
       - JWT_SECRET=${JWT_SECRET:-}

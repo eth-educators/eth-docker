@@ -21,7 +21,7 @@ services:
       context: ./prometheus
     image: prometheus:local
     user: root
-    pull_policy: build
+    pull_policy: never
     volumes:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
@@ -45,7 +45,7 @@ services:
     build:
       context: ./eth-metrics
     image: ethereum-metrics-exporter:local
-    pull_policy: build
+    pull_policy: never
     environment:
       - CLIENT=${COMPOSE_FILE}
     entrypoint:

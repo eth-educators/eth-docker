@@ -21,7 +21,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
-    pull_policy: build
+    pull_policy: never
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -74,7 +74,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
-    pull_policy: build
+    pull_policy: never
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -92,7 +92,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - teku-data:/var/lib/teku
