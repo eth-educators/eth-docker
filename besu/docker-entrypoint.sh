@@ -60,7 +60,7 @@ else
 fi
 
 __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
-if [ "${__memtotal}" -gt 60 ]; then
+if [ "${__memtotal}" -ge 60 ]; then
   __spec="--Xplugin-rocksdb-high-spec-enabled=true"
 else
   __spec=""
