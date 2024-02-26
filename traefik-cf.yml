@@ -59,7 +59,7 @@ services:
 
   curl-jq:
     image: curl-jq:local
-    pull_policy: build
+    pull_policy: never
     build:
       context: ./traefik
       dockerfile: Dockerfile.jq

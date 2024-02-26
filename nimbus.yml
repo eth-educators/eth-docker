@@ -24,7 +24,7 @@ services:
       target: consensus
       <<: *nimbus-build
     image: nimbus:local
-    pull_policy: build
+    pull_policy: never
     user: user
     stop_grace_period: 1m
     volumes:
@@ -87,7 +87,7 @@ services:
       target: validator
       <<: *nimbus-build
     image: nimbus-validator:local
-    pull_policy: build
+    pull_policy: never
     user: user
     volumes:
       - nimbus-vc-data:/var/lib/nimbus
@@ -142,7 +142,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - nimbus-vc-data:/var/lib/nimbus

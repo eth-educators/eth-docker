@@ -6,7 +6,7 @@ services:
     build:
       context: ./ethdo
     image: ethdo:local
-    pull_policy: build
+    pull_policy: never
     volumes:
       - ./.eth:/app/.eth
       - ethdo-wallet:/app/wallet

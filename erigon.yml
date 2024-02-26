@@ -19,7 +19,7 @@ services:
         - DOCKER_REPO=${ERIGON_DOCKER_REPO:-thorax/erigon}
     stop_grace_period: 5m
     image: erigon:local
-    pull_policy: build
+    pull_policy: never
     user: erigon
     environment:
       - JWT_SECRET=${JWT_SECRET}

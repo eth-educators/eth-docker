@@ -20,7 +20,7 @@ services:
         - DOCKER_TAG=${NM_DOCKER_TAG:-latest}
         - DOCKER_REPO=${NM_DOCKER_REPO:-nethermind/nethermind}
     image: nethermind:local
-    pull_policy: build
+    pull_policy: never
     user: nethermind
     environment:
       - JWT_SECRET=${JWT_SECRET}

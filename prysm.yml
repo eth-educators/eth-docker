@@ -24,7 +24,7 @@ services:
       target: consensus
       <<: *prysm-build
     image: prysm-consensus:local
-    pull_policy: build
+    pull_policy: never
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
@@ -97,7 +97,7 @@ services:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local
-    pull_policy: build
+    pull_policy: never
     user: prysmvalidator
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -163,7 +163,7 @@ services:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local
-    pull_policy: build
+    pull_policy: never
     user: prysmvalidator
     environment:
       - NETWORK=${NETWORK}
@@ -198,7 +198,7 @@ services:
       target: validator
       <<: *prysm-build
     image: prysm-validator:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm
@@ -226,7 +226,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
-    pull_policy: build
+    pull_policy: never
     user: root
     volumes:
       - prysmvalidator-data:/var/lib/prysm

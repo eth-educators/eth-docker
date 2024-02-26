@@ -18,7 +18,7 @@ services:
         - DOCKER_TAG=${MEV_DOCKER_TAG:-latest}
         - DOCKER_REPO=${MEV_DOCKER_REPO:-flashbots/mev-boost}
     image: mev-boost:local
-    pull_policy: build
+    pull_policy: never
     entrypoint:
       - /app/mev-boost
       - -addr

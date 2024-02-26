@@ -19,7 +19,7 @@ services:
         - DOCKER_TAG=${BESU_DOCKER_TAG:-latest}
         - DOCKER_REPO=${BESU_DOCKER_REPO:-hyperledger/besu}
     image: besu:local
-    pull_policy: build
+    pull_policy: never
     user: besu
     environment:
       - JAVA_OPTS=${BESU_HEAP:--Xmx5g}
