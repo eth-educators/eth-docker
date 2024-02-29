@@ -3230,6 +3230,7 @@ query_lido_obol_enr() {
     fi
 
     echo "Your ENR is:" "${__lido_obol_operator_enr}"
+    echo "${__lido_obol_operator_enr}" >> "./.eth/charon-enr-public-key"
     whiptail --title "Lido Obol operator ENR creation outcome" --msgbox "${__lido_obol_operator_enr_private_key_path}\n\n1. Backup your private key!\n2. Copy your public ENR for the futher steps\n\nYour public ENR is:\n\n${__lido_obol_operator_enr}" 16 80
 }
 
