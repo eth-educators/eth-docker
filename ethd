@@ -3869,7 +3869,11 @@ fi
 
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 # Use this to make sure root doesn't end up owning files
-OWNER=$(stat --format=%U .)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  OWNER=$(stat -f %Su .)
+else
+  OWNER=$(stat --format=%U .)
+fi
 
 if [ "${OWNER}" == "root" ]; then
   echo "Please install Eth Docker as a non-root user."
