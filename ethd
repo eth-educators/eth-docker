@@ -3260,13 +3260,13 @@ query_lido_obol_cluster_dkg() {
     while true; do
         if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
             __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-run-dkg)
-            if [[ "${__outcome__}" =~ "Successfully completed DKG ceremony" ]]; then
-                echo "DKG ceremony finished successfully"
-            else
+            exitstatus=$?
+            if [ $exitstatus -ne 0 ]; then
                 echo "Something went wrong. Please, try again."
                 exit 1
             fi
-            whiptail --title "Finish" --msgbox "Final steps!\n\n1. Decide between participants who will submit the keys. If you are - go back to Obol launchpad, follow the form futher and confirm that only you will submit on behalf of the cluster\n\n3. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n3. Wait for keys validation\n\n4. Run your nodes by './ethd start'" 18 85
+            echo "DKG ceremony finished successfully"
+            whiptail --title "Finish" --msgbox "Final steps!\n\n1. Decide between participants who will submit the keys. If you are - go back to Obol launchpad, follow the form futher and confirm that only you will submit on behalf of the cluster\n\n3. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n3. Wait for keys validation\n\n4. Run your nodes by './ethd start'\n\n5. Import your keys by './ethd keys import" 19 85
             break
         else
             whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
