@@ -666,10 +666,6 @@ ssv_switch() {
 
 
 delete_reth() {
-# Enable this when Reth changes DB
-  if true; then
-    return 0
-  fi
 # Check for Reth
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -2666,8 +2662,8 @@ query_execution_client() {
     "nethermind.yml" "Nethermind (.NET)" \
     "besu.yml" "Besu (Java)" \
     "geth.yml" "Geth (Go)" \
+    "reth.yml" "Reth (Rust) - beta release" \
     "erigon.yml" "Erigon (Go)" \
-    "reth.yml" "Reth (Rust) - alpha release" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
 
