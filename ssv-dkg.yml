@@ -19,4 +19,3 @@ services:
       - ./ssv-config/:/config
       - ./ssv-config/operator.yaml:/config/config.yaml
       - ./ssv-config/dkg-output:/output
-
