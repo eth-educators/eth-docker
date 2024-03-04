@@ -3563,6 +3563,21 @@ config() {
 (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
   fi
 
+  _ssv_operator_id=-1
+  if [ "${__deployment}" = "lido_ssv" ]; then
+    if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremony as operator?" 10 60) then
+      #COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
+      _ssv_operator_id=$(whiptail --title "Register SSV operator" --inputbox "Register your operator in the SSV network and put your Operator ID \
+  (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+
+      if [ ! -f "./ssv-config/operator.yaml" ]; then
+        ${__as_owner} cp ./ssv-config/operator-sample.yaml ./ssv-config/operator.yaml
+      fi
+      sed -i "" "s|operatorID: .*|operatorID: ${_ssv_operator_id}|" ./ssv-config/operator.yaml
+      echo "Your SSV Operator ID: ${_ssv_operator_id}"
+    fi
+  fi
+
   COMPOSE_FILE="${CONSENSUS_CLIENT}"
   if [ -n "${EXECUTION_CLIENT+x}" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
@@ -3578,6 +3593,9 @@ config() {
   fi
   if [ "${__deployment}" = "lido_ssv" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
+  fi
+  if [ "${__deployment}" = "lido_ssv" ] && [ ! "${_ssv_operator_id}" = -1 ]; then
+      COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
   fi
   if [ "${__deployment}" = "lido_obol" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:lido-obol.yml"
