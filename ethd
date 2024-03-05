@@ -3221,6 +3221,10 @@ query_lido_obol_enr() {
         fi
         break
     done
+    if [ ! -d "./.eth" ]; then
+      mkdir ./.eth
+      ${__auto_sudo} chown 1000:1000 ./.eth
+    fi
     __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
         __lido_obol_operator_enr_private_key_path=$(echo "${__outcome__}" | grep -e 'Created ENR private key')
