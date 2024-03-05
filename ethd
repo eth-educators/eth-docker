@@ -3394,11 +3394,11 @@ config() {
         ${__as_owner} cp ./ssv-config/config-sample.yaml ./ssv-config/config.yaml
       fi
       if [ "${NETWORK}" = "goerli" ]; then
-        sed -i '' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
+        sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "holesky" ]; then
-        sed -i '' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
+        sed -i'' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
-        sed -i '' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
+        sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
       else
         echo "${NETWORK} is not something that works with SSV."
         echo "Please choose Holešovice, Mainnet or Görli when running $__me config again"
@@ -3573,7 +3573,7 @@ config() {
       if [ ! -f "./ssv-config/operator.yaml" ]; then
         ${__as_owner} cp ./ssv-config/operator-sample.yaml ./ssv-config/operator.yaml
       fi
-      sed -i "" "s|operatorID: .*|operatorID: ${_ssv_operator_id}|" ./ssv-config/operator.yaml
+      sed -i"" "s|operatorID: .*|operatorID: ${_ssv_operator_id}|" ./ssv-config/operator.yaml
       echo "Your SSV Operator ID: ${_ssv_operator_id}"
     fi
   fi
