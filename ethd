@@ -3210,8 +3210,8 @@ query_lido_obol_enr() {
     while true; do
         if [ -d "./.eth" ]; then
             if [ "$(ls -A ./.eth)" ]; then
-                if (whiptail --title "Lido Obol operator ENR creation" --yesno "It seems that you already have \`.eth\` folder and it isn't empty.\nDo you want to remove it?" 10 80); then
-                    rm -rf ./.eth
+                if (whiptail --title "Lido Obol operator ENR creation" --yesno "It seems that you already have \`.eth\` folder and it isn't empty.\nDo you want to backup it?" 10 80); then
+                    cp -vr ./.eth ./.eth_backup_$EPOCHSECONDS
                 else
                     whiptail --title "Lido Obol operator ENR creation" --msgbox "The \`.eth\` folder must be empty or non-existent for the cluster definition to continue" 10 80
                     continue
