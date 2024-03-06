@@ -33,6 +33,7 @@ services:
       - RUST_LOG_STYLE=never
     volumes:
       - reth-el-data:/var/lib/reth
+      - ${ANCIENT_DIR:-.nada}:/var/lib/ancient
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/reth/ee-secret
     ports:
