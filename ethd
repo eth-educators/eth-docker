@@ -3244,10 +3244,12 @@ query_lido_obol_cluster_definition() {
         __cluster_definition_url=$(whiptail --title "Lido Obol cluster creation" --inputbox "\nThere are a few steps left before the launch!\n\n1. Go to https://${NETWORK}.launchpad.obol.tech/\n2. Init cluster definition (or participate in existing one if you have invite link)\n3. Follow the steps from the launchpad\n4. As a result, you will get a link with the cluster definition.\n\nPlease, put your cluster definition link below:" 17 80 "https://api.obol.tech/dv/example_link_to_your_definition" 3>&1 1>&2 2>&3)
         exitstatus=$?
         if [ $exitstatus -eq 0 ]; then
-            __cluster_definition_json=$(curl -s "${__cluster_definition_url}")
+            __cluster_definition_json=$(curl -s "${__cluster_definition_url}" -H "Content-Type: application/json")
 # shellcheck disable=SC2086
-            __cluster_definition_is_valid=$(echo "${__cluster_definition_json}" | jq 'all(.validators[]; .fee_recipient_address == "'${FEE_RECIPIENT}'" and .withdrawal_address == "'${WITHDRAWAL_CREDENTIALS}'")')
-            if [[ "${__cluster_definition_is_valid}" =~ "true" ]]; then
+            __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
+              "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+            set -e
+            if [ "${__cluster_definition_is_valid}" = "true" ]; then
                 echo "Your cluster definition url is:" "${__cluster_definition_url}"
                 echo "${__cluster_definition_json}" > ./.eth/cluster-definition.json
                 break
@@ -3544,7 +3546,8 @@ config() {
       while true; do
         __cluster_lock_json=$(cat ./.eth/cluster-lock.json)
   # shellcheck disable=SC2086
-        __cluster_lock_is_valid=$(echo "${__cluster_lock_json}" | jq 'all(.cluster_definition.validators[]; .fee_recipient_address == "'${FEE_RECIPIENT}'" and .withdrawal_address == "'${WITHDRAWAL_CREDENTIALS}'")')
+        __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
+          "echo '${__cluster_lock_json}' | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
         if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
           echo "Your cluster definition is valid."
           break
