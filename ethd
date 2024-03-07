@@ -3211,8 +3211,8 @@ query_lido_obol_enr() {
         if [ -d "./.eth" ]; then
             if [ "$(ls -A ./.eth)" ]; then
                 if (whiptail --title "Lido Obol operator ENR creation" --yesno "It seems that you already have \`.eth\` folder and it isn't empty.\nDo you want to backup it?" 10 80); then
-                    cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
-                    rm -rf ./.eth
+                    ${__auto_sudo} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
+                    ${__auto_sudo} rm -rf ./.eth
                 else
                     whiptail --title "Lido Obol operator ENR creation" --msgbox "The \`.eth\` folder must be empty or non-existent for the cluster definition to continue" 10 80
                     continue
@@ -3222,7 +3222,7 @@ query_lido_obol_enr() {
         break
     done
     if [ ! -d "./.eth" ]; then
-      mkdir ./.eth
+      ${__auto_sudo} mkdir ./.eth
       ${__auto_sudo} chown 1000:1000 ./.eth
     fi
     __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-create-enr)
