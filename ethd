@@ -3662,7 +3662,11 @@ config() {
     set_value_in_env
     var=VE_STAKING_MODULE_ID
     set_value_in_env
+# Literal match intended
+# shellcheck disable=SC2076
     if [[ "${COMPOSE_FILE}" =~ "prysm.yml" || "${COMPOSE_FILE}" =~ "lodestar.yml" ]]; then
+# We are using the variable
+# shellcheck disable=SC2034
       ENABLE_DIST_ATTESTATION_AGGR="true"
       var=ENABLE_DIST_ATTESTATION_AGGR
       set_value_in_env
