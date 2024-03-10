@@ -64,7 +64,6 @@ services:
       - ${EL_WS_PORT:-8546}
       - --ws.origins=*
       - --metrics
-      - --metrics.expensive
       - --pprof
       - --pprof.addr
       - 0.0.0.0
