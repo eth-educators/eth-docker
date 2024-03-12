@@ -3207,78 +3207,63 @@ again or Cancel on the next screen." 10 75
 
 
 query_lido_obol_enr() {
-    while true; do
-        if [ -d "./.eth" ]; then
-            if [ "$(ls -A ./.eth)" ]; then
-                if (whiptail --title "Lido Obol operator ENR creation" --yesno "It seems that you already have \`.eth\` folder and it isn't empty.\nDo you want to backup it?" 10 80); then
-                    ${__auto_sudo} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
-                    ${__auto_sudo} rm -rf ./.eth
-                else
-                    whiptail --title "Lido Obol operator ENR creation" --msgbox "The \`.eth\` folder must be empty or non-existent for the cluster definition to continue" 10 80
-                    continue
-                fi
-            fi
-        fi
-        break
-    done
-    if [ ! -d "./.eth" ]; then
-      ${__auto_sudo} mkdir ./.eth
-      ${__auto_sudo} chown 1000:1000 ./.eth
-    fi
     __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
-        __lido_obol_operator_enr_private_key_path=$(echo "${__outcome__}" | grep -e 'Created ENR private key')
-        __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
+      __lido_obol_operator_enr_private_key_path=$(echo "${__outcome__}" | grep -e 'Created ENR private key')
+      __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
     else
-        echo "Something went wrong. Please, try again."
-        exit 1
+      echo "Something went wrong. Please, try again."
+      exit 1
     fi
 
-    echo "Your ENR is:" "${__lido_obol_operator_enr}"
+    echo "Your created ENR is:" "${__lido_obol_operator_enr}"
     echo "${__lido_obol_operator_enr}" >> "./.eth/charon-enr-public-key"
     whiptail --title "Lido Obol operator ENR creation outcome" --msgbox "${__lido_obol_operator_enr_private_key_path}\n\n1. Backup your private key!\n2. Copy your public ENR for the futher steps\n\nYour public ENR is:\n\n${__lido_obol_operator_enr}" 16 80
 }
 
 query_lido_obol_cluster_definition() {
-    while true; do
-        __cluster_definition_url=$(whiptail --title "Lido Obol cluster creation" --inputbox "\nThere are a few steps left before the launch!\n\n1. Go to https://${NETWORK}.launchpad.obol.tech/\n2. Init cluster definition (or participate in existing one if you have invite link)\n3. Follow the steps from the launchpad\n4. As a result, you will get a link with the cluster definition.\n\nPlease, put your cluster definition link below:" 17 80 "https://api.obol.tech/dv/example_link_to_your_definition" 3>&1 1>&2 2>&3)
-        exitstatus=$?
-        if [ $exitstatus -eq 0 ]; then
-            __cluster_definition_json=$(curl -s "${__cluster_definition_url}" -H "Content-Type: application/json")
+    __cluster_definition_url=$(whiptail --title "Lido Obol cluster creation" --inputbox "\nPut your cluster definition link below:" 10 80 "https://api.obol.tech/dv/example_link_to_your_definition" 3>&1 1>&2 2>&3)
+    if [ "${__cluster_definition_url}" = ""  ]; then
+      echo "Cluster definition URL can't be empty"
+      exit 1
+    fi
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        __cluster_definition_json=$(curl -s "${__cluster_definition_url}" -H "Content-Type: application/json")
 # shellcheck disable=SC2086
-            __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-              "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
-            set -e
-            if [ "${__cluster_definition_is_valid}" = "true" ]; then
-                echo "Your cluster definition url is:" "${__cluster_definition_url}"
-                echo "${__cluster_definition_json}" > ./.eth/cluster-definition.json
-                break
-            else
-                whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
-            fi
+        __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
+          "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+        set -e
+        if [ "${__cluster_definition_is_valid}" = "true" ]; then
+            echo "Your cluster definition url is:" "${__cluster_definition_url}"
+            echo "${__cluster_definition_json}" > ./.eth/cluster-definition.json
         else
-            echo "You chose Cancel."
+            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
+            echo "Your cluster definition is NOT valid."
             exit 1
         fi
-    done
+    else
+        echo "You chose Cancel."
+        exit 1
+    fi
 }
 
 query_lido_obol_cluster_dkg() {
-    while true; do
-        if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
-            __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-run-dkg)
-            exitstatus=$?
-            if [ $exitstatus -ne 0 ]; then
-                echo "Something went wrong. Please, try again."
-                exit 1
-            fi
-            echo "DKG ceremony finished successfully"
-            whiptail --title "Finish" --msgbox "Final steps!\n\n1. Decide between participants who will submit the keys. If you are - go back to Obol launchpad, follow the form futher and confirm that only you will submit on behalf of the cluster\n\n3. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n3. Wait for keys validation\n\n4. Run your nodes by './ethd start'\n\n5. Import your keys by './ethd keys import" 19 85
-            break
-        else
-            whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
+    if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
+        __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-run-dkg)
+        exitstatus=$?
+        if [ $exitstatus -ne 0 ]; then
+            echo "Something went wrong. Please, try again."
+            exit 1
         fi
-    done
+        echo "DKG ceremony finished successfully"
+        whiptail --title "Finish" --msgbox "Final steps!\n\n1. Decide between participants who will submit the keys. If you are - go back to Obol launchpad, follow the form futher and confirm that only you will submit on behalf of the cluster\n\n3. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n3. Wait for keys validation\n\n4. Run your nodes by './ethd start'\n\n5. Import your keys by './ethd keys import" 19 85
+        break
+    else
+        whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
+        echo "DGK ceremony starting is canceled"
+        exit 1
+    fi
 }
 
 
@@ -3542,29 +3527,64 @@ config() {
         ;;
     esac
 
-    if (whiptail --title "Lido Obol cluster existing" --yesno "Does your cluster already exist?" 10 60) then
-      while true; do
+    if [ -f "./.eth/cluster-lock.json" ]; then
+      if (whiptail --title "Lido Obol cluster exists" --yesno "Your cluster has already been created. Continue with it?" 10 60); then
         __cluster_lock_json=$(cat ./.eth/cluster-lock.json)
   # shellcheck disable=SC2086
         __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
           "echo '${__cluster_lock_json}' | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
         if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
-          echo "Your cluster definition is valid."
-          break
+          echo "Your cluster lock is valid."
         else
-          whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster lock file './.eth/cluster-lock.json' is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
+          whiptail --title "Lido Obol cluster definition" --msgbox "Your cluster lock file './.eth/cluster-lock.json' is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
+          echo "Your cluster lock is NOT valid."
+          exit 1
         fi
-      done
-    else
-      if (whiptail --title "Lido Obol cluster creation" --yesno "Do you have cluster definition url and ENR?" 10 60) then
-          query_lido_obol_cluster_definition
-          query_lido_obol_cluster_dkg
+      elif (whiptail --title "Lido Obol cluster creation" --yesno "Backup a previously created cluster to create a new one?" 10 80); then
+        ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
+        ${__as_owner} rm -rf ./.eth
+        ${__as_owner} mkdir ./.eth
       else
-          query_lido_obol_enr
-          query_lido_obol_cluster_definition
-          query_lido_obol_cluster_dkg
+        whiptail --title "Lido Obol cluster creation" --msgbox "The \`.eth\` folder must be empty or non-existent to continue" 10 80
+        echo "The \`.eth\` folder must be empty to create a new cluster"
+        exit 1
       fi
     fi
+
+    if [ -f "./.eth/charon-enr-private-key" ] && [ -f "./.eth/charon-enr-public-key" ]; then
+      if (whiptail --title "Lido Obol operator ENR creation" --yesno "You already have ENR. Use it?" 8 50); then
+        echo "Use existing ENR"
+      else
+        ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
+        ${__as_owner} rm -rf ./.eth
+        ${__as_owner} mkdir ./.eth
+        query_lido_obol_enr
+      fi
+    else
+      query_lido_obol_enr
+    fi
+
+    if [ -f "./.eth/cluster-definition.json" ]; then
+      if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
+        __cluster_definition_json=$(cat ./.eth/cluster-definition.json)
+# shellcheck disable=SC2086
+        __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
+          "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+        if [ "${__cluster_definition_is_valid}" = "true" ]; then
+          echo "Your cluster definition is valid."
+        else
+          whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
+          echo "Your cluster definition is NOT valid."
+          exit 1
+        fi
+      else
+        query_lido_obol_cluster_definition
+      fi
+    else
+      query_lido_obol_cluster_definition
+    fi
+    query_lido_obol_cluster_dkg
+
 # We are using the variable
 # shellcheck disable=SC2034
     VE_OPERATOR_ID=$(whiptail --title "Lido Operator ID" --inputbox "Put you Operator ID from Lido Operators dashboard \
