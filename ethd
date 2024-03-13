@@ -3207,6 +3207,7 @@ again or Cancel on the next screen." 10 75
 
 
 query_lido_obol_enr() {
+    ${__auto_sudo} chown 1000:1000 ./.eth
     __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
       __lido_obol_operator_enr_private_key_path=$(echo "${__outcome__}" | grep -e 'Created ENR private key')
@@ -3257,7 +3258,7 @@ query_lido_obol_cluster_dkg() {
             exit 1
         fi
         echo "DKG ceremony finished successfully"
-        whiptail --title "Finish" --msgbox "Final steps!\n\n1. Decide between participants who will submit the keys. If you are - go back to Obol launchpad, follow the form futher and confirm that only you will submit on behalf of the cluster\n\n3. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n3. Wait for keys validation\n\n4. Run your nodes by './ethd start'\n\n5. Import your keys by './ethd keys import" 19 85
+        whiptail --title "Finish" --msgbox "\nThe DKG is finished!" 10 40
     else
         whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
         echo "DGK ceremony starting is canceled"
@@ -3487,7 +3488,7 @@ config() {
 # We are using the variable
 # shellcheck disable=SC2034
     VE_EXECUTION_NODE_URL="http://execution:8545"
-    CL_NODE="http://obol-node:3600"
+    CL_NODE="http://charon:3600"
     case "${NETWORK}" in
       "mainnet")
 # We are using the variable
@@ -3543,51 +3544,58 @@ config() {
         ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
         ${__as_owner} rm -rf ./.eth
         ${__as_owner} mkdir ./.eth
+        query_lido_obol_enr
+        query_lido_obol_cluster_definition
+        query_lido_obol_cluster_dkg
       else
         whiptail --title "Lido Obol cluster creation" --msgbox "The \`.eth\` folder must be empty or non-existent to continue" 10 80
         echo "The \`.eth\` folder must be empty to create a new cluster"
         exit 1
       fi
-    fi
-
-    if [ -f "./.eth/charon-enr-private-key" ] && [ -f "./.eth/charon-enr-public-key" ]; then
-      if (whiptail --title "Lido Obol operator ENR creation" --yesno "You already have ENR. Use it?" 8 50); then
-        echo "Use existing ENR"
+    else
+      if [ -f "./.eth/charon-enr-private-key" ] && [ -f "./.eth/charon-enr-public-key" ]; then
+        if (whiptail --title "Lido Obol operator ENR creation" --yesno "You already have ENR. Use it?" 8 50); then
+          echo "Use existing ENR"
+        else
+          ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
+          ${__as_owner} rm -rf ./.eth
+          ${__as_owner} mkdir ./.eth
+          query_lido_obol_enr
+        fi
       else
-        ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
-        ${__as_owner} rm -rf ./.eth
-        ${__as_owner} mkdir ./.eth
         query_lido_obol_enr
       fi
-    else
-      query_lido_obol_enr
-    fi
 
-    if [ -f "./.eth/cluster-definition.json" ]; then
-      if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
-        __cluster_definition_json=$(cat ./.eth/cluster-definition.json)
+      if [ -f "./.eth/cluster-definition.json" ]; then
+        if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
+          __cluster_definition_json=$(cat ./.eth/cluster-definition.json)
 # shellcheck disable=SC2086
-        __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-          "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
-        if [ "${__cluster_definition_is_valid}" = "true" ]; then
-          echo "Your cluster definition is valid."
+          __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
+            "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+          if [ "${__cluster_definition_is_valid}" = "true" ]; then
+            echo "Your cluster definition is valid."
+          else
+            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
+            echo "Your cluster definition is NOT valid."
+            exit 1
+          fi
         else
-          whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
-          echo "Your cluster definition is NOT valid."
-          exit 1
+          query_lido_obol_cluster_definition
         fi
       else
         query_lido_obol_cluster_definition
       fi
-    else
-      query_lido_obol_cluster_definition
+      query_lido_obol_cluster_dkg
     fi
-    query_lido_obol_cluster_dkg
 
 # We are using the variable
 # shellcheck disable=SC2034
     VE_OPERATOR_ID=$(whiptail --title "Lido Operator ID" --inputbox "Put you Operator ID from Lido Operators dashboard \
 (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    __obol_prom_remote_token=$(whiptail --title "Obol prometheus" --inputbox "Put Obol Prometheus remote write token \
+(right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    cat ./prometheus/obol-prom.yml > ./prometheus/custom-prom.yml
+    sed -i'' "s|      credentials: OBOL_PROM_REMOTE_WRITE_TOKEN|      credentials: ${__obol_prom_remote_token}|" ./prometheus/custom-prom.yml
   fi
 
   _ssv_operator_id=-1

@@ -1,9 +1,9 @@
 scrape_configs:
-  - job_name: obol-node
+  - job_name: charon
     metrics_path: /metrics
     static_configs:
       - targets:
-        - obol-node:3620
+        - charon:3620
   - job_name: validator-ejector
     metrics_path: /metrics
     static_configs:

@@ -8,7 +8,7 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  obol-node:
+  charon:
     restart: "unless-stopped"
     image: obolnetwork/charon:${CHARON_VERSION:-latest}
     volumes:
@@ -35,7 +35,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=3620
-      - metrics.instance=obol-node
+      - metrics.instance=charon
 
   charon-create-enr:
     profiles: ["tools"]
