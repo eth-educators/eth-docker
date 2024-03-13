@@ -3251,7 +3251,7 @@ query_lido_obol_cluster_definition() {
 
 query_lido_obol_cluster_dkg() {
     if [ -d ./.eth/validator_keys ]; then
-        __folder_postfix=$(echo $EPOCHSECONDS)
+        __folder_postfix=${EPOCHSECONDS}
         ${__as_owner} mkdir ./.eth_backup_"$__folder_postfix"
         ${__as_owner} cp -vr ./.eth/validator_keys ./.eth_backup_"$__folder_postfix"/validator_keys
         ${__as_owner} rm -rf ./.eth/validator_keys
