@@ -122,8 +122,6 @@ services:
       - /var/lib/prysm
       - --wallet-dir
       - /var/lib/prysm/
-      - --beacon-rpc-provider
-      - consensus:4000
       - --verbosity
       - ${LOG_LEVEL}
       - --accept-terms-of-use
@@ -137,12 +135,13 @@ services:
       - --grpc-gateway-port
       - ${KEY_API_PORT:-7500}
       - --grpc-gateway-corsdomain=*
-      - --beacon-rpc-gateway-provider
-      - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
       - --wallet-password-file
       - /var/lib/prysm/password.txt
+      - --enable-beacon-rest-api
+      - --beacon-rest-api-provider
+      - ${CL_NODE:-http://consensus:5052}
     depends_on:
       - consensus
     labels:
@@ -184,7 +183,9 @@ services:
       - validator
       - exit
       - --wallet-dir=/var/lib/prysm/
-      - --beacon-rpc-provider=consensus:4000
+      - --enable-beacon-rest-api
+      - --beacon-rest-api-provider
+      - ${CL_NODE:-http://consensus:5052}
       - --wallet-password-file=/var/lib/prysm/password.txt
       - --${NETWORK}
     depends_on:

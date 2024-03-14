@@ -3596,7 +3596,7 @@ config() {
 
 # We are using the variable
 # shellcheck disable=SC2034
-    VE_OPERATOR_ID=$(whiptail --title "Lido Operator ID" --inputbox "Put you Operator ID from Lido Operators dashboard \
+    VE_OPERATOR_ID=$(whiptail --title "Lido Operator ID" --inputbox "Put your Operator ID from Lido Operators dashboard \
 (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
     __obol_prom_remote_token=$(whiptail --title "Obol prometheus" --inputbox "Put Obol Prometheus remote write token \
 (right-click to paste)" 10 60 3>&1 1>&2 2>&3)
