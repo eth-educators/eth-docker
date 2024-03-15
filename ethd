@@ -974,7 +974,7 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
     dodocker system prune --force -a
   fi
 
-  if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" = "${__source_ver}" ]]; then # No changes in template, do nothing
+  if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" -le "${__source_ver}" ]]; then # No changes in template, do nothing
     return 0
   fi
 
