@@ -50,7 +50,7 @@ services:
     image: obolnetwork/charon:${CHARON_VERSION:-latest}
     volumes:
       - .eth:/opt/charon/.charon
-    command: dkg
+    command: dkg --publish
   curl-jq:
     image: curl-jq:local
     pull_policy: build
