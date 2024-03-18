@@ -3207,7 +3207,8 @@ again or Cancel on the next screen." 10 75
 
 
 query_lido_obol_enr() {
-    ${__auto_sudo} chown 1000:1000 ./.eth
+    ${__as_owner} mkdir -p ./.eth
+    ${__auto_sudo} chown -R "1000:1000" ./.eth
     __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
       __lido_obol_operator_enr_private_key_path=$(echo "${__outcome__}" | grep -e 'Created ENR private key')
@@ -3549,7 +3550,6 @@ config() {
       elif (whiptail --title "Lido Obol cluster creation" --yesno "Backup a previously created cluster to create a new one?" 10 80); then
         ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
         ${__as_owner} rm -rf ./.eth
-        ${__as_owner} mkdir ./.eth
         query_lido_obol_enr
         query_lido_obol_cluster_definition
         query_lido_obol_cluster_dkg
@@ -3565,7 +3565,6 @@ config() {
         else
           ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
           ${__as_owner} rm -rf ./.eth
-          ${__as_owner} mkdir ./.eth
           query_lido_obol_enr
         fi
       else
