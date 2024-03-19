@@ -3507,6 +3507,7 @@ config() {
 # We are using the variable
 # shellcheck disable=SC2034
         VE_STAKING_MODULE_ID="2"
+        LIDO_DV_EXIT_EXIT_EPOCH="269568" # deneb
         ;;
       "holesky")
 # We are using the variable
@@ -3518,6 +3519,7 @@ config() {
 # We are using the variable
 # shellcheck disable=SC2034
         VE_STAKING_MODULE_ID="2"
+        LIDO_DV_EXIT_EXIT_EPOCH="29696" # deneb
         ;;
       "goerli")
 # We are using the variable
@@ -3529,6 +3531,7 @@ config() {
 # We are using the variable
 # shellcheck disable=SC2034
         VE_STAKING_MODULE_ID="2"
+        LIDO_DV_EXIT_EXIT_EPOCH="231680" # deneb
         ;;
       *)
         ;;
@@ -3685,6 +3688,8 @@ config() {
     var=VE_BEACON_NODE_URL
     set_value_in_env
     var=LIDO_DV_EXIT_BEACON_NODE_URL
+    set_value_in_env
+    var=LIDO_DV_EXIT_EXIT_EPOCH
     set_value_in_env
     var=VE_OPERATOR_ID
     set_value_in_env
