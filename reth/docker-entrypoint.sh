@@ -81,13 +81,13 @@ else
   __prune="--full"
 fi
 
-__ancient=""
+__static=""
 
 #if [ -n "${ANCIENT_DIR}" ] && [ ! "${ANCIENT_DIR}" = ".nada" ]; then
-#  echo "Using separate ancient directory at ${ANCIENT_DIR}."
-#  __ancient="--sumthin /var/lib/ancient"
+#  echo "Using separate static files directory at ${ANCIENT_DIR}."
+#  __static="--datadir.static-files /var/lib/static"
 #fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__verbosity} ${__prune} ${__ancient} ${EL_EXTRAS}
+exec "$@" ${__network} ${__verbosity} ${__prune} ${__static} ${EL_EXTRAS}
