@@ -14,8 +14,7 @@ services:
     ports:
       - "3030:3030"
     <<: *logging
-    command: start-operator --outputPath /output --configPath /config
+    command: start-operator --outputPath /output --configPath /config/operator.yaml
     volumes:
       - ./ssv-config/:/config
-      - ./ssv-config/operator.yaml:/config/config.yaml
       - ./ssv-config/dkg-output:/output
