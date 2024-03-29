@@ -113,8 +113,7 @@ case "$CLIENT" in
     __url='https://raw.githubusercontent.com/bloxapp/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
     __file='/etc/grafana/provisioning/dashboards/ssv_node_dashboard.json'
     wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Node Dashboard"' \
-        | jq '.templating.list[0].current |= {selected: false, text: "ssv-node", value: "ssv-node"} | .templating.list[0].options = [ { "selected": true, "text": "ssv-node", "value": "ssv-node" } ] | .templating.list[0].query = "ssv-node"' \
-        | sed 's/eXfXfqH7z/Prometheus/g' >"${__file}"
+        | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
     ;;&
   *lido-obol.yml* )
     # Lido Obol Dashboard
