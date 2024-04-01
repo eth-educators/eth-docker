@@ -2789,9 +2789,6 @@ query_coinbase() {
         set +e # Can't rely on the error handler here because of the special-casing below for update()
         if [[ "${__deployment}" =~ "lido_" ]]; then
             case "${NETWORK}" in
-                "goerli")
-                    FEE_RECIPIENT="0x94750381bE1AbA0504C666ee1DB118F68f0780D4"
-                    ;;
                 "mainnet")
                     FEE_RECIPIENT="0x388c818ca8b9251b393131c08a736a67ccb19297"
                     ;;
@@ -2887,24 +2884,6 @@ want to use MEV Boost?" 10 65); then
         declare -A relays=()
         declare -A optional_relays=()
         case "${NETWORK}" in
-            "goerli")
-                optional_relays=(
-                    ['Flashbots']="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@builder-relay-goerli.flashbots.net"
-                    ['Blocknative']="https://0x8f7b17a74569b7a57e9bdafd2e159380759f5dc3ccbd4bf600414147e8c4e1dc6ebada83c0139ac15850eb6c975e82d0@builder-relay-goerli.blocknative.com"
-                    ['Bloxroute']="https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com"
-                    ['Eden']="https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-goerli.edennetwork.io"
-                    ['Manifold Finance']="https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com"
-                    ['Ultrasound']="https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
-                )
-                __selected=$(whiptail --title "Relays list" --checklist \
-                    "Choose relays" 15 50 6 \
-                    "Flashbots" "(optional)" ON \
-                    "Blocknative" "(optional)" ON \
-                    "Bloxroute" "(optional)" ON \
-                    "Eden" "(optional)" ON \
-                    "Manifold Finance" "(optional)" ON \
-                    "Ultrasound" "(optional)" ON 3>&1 1>&2 2>&3)
-                ;;
             "mainnet")
                 relays=(
                     ['Agnostic']="https://0xa7ab7a996c8584251c8f925da3170bdfd6ebc75d50f5ddc4050a6fdc77f2a3b5fce2cc750d0865e05d7228af97d69561@agnostic-relay.net"
@@ -3295,9 +3274,6 @@ config() {
     fi
         if [[ "${__deployment}" =~ "lido_" ]]; then
           case "${NETWORK}" in
-              "goerli")
-                  WITHDRAWAL_CREDENTIALS="0xdc62f9e8C34be08501Cdef4EBDE0a280f576D762"
-                  ;;
               "mainnet")
                   WITHDRAWAL_CREDENTIALS="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
                   ;;
@@ -3374,20 +3350,6 @@ config() {
 # We are using the variable
 # shellcheck disable=SC2034
         LIDO_DV_EXIT_EXIT_EPOCH="256" # capella
-        ;;
-      "goerli")
-# We are using the variable
-# shellcheck disable=SC2034
-        VE_LOCATOR_ADDRESS="0x1eDf09b5023DC86737b59dE68a8130De878984f5"
-# We are using the variable
-# shellcheck disable=SC2034
-        VE_ORACLE_ADDRESSES_ALLOWLIST='["0x19b1BEbe4773fEC2496FEf8b81a9c175A823844B","0x7eE534a6081d57AFB25b5Cff627d4D26217BB0E9","0xD3b1e36A372Ca250eefF61f90E833Ca070559970","0xA8aF49FB44AAA8EECa9Ae918bb7c05e2E71c9DE9","0x3799bDA7B884D33F79CEC926af21160dc47fbe05","0x4c75FA734a39f3a21C57e583c1c29942F021C6B7","0xb29dD2f6672C0DFF2d2f173087739A42877A5172","0xfdA7E01B2718C511bF016030010572e833C7aE6A","0x81E411f1BFDa43493D7994F82fb61A415F6b8Fd4"]'
-# We are using the variable
-# shellcheck disable=SC2034
-        VE_STAKING_MODULE_ID="2"
-# We are using the variable
-# shellcheck disable=SC2034
-        LIDO_DV_EXIT_EXIT_EPOCH="162304" # capella
         ;;
       *)
         ;;
