@@ -3612,16 +3612,21 @@ config() {
     sed -i'' "s|      credentials: OBOL_PROM_REMOTE_WRITE_TOKEN|      credentials: ${__obol_prom_remote_token}|" ./prometheus/custom-prom.yml
   fi
 
-  _ssv_operator_id=-1
+  __ssv_operator_id=-1
   if [ "${__deployment}" = "lido_ssv" ]; then
-    if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremony as operator?" 10 60) then
-      _ssv_operator_id=$(whiptail --title "Register SSV operator" --inputbox "\n1. Run in the separate terminal: \n   \`sudo cat ./eth-docker/ssv-config/encrypted_private_key.json\`\n\n2. Copy the value of \`publicKey\`\n\n3. Register your operator in the SSV network with the public key\n\n4. Put your Operator ID \
-  (right-click to paste)" 16 85 3>&1 1>&2 2>&3)
+    if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremony as operator?" 10 60); then
+      # sudo cat ./eth-docker/ssv-config/encrypted_private_key.json
+      __key_file=$(cat ./ssv-config/encrypted_private_key.json)
+      __public_key=$(docompose -f ./ssv-dkg.yml run --rm curl-jq sh -c \
+        "echo '${__key_file}' | jq -r '.publicKey'" | tail -n 1)
+      echo "Your public key: ${__public_key}"
+      __ssv_operator_id=$(whiptail --title "Register SSV operator" --inputbox "\n1. Your public key:\n\n${__public_key}\n\n2. Register your operator in the SSV network with the public key\n\n3. Put your Operator ID \
+  (right-click to paste)" 22 85 3>&1 1>&2 2>&3)
       if [ ! -f "./ssv-config/operator.yaml" ]; then
         ${__as_owner} cp ./ssv-config/operator-sample.yaml ./ssv-config/operator.yaml
       fi
-      sed -i'' "s|operatorID: .*|operatorID: ${_ssv_operator_id}|" ./ssv-config/operator.yaml
-      echo "Your SSV Operator ID: ${_ssv_operator_id}"
+      sed -i'' "s|operatorID: .*|operatorID: ${__ssv_operator_id}|" ./ssv-config/operator.yaml
+      echo "Your SSV Operator ID: ${__ssv_operator_id}"
     fi
   fi
 
@@ -3641,7 +3646,7 @@ config() {
   if [ "${__deployment}" = "lido_ssv" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
   fi
-  if [ "${__deployment}" = "lido_ssv" ] && [ ! "${_ssv_operator_id}" = -1 ]; then
+  if [ "${__deployment}" = "lido_ssv" ] && [ ! "${__ssv_operator_id}" = -1 ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
   fi
   if [ "${__deployment}" = "lido_obol" ]; then
