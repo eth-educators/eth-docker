@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -25,6 +24,7 @@ services:
       target: consensus
       <<: *prysm-build
     image: prysm-consensus:local
+    pull_policy: never
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
@@ -40,8 +40,8 @@ services:
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
     ports:
-      - ${HOST_IP:-}${PRYSM_PORT}:${PRYSM_PORT}/tcp
-      - ${HOST_IP:-}${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - ${HOST_IP:-}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
+      - ${HOST_IP:-}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
     networks:
       default:
         aliases:
@@ -93,3 +93,7 @@ services:
 volumes:
   prysmconsensus-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

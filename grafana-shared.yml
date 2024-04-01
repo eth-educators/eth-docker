@@ -1,5 +1,4 @@
-version: "3.9"
 services:
   grafana:
     ports:
-      - ${SHARE_IP:-}${GRAFANA_PORT}:${GRAFANA_PORT}/tcp
+      - ${SHARE_IP:-}:${GRAFANA_PORT}:${GRAFANA_PORT}/tcp

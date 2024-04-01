@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -9,11 +8,12 @@ x-logging: &logging
 
 services:
   traefik:
-    image: traefik-aws
     build:
       context: ./traefik
       args:
         - DOCKER_TAG=${TRAEFIK_TAG}
+    image: traefik-aws
+    pull_policy: never
     restart: "unless-stopped"
     command:
 #      - --accesslog=true
@@ -36,8 +36,8 @@ services:
       - --metrics.prometheus
       - --global.sendAnonymousUsage
     ports:
-      - ${HOST_IP:-}${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
-      - ${HOST_IP:-}${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
+      - ${HOST_IP:-}:${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
+      - ${HOST_IP:-}:${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
       - AWS_PROFILE=${AWS_PROFILE}
       - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}

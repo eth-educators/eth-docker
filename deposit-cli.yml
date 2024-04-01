@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   deposit-cli-new:
     profiles: ["tools"]
@@ -9,6 +8,7 @@ services:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
         - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/ethereum/staking-deposit-cli}
     image: staking-deposit-cli:local
+    pull_policy: never
     volumes:
       - ./.eth:/app/.eth/
     entrypoint:
@@ -27,6 +27,7 @@ services:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
         - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/ethereum/staking-deposit-cli}
     image: staking-deposit-cli:local
+    pull_policy: never
     volumes:
       - ./.eth:/app/.eth/
     entrypoint:
@@ -45,6 +46,7 @@ services:
         - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/ethereum/staking-deposit-cli}
     restart: "no"
     image: staking-deposit-cli:local
+    pull_policy: never
     volumes:
       - ./.eth:/app/.eth
     entrypoint:

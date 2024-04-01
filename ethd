@@ -113,7 +113,6 @@ upgrade_compose() {
     ${__auto_sudo} apt-get install -y docker-compose-v2 docker-buildx
     echo "Installed docker-compose-v2"
     __old_compose=0
-    __compose_exe="docker compose"
     __compose_upgraded=1
     if dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -q "ok installed"; then
         ${__auto_sudo} apt-mark manual docker.io
@@ -140,7 +139,6 @@ upgrade_compose() {
     ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
     echo "Installed docker-compose-plugin"
     __old_compose=0
-    __compose_exe="docker compose"
     __compose_upgraded=1
     if dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -q "ok installed"; then
         ${__auto_sudo} apt-mark manual docker.io
@@ -158,17 +156,15 @@ upgrade_compose() {
 check_compose_version() {
 # Check for Compose V2 (docker compose) vs Compose V1 (docker-compose)
   if docker compose version >/dev/null 2>&1; then
-    __compose_exe="docker compose"
     __old_compose=0
   else
-    __compose_exe="docker-compose"
     __old_compose=1
     __compose_version=$($__docker_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
     if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${__command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
-      echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
-      echo ""
+      echo "${__project_name} only supports Compose V2."
+      echo
       echo "It is recommended that you replace Compose V1 with Compose V2."
       while true; do
         read -rp "Do you want to update Docker Compose to V2? (yes/no) " yn
@@ -376,7 +372,7 @@ __display_docker_volumes() {
     echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
     dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
     echo
-    echo "If your Consensus Layer client takes more than 200 GiB, you can resync it with"
+    echo "If your Consensus Layer client takes more than 300 GiB, you can resync it with"
     echo "\"${__me} resync-consensus\"."
     echo
   fi
@@ -576,45 +572,35 @@ migrate_compose_file() {
     prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml \
     nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml \
     validator-keyapi-localport.yml consensus-keyapi-localport.yml v6-network.yml nimbus.yml teku.yml \
-    nimbus-legacy.yml teku-legacy.yml \
+    nimbus-legacy.yml teku-legacy.yml validator-keyapi-shared.yml consensus-keyapi-shared.yml \
     prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml \
     teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml \
     lh-stats-validator.yml traefik-shared.yml lh-slasher.yml lighthouse-slasher.yml prysm-slasher.yml \
-    grafana-localhost.yml )
+    grafana-localhost.yml ipv6.yml )
   TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse.yml \
     lighthouse-vc-only.yml teku-allin1.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml \
     lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml \
     prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse.yml lighthouse-vc-only.yml lighthouse-cl-only.yml \
     nethermind.yml lighthouse.yml teku-allin1.yml nimbus-allin1.yml prysm.yml lodestar.yml traefik-cf.yml \
     validator-keyapi-shared.yml consensus-keyapi-shared.yml ipv6.yml nimbus-allin1.yml teku-allin1.yml \
-    nimbus-allin1.yml teku-allin1.yml \
+    nimbus-allin1.yml teku-allin1.yml keyapi-shared.yml allin1-keyapi-shared.yml \
     "" "" "" "" "" "" \
     "" "" "" "" "" "" "" \
     "" "" "" "" "" \
-    "" )
+    "" "" )
 
-  __old_grafana=0
-  __new_grafana=0
-  __grafana_regex=".+-grafana\.yml"
-  __switched_branch=0
   IFS=":"
   set -o noglob
 # Globbing is off
 # shellcheck disable=SC2206
   __ymlarray=($value) # split+glob with glob disabled, and split using : as delimiter
   set +o noglob
-  # Unset restores default
+# Unset restores default
   unset IFS
 
   value=""
   for n in "${!__ymlarray[@]}"; do
     __ymlfile="${__ymlarray[n]}"
-    if [[ "${__ymlfile}" =~ $__grafana_regex ]]; then
-      __old_grafana=1
-    fi
-    if [ "${__ymlfile}" = "grafana.yml" ]; then
-      __new_grafana=1
-    fi
     for index in "${!FROM_YML[@]}"; do
       if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
 # ENV version 3 and earlier use the legacy files
@@ -635,9 +621,6 @@ migrate_compose_file() {
       fi
     fi
   done
-  if [ "${__new_grafana}" = 0 ] && [ "${__old_grafana}" = 1 ]; then
-    value="${value}:grafana.yml"
-  fi
 }
 
 
@@ -648,9 +631,9 @@ ssv_switch() {
   __node=$(dodocker ps --format '{{.Names}}' | grep 'ssv2-node')
   dodocker stop "${__node}" && dodocker rm -f "${__node}"
   dodocker volume rm "$(dodocker volume ls -q | grep "$(basename "$(realpath .)")"_ssv2-data)"
-  echo ""
+  echo
   echo "SSV Node stopped and database deleted."
-  echo ""
+  echo
   cp blox-ssv-config.yaml blox-ssv-config.yaml.bak
   cp blox-ssv-config.yaml ssv-config/config.yaml
   rm blox-ssv-config.yaml
@@ -668,9 +651,7 @@ ssv_switch() {
   if ! grep -q "ssv:" ssv-config/config.yaml; then
     sed -i '/^  Network:/d' ssv-config/config.yaml # Remove old eth2 Network line if present
     sed -i'' '$a\ssv:' ssv-config/config.yaml
-    if [ "${NETWORK}" = "goerli" ]; then
-      sed -i'' '$a\  Network: jato-v2' ssv-config/config.yaml
-    elif [ "${NETWORK}" = "holesky" ]; then
+    if [ "${NETWORK}" = "holesky" ]; then
       sed -i'' '$a\  Network: holesky' ssv-config/config.yaml
     elif [ "${NETWORK}" = "mainnet" ]; then
       sed -i'' '$a\  Network: mainnet' ssv-config/config.yaml
@@ -685,10 +666,6 @@ ssv_switch() {
 
 
 delete_reth() {
-# Enable this when Reth changes DB
-  if true; then
-    return 0
-  fi
 # Check for Reth
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -698,12 +675,12 @@ delete_reth() {
     return 0
   fi
 
-# Check Reth version, only continue if on that version
+# Check Reth version, only continue if not on alpha
   var="RETH_DOCKER_TAG"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! ("${value}" =~ "beta" || "${value}" = "latest") ]]; then
+  if [[ "${value}" =~ "alpha" ]]; then
     return 0
   fi
 
@@ -720,13 +697,15 @@ delete_reth() {
 
   echo "Detected Reth. For Reth beta, it will need to be re-synced from scratch."
   echo
-  while true; do
-    read -rp "WARNING - About to delete the Reth database. Do you wish to continue? (Y/n) " yn
-    case $yn in
-      [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 130;;
-      * ) break;;
-    esac
-  done
+  if [ "${__non_interactive:-0}" -eq 0 ]; then
+    while true; do
+      read -rp "WARNING - About to delete the Reth database. Do you wish to continue? (Y/n) " yn
+      case $yn in
+        [Nn]o | [Nn]  ) echo "No changes made"; return 0;;
+        * ) break;;
+      esac
+    done
+  fi
 
   echo "Stopping Reth container"
   docompose stop execution && docompose rm -f execution
@@ -738,20 +717,40 @@ delete_reth() {
 
 
 delete_erigon() {
+# Enable this when Erigon v3 is out
+  if true; then
+    return 0
+  fi
 # Check for Erigon
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
   if [[ ! "${value}" =~ "erigon.yml" ]]; then
-    return
+    return 0
   fi
 
-  if ! dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]erigon-ec-data"; then
-    return
+# Check Erigon version, only continue if v3
+  var="ERIGON_DOCKER_TAG"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+# I do mean to match literally
+# shellcheck disable=SC2076
+  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "stable") ]]; then
+    return 0
   fi
 
-  echo "Detected Erigon. For merge, it will need to be re-synced from scratch"
+  if [ -z "$(dodocker volume ls -q -f "name=erigon-el-data")" ]; then # No Erigon volume
+    return 0
+  fi
+
+# https://discord.com/channels/687972960811745322/886550095749873666/1068994749480054866
+# Detect Erigon v3 by files in snapshots/history
+  if [ -n "$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=erigon-el-data")":"/var/lib/erigon" \
+      alpine:3 ls /var/lib/erigon/snapshots/history)" ]; then
+    return 0 # Files in snapshots/history means it's v3
+  fi
+
+  echo "Detected Erigon. For Erigon v3, it will need to be re-synced from scratch."
   echo
   while true; do
     read -rp "WARNING - About to delete the Erigon database. Do you wish to continue? (Y/n) " yn
@@ -762,17 +761,16 @@ delete_erigon() {
   done
 
   echo "Stopping Erigon container"
-  dodocker stop "$(dodocker ps -q -f "name=erigon")" && dodocker rm -f "$(dodocker ps -a -q -f "name=erigon")"
   docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=erigon-ec-data")"
-  echo ""
+  dodocker volume rm "$(dodocker volume ls -q -f "name=erigon-el-data")"
+  echo
   echo "Erigon stopped and database deleted."
-  echo ""
+  echo
 }
 
 
 upgrade_postgres() {
-  # Check for web3signer
+# Check for web3signer
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
@@ -880,7 +878,6 @@ upgrade_postgres() {
   echo "Adjusting PostgreSQL Docker tag"
   if [ ! -f "${ENV_FILE}.source" ]; then # update() didn't migrate env, let's make sure .env.source exists
     cp "${ENV_FILE}" "${ENV_FILE}.source"
-    __pre_merge=0
   fi
   var="PG_DOCKER_TAG"
 # This gets used, but shellcheck doesn't recognize that
@@ -935,31 +932,7 @@ __lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
 }
 
 
-# envmigrate used to be called w/ arguments and checks for that
-# shellcheck disable=SC2120
 envmigrate() {
-  if [ -z "${ETHDSECUNDO-}" ]; then
-    # We'd only ever hit this if called from an older version of ethd, so let's
-    # get the new version executed.
-    export ETHDSECUNDO=1
-    # Account for different ways that envmigrate was called in older code and
-    # set keep-targets correctly regardless
-    if [ -z "${KEEPTARGETS-}" ]; then
-      __keep=""
-      for var in "$@"; do
-        if [ "$var" = "--keep-targets" ]; then
-          __keep="--keep-targets"
-        fi
-      done
-    else
-      __keep=""
-      if [ "${KEEPTARGETS-}" -eq 1 ]; then
-        __keep="--keep-targets"
-      fi
-    fi
-    exec "${BASH_SOURCE[0]}" update ${__keep}
-  fi
-
   if [ ! -f "${ENV_FILE}" ]; then
     return 0
   fi
@@ -996,7 +969,12 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
   var=ENV_VERSION
   __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
   __source_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-  if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" = "${__source_ver}" ]]; then # No changes in template, do nothing
+# Aggressive prune to work around Docker grabbing old clients. Here so it doesn't get called during config
+  if [[ "${__source_ver}" -lt "9" ]]; then
+    dodocker system prune --force -a
+  fi
+
+  if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" -le "${__source_ver}" ]]; then # No changes in template, do nothing
     return 0
   fi
 
@@ -1009,13 +987,6 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
   __during_migrate=1
   __migrated=1
   ${__as_owner} cp default.env "${ENV_FILE}"
-  # Detect pre-merge
-  if grep -q "FALLBACK_NODE1" "${ENV_FILE}.source"; then
-    __pre_merge=1
-    ${__as_owner} cp "${ENV_FILE}".source "${ENV_FILE}".premerge
-  else
-    __pre_merge=0
-  fi
 
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
@@ -1040,19 +1011,16 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
           echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with CL_P2P_PORT"
         fi
       fi
-      if [[ "${var}" = "NETWORK" && "${value}" =~ "prater" ]]; then
-        value="goerli"
-      fi
 # Literal match intended
 # shellcheck disable=SC2076
       if [[ "${var}" = "RAPID_SYNC_URL" && "${value}" =~ "eth2-beacon-mainnet.infura.io" ]]; then
         value="https://beaconstate.info"
       fi
-      if [[ "${var}" = "HOST_IP" && "${value: -1}" != ":" ]]; then
-        value="${value}:" # ComposeV1 requires this so I can do v6
+      if [[ "${var}" = "HOST_IP" && "${value: -1}" = ":" ]]; then
+        value="${value%:}" # Undo Compose V1 accomodation
       fi
-      if [[ "${var}" = "SHARE_IP" && "${value: -1}" != ":" ]]; then
-        value="${value}:" # ComposeV1 requires this so I can do v6
+      if [[ "${var}" = "SHARE_IP" && "${value: -1}" = ":" ]]; then
+        value="${value%:}" # Undo Compose V1 accomodation
       fi
       # Handle & in GRAFFITI gracefully
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
@@ -1100,7 +1068,7 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
     if [[ -z "${value}" || ${value} != 0x* || ${#value} -ne 42 ]]; then
       if [ "${__non_interactive:-0}" -eq 0 ]; then
         whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
-  for post-merge priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
+  for priority fees and, optionally, MEV. Please enter a valid ETH address in the next screen. Refer to \
   Eth Docker docs (https://ethdocker.com/About/Rewards) for more information.\n\nCAUTION: \"$__me up\" will fail if no \
   valid address is set" 12 75
         query_coinbase
@@ -1113,11 +1081,9 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
   fi
 
   # User signals it's a distributed setup and not to nag
-  # Ditto do not nag if we switched branch, as the code that does
-  # the check won't be accurate
   var="DISTRIBUTED"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-  if [[ "${value}" = "true" || "${__switched_branch:-0}" -eq 1 || "${__non_interactive:-0}" -eq 1 ]]; then
+  if [[ "${value}" = "true" || "${__non_interactive:-0}" -eq 1 ]]; then
     ${__as_owner} rm "${ENV_FILE}".original
     __during_migrate=0
     return 0
@@ -1149,25 +1115,6 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
 ${ENV_FILE}" 12 75
     fi
   fi
-  # Adjust EL_NODE as needed
-  __el_adjusted=0
-  __el_infura=0
-  var="EL_NODE"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-# I do mean to match literally
-# shellcheck disable=SC2076
-  if [[ "${value}" =~ "infura.io" ]]; then
-    __el_infura=1
-  fi
-  if [[ "${value}" =~ "http://execution:8545" ]]; then
-    EL_NODE="http://execution:8551"
-    set_value_in_env
-    __el_adjusted=1
-  elif [[ "${value}" =~ "ws://execution:8546" || "${value}" =~ "ws://execution:8545" ]]; then
-    EL_NODE="ws://execution:8551"
-    set_value_in_env
-     __el_adjusted=1
-  fi
 
   ${__as_owner} rm "${ENV_FILE}".original
   __during_migrate=0
@@ -1196,11 +1143,7 @@ nag_os_version() {
 
 pull_and_build() {
   dodocker system prune --force
-  if [ ${__old_compose} -eq 1 ]; then
-    docompose --profile tools pull --ignore-pull-failures || true
-  else
-    docompose --profile tools pull --ignore-pull-failures --quiet || true
-  fi
+  docompose --profile tools pull
   source_build
   docompose --profile tools build --pull
 }
@@ -1238,17 +1181,6 @@ update() {
   fi
 
   if [ -z "${ETHDSECUNDO-}" ]; then
-    if ${__as_owner} git branch | grep -q master; then
-      if ! ${__as_owner} git branch | grep -q main; then
-        ${__as_owner} git branch -m master main
-        ${__as_owner} git fetch origin
-        ${__as_owner} git branch -u origin/main main
-        ${__as_owner} git remote set-head origin -a
-      else
-        ${__as_owner} git checkout main
-        ${__as_owner} git branch -D master
-      fi
-    fi
     # Do not track changes to ext-network.yml
     set +e
     ${__as_owner} git update-index --assume-unchanged ext-network.yml
@@ -1318,14 +1250,6 @@ update() {
 # envmigrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2119
   envmigrate
-
-  if [ "${__switched_branch:-0}" -eq 1 ]; then
-    # This code has changed, run it again on the new branch
-    export ETHDSECUNDO=1 #Not strictly necessary but this way we don't rely on what happens earlier
-    export ETHDSWITCHED=1
-    exec "${BASH_SOURCE[0]}" update $__targetcli
-  fi
-
   pull_and_build
 
   delete_erigon
@@ -1346,34 +1270,11 @@ reset to defaults."
     echo "List of changes made to ${ENV_FILE} during migration - current on left, original on right:"
     echo
     diff -y --suppress-common-lines "${ENV_FILE}" "${ENV_FILE}".bak || true
-    if [ "$__pre_merge" -eq 1 ]; then
-      echo
-      echo "You appear to be coming from a pre-merge setup."
-      echo "A copy of your original settings is in ${ENV_FILE}.premerge"
-      echo
-      echo "Pay special attention to EL_NODE, as failover is no longer supported."
-      echo
-      echo "Decide whether to use mev-boost. Please see MEV_BOOST in ${ENV_FILE} for details."
-    fi
   else
     echo "No changes made to ${ENV_FILE} during update"
     if [ -f "${ENV_FILE}".source ]; then
       ${__as_owner} rm "${ENV_FILE}".source || true
     fi
-  fi
-  if [ "${__el_infura:-0}" -eq 1 ]; then
-    echo
-    echo "Detected use of an Infura project as an EL or failover EL. This is no longer supported with merge."
-    echo "Please adjust your EL_NODE variable manually."
-  fi
-  if [ "${__el_adjusted:-0}" -eq 1 ]; then
-    echo
-    echo "Your EL_NODE variable has been adjusted to use the new Engine API port"
-elif [ "${__pre_merge:-0}" -eq 1 ]; then
-    echo
-    echo "Your EL_NODE variable has not been adjusted to use the new Engine API port, as you had a non-standard \
-value."
-    echo "Please take a look and adjust manually."
   fi
   echo
   if [ -z "${GITEXITCODE+x}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
@@ -1381,10 +1282,10 @@ value."
   else
     echo "WARNING"
     echo
-    echo "Updating Eth Docker failed during \"git pull\""
+    echo "Updating ${__project_name} failed during \"git pull\""
     echo
     echo "Please try \"git pull\" manually."
-    echo "Do not run \"$__me up\" until git can update Eth Docker."
+    echo "Do not run \"$__me up\" until git can update ${__project_name}."
     echo "The current partial update risks startup failure."
   fi
 
@@ -1392,36 +1293,19 @@ value."
 
   unset ETHDSECUNDO
   unset GITEXITCODE
-  if [[ "${ETHDSWITCHED-}" -eq 1 ]]; then
-    unset ETHDSWITCHED
-    echo
-    echo "You were migrated to the $(${__as_owner} git name-rev --name-only HEAD) branch of Eth Docker"
-    echo
-  fi
-  # If this is called by an older version of ethd, envmigrate
-  # is in its own bash instance: Need to kill the ethd parent
-# shellcheck disable=SC2009
-  if ps $PPID | grep -q "ethd"; then
-    echo
-    echo "Updated from an older version of Eth Docker. You'll see \"Terminated\","
-    echo "which keeps the update from running twice. This is normal and will"
-    echo "only happen this once."
-    echo
-    kill $PPID
-  fi
   check_for_snap
   if [ "${__dirty}" -eq 1 ]; then
     echo
     echo "WARNING"
     echo
-    echo "You have uncommitted local changes to Eth Docker, which may interfere with updates."
+    echo "You have uncommitted local changes to ${__project_name}, which may interfere with updates."
     echo "Please undo these changes or \"git commit\" them."
     echo "These are the files with local changes:"
     echo
     ${__as_owner} git status --porcelain
   fi
   if [ -n "${ETHDPINNED:-}" ]; then
-    echo "Eth Docker version is pinned to ${ETHDPINNED} in \".env\"."
+    echo "${__project_name} version is pinned to ${ETHDPINNED} in \".env\"."
     echo "Please make sure to run compatible client versions."
   fi
   __during_update=0
@@ -1458,9 +1342,9 @@ resync-execution() {
   echo "Stopping ${__el_client} container"
   docompose stop execution && docompose rm -f execution
   dodocker volume rm "$(dodocker volume ls -q -f "name=${__el_volume}")"
-  echo ""
+  echo
   echo "${__el_client} stopped and database deleted."
-  echo ""
+  echo
   echo "Restarting for resync."
   up
 }
@@ -1512,9 +1396,9 @@ resync-consensus() {
   else
     dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
   fi
-  echo ""
+  echo
   echo "${__cl_client} stopped and database deleted."
-  echo ""
+  echo
   echo "Restarting for resync."
   up
 }
@@ -1609,7 +1493,7 @@ prune-geth() {
   if [[ ! "${sync_status}" =~ "false" ]]; then
     echo "Geth is not done syncing yet. Sync status:"
     echo "${sync_status}"
-    echo ""
+    echo
     echo "Aborting."
     exit 1
   fi
@@ -1661,11 +1545,6 @@ database\". During the \"Compacting database\" stage it may not output logs for 
 
 
 prune-besu() {
-# Needs to be in a release first
-  echo "Trie log pruning is not yet in a released Besu version. Aborting."
-  if true; then
-    return 0
-  fi
   __non_interactive=0
   while :
   do
@@ -2082,7 +1961,7 @@ prep-keyimport() {
 
 __i_haz_ethdo() {
   if [ ! -f "${ENV_FILE}" ]; then
-    echo "Eth Docker has not been configured. Please run $__me config first."
+    echo "${__project_name} has not been configured. Please run $__me config first."
     exit 0
   fi
   var="COMPOSE_FILE"
@@ -2103,7 +1982,7 @@ __i_haz_ethdo() {
       COMPOSE_FILE="${value}:ethdo.yml"
     else
       COMPOSE_FILE="ethdo.yml"
-      echo "You do not have a CL in Eth Docker. Please make sure CL_NODE in ${ENV_FILE} points at an available one"
+      echo "You do not have a CL in ${__project_name}. Please make sure CL_NODE in ${ENV_FILE} points at an available one"
     fi
     set_value_in_env
     echo "Your COMPOSE_FILE now reads ${COMPOSE_FILE}"
@@ -2113,7 +1992,7 @@ __i_haz_ethdo() {
 
 __i_haz_web3signer() {
   if [ ! -f "${ENV_FILE}" ]; then
-    echo "Eth Docker has not been configured. Please run $__me config first."
+    echo "${__project_name} has not been configured. Please run $__me config first."
     exit 0
   fi
 
@@ -2141,7 +2020,7 @@ __i_haz_web3signer() {
     if [ -n "${value}" ]; then
       COMPOSE_FILE="${value}:web3signer.yml"
     else
-      echo "You do not have a validator client in Eth Docker. web3signer cannot be used without one."
+      echo "You do not have a validator client in ${__project_name}. web3signer cannot be used without one."
       exit 1
     fi
     set_value_in_env
@@ -2556,7 +2435,6 @@ query_network() {
   "mainnet" "Ethereum Mainnet" \
   "gnosis" "Gnosis Chain" \
   "sepolia" "Sepolia Testnet (permissioned validators)" \
-  "goerli" "Görli Legacy Testnet" \
   "custom" "Custom Testnet (needs a URL)" 3>&1 1>&2 2>&3)
 
   case "${NETWORK}" in
@@ -2566,7 +2444,7 @@ query_network() {
     "gnosis")
       echo "You chose to run on Gnosis Chain"
       ;;
-    "goerli" | "sepolia" | "holesky" )
+    "sepolia" | "holesky" )
       echo "You chose to run on ${NETWORK} testnet"
       ;;
     "custom" )
@@ -2788,8 +2666,8 @@ query_execution_client() {
     "nethermind.yml" "Nethermind (.NET)" \
     "besu.yml" "Besu (Java)" \
     "geth.yml" "Geth (Go)" \
+    "reth.yml" "Reth (Rust) - beta release" \
     "erigon.yml" "Erigon (Go)" \
-    "reth.yml" "Reth (Rust) - alpha release" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
 
@@ -2852,9 +2730,6 @@ query_checkpoint_beacon() {
     case "${NETWORK}" in
       "sepolia")
         RAPID_SYNC_URL="https://sepolia.beaconstate.info"
-        ;;
-      "goerli")
-        RAPID_SYNC_URL="https://goerli.beaconstate.info"
         ;;
       "holesky")
         RAPID_SYNC_URL="https://holesky.beaconstate.info"
@@ -2960,12 +2835,6 @@ screen.\n\nThe client will not start successfully until a valid ETH rewards addr
         echo "Canceled config wizard."
       fi
       echo
-# If this is called by an older version of ethd, envmigrate
-# is in its own bash instance: Need to kill the ethd parent
-# shellcheck disable=SC2009
-      if ps $PPID | grep -q "ethd"; then
-        kill $PPID
-      fi
       exit 130
     fi
   done
@@ -2979,19 +2848,12 @@ query_mev() {
   if [ "${__deployment}" = "ssv" ]; then
     MEV_BOOST="true"
     case "${NETWORK}" in
-      "goerli")
-        MEV_RELAYS="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-goerli.flashbots.net,\
-https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com,\
-https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-goerli.edennetwork.io,\
-https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money,\
-https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@goerli.aestus.live,\
-https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com"
-        ;;
       "holesky")
         MEV_RELAYS="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net,\
 https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@holesky.titanrelay.xyz,\
 https://0xb1d229d9c21298a87846c7022ebeef277dfc321fe674fa45312e20b5b6c400bfde9383f801848d7837ed5fc449083a12@relay-holesky.edennetwork.io,\
-https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.holesky.blxrbdn.com"
+https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.holesky.blxrbdn.com,\
+https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
         ;;
       "mainnet")
         MEV_RELAYS="https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,\
@@ -3129,22 +2991,12 @@ want to use MEV Boost?" 10 65); then
         "sepolia")
           MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@boost-relay-sepolia.flashbots.net
           ;;
-        "goerli")
-          MEV_RELAYS=https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-goerli.flashbots.net,\
-https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.max-profit.builder.goerli.blxrbdn.com,\
-https://0xaa1488eae4b06a1fff840a2b6db167afc520758dc2c8af0dfb57037954df3431b747e2f900fe8805f05d635e9a29717b@relay-goerli.edennetwork.io,\
-https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money,\
-https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@goerli.aestus.live,\
-https://0xa6bcad37b5d647152a93c2807d8a56055f1e0d7480eb6505d46edc21593e400f0f13738bf2e892f85946234629a3036a@goerli.agnostic-relay.net,\
-https://0x8a72a5ec3e2909fff931c8b42c9e0e6c6e660ac48a98016777fc63a73316b3ffb5c622495106277f8dbcc17a06e92ca3@goerli-relay.securerpc.com,\
-https://0x88d0cc4b8139580d176cf6863db874ee9c505fc3f6362aa005fd9a91f7ea8b47ba026c424a678e072fd67ba6e952e1a1@goerli-relay.wenmerge.com,\
-https://0x95a0a6af2566fa7db732020bb2724be61963ac1eb760aa1046365eb443bd4e3cc0fba0265d40a2d81dd94366643e986a@goerli-blockspace.frontier.tech
-          ;;
         "holesky")
           MEV_RELAYS="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net,\
 https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@holesky.titanrelay.xyz,\
-https://0xb1d229d9c21298a87846c7022ebeef277dfc321fe674fa45312e20b5b6c400bfde9383f801848d7837ed5fc449083a12@relay-holesky.edennetwork.io,
-https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.holesky.blxrbdn.com"
+https://0xb1d229d9c21298a87846c7022ebeef277dfc321fe674fa45312e20b5b6c400bfde9383f801848d7837ed5fc449083a12@relay-holesky.edennetwork.io,\
+https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.holesky.blxrbdn.com,\
+https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
           ;;
         "mainnet")
           MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,\
@@ -3392,15 +3244,13 @@ config() {
       if [ ! -f "./ssv-config/config.yaml" ]; then
         ${__as_owner} cp ./ssv-config/config-sample.yaml ./ssv-config/config.yaml
       fi
-      if [ "${NETWORK}" = "goerli" ]; then
-        sed -i'' 's/  Network: .*/  Network: jato-v2/' ssv-config/config.yaml
-      elif [ "${NETWORK}" = "holesky" ]; then
+      if [ "${NETWORK}" = "holesky" ]; then
         sed -i'' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
         sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
       else
         echo "${NETWORK} is not something that works with SSV."
-        echo "Please choose Holešovice, Mainnet or Görli when running $__me config again"
+        echo "Please choose Holešovice or Mainnet when running $__me config again"
         echo "Aborting."
         exit 1
       fi
@@ -3632,16 +3482,16 @@ config() {
 
   COMPOSE_FILE="${CONSENSUS_CLIENT}"
   if [ -n "${EXECUTION_CLIENT+x}" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+    COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
   fi
   if [ "${__deployment}" = "ssv" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
+    COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
   fi
   if [ -n "${GRAFANA_CLIENT+x}" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
+    COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
   fi
   if [ "${MEV_BOOST}" = "true" ] && [ ! "${__deployment}" = "rocket" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
+    COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
   fi
   if [ "${__deployment}" = "lido_ssv" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
@@ -3655,7 +3505,7 @@ config() {
   if [ "${__deployment}" = "lido_csm" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:lido-deposit-cli.yml"
   elif { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
-  && { [ "${NETWORK}" = "goerli" ] || [ "${NETWORK}" = "holesky" ]; }; then
+  && [ "${NETWORK}" = "holesky" ]; then
       COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
   fi
 # Not multi-arch, this would break on ARM64
@@ -3737,7 +3587,7 @@ config() {
 
 version() {
   grep "^This is" README.md
-  echo ""
+  echo
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
   # Client versions
@@ -3865,12 +3715,12 @@ __full_help() {
   echo "  install"
   echo "    attempts to install Docker and Docker Compose for you"
   echo "  config"
-  echo "    configures Eth Docker with your choice of Ethereum clients"
+  echo "    configures ${__project_name} with your choice of Ethereum clients"
   echo "  keys ACTION [--non-interactive]"
   echo "    list, delete, import keys; their fee recipients; and gas fees"
   echo "    Run without ACTION to get help text"
   echo "  update [--refresh-targets] [--non-interactive]"
-  echo "    updates all client versions and Eth Docker itself"
+  echo "    updates all client versions and ${__project_name} itself"
   echo "    --refresh-targets will reset your custom build targets in ${ENV_FILE} to defaults"
   echo "  up|start [service-name]"
   echo "    starts the Ethereum node, or restarts containers that had their image or"
@@ -3950,14 +3800,11 @@ fi
 
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 # Use this to make sure root doesn't end up owning files
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  OWNER=$(stat -f %Su .)
-else
-  OWNER=$(stat --format=%U .)
-fi
+# shellcheck disable=SC2012
+OWNER=$(ls -ld . | awk '{print $3}')
 
 if [ "${OWNER}" == "root" ]; then
-  echo "Please install Eth Docker as a non-root user."
+  echo "Please install ${__project_name} as a non-root user."
   exit 0
 fi
 
@@ -3977,6 +3824,17 @@ fi
 
 handle_docker_sudo
 check_compose_version
+
+if [ "${__old_compose}" -eq 1 ]; then
+  echo
+  echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
+  echo "${__project_name} only supports Compose V2."
+  echo
+  echo "You can install it with \"sudo apt update && sudo apt install docker-compose-v2\"."
+  echo "You can remove the old docker-compose:"
+  echo "\"sudo apt-mark manual docker.io && sudo apt --autoremove remove docker-compose\"."
+  exit 0
+fi
 
 if ! type -P whiptail >/dev/null 2>&1; then
   echo "Please install the package whiptail or newt before running ${__project_name}."
@@ -4015,13 +3873,6 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
   echo "Optionally, you can switch to docker-ce."
   echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
-elif [ "${__old_compose}" -eq 1 ]; then
-  echo
-  echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc. from July 2023 on."
-  echo "Eth Docker will stop supporting it with Dencun, sometime early 2024."
-  echo
-  echo "You can install it with \"sudo apt update && sudo apt install docker-compose-v2\"."
-  echo "You can remove the old docker-compose with \"sudo apt-mark manual docker.io && sudo apt --autoremove remove docker-compose\"."
 fi
 
 if [ "${__old_docker}" -eq 1 ]; then

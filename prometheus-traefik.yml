@@ -1,6 +1,5 @@
 # To be used in conjunction with grafana.yml
 # Please be very cautious, prometheus is not authenticated by default
-version: "3.9"
 services:
   prometheus:
     labels:

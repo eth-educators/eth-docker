@@ -1,5 +1,4 @@
 # Teku consensus also handles validator keys: All In One
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -23,6 +22,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: never
     user: teku
     stop_grace_period: 1m
     volumes:
@@ -30,7 +30,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/teku/ee-secret
     environment:
-      - JAVA_OPTS=${TEKU_HEAP:--Xmx5g}
+      - JAVA_OPTS=${TEKU_HEAP:--Xmx6g}
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
@@ -47,8 +47,8 @@ services:
       - EMBEDDED_VC=true
       - NETWORK=${NETWORK}
     ports:
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -111,6 +111,7 @@ services:
     build:
       <<: *teku-build
     image: teku:local
+    pull_policy: never
     user: teku
     volumes:
       - teku-data:/var/lib/teku
@@ -129,6 +130,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    pull_policy: never
     user: root
     volumes:
       - teku-data:/var/lib/teku
@@ -151,3 +153,7 @@ services:
 volumes:
   teku-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

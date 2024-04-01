@@ -1,6 +1,4 @@
 # For scraping with central-proxy-docker, when all you want is the metrics exporter
-
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -15,6 +13,7 @@ services:
     build:
       context: ./eth-metrics
     image: ethereum-metrics-exporter:local
+    pull_policy: never
     environment:
       - CLIENT=${COMPOSE_FILE}
     entrypoint:

@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -25,6 +24,7 @@ services:
       target: consensus
       <<: *nimbus-build
     image: nimbus:local
+    pull_policy: never
     user: user
     stop_grace_period: 1m
     volumes:
@@ -47,8 +47,8 @@ services:
       - WEB3SIGNER=false
       - EMBEDDED_VC=false
     ports:
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -87,6 +87,7 @@ services:
       target: validator
       <<: *nimbus-build
     image: nimbus-validator:local
+    pull_policy: never
     user: user
     volumes:
       - nimbus-vc-data:/var/lib/nimbus
@@ -141,6 +142,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    pull_policy: never
     user: root
     volumes:
       - nimbus-vc-data:/var/lib/nimbus
@@ -163,3 +165,7 @@ volumes:
   nimbus-consensus-data:
   nimbus-vc-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

@@ -1,5 +1,4 @@
 # Grafana for use with rootless docker. Omits node-exporter, cadvisor, promtail and Loki
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -14,6 +13,7 @@ services:
     build:
       context: ./prometheus
     image: prometheus:local
+    pull_policy: never
     volumes:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
@@ -37,6 +37,7 @@ services:
     build:
       context: ./eth-metrics
     image: ethereum-metrics-exporter:local
+    pull_policy: never
     environment:
       - CLIENT=${COMPOSE_FILE}
     entrypoint:
@@ -70,8 +71,8 @@ services:
     build:
       context: ./grafana
     image: grafana:local
-    # Defaults to root user. The script adjusts permissions and switches to grafana user since 12/26/2022
-    # This can be changed after a must-have update has been deployed by most (all?) users - possibly late 2023.
+    pull_policy: never
+    user: grafana
     environment:
       - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
       - CLIENT=${COMPOSE_FILE}

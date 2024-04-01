@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -22,6 +21,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
+    pull_policy: never
     user: lhconsensus
     stop_grace_period: 1m
     volumes:
@@ -42,9 +42,9 @@ services:
       - CL_QUIC_PORT=${CL_QUIC_PORT:-9001}
       - NETWORK=${NETWORK}
     ports:
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
-      - ${HOST_IP:-}${CL_QUIC_PORT:-9001}:${CL_QUIC_PORT:-9001}/udp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_QUIC_PORT:-9001}:${CL_QUIC_PORT:-9001}/udp
     networks:
       default:
         aliases:
@@ -68,7 +68,7 @@ services:
       - --quic-port
       - ${CL_QUIC_PORT:-9001}
       - --target-peers
-      - ${CL_MAX_PEER_COUNT:-80}
+      - ${CL_MAX_PEER_COUNT:-100}
       - --execution-endpoint
       - ${EL_NODE}
       - --execution-jwt
@@ -100,3 +100,7 @@ services:
 volumes:
   lhconsensus-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

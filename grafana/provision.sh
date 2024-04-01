@@ -55,8 +55,9 @@ case "$CLIENT" in
     #  lodestar summary
     __url='https://raw.githubusercontent.com/ChainSafe/lodestar/stable/dashboards/lodestar_summary.json'
     __file='/etc/grafana/provisioning/dashboards/lodestar_summary.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Lodestar Dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' | \
-        jq 'walk(if . == "prometheus_local" then "Prometheus" else . end)' >"${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Lodestar Dashboard"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' \
+        | jq '.templating.list[3].query |= "consensus" | .templating.list[4].query |= "validator"' \
+        | jq 'walk(if . == "prometheus_local" then "Prometheus" else . end)' >"${__file}"
     ;;&
   *geth* )
     # geth_dashboard

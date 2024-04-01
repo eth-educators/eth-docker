@@ -1,5 +1,4 @@
 # Nimbus consensus also handles validator keys: All In One
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -26,6 +25,7 @@ services:
       target: consensus
       <<: *nimbus-build
     image: nimbus:local
+    pull_policy: never
     user: user
     stop_grace_period: 1m
     volumes:
@@ -48,8 +48,8 @@ services:
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - EMBEDDED_VC=true
     ports:
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
     networks:
       default:
         aliases:
@@ -106,6 +106,7 @@ services:
       target: consensus
       <<: *nimbus-build
     image: nimbus:local
+    pull_policy: never
     user: root
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -125,6 +126,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    pull_policy: never
     user: root
     volumes:
       - nimbus-data:/var/lib/nimbus
@@ -146,3 +148,7 @@ services:
 volumes:
   nimbus-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

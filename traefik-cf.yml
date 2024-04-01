@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -32,8 +31,8 @@ services:
       - --metrics.prometheus
       - --global.sendAnonymousUsage
     ports:
-      - ${HOST_IP:-}${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
-      - ${HOST_IP:-}${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
+      - ${HOST_IP:-}:${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}/tcp
+      - ${HOST_IP:-}:${TRAEFIK_WEB_HTTP_PORT}:${TRAEFIK_WEB_HTTP_PORT}/tcp
     environment:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
       - CF_ZONE_API_TOKEN=${CF_ZONE_API_TOKEN:-}
@@ -60,7 +59,7 @@ services:
 
   curl-jq:
     image: curl-jq:local
-    pull_policy: build
+    pull_policy: never
     build:
       context: ./traefik
       dockerfile: Dockerfile.jq
