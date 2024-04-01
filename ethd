@@ -3427,8 +3427,7 @@ config() {
   __ssv_operator_id=-1
   if [ "${__deployment}" = "lido_ssv" ]; then
     if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremony as operator?" 10 60); then
-      # sudo cat ./eth-docker/ssv-config/encrypted_private_key.json
-      __key_file=$(cat ./ssv-config/encrypted_private_key.json)
+      __key_file=$(${__auto_sudo} cat ./ssv-config/encrypted_private_key.json)
       __public_key=$(docompose -f ./ssv-dkg.yml run --rm curl-jq sh -c \
         "echo '${__key_file}' | jq -r '.publicKey'" | tail -n 1)
       echo "Your public key: ${__public_key}"
