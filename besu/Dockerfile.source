@@ -27,6 +27,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   gosu \
   libjemalloc-dev \
   git \
+  wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

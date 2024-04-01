@@ -1,5 +1,4 @@
 # Send client stats to beaconcha.in service using client-metrics-exporter
-version: "3.9"
 services:
   client-stats:
     image: gobitfly/eth2-client-metrics-exporter:latest
@@ -20,6 +19,7 @@ services:
 # As of Nov 2022 Prysm's own client-stats would require source build. Using beaconcha.in's instead
 #  client-stats:
 #    image: prysm-consensus:local
+#    pull_policy: never
 #    volumes:
 #      - /etc/localtime:/etc/localtime:ro
 #    entrypoint:

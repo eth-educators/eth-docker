@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -23,6 +22,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
+    pull_policy: never
     user: lhconsensus
     stop_grace_period: 1m
     volumes:
@@ -43,9 +43,9 @@ services:
       - CL_QUIC_PORT=${CL_QUIC_PORT:-9001}
       - NETWORK=${NETWORK}
     ports:
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
-      - ${HOST_IP:-}${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
-      - ${HOST_IP:-}${CL_QUIC_PORT:-9001}:${CL_QUIC_PORT:-9001}/udp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_QUIC_PORT:-9001}:${CL_QUIC_PORT:-9001}/udp
     networks:
       default:
         aliases:
@@ -72,7 +72,7 @@ services:
       - --quic-port
       - ${CL_QUIC_PORT:-9001}
       - --target-peers
-      - ${CL_MAX_PEER_COUNT:-80}
+      - ${CL_MAX_PEER_COUNT:-100}
       - --execution-endpoint
       - ${EL_NODE}
       - --execution-jwt
@@ -96,6 +96,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
+    pull_policy: never
     user: lhvalidator
     environment:
       - MEV_BOOST=${MEV_BOOST}
@@ -160,6 +161,7 @@ services:
     build:
       <<: *lh-build
     image: lighthouse:local
+    pull_policy: never
     # Keys have 440 permissions. Root copies and chowns them,
     # then switches to user lhvalidator
     user: root
@@ -190,6 +192,7 @@ services:
     build:
       context: ./vc-utils
     image: vc-utils:local
+    pull_policy: never
     # The API token has 640 permissions. Root copies it,
     # then switches to the local user's UID or if not provided,
     # 1000. The UID has to be able to write .eth/validator_keys
@@ -226,3 +229,7 @@ volumes:
   lhbeacon-data:
   lhvalidator-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

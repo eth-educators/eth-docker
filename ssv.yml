@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -17,8 +16,8 @@ services:
       - ssv-data:/tmp
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - ${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
-      - ${SSV_P2P_PORT_UDP}:${SSV_P2P_PORT_UDP}/udp
+      - ${HOST_IP:-}:${SSV_P2P_PORT}:${SSV_P2P_PORT}/tcp
+      - ${HOST_IP:-}:${SSV_P2P_PORT_UDP}:${SSV_P2P_PORT_UDP}/udp
     <<: *logging
     environment:
       - CONFIG_PATH=/config/config.yaml
@@ -32,3 +31,7 @@ services:
 
 volumes:
   ssv-data:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

@@ -55,12 +55,11 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-format=FOREST --sync-mode=FULL"
 else
-  __prune="--data-storage-format=BONSAI --sync-mode=X_SNAP --Xsnapsync-synchronizer-flat-db-healing-enabled=true \
---Xbonsai-trie-log-pruning-enabled=true"
+  __prune="--data-storage-format=BONSAI --sync-mode=SNAP --Xbonsai-limit-trie-logs-enabled=true"
 fi
 
 __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
-if [ "${__memtotal}" -gt 60 ]; then
+if [ "${__memtotal}" -ge 60 ]; then
   __spec="--Xplugin-rocksdb-high-spec-enabled=true"
 else
   __spec=""

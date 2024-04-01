@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -14,6 +13,7 @@ services:
       context: ./prometheus
     image: prometheus:local
     user: root
+    pull_policy: never
     volumes:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
@@ -37,6 +37,7 @@ services:
     build:
       context: ./eth-metrics
     image: ethereum-metrics-exporter:local
+    pull_policy: never
     environment:
       - CLIENT=${COMPOSE_FILE}
     entrypoint:
@@ -101,7 +102,7 @@ services:
 
   cadvisor:
     restart: "unless-stopped"
-    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/rootfs:ro
@@ -160,8 +161,8 @@ services:
     build:
       context: ./grafana
     image: grafana:local
-    # Defaults to root user. The script adjusts permissions and switches to grafana user since 12/26/2022
-    # This can be changed after a must-have update has been deployed by most (all?) users - possibly late 2023.
+    pull_policy: never
+    user: grafana
     environment:
       - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
       - CLIENT=${COMPOSE_FILE}

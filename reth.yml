@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -21,6 +20,7 @@ services:
     stop_grace_period: 5m
     stop_signal: SIGINT
     image: reth:local
+    pull_policy: never
     user: reth
     environment:
       - JWT_SECRET=${JWT_SECRET:-}
@@ -33,11 +33,12 @@ services:
       - RUST_LOG_STYLE=never
     volumes:
       - reth-el-data:/var/lib/reth
+      - ${ANCIENT_DIR:-.nada}:/var/lib/ancient
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/reth/ee-secret
     ports:
-      - ${HOST_IP:-}${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${HOST_IP:-}${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     networks:
       default:
         aliases:
@@ -85,3 +86,7 @@ services:
 volumes:
   reth-el-data:
   jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

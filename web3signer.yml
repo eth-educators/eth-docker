@@ -1,4 +1,3 @@
-version: "3.9"
 x-logging: &logging
   logging:
     driver: json-file
@@ -17,6 +16,7 @@ services:
         - DOCKER_REPO=${W3S_DOCKER_REPO:-consensys/web3signer}
       dockerfile: Dockerfile.binary
     image: web3signer:local
+    pull_policy: never
     user: web3signer
     volumes:
       - web3signer-keys:/var/lib/web3signer

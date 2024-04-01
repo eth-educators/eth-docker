@@ -1,5 +1,4 @@
 # To be used with one of the yml files that start a CL client
-version: "3.9"
 services:
   ethdo:
     profiles: ["tools"]
@@ -7,6 +6,7 @@ services:
     build:
       context: ./ethdo
     image: ethdo:local
+    pull_policy: never
     volumes:
       - ./.eth:/app/.eth
       - ethdo-wallet:/app/wallet
