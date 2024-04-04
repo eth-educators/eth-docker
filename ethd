@@ -156,10 +156,18 @@ upgrade_compose() {
 check_compose_version() {
 # Check for Compose V2 (docker compose) vs Compose V1 (docker-compose)
   if docker compose version >/dev/null 2>&1; then
-    __old_compose=0
+    __compose_version=$($__docker_sudo docker compose version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
+    __compose_major=${__compose_version%%.*}
+   if [[ "${__compose_major}" -eq 1 ]]; then
+     __old_compose=1
+   else
+     __old_compose=0
+   fi
   else
     __old_compose=1
     __compose_version=$($__docker_sudo docker-compose --version | sed -n -E -e "s/.*version [v]?([0-9.-]*).*/\1/ip")
+  fi
+  if [ "${__old_compose}" -eq 1 ]; then
     if [ -n "${ETHDSECUNDO-}" ]  || [ ! "${__command}" = "update" ]; then # Don't run this twice
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
