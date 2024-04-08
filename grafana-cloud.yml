@@ -17,11 +17,11 @@ x-logging: &logging
 services:
   prometheus:
     restart: "unless-stopped"
-    build:
+    build:blau
       context: ./prometheus
     image: prometheus:local
     user: root
-    pull_policy: never
+    pull_policy: neverbla
     volumes:
       - prom-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
