@@ -142,7 +142,7 @@ services:
       - metrics.instance=promtail
 
   loki:
-    image: grafana/loki:2.9.6
+    image: grafana/loki:latest
     volumes:
       - loki-data:/tmp
       - ./loki:/etc/loki
