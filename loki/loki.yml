@@ -26,13 +26,6 @@ compactor:
 
 schema_config:
   configs:
-    - from: 2020-10-24
-      store: boltdb-shipper
-      object_store: filesystem
-      schema: v11
-      index:
-        prefix: index_
-        period: 24h
     - from: 2023-06-15
       store: tsdb
       object_store: filesystem
@@ -40,7 +33,13 @@ schema_config:
       index:
         prefix: tsdb_index
         period: 24h
-
+    - from: 2024-05-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: tsdb_index
+        period: 24h
 
 limits_config:
   retention_period: 30d
