@@ -236,7 +236,6 @@ install-bash-completions() {
 
 
 install() {
-  check_for_snap
 
   read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
 continue? (no/yes) " yn
@@ -1301,7 +1300,6 @@ reset to defaults."
 
   unset ETHDSECUNDO
   unset GITEXITCODE
-  check_for_snap
   if [ "${__dirty}" -eq 1 ]; then
     echo
     echo "WARNING"
@@ -2991,7 +2989,6 @@ check_legacy() {
 }
 
 config() {
-  check_for_snap
   # Do not track changes to ext-network.yml
   ${__as_owner} git update-index --assume-unchanged ext-network.yml
   # Create ENV file if needed
@@ -3371,6 +3368,8 @@ __params=$*
 handle_root
 determine_distro
 prep_conffiles
+
+check_for_snap
 
 # Don't check for Docker before it's installed
 if [ "$__command" = "install" ]; then
