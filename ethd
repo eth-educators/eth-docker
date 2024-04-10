@@ -104,9 +104,9 @@ upgrade_compose() {
   fi
   echo "Updating Docker Compose to V2"
   if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 20 ]; then
+    if [ "${__os_major_version}" -lt 22 ]; then
       echo "${__project_name} cannot update Docker Compose on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 20.04, then 22.04 and then 24.04."
+      echo "Consider upgrading to 22.04 and then 24.04."
       exit 1
     fi
     ${__auto_sudo} apt-get update
@@ -244,9 +244,9 @@ continue? (no/yes) " yn
     * ) echo "Aborting, no changes made"; return 0;;
   esac
   if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 20 ]; then
+    if [ "${__os_major_version}" -lt 22 ]; then
       echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 20.04, then 22.04 and then 24.04."
+      echo "Consider upgrading to 22.04 and then 24.04."
       exit 1
     fi
     if [ -z "$(command -v docker)" ]; then
@@ -1131,9 +1131,9 @@ ${ENV_FILE}" 12 75
 
 nag_os_version() {
   if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 20 ]; then
+    if [ "${__os_major_version}" -lt 22 ]; then
      echo
-     echo "Ubuntu ${__os_major_version} is older than the recommended 24.04, 22.04 or 20.04 version."
+     echo "Ubuntu ${__os_major_version} is older than the recommended 24.04 or 22.04 version."
      echo
     fi
   fi
