@@ -99,17 +99,6 @@ else
   __ipv6=""
 fi
 
-if [ -f /var/lib/goethereum/prune-marker ]; then
-  rm -f /var/lib/goethereum/prune-marker
-  if [ "${ARCHIVE_NODE}" = "true" ]; then
-    echo "Geth is an archive node. Not attempting to prune: Aborting."
-    exit 1
-  fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__ancient} ${__network} ${EL_EXTRAS} snapshot prune-state
-else
-# Word splitting is desired for the command line parameters
-# shellcheck disable=SC2086
-  exec "$@" ${__ancient} ${__ipv6} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
-fi
+exec "$@" ${__ancient} ${__ipv6} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}

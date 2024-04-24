@@ -442,9 +442,6 @@ Full\". Free space:"
     echo "You are running Geth and have less than 100 GiB of free disk space."
     echo "You may resync from scratch to use PBSS and slow on-disk DB growth, with \"$__me resync-execution\"."
     echo
-    echo "Alternatively, if you don't feel ready for a resync and have more than 40 GiB free, you can prune \
-with \"$__me prune-geth\"."
-    echo
     __display_docker_dir
     __display_docker_volumes
   elif [[ "${value}" =~ "besu.yml" ]] && [[ "${__free_space}" -lt 52428800 ]]; then
@@ -1425,131 +1422,6 @@ attach-geth() {
 }
 
 
-prune-geth() {
-  __non_interactive=0
-  while :
-  do
-    if [ -z "${1+x}" ]; then
-      break
-    fi
-    case "$1" in
-      --non-interactive)
-        __non_interactive=1
-        shift
-        ;;
-      *)
-        echo "Error: Unknown option: $1" >&2
-        exit 1
-        ;;
-    esac
-  done
-  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
-    __non_interactive=1
-  fi
-
-  if [ ! -f "${ENV_FILE}" ]; then
-    echo "${ENV_FILE} configuration file not found, aborting."
-    exit 1
-  fi
-
-  if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${ENV_FILE}" 2>/dev/null ; then
-    echo "You do not appear to be using Geth, aborting."
-    exit 1
-  fi
-
-  # Check for archive node
-  var="ARCHIVE_NODE"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-  if [[ "${value}" = "true" ]]; then
-    echo "Geth is an archive node: Aborting."
-    exit 1
-  fi
-
-  __get_docker_free_space
-
-  if [ "${__free_space}" -lt 41943040 ]; then
-    echo "You do not have enough free disk space. Make sure this reads at least 40G free (Avail):"
-    __display_docker_dir
-    echo
-    echo "Aborting."
-    exit 1
-  fi
-
-  rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
-  regex='^EL_RPC_PORT=([0-9]+)'
-  if [[ ! "${rpc_line}" =~ ${regex} ]]; then
-    echo "Unable to determine EL_RPC_PORT, aborting."
-    exit 1
-  else
-    rpc_port="${BASH_REMATCH[1]}"
-  fi
-
-  set +e
-  sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" \
-  --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
-  exitstatus=$?
-  set -e
-  if [ $exitstatus -ne 0 ]; then
-    echo "Unable to connect to Geth: Is it running?"
-    echo "Output: ${sync_status}"
-    echo "Aborting."
-    exit 1
-  fi
-
-  if [[ ! "${sync_status}" =~ "false" ]]; then
-    echo "Geth is not done syncing yet. Sync status:"
-    echo "${sync_status}"
-    echo
-    echo "Aborting."
-    exit 1
-  fi
-
-  node_logs=$(docompose logs --no-color --tail 1000 execution)
-  if [[ "${node_logs}" =~ "snapshot generation" && ! "${node_logs}" =~ "Generated state" ]]; then
-    echo "Geth has not finished generating a state snapshot yet, aborting."
-    exit 1
-  fi
-
-  regex='\[([0-9][0-9]-[0-9][0-9])\|([0-9][0-9]:[0-9][0-9]):[0-9.]*\][[:space:]]*Generated state'
-  if [[ "${node_logs}" =~ $regex ]]; then
-    snap_time=$(date -d "1970-${BASH_REMATCH[1]} ${BASH_REMATCH[2]}" +"%s")
-    now_time=$(date +"%s")
-    if [ $((snap_time+2100)) -gt "$now_time" ]; then
-      echo "Please wait 35 minutes after snapshot generation finished. Aborting."
-      exit 1
-    fi
-  fi
-
-  if [ $__non_interactive = 0 ]; then
-    echo "Geth PBSS is available. Consider answering \"No\" and using \"$__me resync-execution\" instead of prune."
-    echo "PBSS continually prunes, making manual pruning runs a thing of the past."
-    echo
-    while true; do
-      read -rp "WARNING - this will stop Geth and prune its database. Do you wish to continue? (No/Yes) " yn
-      case $yn in
-        [Yy][Ee][Ss] ) break;;
-        * ) echo "Aborting, no changes made"; exit 130;;
-      esac
-    done
-  fi
-
-  echo
-  echo "Starting Geth prune"
-  echo
-  docompose run --rm set-prune-marker "touch /var/lib/goethereum/prune-marker"
-  docompose stop execution && docompose rm -f execution
-  start
-  echo
-  echo "Prune is running, you can observe it with '$__me logs -f execution'"
-  echo
-  echo "There should be three stages: \"Iterating state snapshot\", \"Pruning state data\", and \"Compacting \
-database\". During the \"Compacting database\" stage it may not output logs for an hour or so, that is normal."
-  echo
-  echo "When prune is done, which takes 4-5 hours, Geth will automatically start again."
-  echo
-}
-
-
 prune-besu() {
   __non_interactive=0
   while :
@@ -2350,12 +2222,6 @@ keys() {
   fi
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-}
-
-
-keyimport() {
-  echo "The legacy keyimport command has been removed."
-  echo "Please try $__me keys import instead."
 }
 
 
@@ -3290,9 +3156,6 @@ __full_help() {
   echo "    executes an arbitrary Docker Compose command. Use \"cmd help\" to list them"
   echo "  terminate"
   echo "    stops the Ethereum node and destroys all data stores"
-  echo "  prune-geth [--non-interactive]"
-  echo "    legacy command - stops the Geth execution client and prunes its DB. This takes about 4-5 hours"
-  echo "    consider a resync with PBSS instead, \"$__me resync-execution\""
   echo "  prune-nethermind [--non-interactive]"
   echo "    restarts the Nethermind execution client and prunes its DB."
   echo "  prune-besu [--non-interactive]"
@@ -3407,7 +3270,7 @@ if ! docompose --help >/dev/null 2>&1; then
 fi
 
 case "$__command" in
-  help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-geth|prune-nethermind\
+  help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-nethermind\
       |prune-besu|prune-lighthouse|resync-execution|resync-consensus|attach-geth|keyimport|space)
     $__command "$@";;
   *)

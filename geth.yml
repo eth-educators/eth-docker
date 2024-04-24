@@ -82,16 +82,6 @@ services:
       - metrics.port=6060
       - metrics.instance=execution
 
-  set-prune-marker:
-    profiles: ["tools"]
-    image: alpine:3
-    user: "10001:10001"
-    restart: "no"
-    volumes:
-      - geth-eth1-data:/var/lib/goethereum
-    entrypoint: ["/bin/sh","-c"]
-    command: /bin/sh
-
 volumes:
   geth-eth1-data:
   jwtsecret:
