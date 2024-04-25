@@ -75,7 +75,7 @@ else
     fi
   fi
   if [ "${__memtotal}" -gt 30 ]; then
-    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"
+    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384 --Init.StateDbKeyScheme=HalfPath"
   fi
   echo "Using pruning parameters:"
   echo "${__prune}"
