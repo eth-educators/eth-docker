@@ -33,12 +33,14 @@ services:
       - RUST_LOG_STYLE=never
     volumes:
       - reth-el-data:/var/lib/reth
-      - ${ANCIENT_DIR:-.nada}:/var/lib/ancient
+      - ${ANCIENT_DIR:-.nada}:/var/lib/static
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/reth/ee-secret
     ports:
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30303}/tcp
+      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30303}/udp
     networks:
       default:
         aliases:
@@ -57,6 +59,9 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --discovery.port
       - ${EL_P2P_PORT:-30303}
+      - --enable-discv5-discovery
+      - --discovery.v5.port
+      - ${ERIGON_P2P_PORT_2:-30304}
       - --nat
       - publicip
       - --http

@@ -64,7 +64,6 @@ services:
       - ${EL_WS_PORT:-8546}
       - --ws.origins=*
       - --metrics
-      - --metrics.expensive
       - --pprof
       - --pprof.addr
       - 0.0.0.0
@@ -82,16 +81,6 @@ services:
       - metrics.path=/debug/metrics/prometheus
       - metrics.port=6060
       - metrics.instance=execution
-
-  set-prune-marker:
-    profiles: ["tools"]
-    image: alpine:3
-    user: "10001:10001"
-    restart: "no"
-    volumes:
-      - geth-eth1-data:/var/lib/goethereum
-    entrypoint: ["/bin/sh","-c"]
-    command: /bin/sh
 
 volumes:
   geth-eth1-data:
