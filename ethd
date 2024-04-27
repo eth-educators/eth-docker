@@ -2906,9 +2906,6 @@ again or Cancel on the next screen." 10 75
 
 query_lido_obol_enr() {
     ${__as_owner} mkdir -p ./.eth
-    if [[ "$OSTYPE" != "darwin"* ]]; then
-      ${__auto_sudo} chown -R "1000:1000" ./.eth
-    fi
     __outcome__=$(docompose -f ./lido-obol.yml run --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
       __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
@@ -2937,7 +2934,7 @@ query_lido_obol_cluster_definition() {
         set -e
         if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition url is:" "${__cluster_definition_url}"
-            echo "${__cluster_definition_json}" > ./.eth/cluster-definition.json
+            ${__as_owner} echo "${__cluster_definition_json}" > ./.eth/cluster-definition.json
         else
             whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
             echo "Your cluster definition is NOT valid."
