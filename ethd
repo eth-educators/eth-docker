@@ -2906,7 +2906,7 @@ again or Cancel on the next screen." 10 75
 
 query_lido_obol_enr() {
     ${__as_owner} mkdir -p ./.eth
-    __outcome__=$(docompose -f ./lido-obol.yml run -u $(id -u):$(id -g) --rm charon-create-enr)
+    __outcome__=$(docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
       __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
     else
@@ -2954,7 +2954,7 @@ query_lido_obol_cluster_dkg() {
         ${__as_owner} rm -rf ./.eth/validator_keys
     fi
     if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
-        __outcome__=$(docompose -f ./lido-obol.yml run -u $(id -u):$(id -g) --rm charon-run-dkg)
+        __outcome__=$(docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-run-dkg)
         exitstatus=$?
         if [ $exitstatus -ne 0 ]; then
             echo "Something went wrong. Please, try again."
