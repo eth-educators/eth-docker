@@ -142,6 +142,15 @@ get-prysm-wallet() {
     fi
 }
 
+get-grandine-wallet() {
+    if [ -f /var/lib/grandine/wallet-password.txt ]; then
+        echo "The password for the Grandine wallet is:"
+        cat /var/lib/grandine/wallet-password.txt
+    else
+        echo "No stored password found for a Grandine wallet."
+    fi
+}
+
 recipient-get() {
     __check_pubkey "${__pubkey}"
     get-token
@@ -1068,6 +1077,9 @@ usage() {
     echo "  get-prysm-wallet"
     echo "      Print Prysm's wallet password"
     echo
+    echo "  get-grandine-wallet"
+    echo "      Print Grandine's wallet password"
+    echo
     echo "  prepare-address-change"
     echo "      Create an offline-preparation.json with ethdo"
     echo "  send-address-change"
@@ -1110,6 +1122,10 @@ if [ "$(id -u)" = '0' ]; then
             ;;
         get-prysm-wallet)
             get-prysm-wallet
+            exit 0
+            ;;
+        get-grandine-wallet)
+            get-grandine-wallet
             exit 0
             ;;
     esac

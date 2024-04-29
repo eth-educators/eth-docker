@@ -37,13 +37,13 @@ services:
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - CL_EXTRAS=${CL_EXTRAS:-}
+      - EMBEDDED_VC=false
       - VC_EXTRAS=
       - DOPPELGANGER=false
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
-      - GRAFFITI=${GRAFFITI:-}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
+      - GRAFFITI=
       - DEFAULT_GRAFFITI=true
       - WEB3SIGNER=false
-      - EMBEDDED_VC=false
       - NETWORK=${NETWORK}
     ports:
       - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp

@@ -563,6 +563,13 @@ source_build() {
           docompose build --pull --no-cache consensus
       fi
       ;;
+    *grandine.yml* | *grandine-allin1.yml* | *grandine-cl-only.yml* )
+      var="GRANDINE_DOCKERFILE"
+      build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+      if [ "${build}" = "Dockerfile.source" ]; then
+          docompose build --pull --no-cache consensus
+      fi
+      ;;
   esac
 }
 
@@ -964,6 +971,7 @@ envmigrate() {
     BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG \
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
+    GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
     SIREN_DOCKER_TAG SIREN_DOCKER_REPO NODE_EXPORTER_IGNORE_MOUNT_REGEX )
   OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN \
     EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
@@ -1368,6 +1376,8 @@ resync-consensus() {
     *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
     *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
     *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
+    *grandine-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="grandine";;
+    *grandine.yml* | *grandine-cl-only.yml* ) __cl_volume='grandineconsensus-data'; __cl_client="grandine";;
     * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;
   esac
 
@@ -1391,12 +1401,12 @@ resync-consensus() {
     * ) echo "Aborting."; exit 130;;
   esac
 
-  __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
   echo "Stopping ${__cl_client} container"
   docompose stop consensus && docompose rm -f consensus
   if [ "${__cl_volume}" = "wipe-db" ]; then
     docompose run --rm wipe-db
   else
+    __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
     dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
   fi
   echo
@@ -1972,6 +1982,9 @@ __keys_usage() {
   echo "  get-prysm-wallet"
   echo "      Print Prysm's wallet password"
   echo
+  echo "  get-grandine-wallet"
+  echo "      Print Grandine's wallet password"
+  echo
   echo "  prepare-address-change"
   echo "      Create an offline-preparation.json with ethdo"
   echo "  send-address-change"
@@ -2420,19 +2433,19 @@ query_consensus_client() {
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
-  elif [ "${NETWORK}" = "zhejiang" ]; then
-    CONSENSUS_CLIENT=lodestar.yml
   elif uname -a | grep -q aarch64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+    "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 5 \
+    "Which consensus client do you want to run?" 13 65 6 \
     "teku.yml" "Teku (Java) - consensus and validator client" \
+    "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
@@ -2455,13 +2468,15 @@ query_consensus_only_client() {
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
+    "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 5 \
+    "Which consensus client do you want to run?" 13 65 6 \
     "teku-cl-only.yml" "Teku (Java) - consensus client" \
+    "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
@@ -2839,11 +2854,13 @@ check_legacy() {
 
 # Literal match intended
 # shellcheck disable=SC2076
-  if [[ "${value}" =~ "-allin1.yml" ]]; then
+  if [[ "${value}" =~ "-allin1.yml" && ! "${value}" =~ "grandine-allin1.yml" ]]; then # Warn re Grandine once VC
     if [[ "${value}" =~ "teku-allin1.yml" ]]; then
       __client="Teku"
     elif [[ "${value}" =~ "nimbus-allin1.yml" ]]; then
       __client="Nimbus"
+    elif [[ "${value}" =~ "grandine-allin1.yml" ]]; then
+      __client="Grandine"
     else
       __client="Mystery"
     fi
@@ -3065,6 +3082,14 @@ version() {
       docompose exec validator /opt/teku/bin/teku --version
       echo
       ;;&
+    *grandine.yml* | *grandine-allin1.yml* | *grandine-cl-only* )
+      docompose exec consensus grandine --version
+      echo
+      ;;&
+    *grandine-vc-only* )
+      docompose exec validator grandine --version
+      echo
+      ;;&
     *geth.yml* )
       docompose exec execution geth version
       echo
@@ -3254,6 +3279,16 @@ if [ "${__old_compose}" -eq 1 ]; then
   exit 0
 fi
 
+if [ "${__old_docker}" -eq 1 ]; then
+  echo
+  echo "Docker version ${__docker_version} detected. This version is no longer supported."
+  echo "Please update to a current version. Supported versions can be seen at https://endoflife.date/docker-engine."
+  echo
+  echo "This should be as simple as \"sudo apt update && sudo apt dist-upgrade\" on Debian/Ubuntu"
+  echo "or updating Docker Desktop on macOS and Windows."
+  exit 0
+fi
+
 if ! type -P whiptail >/dev/null 2>&1; then
   echo "Please install the package whiptail or newt before running ${__project_name}."
   exit 0
@@ -3291,13 +3326,4 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
   echo "Optionally, you can switch to docker-ce."
   echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
-fi
-
-if [ "${__old_docker}" -eq 1 ]; then
-  echo
-  echo "Docker version ${__docker_version} detected. This version no longer receives security updates."
-  echo "Please update to a current version."
-  echo
-  echo "This should be as simple as \"sudo apt update && sudo apt dist-upgrade\" on Debian/Ubuntu"
-  echo "or updating Docker Desktop on macOS and Windows."
 fi

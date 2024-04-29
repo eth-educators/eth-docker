@@ -32,6 +32,7 @@ services:
       - --metrics-enabled
       - --metrics-host-allowlist=*
       - --http-host-allowlist=*
+      - --logging=${LOG_LEVEL:-info}
       - eth2
       - --network=${NETWORK}
       - --enable-key-manager-api=true
