@@ -695,12 +695,12 @@ delete_reth() {
     return 0
   fi
 
-  if [ -z "$(dodocker volume ls -q -f "name=reth-el-data")" ]; then # No Reth volume
+  if [ -z "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")" ]; then # No Reth volume
     return 0
   fi
 
 # Check Reth db version
-  __db_version="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=reth-el-data")":"/var/lib/reth" \
+  __db_version="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
       alpine:3 cat /var/lib/reth/db/database.version)"
   if [ "${__db_version}" -ne "1" ]; then
     return 0
@@ -720,7 +720,7 @@ delete_reth() {
 
   echo "Stopping Reth container"
   docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=reth-el-data")"
+  dodocker volume rm "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")"
   echo
   echo "Reth stopped and database deleted."
   echo
