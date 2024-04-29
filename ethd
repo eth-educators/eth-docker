@@ -3222,10 +3222,9 @@ config() {
 
     if [ -f "./.eth/cluster-lock.json" ]; then
       if (whiptail --title "Lido Obol cluster exists" --yesno "Your cluster has already been created. Continue with it?" 10 60); then
-        __cluster_lock_json=$(cat ./.eth/cluster-lock.json)
-  # shellcheck disable=SC2086
-        __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-          "echo '${__cluster_lock_json}' | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+# shellcheck disable=SC2086
+        __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm -v $(pwd)/.eth/cluster-lock.json:/cluster-lock.json:ro curl-jq sh -c \
+          "cat /cluster-lock.json | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
         if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
           echo "Your cluster lock is valid."
         else
@@ -3259,10 +3258,9 @@ config() {
 
       if [ -f "./.eth/cluster-definition.json" ]; then
         if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
-          __cluster_definition_json=$(cat ./.eth/cluster-definition.json)
 # shellcheck disable=SC2086
-          __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-            "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+          __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v $(pwd)/.eth/cluster-definition.json:/cluster-definition.json:ro curl-jq sh -c \
+            "cat /cluster-definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
           if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition is valid."
           else
