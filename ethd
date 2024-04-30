@@ -2927,17 +2927,18 @@ query_lido_obol_cluster_definition() {
     fi
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
-        __cluster_definition_json=$(curl -s "${__cluster_definition_url}" -H "Content-Type: application/json")
+        ${__as_owner} curl -o ./.eth/cluster_definition.tmp -s "${__cluster_definition_url}" -H "Accept: application/json"
 # shellcheck disable=SC2086
-        __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-          "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+        __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster_definition.tmp:/cluster_definition.json:ro curl-jq sh -c \
+          "cat /cluster_definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
         set -e
         if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition url is:" "${__cluster_definition_url}"
-            ${__as_owner} echo "${__cluster_definition_json}" > ./.eth/cluster-definition.json
+            ${__as_owner} mv ./.eth/cluster_definition.tmp ./.eth/cluster-definition.json
         else
             whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '${WITHDRAWAL_CREDENTIALS}'" 14 90
             echo "Your cluster definition is NOT valid."
+            ${__as_owner} rm ./.eth/cluster_definition.tmp
             exit 1
         fi
     else
@@ -3221,10 +3222,9 @@ config() {
 
     if [ -f "./.eth/cluster-lock.json" ]; then
       if (whiptail --title "Lido Obol cluster exists" --yesno "Your cluster has already been created. Continue with it?" 10 60); then
-        __cluster_lock_json=$(cat ./.eth/cluster-lock.json)
-  # shellcheck disable=SC2086
-        __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-          "echo '${__cluster_lock_json}' | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+# shellcheck disable=SC2086
+        __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-lock.json:/cluster-lock.json:ro curl-jq sh -c \
+          "cat /cluster-lock.json | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
         if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
           echo "Your cluster lock is valid."
         else
@@ -3258,10 +3258,9 @@ config() {
 
       if [ -f "./.eth/cluster-definition.json" ]; then
         if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
-          __cluster_definition_json=$(cat ./.eth/cluster-definition.json)
 # shellcheck disable=SC2086
-          __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm curl-jq sh -c \
-            "echo '${__cluster_definition_json}' | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
+          __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-definition.json:/cluster-definition.json:ro curl-jq sh -c \
+            "cat /cluster-definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'${WITHDRAWAL_CREDENTIALS}'\")'" | tail -n 1)
           if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition is valid."
           else
