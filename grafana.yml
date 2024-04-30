@@ -34,15 +34,11 @@ services:
 
   ethereum-metrics-exporter:
     restart: "unless-stopped"
-    build:
-      context: ./eth-metrics
-    image: ethereum-metrics-exporter:local
-    pull_policy: never
-    environment:
-      - CLIENT=${COMPOSE_FILE}
+    image: samcm/ethereum-metrics-exporter:0.23.0-debian
     entrypoint:
-      - docker-entrypoint.sh
       - /ethereum-metrics-exporter
+      - --consensus-url=${CL_NODE}
+      - --execution-url=${EL_NODE}
     <<: *logging
     labels:
       - metrics.scrape=true
