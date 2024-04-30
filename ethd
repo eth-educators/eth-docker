@@ -2965,7 +2965,7 @@ query_lido_obol_cluster_dkg() {
         whiptail --title "Finish" --msgbox "\nThe DKG is finished!" 10 40
     else
         whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
-        echo "DGK ceremony starting is canceled"
+        echo "DKG ceremony starting is canceled"
         exit 1
     fi
 }
