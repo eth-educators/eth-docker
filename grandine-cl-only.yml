@@ -22,7 +22,7 @@ services:
     build:
       <<: *gr-build
     image: grandine:local
-    pull_policy: build
+    pull_policy: never
     user: gdconsensus
     stop_grace_period: 1m
     volumes:
