@@ -237,21 +237,23 @@ install-bash-completions() {
 
 install() {
 
-  read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
-continue? (no/yes) " yn
-  case $yn in
-    [Yy]* ) ;;
-    * ) echo "Aborting, no changes made"; return 0;;
-  esac
   if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 22 ]; then
-      echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 22.04 and then 24.04."
-      exit 1
-    fi
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
+    echo
+    echo
     if [ -z "$(command -v docker)" ]; then
-      ${__auto_sudo} apt-get update
-      ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
+      if [ "${__os_major_version}" -lt 22 ]; then
+        echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
+        echo "Consider upgrading to 22.04 and then 24.04."
+        exit 1
+      fi
+      read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
+continue? (no/yes) " yn
+      case $yn in
+        [Yy]* ) ;;
+        * ) echo "Aborting, no changes made"; return 0;;
+      esac
       ${__auto_sudo} mkdir -p /etc/apt/keyrings
       ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor \
         --yes -o /etc/apt/keyrings/docker.gpg
@@ -275,36 +277,44 @@ continue? (no/yes) " yn
       echo "Your user is already part of the docker group"
     fi
   elif [[ "$__distro" =~ "debian" ]]; then
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
+    echo
+    echo
     if [ -z "$(command -v docker)" ]; then
-      ${__auto_sudo} apt-get update
-      ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
       if [ "${__os_major_version}" -lt 11 ]; then
         echo "${__project_name} cannot install Docker on Debian ${__os_major_version}."
         echo "Consider upgrading to 11 and then 12."
         exit 1
       fi
-        ${__auto_sudo} mkdir -p /etc/apt/keyrings
-        ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
-          --yes -o /etc/apt/keyrings/docker.gpg
-        ${__auto_sudo} echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-          https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-          | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
-        ${__auto_sudo} apt-get update
-        ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
-          docker-buildx-plugin
-        echo "Installed docker-ce and docker-compose-plugin"
-      else
-        echo "Docker is already installed"
-      fi
-      __groups=$(${__as_owner} groups)
-      if [[ ! "$__groups" =~ "docker" ]]; then
-        echo "Making your user part of the docker group"
-        ${__auto_sudo} usermod -aG docker "${OWNER}"
-        echo "Please run newgrp docker or log out and back in"
-      else
-        echo "Your user is already part of the docker group"
-      fi
+      read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
+continue? (no/yes) " yn
+      case $yn in
+        [Yy]* ) ;;
+        * ) echo "Aborting, no changes made"; return 0;;
+      esac
+      ${__auto_sudo} mkdir -p /etc/apt/keyrings
+      ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
+        --yes -o /etc/apt/keyrings/docker.gpg
+      ${__auto_sudo} echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+        | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
+      ${__auto_sudo} apt-get update
+      ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+        docker-buildx-plugin
+      echo "Installed docker-ce and docker-compose-plugin"
+    else
+      echo "Docker is already installed"
+    fi
+    __groups=$(${__as_owner} groups)
+    if [[ ! "$__groups" =~ "docker" ]]; then
+      echo "Making your user part of the docker group"
+      ${__auto_sudo} usermod -aG docker "${OWNER}"
+      echo "Please run newgrp docker or log out and back in"
+    else
+      echo "Your user is already part of the docker group"
+    fi
   else
     echo "${__project_name} does not know how to install Docker on $__distro"
   fi
@@ -2876,8 +2886,6 @@ config() {
   ${__as_owner} git update-index --assume-unchanged ext-network.yml
   # Create ENV file if needed
   if ! [[ -f "${ENV_FILE}" ]]; then
-    echo "Your configuration file template is: default.env"
-
     ${__as_owner} cp default.env "${ENV_FILE}"
     __minty_fresh=1
   else
@@ -3022,6 +3030,11 @@ config() {
 
   pull_and_build
   nag_os_version
+
+  echo
+  echo "Your configuration file is: $(dirname "$(realpath "${BASH_SOURCE[0]}")")/${ENV_FILE}"
+  echo "You can change advanced config items with \"nano .env\" when in the $(dirname "$(realpath "${BASH_SOURCE[0]}")") directory."
+  echo
 }
 
 
