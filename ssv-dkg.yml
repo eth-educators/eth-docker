@@ -1,0 +1,42 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  curl-jq:
+    image: curl-jq:local
+    pull_policy: never
+    build:
+      context: ./traefik
+      dockerfile: Dockerfile.jq
+    restart: "no"
+    profiles: [ "tools" ]
+
+  ssv-dkg:
+    restart: "unless-stopped"
+    image: bloxstaking/ssv-dkg:${SSV_DKG_TAG:-latest}
+    volumes:
+      - ./ssv-config:/config
+      - ssv-dkg-tls:/ssl
+      - .eth/dkg_output:/output
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${HOST_IP:-}:${SSV_DKG_PORT}:${SSV_DKG_PORT}/tcp
+    <<: *logging
+    command: >
+      start-operator
+      --configPath
+      /config/dkg-config.yaml
+      --port
+      ${SSV_DKG_PORT}
+
+volumes:
+  ssv-dkg-tls:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}

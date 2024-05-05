@@ -199,6 +199,12 @@ prep_conffiles() {
   if [ ! -f "ssv-config/config.yaml" ]; then
     ${__as_owner} cp ssv-config/config-sample.yaml ssv-config/config.yaml
   fi
+  if [ ! -f "ssv-config/dkg-config.yaml" ]; then
+    ${__as_owner} cp ssv-config/dkg-config-sample.yaml ssv-config/dkg-config.yaml
+  fi
+# Make sure local user owns the dkg output dir and everything in it
+  ${__auto_sudo} chown -R "${OWNER}:${OWNER}" .eth/dkg_output
+  ${__auto_sudo} chmod -R 755 .eth/dkg_output
 # Create ext-network.yml if it doesn't exist
   if [ ! -f "ext-network.yml" ]; then
     ${__as_owner} cp ext-network.yml.sample ext-network.yml
@@ -591,28 +597,8 @@ source_build() {
 migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-  FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml \
-    lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml \
-    lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml \
-    prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml \
-    nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml \
-    validator-keyapi-localport.yml consensus-keyapi-localport.yml v6-network.yml nimbus.yml teku.yml \
-    nimbus-legacy.yml teku-legacy.yml validator-keyapi-shared.yml consensus-keyapi-shared.yml \
-    prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml \
-    teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml \
-    lh-stats-validator.yml traefik-shared.yml lh-slasher.yml lighthouse-slasher.yml prysm-slasher.yml \
-    grafana-localhost.yml ipv6.yml )
-  TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse.yml \
-    lighthouse-vc-only.yml teku-allin1.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml \
-    lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml \
-    prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse.yml lighthouse-vc-only.yml lighthouse-cl-only.yml \
-    nethermind.yml lighthouse.yml teku-allin1.yml nimbus-allin1.yml prysm.yml lodestar.yml traefik-cf.yml \
-    validator-keyapi-shared.yml consensus-keyapi-shared.yml ipv6.yml nimbus-allin1.yml teku-allin1.yml \
-    nimbus-allin1.yml teku-allin1.yml keyapi-shared.yml allin1-keyapi-shared.yml \
-    "" "" "" "" "" "" \
-    "" "" "" "" "" "" "" \
-    "" "" "" "" "" \
-    "" "" )
+  FROM_YML=( )
+  TO_YML=( )
 
   IFS=":"
   set -o noglob
@@ -628,14 +614,8 @@ migrate_compose_file() {
     __ymlfile="${__ymlarray[n]}"
     for index in "${!FROM_YML[@]}"; do
       if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
-# ENV version 3 and earlier use the legacy files
-        if [[ "${__ymlfile}" = "nimbus.yml" || "${__ymlfile}" = "teku.yml" ]] \
-            && [[ -n "${__source_ver:-}" && "${__source_ver}" -gt 3 ]]; then
-          break
-        else
-          __ymlfile=${TO_YML[index]}
-          break
-        fi
+        __ymlfile=${TO_YML[index]}
+        break
       fi
     done
     if [ -n "${__ymlfile}" ]; then
@@ -971,7 +951,7 @@ envmigrate() {
     PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
     EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 \
-    ERIGON_P2P_PORT_3 LODESTAR_HEAP )
+    ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT )
   TARGET_VARS=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE \
@@ -986,11 +966,10 @@ envmigrate() {
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
-    SIREN_DOCKER_TAG SIREN_DOCKER_REPO NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-  OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN \
-    EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
-NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN \
-    EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
+    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX )
+
+  OLD_VARS=( )
+  NEW_VARS=( )
 
   var=ENV_VERSION
   __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
@@ -2805,6 +2784,24 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
   fi
 }
 
+query_dkg() {
+  __ssv_operator_id=-1
+  if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremonies as an operator?" 10 60); then
+    __key_file_content=$(${__auto_sudo} cat ./ssv-config/encrypted_private_key.json)
+    __public_key=$(docompose -f ./ssv-dkg.yml run --rm curl-jq sh -c \
+      "echo '${__key_file_content}' | jq -r '.pubKey'" | tail -n 1)
+    echo "Your SSV node public key is: ${__public_key}"
+    __ssv_operator_id=$(whiptail --title "Register SSV operator" --inputbox "\n1. Your SSV node public key:\n\n${__public_key}\n\n2. Register your operator in the SSV network with the public key\n\n3. Input your Operator ID \
+(right-click to paste)" 22 85 3>&1 1>&2 2>&3)
+    if [[ -n "${__ssv_operator_id}" && ! "${__ssv_operator_id}" = "-1" ]]; then
+      sed -i'' "s|operatorID: .*|operatorID: ${__ssv_operator_id}|" ./ssv-config/dkg-config.yaml
+      echo "Your SSV Operator ID is: ${__ssv_operator_id}"
+    else
+      echo "Please manually edit \"./ssv-config/dkg-config.yaml\" with your SSV Operator ID"
+      echo "and add \":ssv-dkg.yml\" to \"COMPOSE_FILE\" in \".env\" after registering your operator."
+    fi
+  fi
+}
 
 set_value_in_env() {
 # Assumes that "var" has been set to the name of the variable to be changed
@@ -2917,9 +2914,6 @@ config() {
       query_validator_client
       ;;
     "ssv")
-      if [ ! -f "./ssv-config/config.yaml" ]; then
-        ${__as_owner} cp ./ssv-config/config-sample.yaml ./ssv-config/config.yaml
-      fi
       if [ "${NETWORK}" = "holesky" ]; then
         sed -i'' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
@@ -2944,6 +2938,7 @@ config() {
           ./ssv-config/encrypted_private_key.json && dodocker rm ssv-node-key-generation
         ${__auto_sudo} chown 12000:12000 ./ssv-config/encrypted_private_key.json
       fi
+      query_dkg
       query_consensus_only_client
       ;;
     "rpc")
@@ -2990,6 +2985,9 @@ config() {
   fi
   if [ "${__deployment}" = "ssv" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
+    if [[ -n "${__ssv_operator_id}" && ! "${__ssv_operator_id}" = "-1" ]]; then
+      COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
+    fi
   fi
   if [ -n "${GRAFANA_CLIENT+x}" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
