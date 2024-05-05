@@ -2,6 +2,7 @@
 docker-compose.yml
 ext-network.yml
 ext-network.yml.original
+ext-network.yml.bak
 .eth/*
 !.eth/README.md
 !.eth/validator_keys/.empty
