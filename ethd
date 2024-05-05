@@ -1649,18 +1649,6 @@ update() {
       if [[ "${__branch}" =~ ^tag-* ]]; then
         git checkout main
       fi
-# This preps for a change of ext-network.yml in a future update, after Pectra
-      ${__as_owner} cp ext-network.yml ext-network.yml.bak
-      ${__as_owner} git update-index --no-assume-unchanged ext-network.yml
-      DOCKER_EXT_NETWORK=$(${__as_owner} sed -n 's/^\s*name:\s*\(.*\)/\1/p' ext-network.yml)
-# I mean this literally
-# shellcheck disable=SC2016
-      if [ ! "${DOCKER_EXT_NETWORK:-"rocketpool_net"}" = '${DOCKER_EXT_NETWORK}' ]; then
-        __var=DOCKER_EXT_NETWORK
-        __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
-      fi
-      ${__as_owner} git restore ext-network.yml
-# End ext-network prep
       ${__as_owner} git pull origin main
     else
       export ETHDPINNED="${__value}"
@@ -1675,13 +1663,10 @@ update() {
     exec "${BASH_SOURCE[0]}" update "$@"
   fi
 
-# This part changes in a future post-Pectra update, it gets executed on the second run of update
-# For now, change nothing
+# This can be removed post-Fusaka
   if [ -f "ext-network.yml.bak" ]; then
-    ${__as_owner} cp ext-network.yml.bak ext-network.yml
     ${__as_owner} rm ext-network.yml.bak
   fi
-  ${__as_owner} git update-index --assume-unchanged ext-network.yml
   if [ -f "ext-network.yml.original" ]; then
     ${__as_owner} rm ext-network.yml.original
   fi
@@ -4103,8 +4088,6 @@ __check_legacy() {
 }
 
 config() {
-  # Do not track changes to ext-network.yml now. This is removed post-Pectra
-  ${__as_owner} git update-index --assume-unchanged ext-network.yml
   # Create ENV file if needed
   if ! [[ -f "${__env_file}" ]]; then
     ${__as_owner} cp default.env "${__env_file}"
@@ -4362,8 +4345,8 @@ config() {
 #    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
   if [ "${__deployment}" = "rocket" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
-    # Remove the sed line post-Pectra
-    sed -i'.original' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
+# This gets used, but shellcheck doesn't recognize that
+# shellcheck disable=SC2034
     DOCKER_EXT_NETWORK="rocketpool_net"
   fi
 
