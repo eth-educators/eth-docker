@@ -1,5 +1,5 @@
 ssv:
-  Network: jato-v2
+  Network: holesky
   ValidatorOptions:
     BuilderProposals: true
 KeyStore:
