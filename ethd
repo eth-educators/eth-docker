@@ -133,7 +133,7 @@ upgrade_compose() {
     -o /etc/apt/keyrings/docker.gpg
     ${__auto_sudo} echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/debian  $(lsb_release -cs) stable" \
+        https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
         | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
     ${__auto_sudo} apt-get update
     ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
@@ -825,7 +825,7 @@ upgrade_postgres() {
 
   if [[ "${__free_space}" -lt $(( (__source_size * 2) + 10485760 )) ]]; then
     echo
-    echo "You don't have enough space free to migrate the database."
+    echo "You don't have enough free space to migrate the database."
     echo "It is $(( __source_size / 1024 / 1024 )) GiB in size and you need twice as much free again."
     echo
     __display_docker_dir
