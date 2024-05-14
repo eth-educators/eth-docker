@@ -28,7 +28,8 @@ services:
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
     volumes:
-      - besu-eth1-data:/var/lib/besu
+      - besu-eth1-data:/var/lib/besu-og
+      - besu-el-data:/var/lib/besu
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/besu/ee-secret
     ports:
@@ -86,12 +87,13 @@ services:
     user: "10001:10001"
     restart: "no"
     volumes:
-      - besu-eth1-data:/var/lib/besu
+      - besu-el-data:/var/lib/besu
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
 
 volumes:
   besu-eth1-data:
+  besu-el-data:
   jwtsecret:
 
 networks:

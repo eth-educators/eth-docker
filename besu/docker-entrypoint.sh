@@ -6,6 +6,15 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu besu "${BASH_SOURCE[0]}" "$@"
 fi
 
+# Migrate from old to new volume
+if [[ -d /var/lib/besu-og && ! -f /var/lib/besu-og/migrationdone \
+    && $(ls -A /var/lib/besu-og/) ]]; then
+  echo "Migrating from old Besu volume to new one"
+  find /var/lib/besu-og/ -mindepth 1 -maxdepth 1 ! -name 'ee-secret' -exec mv -t /var/lib/besu/ {} +
+  touch /var/lib/besu-og/migrationdone
+  echo "Migration completed, data is now in volume \"besu-el-data\""
+fi
+
 if [ -n "${JWT_SECRET}" ]; then
   echo -n "${JWT_SECRET}" > /var/lib/besu/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
