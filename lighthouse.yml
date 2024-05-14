@@ -26,7 +26,8 @@ services:
     user: lhconsensus
     stop_grace_period: 1m
     volumes:
-      - lhbeacon-data:/var/lib/lighthouse
+      - lhbeacon-data:/var/lib/lighthouse-og
+      - lhconsensus-data:/var/lib/lighthouse
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/lighthouse/beacon/ee-secret
     environment:
@@ -221,12 +222,13 @@ services:
     user: "10002:10002"
     restart: "no"
     volumes:
-      - lhbeacon-data:/var/lib/lighthouse
+      - lhconsensus-data:/var/lib/lighthouse
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
 
 volumes:
   lhbeacon-data:
+  lhconsensus-data:
   lhvalidator-data:
   jwtsecret:
 

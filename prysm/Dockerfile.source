@@ -28,6 +28,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   ca-certificates curl bash tzdata git \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+# rsync for migration
+RUN apt-get update && apt-get install -y --no-install-recommends rsync
 
 RUN set -eux; \
         apt-get update; \
@@ -46,6 +48,8 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
+# Create mount point for old volume
+RUN mkdir -p /var/lib/prysm-og && chown -R ${USER}:${USER} /var/lib/prysm-og
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 777 /var/lib/prysm/ee-secret
 
