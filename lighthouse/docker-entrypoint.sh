@@ -6,15 +6,6 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu lhconsensus docker-entrypoint.sh "$@"
 fi
 
-# Migrate from old to new volume
-if [[ -d /var/lib/lighthouse-og/beacon && ! -f /var/lib/lighthouse-og/beacon/migrationdone \
-    && $(ls -A /var/lib/lighthouse-og/beacon/) ]]; then
-  echo "Migrating from old Lighthouse volume to new one"
-  find /var/lib/lighthouse-og/beacon/ -mindepth 1 -maxdepth 1 ! -name 'ee-secret' -exec mv -t /var/lib/lighthouse/beacon/ {} +
-  touch /var/lib/lighthouse-og/beacon/migrationdone
-  echo "Migration completed, data is now in volume \"lhconsensus-data\""
-fi
-
 if [ -n "${JWT_SECRET}" ]; then
   echo -n "${JWT_SECRET}" > /var/lib/lighthouse/beacon/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"

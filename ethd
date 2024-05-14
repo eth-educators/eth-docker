@@ -1331,10 +1331,10 @@ resync-execution() {
 
   case "${value}" in
     *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
-    *geth.yml* ) __el_volume='geth-el-data'; __el_client="geth";;
+    *geth.yml* ) __el_volume='geth-eth1-data'; __el_client="geth";;
     *reth.yml* ) __el_volume='reth-el-data'; __el_client="reth";;
-    *besu.yml* ) __el_volume='besu-el-data'; __el_client="besu";;
-    *nethermind.yml* ) __el_volume='nethermind-el-data'; __el_client="nethermind";;
+    *besu.yml* ) __el_volume='besu-eth1-data'; __el_client="besu";;
+    *nethermind.yml* ) __el_volume='nm-eth1-data'; __el_client="nethermind";;
     * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
   esac
 
@@ -1368,13 +1368,15 @@ resync-consensus() {
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
   case "${value}" in
-    *lighthouse.yml* | *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
+    *lighthouse.yml* ) __cl_volume='lhbeacon-data'; __cl_client="lighthouse";;
+    *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
     *teku-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
     *teku.yml* | *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
     *nimbus-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
     *nimbus.yml* | *nimbus-cl-only.yml* ) __cl_volume='nimbus-consensus-data'; __cl_client="nimbus";;
     *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
-    *prysm.yml* | *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
+    *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
+    *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
     *grandine-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="grandine";;
     *grandine.yml* | *grandine-cl-only.yml* ) __cl_volume='grandineconsensus-data'; __cl_client="grandine";;
     * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;

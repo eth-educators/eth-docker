@@ -6,15 +6,6 @@ if [ "$(id -u)" = '0' ]; then
   exec su-exec geth docker-entrypoint.sh "$@"
 fi
 
-# Migrate from old to new volume
-if [[ -d /var/lib/goethereum-og && ! -f /var/lib/goethereum-og/migrationdone \
-    && $(ls -A /var/lib/goethereum-og/) ]]; then
-  echo "Migrating from old Geth volume to new one"
-  find /var/lib/goethereum-og/ -mindepth 1 -maxdepth 1 ! -name 'ee-secret' -exec mv -t /var/lib/goethereum/ {} +
-  touch /var/lib/goethereum-og/migrationdone
-  echo "Migration completed, data is now in volume \"geth-el-data\""
-fi
-
 if [ -n "${JWT_SECRET}" ]; then
   echo -n "${JWT_SECRET}" > /var/lib/goethereum/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"

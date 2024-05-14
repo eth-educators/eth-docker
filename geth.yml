@@ -30,8 +30,7 @@ services:
       - IPV6=${IPV6:-false}
       - ANCIENT_DIR=${ANCIENT_DIR:-}
     volumes:
-      - geth-eth1-data:/var/lib/goethereum-og
-      - geth-el-data:/var/lib/goethereum
+      - geth-eth1-data:/var/lib/goethereum
       - ${ANCIENT_DIR:-.nada}:/var/lib/ancient
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/goethereum/ee-secret
@@ -85,7 +84,6 @@ services:
 
 volumes:
   geth-eth1-data:
-  geth-el-data:
   jwtsecret:
 
 networks:

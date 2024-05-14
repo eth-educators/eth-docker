@@ -22,8 +22,6 @@ RUN set -eux; \
 # verify that the binary works
         gosu nobody true
 
-# Create mount point for old volume
-RUN mkdir -p /var/lib/besu-og && chown -R ${USER}:${USER} /var/lib/besu-og
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/besu/ee-secret && chown -R ${USER}:${USER} /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
 

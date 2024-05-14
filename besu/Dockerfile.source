@@ -46,8 +46,6 @@ RUN adduser \
     --ingroup "${USER}" \
     "${USER}"
 
-# Create mount point for old volume
-RUN mkdir -p /var/lib/besu-og && chown -R ${USER}:${USER} /var/lib/besu-og
 RUN mkdir -p /var/lib/besu/ee-secret && chown -R besu:besu /var/lib/besu && chmod -R 700 /var/lib/besu && chmod 777 /var/lib/besu/ee-secret
 
 # Cannot assume buildkit, hence no chmod
