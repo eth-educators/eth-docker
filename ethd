@@ -203,7 +203,7 @@ prep_conffiles() {
     ${__as_owner} cp ssv-config/dkg-config-sample.yaml ssv-config/dkg-config.yaml
   fi
 # Make sure local user owns the dkg output dir and everything in it
-  ${__auto_sudo} chown -R "${OWNER}:${OWNER}" .eth/dkg_output
+  ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .eth/dkg_output
   ${__auto_sudo} chmod -R 755 .eth/dkg_output
 # Create ext-network.yml if it doesn't exist
   if [ ! -f "ext-network.yml" ]; then
@@ -3266,6 +3266,7 @@ cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 # Use this to make sure root doesn't end up owning files
 # shellcheck disable=SC2012
 OWNER=$(ls -ld . | awk '{print $3}')
+OWNER_GROUP=$(id -gn "${OWNER}")
 
 if [ "${OWNER}" == "root" ]; then
   echo "Please install ${__project_name} as a non-root user."
