@@ -6,6 +6,15 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu nethermind "${BASH_SOURCE[0]}" "$@"
 fi
 
+# Migrate from old to new volume
+if [[ -d /var/lib/nethermind-og && ! -f /var/lib/nethermind-og/migrationdone \
+    && $(ls -A /var/lib/nethermind-og/) ]]; then
+  echo "Migrating from old Nethermind volume to new one"
+  find /var/lib/nethermind-og/ -mindepth 1 -maxdepth 1 ! -name 'ee-secret' -exec mv -t /var/lib/nethermind/ {} +
+  touch /var/lib/nethermind-og/migrationdone
+  echo "Migration completed, data is now in volume \"nethermind-el-data\""
+fi
+
 # Move legacy xdai dir to gnosis
 if [ -d "/var/lib/nethermind/nethermind_db/xdai" ]; then
   mv /var/lib/nethermind/nethermind_db/xdai /var/lib/nethermind/nethermind_db/gnosis
