@@ -28,7 +28,8 @@ services:
     user: prysmconsensus
     stop_grace_period: 1m
     volumes:
-      - prysmbeacon-data:/var/lib/prysm
+      - prysmbeacon-data:/var/lib/prysm-og
+      - prysmconsensus-data:/var/lib/prysm
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/prysm/ee-secret
     environment:
@@ -248,6 +249,7 @@ services:
 
 volumes:
   prysmbeacon-data:
+  prysmconsensus-data:
   prysmvalidator-data:
   jwtsecret:
 

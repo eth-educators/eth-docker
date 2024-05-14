@@ -6,6 +6,16 @@ if [ "$(id -u)" = '0' ]; then
   exec gosu prysmconsensus docker-entrypoint.sh "$@"
 fi
 
+# Migrate from old to new volume
+if [[ -d /var/lib/prysm-og && ! -f /var/lib/prysm-og/migrationdone \
+    && $(ls -A /var/lib/prysm-og/) ]]; then
+  echo "Migrating from old Prysm volume to new one"
+  echo "This may take 10 minutes on a fast drive. Please be patient"
+  rsync -a --remove-source-files --exclude='ee-secret' /var/lib/prysm-og/ /var/lib/prysm/
+  touch /var/lib/prysm-og/migrationdone
+  echo "Migration completed, data is now in volume \"prysmconsensus-data\""
+fi
+
 if [ -n "${JWT_SECRET}" ]; then
   echo -n "${JWT_SECRET}" > /var/lib/prysm/ee-secret/jwtsecret
   echo "JWT secret was supplied in .env"
