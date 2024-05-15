@@ -203,8 +203,10 @@ prep_conffiles() {
     ${__as_owner} cp ssv-config/dkg-config-sample.yaml ssv-config/dkg-config.yaml
   fi
 # Make sure local user owns the dkg output dir and everything in it
-  ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .eth/dkg_output
-  ${__auto_sudo} chmod -R 755 .eth/dkg_output
+  if find .eth/dkg_output \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" -o \! -perm 755 | grep -q .; then
+    ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .eth/dkg_output
+    ${__auto_sudo} chmod -R 755 .eth/dkg_output
+  fi
 # Create ext-network.yml if it doesn't exist
   if [ ! -f "ext-network.yml" ]; then
     ${__as_owner} cp ext-network.yml.sample ext-network.yml
