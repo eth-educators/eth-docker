@@ -28,6 +28,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
+      - STATIC_DIR=${ANCIENT_DIR}
       # Make this RUST_LOG=${LOG_LEVEL:-info},engine=trace when requiring deep debug
       - RUST_LOG=${LOG_LEVEL:-info}
       - RUST_LOG_STYLE=never
