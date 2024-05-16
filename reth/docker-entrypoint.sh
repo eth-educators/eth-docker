@@ -82,11 +82,10 @@ else
 fi
 
 __static=""
-
-#if [ -n "${ANCIENT_DIR}" ] && [ ! "${ANCIENT_DIR}" = ".nada" ]; then
-#  echo "Using separate static files directory at ${ANCIENT_DIR}."
-#  __static="--datadir.static-files /var/lib/static"
-#fi
+if [ -n "${STATIC_DIR}" ] && [ ! "${STATIC_DIR}" = ".nada" ]; then
+  echo "Using separate static files directory at ${STATIC_DIR}."
+  __static="--datadir.static-files /var/lib/static"
+fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
