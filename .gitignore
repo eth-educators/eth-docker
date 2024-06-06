@@ -20,5 +20,7 @@ ssv-config/password.pass
 ssv-config/password
 ssv-config/encrypted_private_key.json
 ssv-config/config.yaml
+ssv-config/config.yaml.original
 ssv-config/dkg-config.yaml
+ssv-config/dkg-config.yaml.original
 .nada
