@@ -52,7 +52,7 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Grandine archive node without pruning"
   __prune="--back-sync"
 else
-  __prune=""
+  __prune="--prune-storage"
 fi
 
 # Check whether we should rapid sync
