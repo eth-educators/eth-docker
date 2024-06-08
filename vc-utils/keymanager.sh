@@ -338,8 +338,20 @@ exit-sign() {
     fi
     __pubkeys=()
     __api_path=eth/v1/keystores
-    get-token
     if [ "${__pubkey}" = "all" ]; then
+      if [ "${WEB3SIGNER}" = "true" ]; then
+        __token=NIL
+        __vc_api_container=${__api_container}
+        __api_container=web3signer
+        __vc_service=${__service}
+        __service=web3signer
+        __vc_api_port=${__api_port}
+        __api_port=9000
+        __vc_api_tls=${__api_tls}
+        __api_tls=false
+      else
+        get-token
+      fi
       __validator-list-call
       if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
         echo "No keys loaded, cannot sign anything"
@@ -349,11 +361,18 @@ exit-sign() {
 # Word splitting is desired for the array
 # shellcheck disable=SC2206
         __pubkeys+=( ${__keys_to_array} )
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __api_container=${__vc_api_container}
+            __api_port=${__vc_api_port}
+            __api_tls=${__vc_api_tls}
+            __service=${__vc_service}
+        fi
       fi
     else
       __pubkeys+=( "${__pubkey}" )
     fi
 
+    get-token
     for __pubkey in "${__pubkeys[@]}"; do
       __api_data=""
       __http_method=POST
