@@ -1,4 +1,4 @@
-FROM node:20-alpine as build
+FROM node:22-alpine as build
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
@@ -7,14 +7,16 @@ ARG DOCKER_REPO
 ARG BUILD_TARGET
 ARG SRC_REPO
 
-RUN apk update && apk add --no-cache git g++ make python3 bash && rm -rf /var/cache/apk/*
-#RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN apk update && apk add --no-cache git g++ make python3 py3-setuptools bash && rm -rf /var/cache/apk/*
 
 WORKDIR /usr/app
 
-RUN bash -c "cd .. && rm -rf app && git clone ${SRC_REPO} app && cd app && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:ls-pr; git checkout ls-pr; else git checkout ${BUILD_TARGET}; fi && yarn install --non-interactive --frozen-lockfile && yarn build"
+RUN bash -c "cd .. && rm -rf app && git clone ${SRC_REPO} app && cd app && git config advice.detachedHead false \
+  && git fetch --all --tags \
+  && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:ls-pr; git checkout ls-pr; else git checkout ${BUILD_TARGET}; fi \
+  && yarn install --non-interactive --frozen-lockfile && yarn build"
 
-FROM node:20-alpine
+FROM node:22-alpine
 
 RUN apk update && apk add --no-cache ca-certificates tzdata bash su-exec git && rm -rf /var/cache/apk/*
 
