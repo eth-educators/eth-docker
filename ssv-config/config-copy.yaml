@@ -1,0 +1,25 @@
+ssv:
+  Network: holesky
+  ValidatorOptions:
+    BuilderProposals: true
+KeyStore:
+  PrivateKeyFile: /config/encrypted_private_key.json
+  PasswordFile: /config/password.pass
+p2p:
+  DiscoveryType: discv5
+  TcpPort: 13001
+  UdpPort: 12001
+db:
+  Path: /tmp/ssv/db
+  Type: badger-db
+eth2:
+  BeaconNodeAddr: http://consensus:5052
+eth1:
+  ETH1Addr: ws://execution:8546
+MetricsAPIPort: 15000
+global:
+  LogFilePath: /tmp/ssv/debug.log
+  LogFormat: json
+  LogLevelFormat: lowercase
+  LogLevel: info
+  LogFilePath: /tmp/ssv/debug.log
