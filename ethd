@@ -650,18 +650,29 @@ ssv_switch() {
   NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
   sed -i'.original' 's/blox-ssv2.yml/ssv.yml/' "${ENV_FILE}".source
   if ! grep -q "LogFilePath:" ssv-config/config.yaml; then
-    sed -i'.original' '/global:/a\  LogFilePath: /tmp/ssv/debug.log' ssv-config/config.yaml
+# macOS-isms: Newline for sed add
+    sed -i'.original' '/global:/a\
+  LogFilePath: /tmp/ssv/debug.log
+' ssv-config/config.yaml
   fi
   if ! grep -q "MetricsAPIPort:" ssv-config/config.yaml; then
-    sed -i'.original' '$a\MetricsAPIPort: 15000' ssv-config/config.yaml
+    sed -i'.original' '$a\
+MetricsAPIPort: 15000
+' ssv-config/config.yaml
   fi
   if ! grep -q "ssv:" ssv-config/config.yaml; then
     sed -i'.original' '/^  Network:/d' ssv-config/config.yaml # Remove old eth2 Network line if present
-    sed -i'.original' '$a\ssv:' ssv-config/config.yaml
+    sed -i'.original' '$a\
+ ssv:
+ ' ssv-config/config.yaml
     if [ "${NETWORK}" = "holesky" ]; then
-      sed -i'.original' '$a\  Network: holesky' ssv-config/config.yaml
+      sed -i'.original' '$a\
+  Network: holesky
+' ssv-config/config.yaml
     elif [ "${NETWORK}" = "mainnet" ]; then
-      sed -i'.original' '$a\  Network: mainnet' ssv-config/config.yaml
+      sed -i'.original' '$a\
+  Network: mainnet
+' ssv-config/config.yaml
     else
       echo "${NETWORK} is not something that works with SSV."
       echo "Please fix this manually before running $__me update again."
@@ -1001,7 +1012,7 @@ envmigrate() {
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ "${value}" =~ "blox-ssv2.yml" ]]; then
-   ssv_switch
+    ssv_switch
   fi
 
   # Migrate over user settings
