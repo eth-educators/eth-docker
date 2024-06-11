@@ -1060,6 +1060,12 @@ envmigrate() {
         if [[ "${var}" = "DDNS_TAG" && "${__source_ver}" -lt "8" ]]; then # Switch to ddns-updater
           value="v2"
         fi
+        if [[ "${var}" = "LH_DOCKER_TAG" && "${value}" = "latest-modern" ]]; then # LH 5.2 ditched latest-modern
+          value="latest"
+        fi
+        if [[ "${var}" = "ERIGON_DOCKER_TAG" && "${value}" = "stable" ]]; then # Erigon ditched stable
+          value="v2.60.1"
+        fi
         sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
       fi
     done
