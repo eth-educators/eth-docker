@@ -5,7 +5,7 @@
 #
 # If you need to override the settings in this file, or add other top-level configuration
 # (e.g.) remote_write config, please use custom-prom.yml.
-# The modifications in that file will supercede the settings here (or extend, in the case of lists)
+# The modifications in that file will supersede the settings here (or extend, in the case of lists)
 
 global:
   scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
