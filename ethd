@@ -2369,7 +2369,7 @@ query_deployment() {
     __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
     "What kind of deployment to participate in Lido protocol do you want to run?" 13 90 3 \
     "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
-    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon-node (obol middleware)" 3>&1 1>&2 2>&3)
+    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
   fi
 
   echo "Your deployment choice is: ${__deployment}"
@@ -3413,7 +3413,7 @@ version() {
   # Client versions
   case "${value}" in
     *lido-obol.yml* )
-      docompose exec charon-node version
+      docompose exec charon charon version
       echo
       ;;&
     *ssv.yml* )
