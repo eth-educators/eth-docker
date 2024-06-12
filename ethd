@@ -1036,10 +1036,10 @@ envmigrate() {
         value="https://beaconstate.info"
       fi
       if [[ "${var}" = "HOST_IP" && "${value: -1}" = ":" ]]; then
-        value="${value%:}" # Undo Compose V1 accomodation
+        value="${value%:}" # Undo Compose V1 accommodation
       fi
       if [[ "${var}" = "SHARE_IP" && "${value: -1}" = ":" ]]; then
-        value="${value%:}" # Undo Compose V1 accomodation
+        value="${value%:}" # Undo Compose V1 accommodation
       fi
       # Handle & in GRAFFITI gracefully
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
