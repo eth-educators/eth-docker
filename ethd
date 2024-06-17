@@ -2368,6 +2368,7 @@ query_deployment() {
   if [ "${__deployment}" = "lido_comp" ]; then
     __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
     "What kind of deployment to participate in Lido protocol do you want to run?" 13 90 3 \
+    "lido_csm" "[Community Staking] CSM node - Consensus, execution and validator client" \
     "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
     "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
   fi
@@ -3137,27 +3138,27 @@ config() {
     if [[ "${__deployment}" = "node" || "${__deployment}" = "lido_csm" ]]; then
       query_graffiti
     fi
-        if [[ "${__deployment}" =~ "lido_" ]]; then
-          case "${NETWORK}" in
-              "mainnet")
-                  WITHDRAWAL_CREDENTIALS="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
-                  ;;
-              "holesky")
-                  WITHDRAWAL_CREDENTIALS="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
-                  ;;
-              *)
-                  WITHDRAWAL_CREDENTIALS="0x0000000000000000000000000000000000000000"
-                  ;;
-          esac
-        fi
-        if [ "${__deployment}" = "lido_csm" ]; then
-          if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
-            query_lido_keys_generation
-          else
-            whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: ${WITHDRAWAL_CREDENTIALS}\nOtherwise, your keys will not be valid!" 10 80
-          fi
-          whiptail --title "Finish" --msgbox "Final steps!\n\n1. Please, open https://operators.lido.fi to submit your keys with 'deposit-data.json' file content\n\n2. Wait for keys validation\n\n3. Run your nodes by './ethd start'\n\n4. Import your keys by './ethd keys import'" 15 85
-        fi
+    if [[ "${__deployment}" =~ "lido_" ]]; then
+      case "${NETWORK}" in
+          "mainnet")
+              WITHDRAWAL_CREDENTIALS="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
+              ;;
+          "holesky")
+              WITHDRAWAL_CREDENTIALS="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
+              ;;
+          *)
+              WITHDRAWAL_CREDENTIALS="0x0000000000000000000000000000000000000000"
+              ;;
+      esac
+    fi
+    if [ "${__deployment}" = "lido_csm" ]; then
+      if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
+        query_lido_keys_generation
+      else
+        whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: ${WITHDRAWAL_CREDENTIALS}\nOtherwise, your keys will not be valid!" 10 80
+      fi
+      whiptail --title "Finish" --msgbox "Final steps!\n\n1. Run your node './ethd start'\n\n2. Wait until your node is fully synchronized\n\n4. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n5. Wait for keys validation\n\n6. Import your keys by './ethd keys import'" 19 85
+    fi
   else
     unset EXECUTION_CLIENT
     unset GRAFANA_CLIENT
