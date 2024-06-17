@@ -961,7 +961,7 @@ envmigrate() {
     NIMEL_DOCKER_REPO NIMEL_DOCKERFILE LS_SRC_BUILD_TARGET LS_SRC_REPO LS_DOCKER_TAG LS_DOCKER_REPO LS_DOCKERFILE \
     GETH_SRC_BUILD_TARGET GETH_SRC_REPO GETH_DOCKER_TAG GETH_DOCKER_REPO TRAEFIK_TAG DDNS_TAG \
     GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_SRC_REPO NM_DOCKER_TAG NM_DOCKER_REPO NM_DOCKERFILE \
-    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG OBOL_NODE_TAG \
+    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG CHARON_VERSION \
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     SIREN_DOCKER_TAG SIREN_DOCKER_REPO NODE_EXPORTER_IGNORE_MOUNT_REGEX )
@@ -2368,8 +2368,9 @@ query_deployment() {
   if [ "${__deployment}" = "lido_comp" ]; then
     __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
     "What kind of deployment to participate in Lido protocol do you want to run?" 13 90 3 \
+    "lido_csm" "[Community Staking] CSM node - Consensus, execution and validator client" \
     "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
-    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon-node (obol middleware)" 3>&1 1>&2 2>&3)
+    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
   fi
 
   echo "Your deployment choice is: ${__deployment}"
@@ -3137,27 +3138,27 @@ config() {
     if [[ "${__deployment}" = "node" || "${__deployment}" = "lido_csm" ]]; then
       query_graffiti
     fi
-        if [[ "${__deployment}" =~ "lido_" ]]; then
-          case "${NETWORK}" in
-              "mainnet")
-                  WITHDRAWAL_CREDENTIALS="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
-                  ;;
-              "holesky")
-                  WITHDRAWAL_CREDENTIALS="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
-                  ;;
-              *)
-                  WITHDRAWAL_CREDENTIALS="0x0000000000000000000000000000000000000000"
-                  ;;
-          esac
-        fi
-        if [ "${__deployment}" = "lido_csm" ]; then
-          if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
-            query_lido_keys_generation
-          else
-            whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: ${WITHDRAWAL_CREDENTIALS}\nOtherwise, your keys will not be valid!" 10 80
-          fi
-          whiptail --title "Finish" --msgbox "Final steps!\n\n1. Please, open https://operators.lido.fi to submit your keys with 'deposit-data.json' file content\n\n2. Wait for keys validation\n\n3. Run your nodes by './ethd start'\n\n4. Import your keys by './ethd keys import'" 15 85
-        fi
+    if [[ "${__deployment}" =~ "lido_" ]]; then
+      case "${NETWORK}" in
+          "mainnet")
+              WITHDRAWAL_CREDENTIALS="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
+              ;;
+          "holesky")
+              WITHDRAWAL_CREDENTIALS="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
+              ;;
+          *)
+              WITHDRAWAL_CREDENTIALS="0x0000000000000000000000000000000000000000"
+              ;;
+      esac
+    fi
+    if [ "${__deployment}" = "lido_csm" ]; then
+      if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
+        query_lido_keys_generation
+      else
+        whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: ${WITHDRAWAL_CREDENTIALS}\nOtherwise, your keys will not be valid!" 10 80
+      fi
+      whiptail --title "Finish" --msgbox "Final steps!\n\n1. Run your node './ethd start'\n\n2. Wait until your node is fully synchronized\n\n4. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n5. Wait for keys validation\n\n6. Import your keys by './ethd keys import'" 19 85
+    fi
   else
     unset EXECUTION_CLIENT
     unset GRAFANA_CLIENT
@@ -3208,7 +3209,7 @@ config() {
         VE_LOCATOR_ADDRESS="0x28FAB2059C713A7F9D8c86Db49f9bb0e96Af1ef8"
 # We are using the variable
 # shellcheck disable=SC2034
-        VE_ORACLE_ADDRESSES_ALLOWLIST='["0x12A1D74F8697b9f4F1eEBb0a9d0FB6a751366399","0xD892c09b556b547c80B7d8c8cB8d75bf541B2284","0xf7aE520e99ed3C41180B5E12681d31Aa7302E4e5","0x31fa51343297FFce0CC1E67a50B2D3428057D1b1","0x81E411f1BFDa43493D7994F82fb61A415F6b8Fd4","0x4c75FA734a39f3a21C57e583c1c29942F021C6B7","0xD3b1e36A372Ca250eefF61f90E833Ca070559970"]'
+        VE_ORACLE_ADDRESSES_ALLOWLIST='["0x12A1D74F8697b9f4F1eEBb0a9d0FB6a751366399","0xD892c09b556b547c80B7d8c8cB8d75bf541B2284","0xf7aE520e99ed3C41180B5E12681d31Aa7302E4e5","0x31fa51343297FFce0CC1E67a50B2D3428057D1b1","0x81E411f1BFDa43493D7994F82fb61A415F6b8Fd4","0x4c75FA734a39f3a21C57e583c1c29942F021C6B7","0xD3b1e36A372Ca250eefF61f90E833Ca070559970","0xF0F23944EfC5A63c53632C571E7377b85d5E6B6f","0xb29dD2f6672C0DFF2d2f173087739A42877A5172","0x3799bDA7B884D33F79CEC926af21160dc47fbe05"]'
 # We are using the variable
 # shellcheck disable=SC2034
         VE_STAKING_MODULE_ID="2"
@@ -3384,15 +3385,11 @@ config() {
     set_value_in_env
     var=VE_STAKING_MODULE_ID
     set_value_in_env
-# Literal match intended
-# shellcheck disable=SC2076
-    if [[ "${COMPOSE_FILE}" =~ "prysm.yml" || "${COMPOSE_FILE}" =~ "lodestar.yml" ]]; then
 # We are using the variable
 # shellcheck disable=SC2034
-      ENABLE_DIST_ATTESTATION_AGGR="true"
-      var=ENABLE_DIST_ATTESTATION_AGGR
-      set_value_in_env
-    fi
+    ENABLE_DIST_ATTESTATION_AGGR="true"
+    var=ENABLE_DIST_ATTESTATION_AGGR
+    set_value_in_env
   fi
   if [[ "${NETWORK}" = "gnosis" ]] && [[ "${CONSENSUS_CLIENT}" =~ "nimbus" ]] ; then
 # We are using the variable
@@ -3417,7 +3414,7 @@ version() {
   # Client versions
   case "${value}" in
     *lido-obol.yml* )
-      docompose exec charon-node version
+      docompose exec charon charon version
       echo
       ;;&
     *ssv.yml* )

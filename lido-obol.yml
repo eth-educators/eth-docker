@@ -39,7 +39,7 @@ services:
   charon-create-enr:
     profiles: ["tools"]
     restart: "no"
-    image: obolnetwork/charon:${OBOL_NODE_TAG:-latest}
+    image: obolnetwork/charon:${CHARON_VERSION:-latest}
     command: create enr
     volumes:
       - .eth:/opt/charon/.charon
