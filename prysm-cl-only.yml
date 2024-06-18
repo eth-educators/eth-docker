@@ -89,6 +89,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=8008
       - metrics.instance=consensus
+      - metrics.network=${NETWORK}
 
 volumes:
   prysmconsensus-data:

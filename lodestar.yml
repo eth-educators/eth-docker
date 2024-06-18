@@ -87,6 +87,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=8008
       - metrics.instance=consensus
+      - metrics.network=${NETWORK}
 
   validator:
     restart: "unless-stopped"
@@ -145,6 +146,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=8009
       - metrics.instance=validator
+      - metrics.network=${NETWORK}
 
   validator-exit:
     profiles: ["tools"]
