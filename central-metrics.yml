@@ -21,3 +21,4 @@ services:
       - metrics.path=/metrics
       - metrics.port=9090
       - metrics.instance=ethereum-metrics-exporter
+      - metrics.network=${NETWORK}

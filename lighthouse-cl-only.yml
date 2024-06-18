@@ -86,6 +86,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=8008
       - metrics.instance=consensus
+      - metrics.network=${NETWORK}
 
   set-cl-prune-marker:
     profiles: ["tools"]
