@@ -42,6 +42,7 @@ services:
     ports:
       - ${HOST_IP:-}:${PRYSM_PORT}:${PRYSM_PORT}/tcp
       - ${HOST_IP:-}:${PRYSM_UDP_PORT}:${PRYSM_UDP_PORT}/udp
+      - ${HOST_IP:-}:${CL_QUIC_PORT:-9001}:${CL_QUIC_PORT:-9001}/udp
     networks:
       default:
         aliases:
@@ -72,6 +73,9 @@ services:
       - ${PRYSM_PORT}
       - --p2p-udp-port
       - ${PRYSM_UDP_PORT}
+      - --p2p-quic-port
+      - ${CL_QUIC_PORT}
+      - --enable-quic
       - --p2p-max-peers
       - ${CL_MAX_PEER_COUNT:-70}
       - --verbosity

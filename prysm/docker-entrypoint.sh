@@ -78,21 +78,11 @@ else
   __prune=""
 fi
 
-# Fetch genesis file as needed
-if [[ "${NETWORK}" = "goerli" || "${NETWORK}" = "prater" ]]; then
-  GENESIS=/var/lib/prysm/genesis.ssz
-  if [ ! -f "$GENESIS" ]; then
-    echo "Fetching genesis file for Görli testnet"
-    curl -fsSL -o "$GENESIS" https://github.com/eth-clients/goerli/raw/main/prater/genesis.ssz
-  fi
-# Word splitting is desired for the command line parameters
-# shellcheck disable=SC2086
-  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
-elif [[ "${NETWORK}" = "sepolia" ]]; then
+if [[ "${NETWORK}" = "sepolia" ]]; then
   GENESIS=/var/lib/prysm/genesis.ssz
   if [ ! -f "$GENESIS" ]; then
     echo "Fetching genesis file for Sepolia testnet"
-    curl -fsSL -o "$GENESIS" https://github.com/eth-clients/sepolia/raw/main/bepolia/genesis.ssz
+    curl -fsSL -o "$GENESIS" https://github.com/eth-clients/sepolia/raw/main/metadata/genesis.ssz
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
@@ -101,7 +91,7 @@ elif [[ "${NETWORK}" = "holesky" ]]; then
   GENESIS=/var/lib/prysm/genesis.ssz
   if [ ! -f "$GENESIS" ]; then
     echo "Fetching genesis file for Holešky testnet"
-    curl -fsSL -o "$GENESIS" https://github.com/eth-clients/holesky/raw/main/custom_config_data/genesis.ssz
+    curl -fsSL -o "$GENESIS" https://github.com/eth-clients/holesky/raw/main/metadata/genesis.ssz
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086

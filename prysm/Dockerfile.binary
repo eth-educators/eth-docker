@@ -3,9 +3,9 @@ ARG DOCKER_VC_TAG
 ARG DOCKER_REPO
 ARG DOCKER_VC_REPO
 
-FROM ${DOCKER_REPO}:${DOCKER_TAG} as clsource
+FROM ${DOCKER_REPO}:${DOCKER_TAG} AS clsource
 
-FROM debian:bookworm-slim as consensus
+FROM debian:bookworm-slim AS consensus
 
 #Included here to avoid build-time complaints
 ARG BUILD_TARGET
@@ -53,9 +53,9 @@ USER ${USER}
 
 ENTRYPOINT ["beacon-chain"]
 
-FROM ${DOCKER_VC_REPO}:${DOCKER_VC_TAG} as vcsource
+FROM ${DOCKER_VC_REPO}:${DOCKER_VC_TAG} AS vcsource
 
-FROM consensus as validator
+FROM consensus AS validator
 
 ARG USER=prysmvalidator
 ARG UID=10000

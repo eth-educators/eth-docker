@@ -1,5 +1,5 @@
 # Build Prysm in a stock Go build container
-FROM golang:1.22-bookworm as builder
+FROM golang:1.22-bookworm AS builder
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
@@ -19,7 +19,7 @@ if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TAR
 && bazel build --config=release //cmd/client-stats:client-stats"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bookworm-slim as consensus
+FROM debian:bookworm-slim AS consensus
 
 ARG USER=prysmconsensus
 ARG UID=10002
@@ -65,7 +65,7 @@ USER ${USER}
 
 ENTRYPOINT ["beacon-chain"]
 
-FROM consensus as validator
+FROM consensus AS validator
 
 ARG USER=prysmvalidator
 ARG UID=10000

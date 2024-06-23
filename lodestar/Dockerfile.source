@@ -1,4 +1,4 @@
-FROM node:22-alpine as build
+FROM node:22-alpine AS builder
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
@@ -36,7 +36,7 @@ RUN adduser \
 RUN mkdir -p /var/lib/lodestar/consensus/ee-secret && chown -R ${USER}:${USER} /var/lib/lodestar/consensus && chmod -R 700 /var/lib/lodestar/consensus && chmod 777 /var/lib/lodestar/consensus/ee-secret
 
 WORKDIR /usr/app
-COPY --from=build --chown=${USER}:${USER} /usr/app .
+COPY --from=builder --chown=${USER}:${USER} /usr/app .
 RUN ln -s ../../packages/cli/lib/index.js node_modules/.bin/lodestar
 
 # Cannot assume buildkit, hence no chmod

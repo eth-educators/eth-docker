@@ -1,5 +1,5 @@
 # Build Lighthouse in a stock Rust build container
-FROM rust:bookworm as builder
+FROM rust:bookworm AS builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG

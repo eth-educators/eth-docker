@@ -1,5 +1,5 @@
 # Partially from Nethermind github
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
 ARG DOCKER_REPO
@@ -46,7 +46,7 @@ RUN adduser \
 WORKDIR /nethermind
 
 # Cannot assume buildkit, hence no chmod
-COPY --from=build --chown=${USER}:${USER} /nethermind/out .
+COPY --from=builder --chown=${USER}:${USER} /nethermind/out .
 
 RUN chown -R ${USER}:${USER} /nethermind
 RUN mkdir -p /var/lib/nethermind/ee-secret && chown -R ${USER}:${USER} /var/lib/nethermind \
