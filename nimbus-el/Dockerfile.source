@@ -1,5 +1,5 @@
 # Build Nimbus in a stock debian container
-FROM debian:bookworm-slim as builder
+FROM debian:bookworm-slim AS builder
 
 # Included here to avoid build-time complaints
 ARG DOCKER_TAG

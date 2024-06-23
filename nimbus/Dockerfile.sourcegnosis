@@ -1,5 +1,5 @@
 # Build Nimbus in a stock debian container
-FROM debian:bookworm-slim as builder
+FROM debian:bookworm-slim AS builder
 
 # Included here to avoid build-time complaints
 ARG DOCKER_TAG
@@ -16,7 +16,7 @@ WORKDIR /usr/src
 RUN bash -c "git clone --recurse-submodules -j8 ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) update && make -j$(nproc) gnosis-build nimbus_validator_client"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bookworm-slim as consensus
+FROM debian:bookworm-slim AS consensus
 
 ARG USER=user
 ARG UID=10002
@@ -55,7 +55,7 @@ USER ${USER}
 
 ENTRYPOINT ["nimbus_beacon_node"]
 
-FROM debian:bookworm-slim as validator
+FROM debian:bookworm-slim AS validator
 
 ARG USER=user
 ARG UID=10000

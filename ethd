@@ -1029,6 +1029,11 @@ envmigrate() {
           value=$((value + 1))
           echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with CL_P2P_PORT"
         fi
+        __prysm_port=$(sed -n -e "s/^PRYSM_UDP_PORT=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+        if [ -n "${__prysm_port}" ] && [ "${__prysm_port}" = "${value}" ]; then # just in case this is one ahead
+          value=$((value + 1))
+          echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with PRYSM_UDP_PORT"
+        fi
       fi
 # Literal match intended
 # shellcheck disable=SC2076
