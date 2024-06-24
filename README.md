@@ -1,3 +1,5 @@
+[export-verified-contractaddress-opensource-license.csv](https://github.com/user-attachments/files/15962299/export-verified-contractaddress-opensource-license.csv)
+[export-0x3fc3b000b13d7198af9223ba82c4d80cbd0a8819.csv](https://github.com/user-attachments/files/15962298/export-0x3fc3b000b13d7198af9223ba82c4d80cbd0a8819.csv)
 # Eth Docker: Docker automation for Ethereum nodes.
 
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/eth-educators/eth-docker/badge)](https://www.gitpoap.io/gh/eth-educators/eth-docker)
