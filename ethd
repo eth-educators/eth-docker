@@ -2565,10 +2565,10 @@ query_execution_client() {
   else
     EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
     "Which execution client do you want to run?" 13 65 6 \
-    "nethermind.yml" "Nethermind (.NET)" \
+    "reth.yml" "Reth (Rust)" \
     "besu.yml" "Besu (Java)" \
+    "nethermind.yml" "Nethermind (.NET)" \
     "geth.yml" "Geth (Go)" \
-    "reth.yml" "Reth (Rust) - beta release" \
     "erigon.yml" "Erigon (Go)" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
