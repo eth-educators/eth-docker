@@ -3157,7 +3157,12 @@ config() {
       else
         whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: ${WITHDRAWAL_CREDENTIALS}\nOtherwise, your keys will not be valid!" 10 80
       fi
-      whiptail --title "Finish" --msgbox "Final steps!\n\n1. Run your node './ethd start'\n\n2. Wait until your node is fully synchronized\n\n4. Open https://operators.lido.fi to submit your keys with '.eth/deposit-data.json' file content\n\n5. Wait for keys validation\n\n6. Import your keys by './ethd keys import'" 19 85
+      if [ "${NETWORK}" = "holesky" ]; then
+        __link="https://csm.testnet.fi"
+      else
+        __link="https://csm.lido.fi"
+      fi
+      whiptail --title "Finish" --msgbox "Final steps!\n\n1. Run your node './ethd start'\n\n2. Wait until your node is fully synchronized\n\n4. Open ${__link} to submit your keys with '.eth/deposit-data.json' file content\n\n5. Wait for keys validation\n\n6. Import your keys by './ethd keys import'" 19 85
     fi
   else
     unset EXECUTION_CLIENT
