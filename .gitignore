@@ -2,6 +2,7 @@
 docker-compose.yml
 ext-network.yml
 ext-network.yml.original
+ext-network.yml.bak
 .eth/*
 .eth_backup*
 .charon/*
@@ -9,6 +10,7 @@ validator-ejector/*
 !.eth/README.md
 !.eth/validator_keys/.empty
 !.eth/exit_messages/.empty
+!.eth/dkg_output/.empty
 !.eth/ethdo/README.md
 !.eth/ethdo/create-withdrawal-change.sh
 *.swp
@@ -21,5 +23,8 @@ ssv-config/password.pass
 ssv-config/password
 ssv-config/encrypted_private_key.json
 ssv-config/config.yaml
+ssv-config/config.yaml.original
+ssv-config/dkg-config.yaml
+ssv-config/dkg-config.yaml.original
 ssv-config/operator.yaml
 .nada

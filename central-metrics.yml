@@ -10,18 +10,15 @@ x-logging: &logging
 services:
   ethereum-metrics-exporter:
     restart: "unless-stopped"
-    build:
-      context: ./eth-metrics
-    image: ethereum-metrics-exporter:local
-    pull_policy: never
-    environment:
-      - CLIENT=${COMPOSE_FILE}
+    image: samcm/ethereum-metrics-exporter:0.23.0-debian
     entrypoint:
-      - docker-entrypoint.sh
       - /ethereum-metrics-exporter
+      - --consensus-url=${CL_NODE}
+      - --execution-url=http://execution:${EL_RPC_PORT:-8545}
+    <<: *logging
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9090
       - metrics.instance=ethereum-metrics-exporter
-    <<: *logging
+      - metrics.network=${NETWORK}

@@ -6,28 +6,29 @@ x-logging: &logging
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
-x-build: &lh-build
-  context: ./lighthouse
-  dockerfile: ${LH_DOCKERFILE}
+
+x-build: &gr-build
+  context: ./grandine
+  dockerfile: ${GRANDINE_DOCKERFILE:-Dockerfile.binary}
   args:
-    - BUILD_TARGET=${LH_SRC_BUILD_TARGET:-stable}
-    - SRC_REPO=${LH_SRC_REPO:-https://github.com/sigp/lighthouse}
-    - DOCKER_TAG=${LH_DOCKER_TAG:-latest-modern}
-    - DOCKER_REPO=${LH_DOCKER_REPO:-sigp/lighthouse}
+    - BUILD_TARGET=${GRANDINE_SRC_BUILD_TARGET:-master}
+    - SRC_REPO=${GRANDINE_SRC_REPO:-https://github.com/sifraitech/grandine}
+    - DOCKER_TAG=${GRANDINE_DOCKER_TAG:-latest}
+    - DOCKER_REPO=${GRANDINE_DOCKER_REPO:-sifrai/grandine}
 
 services:
   consensus:
     restart: "unless-stopped"
     build:
-      <<: *lh-build
-    image: lighthouse:local
+      <<: *gr-build
+    image: grandine:local
     pull_policy: never
-    user: lhconsensus
+    user: gdconsensus
     stop_grace_period: 1m
     volumes:
-      - lhconsensus-data:/var/lib/lighthouse
+      - grandineconsensus-data:/var/lib/grandine
       - /etc/localtime:/etc/localtime:ro
-      - jwtsecret:/var/lib/lighthouse/beacon/ee-secret
+      - jwtsecret:/var/lib/grandine/ee-secret
     environment:
       - RAPID_SYNC_URL=${RAPID_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
@@ -36,6 +37,12 @@ services:
       - BEACON_STATS_API=${BEACON_STATS_API}
       - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
       - CL_EXTRAS=${CL_EXTRAS:-}
+      - EMBEDDED_VC=false
+      - VC_EXTRAS=
+      - WEB3SIGNER=false
+      - DOPPELGANGER=false
+      - GRAFFITI=
+      - DEFAULT_GRAFFITI=true
       - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
       - IPV6=${IPV6:-false}
       - CL_P2P_PORT=${CL_P2P_PORT:-9000}
@@ -49,31 +56,32 @@ services:
       default:
         aliases:
           - eth2
-          - ${NETWORK}-consensus
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
-      - lighthouse
-      - bn
+      - grandine
       - --disable-upnp
-      - --datadir
-      - /var/lib/lighthouse
-      - --gui
+      - --data-dir
+      - /var/lib/grandine
       - --http-address
       - 0.0.0.0
       - --http-port
       - ${CL_REST_PORT:-5052}
-      - --port
+      - --http-allowed-origins=*
+      - --listen-address
+      - 0.0.0.0
+      - --libp2p-port
+      - ${CL_P2P_PORT:-9000}
+      - --discovery-port
       - ${CL_P2P_PORT:-9000}
       - --quic-port
       - ${CL_QUIC_PORT:-9001}
       - --target-peers
-      - ${CL_MAX_PEER_COUNT:-100}
-      - --execution-endpoint
+      - ${CL_MAX_PEER_COUNT:-80}
+      - --eth1-rpc-urls
       - ${EL_NODE}
-      - --execution-jwt
-      - /var/lib/lighthouse/beacon/ee-secret/jwtsecret
-      - --debug-level=${LOG_LEVEL}
+      - --jwt-secret
+      - /var/lib/grandine/ee-secret/jwtsecret
       - --metrics
       - --metrics-address
       - 0.0.0.0
@@ -88,18 +96,21 @@ services:
       - metrics.instance=consensus
       - metrics.network=${NETWORK}
 
-  set-cl-prune-marker:
+  wipe-db:
     profiles: ["tools"]
-    image: alpine:3
-    user: "10002:10002"
     restart: "no"
+    image: alpine:3
+    user: "10002"
     volumes:
-      - lhconsensus-data:/var/lib/lighthouse
+      - grandineconsensus-data:/var/lib/grandine
+      - /etc/localtime:/etc/localtime:ro
     entrypoint: ["/bin/sh","-c"]
-    command: /bin/sh
+    command:
+      - |
+        rm -rf /var/lib/grandine/${NETWORK}/beacon/*
 
 volumes:
-  lhconsensus-data:
+  grandineconsensus-data:
   jwtsecret:
 
 networks:

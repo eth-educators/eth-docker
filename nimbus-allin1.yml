@@ -85,6 +85,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=8008
       - metrics.instance=consensus
+      - metrics.network=${NETWORK}
 
   wipe-db:
     profiles: ["tools"]

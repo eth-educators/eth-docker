@@ -1,5 +1,5 @@
 # Build Nimbus in a stock debian container
-FROM debian:bookworm-slim as builder
+FROM debian:bookworm-slim AS builder
 
 # Included here to avoid build-time complaints
 ARG DOCKER_TAG
@@ -8,7 +8,7 @@ ARG DOCKER_REPO
 ARG BUILD_TARGET
 ARG SRC_REPO
 
-RUN apt-get update && apt-get install -y build-essential git ca-certificates librocksdb-dev
+RUN apt-get update && apt-get install -y build-essential git ca-certificates librocksdb-dev curl
 
 WORKDIR /usr/src
 

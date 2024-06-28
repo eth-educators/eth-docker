@@ -31,24 +31,22 @@ services:
       - metrics.path=/metrics
       - metrics.port=9090
       - metrics.instance=prometheus
+      - metrics.network=${NETWORK}
 
   ethereum-metrics-exporter:
     restart: "unless-stopped"
-    build:
-      context: ./eth-metrics
-    image: ethereum-metrics-exporter:local
-    pull_policy: never
-    environment:
-      - CLIENT=${COMPOSE_FILE}
+    image: samcm/ethereum-metrics-exporter:0.23.0-debian
     entrypoint:
-      - docker-entrypoint.sh
       - /ethereum-metrics-exporter
+      - --consensus-url=${CL_NODE}
+      - --execution-url=http://execution:${EL_RPC_PORT:-8545}
     <<: *logging
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
       - metrics.port=9090
       - metrics.instance=ethereum-metrics-exporter
+      - metrics.network=${NETWORK}
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -73,6 +71,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=9100
       - metrics.instance=node-exporter
+      - metrics.network=${NETWORK}
 
   blackbox-exporter:
     restart: "unless-stopped"
@@ -99,6 +98,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=7979
       - metrics.instance=json-exporter
+      - metrics.network=${NETWORK}
 
   cadvisor:
     restart: "unless-stopped"
@@ -118,6 +118,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=8080
       - metrics.instance=cadvisor
+      - metrics.network=${NETWORK}
 
   promtail:
     image: grafana/promtail:latest
@@ -140,9 +141,10 @@ services:
       - metrics.path=/metrics
       - metrics.port=9080
       - metrics.instance=promtail
+      - metrics.network=${NETWORK}
 
   loki:
-    image: grafana/loki:2.9.6
+    image: grafana/loki:latest
     volumes:
       - loki-data:/tmp
       - ./loki:/etc/loki
@@ -155,6 +157,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=3100
       - metrics.instance=loki
+      - metrics.network=${NETWORK}
 
   grafana:
     restart: "unless-stopped"
@@ -183,6 +186,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=3000
       - metrics.instance=grafana
+      - metrics.network=${NETWORK}
 
 volumes:
   grafana-data:

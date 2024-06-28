@@ -55,7 +55,7 @@ if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-format=FOREST --sync-mode=FULL"
 else
-  __prune="--data-storage-format=BONSAI --sync-mode=SNAP --Xbonsai-limit-trie-logs-enabled=true"
+  __prune="--data-storage-format=BONSAI --sync-mode=SNAP"
 fi
 
 __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
