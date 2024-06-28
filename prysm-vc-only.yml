@@ -37,6 +37,7 @@ services:
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - NETWORK=${NETWORK}
+      - ENABLE_DIST_ATTESTATION_AGGR=${ENABLE_DIST_ATTESTATION_AGGR:-false}
     networks:
       default:
         aliases:
@@ -49,8 +50,6 @@ services:
       - /var/lib/prysm
       - --wallet-dir
       - /var/lib/prysm/
-      - --beacon-rpc-provider
-      - ${CL_NODE:-http://consensus:4000}
       - --verbosity
       - ${LOG_LEVEL}
       - --accept-terms-of-use
@@ -64,12 +63,13 @@ services:
       - --grpc-gateway-port
       - ${KEY_API_PORT:-7500}
       - --grpc-gateway-corsdomain=*
-      - --beacon-rpc-gateway-provider
-      - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
       - --wallet-password-file
       - /var/lib/prysm/password.txt
+      - --enable-beacon-rest-api
+      - --beacon-rest-api-provider
+      - ${CL_NODE:-http://consensus:5052}
     labels:
       - traefik.enable=true
       - traefik.http.routers.prysm.entrypoints=web,websecure
@@ -111,7 +111,9 @@ services:
       - validator
       - exit
       - --wallet-dir=/var/lib/prysm/
-      - --beacon-rpc-provider=${CL_NODE:-http://consensus:4000}
+      - --enable-beacon-rest-api
+      - --beacon-rest-api-provider
+      - ${CL_NODE:-http://consensus:5052}
       - --wallet-password-file=/var/lib/prysm/password.txt
       - --${NETWORK}
 
