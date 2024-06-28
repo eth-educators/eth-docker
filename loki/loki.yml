@@ -26,13 +26,6 @@ compactor:
 
 schema_config:
   configs:
-    - from: 2023-06-15
-      store: tsdb
-      object_store: filesystem
-      schema: v12
-      index:
-        prefix: tsdb_index
-        period: 24h
     - from: 2024-05-01
       store: tsdb
       object_store: filesystem

@@ -5,7 +5,7 @@
 #
 # If you need to override the settings in this file, or add other top-level configuration
 # (e.g.) remote_write config, please use custom-prom.yml.
-# The modifications in that file will supercede the settings here (or extend, in the case of lists)
+# The modifications in that file will supersede the settings here (or extend, in the case of lists)
 
 # This config differs from the regular one, as there is no access to the Docker socket itself
 # and the scrape configs get added manually

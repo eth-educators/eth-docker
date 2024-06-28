@@ -3,7 +3,7 @@ ARG DOCKER_VC_TAG
 ARG DOCKER_REPO
 ARG DOCKER_VC_REPO
 
-FROM ${DOCKER_REPO}:${DOCKER_TAG} as consensus
+FROM ${DOCKER_REPO}:${DOCKER_TAG} AS consensus
 
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET
@@ -38,7 +38,7 @@ USER ${USER}
 
 ENTRYPOINT ["nimbus_beacon_node"]
 
-FROM ${DOCKER_VC_REPO}:${DOCKER_VC_TAG} as validator
+FROM ${DOCKER_VC_REPO}:${DOCKER_VC_TAG} AS validator
 
 # Included here to avoid build-time complaints
 ARG BUILD_TARGET

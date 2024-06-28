@@ -133,7 +133,7 @@ upgrade_compose() {
     -o /etc/apt/keyrings/docker.gpg
     ${__auto_sudo} echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/debian  $(lsb_release -cs) stable" \
+        https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
         | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
     ${__auto_sudo} apt-get update
     ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
@@ -199,6 +199,18 @@ prep_conffiles() {
   if [ ! -f "ssv-config/config.yaml" ]; then
     ${__as_owner} cp ssv-config/config-sample.yaml ssv-config/config.yaml
   fi
+  if [ ! -f "ssv-config/dkg-config.yaml" ]; then
+    ${__as_owner} cp ssv-config/dkg-config-sample.yaml ssv-config/dkg-config.yaml
+  fi
+# Make sure local user owns the dkg output dir and everything in it
+  if find .eth/dkg_output \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" -o \! -perm 755 | grep -q .; then
+    ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .eth/dkg_output
+    ${__auto_sudo} chmod -R 755 .eth/dkg_output
+  fi
+# Create ext-network.yml if it doesn't exist
+  if [ ! -f "ext-network.yml" ]; then
+    ${__as_owner} cp ext-network.yml.sample ext-network.yml
+  fi
 }
 
 
@@ -237,21 +249,23 @@ install-bash-completions() {
 
 install() {
 
-  read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
-continue? (no/yes) " yn
-  case $yn in
-    [Yy]* ) ;;
-    * ) echo "Aborting, no changes made"; return 0;;
-  esac
   if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 22 ]; then
-      echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 22.04 and then 24.04."
-      exit 1
-    fi
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
+    echo
+    echo
     if [ -z "$(command -v docker)" ]; then
-      ${__auto_sudo} apt-get update
-      ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
+      if [ "${__os_major_version}" -lt 22 ]; then
+        echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
+        echo "Consider upgrading to 22.04 and then 24.04."
+        exit 1
+      fi
+      read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
+continue? (no/yes) " yn
+      case $yn in
+        [Yy]* ) ;;
+        * ) echo "Aborting, no changes made"; return 0;;
+      esac
       ${__auto_sudo} mkdir -p /etc/apt/keyrings
       ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor \
         --yes -o /etc/apt/keyrings/docker.gpg
@@ -275,36 +289,44 @@ continue? (no/yes) " yn
       echo "Your user is already part of the docker group"
     fi
   elif [[ "$__distro" =~ "debian" ]]; then
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
+    echo
+    echo
     if [ -z "$(command -v docker)" ]; then
-      ${__auto_sudo} apt-get update
-      ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
       if [ "${__os_major_version}" -lt 11 ]; then
         echo "${__project_name} cannot install Docker on Debian ${__os_major_version}."
         echo "Consider upgrading to 11 and then 12."
         exit 1
       fi
-        ${__auto_sudo} mkdir -p /etc/apt/keyrings
-        ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
-          --yes -o /etc/apt/keyrings/docker.gpg
-        ${__auto_sudo} echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-          https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-          | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
-        ${__auto_sudo} apt-get update
-        ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
-          docker-buildx-plugin
-        echo "Installed docker-ce and docker-compose-plugin"
-      else
-        echo "Docker is already installed"
-      fi
-      __groups=$(${__as_owner} groups)
-      if [[ ! "$__groups" =~ "docker" ]]; then
-        echo "Making your user part of the docker group"
-        ${__auto_sudo} usermod -aG docker "${OWNER}"
-        echo "Please run newgrp docker or log out and back in"
-      else
-        echo "Your user is already part of the docker group"
-      fi
+      read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
+continue? (no/yes) " yn
+      case $yn in
+        [Yy]* ) ;;
+        * ) echo "Aborting, no changes made"; return 0;;
+      esac
+      ${__auto_sudo} mkdir -p /etc/apt/keyrings
+      ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
+        --yes -o /etc/apt/keyrings/docker.gpg
+      ${__auto_sudo} echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+        | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
+      ${__auto_sudo} apt-get update
+      ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+        docker-buildx-plugin
+      echo "Installed docker-ce and docker-compose-plugin"
+    else
+      echo "Docker is already installed"
+    fi
+    __groups=$(${__as_owner} groups)
+    if [[ ! "$__groups" =~ "docker" ]]; then
+      echo "Making your user part of the docker group"
+      ${__auto_sudo} usermod -aG docker "${OWNER}"
+      echo "Please run newgrp docker or log out and back in"
+    else
+      echo "Your user is already part of the docker group"
+    fi
   else
     echo "${__project_name} does not know how to install Docker on $__distro"
   fi
@@ -563,6 +585,13 @@ source_build() {
           docompose build --pull --no-cache consensus
       fi
       ;;
+    *grandine.yml* | *grandine-allin1.yml* | *grandine-cl-only.yml* )
+      var="GRANDINE_DOCKERFILE"
+      build=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+      if [ "${build}" = "Dockerfile.source" ]; then
+          docompose build --pull --no-cache consensus
+      fi
+      ;;
   esac
 }
 
@@ -570,28 +599,8 @@ source_build() {
 migrate_compose_file() {
 # When this gets called $var is COMPOSE_FILE and $value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-  FROM_YML=( ec-shared.yml ec-traefik.yml cc-shared.yml grafana-insecure.yml prysm-web-insecure.yml lh-base-notz.yml \
-    lh-validator-notz.yml teku-base-notz.yml teku-validator-notz.yml lh-consensus.yml lh-validator.yml \
-    lodestar-consensus.yml lodestar-validator.yml nimbus-consensus.yml prysm-consensus.yml prysm-consensus-rest.yml \
-    prysm-validator.yml teku-consensus.yml teku-validator.yml lh-base.yml lh-vc-only.yml lh-cl-only.yml \
-    nm.yml lighthouse-base.yml teku-base.yml nimbus-base.yml prysm-base.yml lodestar-base.yml traefik-cf-v6.yml \
-    validator-keyapi-localport.yml consensus-keyapi-localport.yml v6-network.yml nimbus.yml teku.yml \
-    nimbus-legacy.yml teku-legacy.yml validator-keyapi-shared.yml consensus-keyapi-shared.yml \
-    prysm-web.yml blank-grafana.yml lh-grafana.yml lhcc-grafana.yml nimbus-grafana.yml prysm-grafana.yml \
-    teku-grafana.yml geth-grafana.yml erigon-grafana.yml oe.yml teku-stats.yml lh-stats.yml lh-stats-consensus.yml \
-    lh-stats-validator.yml traefik-shared.yml lh-slasher.yml lighthouse-slasher.yml prysm-slasher.yml \
-    grafana-localhost.yml ipv6.yml )
-  TO_YML=( el-shared.yml el-traefik.yml cl-shared.yml grafana-shared.yml prysm-web-shared.yml lighthouse.yml \
-    lighthouse-vc-only.yml teku-allin1.yml teku-vc-only.yml lighthouse-cl-only.yml lighthouse-vc-only.yml \
-    lodestar-cl-only.yml lodestar-vc-only.yml nimbus-cl-only.yml prysm-cl-only.yml prysm-cl-only.yml \
-    prysm-vc-only.yml teku-cl-only.yml teku-vc-only.yml lighthouse.yml lighthouse-vc-only.yml lighthouse-cl-only.yml \
-    nethermind.yml lighthouse.yml teku-allin1.yml nimbus-allin1.yml prysm.yml lodestar.yml traefik-cf.yml \
-    validator-keyapi-shared.yml consensus-keyapi-shared.yml ipv6.yml nimbus-allin1.yml teku-allin1.yml \
-    nimbus-allin1.yml teku-allin1.yml keyapi-shared.yml allin1-keyapi-shared.yml \
-    "" "" "" "" "" "" \
-    "" "" "" "" "" "" "" \
-    "" "" "" "" "" \
-    "" "" )
+  FROM_YML=( )
+  TO_YML=( )
 
   IFS=":"
   set -o noglob
@@ -607,14 +616,8 @@ migrate_compose_file() {
     __ymlfile="${__ymlarray[n]}"
     for index in "${!FROM_YML[@]}"; do
       if [ "${FROM_YML[index]}" = "${__ymlfile}" ]; then
-# ENV version 3 and earlier use the legacy files
-        if [[ "${__ymlfile}" = "nimbus.yml" || "${__ymlfile}" = "teku.yml" ]] \
-            && [[ -n "${__source_ver:-}" && "${__source_ver}" -gt 3 ]]; then
-          break
-        else
-          __ymlfile=${TO_YML[index]}
-          break
-        fi
+        __ymlfile=${TO_YML[index]}
+        break
       fi
     done
     if [ -n "${__ymlfile}" ]; then
@@ -645,20 +648,31 @@ ssv_switch() {
   echo "Making changes to ssv-config/config.yaml"
   var="NETWORK"
   NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-  sed -i'' 's/blox-ssv2.yml/ssv.yml/' "${ENV_FILE}".source
+  sed -i'.original' 's/blox-ssv2.yml/ssv.yml/' "${ENV_FILE}".source
   if ! grep -q "LogFilePath:" ssv-config/config.yaml; then
-    sed -i'' '/global:/a\  LogFilePath: /tmp/ssv/debug.log' ssv-config/config.yaml
+# macOS-isms: Newline for sed add
+    sed -i'.original' '/global:/a\
+  LogFilePath: /tmp/ssv/debug.log
+' ssv-config/config.yaml
   fi
   if ! grep -q "MetricsAPIPort:" ssv-config/config.yaml; then
-    sed -i'' '$a\MetricsAPIPort: 15000' ssv-config/config.yaml
+    sed -i'.original' '$a\
+MetricsAPIPort: 15000
+' ssv-config/config.yaml
   fi
   if ! grep -q "ssv:" ssv-config/config.yaml; then
-    sed -i '/^  Network:/d' ssv-config/config.yaml # Remove old eth2 Network line if present
-    sed -i'' '$a\ssv:' ssv-config/config.yaml
+    sed -i'.original' '/^  Network:/d' ssv-config/config.yaml # Remove old eth2 Network line if present
+    sed -i'.original' '$a\
+ ssv:
+ ' ssv-config/config.yaml
     if [ "${NETWORK}" = "holesky" ]; then
-      sed -i'' '$a\  Network: holesky' ssv-config/config.yaml
+      sed -i'.original' '$a\
+  Network: holesky
+' ssv-config/config.yaml
     elif [ "${NETWORK}" = "mainnet" ]; then
-      sed -i'' '$a\  Network: mainnet' ssv-config/config.yaml
+      sed -i'.original' '$a\
+  Network: mainnet
+' ssv-config/config.yaml
     else
       echo "${NETWORK} is not something that works with SSV."
       echo "Please fix this manually before running $__me update again."
@@ -666,6 +680,7 @@ ssv_switch() {
       exit 1
     fi
   fi
+  rm ssv-config/config.yaml.original
 }
 
 
@@ -688,12 +703,12 @@ delete_reth() {
     return 0
   fi
 
-  if [ -z "$(dodocker volume ls -q -f "name=reth-el-data")" ]; then # No Reth volume
+  if [ -z "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")" ]; then # No Reth volume
     return 0
   fi
 
 # Check Reth db version
-  __db_version="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=reth-el-data")":"/var/lib/reth" \
+  __db_version="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
       alpine:3 cat /var/lib/reth/db/database.version)"
   if [ "${__db_version}" -ne "1" ]; then
     return 0
@@ -713,7 +728,7 @@ delete_reth() {
 
   echo "Stopping Reth container"
   docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=reth-el-data")"
+  dodocker volume rm "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")"
   echo
   echo "Reth stopped and database deleted."
   echo
@@ -824,7 +839,7 @@ upgrade_postgres() {
 
   if [[ "${__free_space}" -lt $(( (__source_size * 2) + 10485760 )) ]]; then
     echo
-    echo "You don't have enough space free to migrate the database."
+    echo "You don't have enough free space to migrate the database."
     echo "It is $(( __source_size / 1024 / 1024 )) GiB in size and you need twice as much free again."
     echo
     __display_docker_dir
@@ -950,7 +965,7 @@ envmigrate() {
     PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
     EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT ERIGON_P2P_PORT_2 \
-    ERIGON_P2P_PORT_3 LODESTAR_HEAP )
+    ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT )
   TARGET_VARS=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE \
@@ -964,11 +979,11 @@ envmigrate() {
     BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG CHARON_VERSION \
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
-    SIREN_DOCKER_TAG SIREN_DOCKER_REPO NODE_EXPORTER_IGNORE_MOUNT_REGEX )
-  OLD_VARS=( LH_PORT PRYSM_WEB_PORT EC_NODE REWARDS_TO GETH_CACHE CF_API_TOKEN \
-    EC_HOST EC_LB EC_WS_HOST EC_WS_LB CC_HOST CC_LB EC_P2P_PORT CC_NODE CC_P2P_PORT EC_RPC_PORT EC_WS_PORT )
-NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_TOKEN \
-    EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB EL_P2P_PORT CL_NODE CL_P2P_PORT EL_RPC_PORT EL_WS_PORT )
+    GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
+    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX )
+
+  OLD_VARS=( )
+  NEW_VARS=( )
 
   var=ENV_VERSION
   __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
@@ -997,7 +1012,7 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ "${value}" =~ "blox-ssv2.yml" ]]; then
-   ssv_switch
+    ssv_switch
   fi
 
   # Migrate over user settings
@@ -1014,6 +1029,11 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
           value=$((value + 1))
           echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with CL_P2P_PORT"
         fi
+        __prysm_port=$(sed -n -e "s/^PRYSM_UDP_PORT=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
+        if [ -n "${__prysm_port}" ] && [ "${__prysm_port}" = "${value}" ]; then # just in case this is one ahead
+          value=$((value + 1))
+          echo "Adjusted CL_QUIC_PORT to ${value} so it does not conflict with PRYSM_UDP_PORT"
+        fi
       fi
 # Literal match intended
 # shellcheck disable=SC2076
@@ -1021,10 +1041,10 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
         value="https://beaconstate.info"
       fi
       if [[ "${var}" = "HOST_IP" && "${value: -1}" = ":" ]]; then
-        value="${value%:}" # Undo Compose V1 accomodation
+        value="${value%:}" # Undo Compose V1 accommodation
       fi
       if [[ "${var}" = "SHARE_IP" && "${value: -1}" = ":" ]]; then
-        value="${value%:}" # Undo Compose V1 accomodation
+        value="${value%:}" # Undo Compose V1 accommodation
       fi
       # Handle & in GRAFFITI gracefully
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
@@ -1044,6 +1064,12 @@ NEW_VARS=( CL_P2P_PORT KEY_API_PORT EL_NODE FEE_RECIPIENT EL_EXTRAS CF_DNS_API_T
       if [ -n "${value}" ]; then
         if [[ "${var}" = "DDNS_TAG" && "${__source_ver}" -lt "8" ]]; then # Switch to ddns-updater
           value="v2"
+        fi
+        if [[ "${var}" = "LH_DOCKER_TAG" && "${value}" = "latest-modern" ]]; then # LH 5.2 ditched latest-modern
+          value="latest"
+        fi
+        if [[ "${var}" = "ERIGON_DOCKER_TAG" && "${value}" = "stable" ]]; then # Erigon ditched stable
+          value="v2.60.1"
         fi
         sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
       fi
@@ -1185,9 +1211,7 @@ update() {
   fi
 
   if [ -z "${ETHDSECUNDO-}" ]; then
-    # Do not track changes to ext-network.yml
     set +e
-    ${__as_owner} git update-index --assume-unchanged ext-network.yml
     ${__as_owner} git config pull.rebase false
     var="ETH_DOCKER_TAG"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -1197,7 +1221,17 @@ update() {
       if [[ "${__branch}" =~ ^tag-v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         git checkout main
       fi
+# This preps for a removal of ext-network.yml in a future update, after Pectra
+      ${__as_owner} cp ext-network.yml ext-network.yml.bak
+      if git ls-files -v | grep -q "^h" | grep -q "ext-network.yml$"; then
+        ${__as_owner} git update-index --no-assume-unchanged ext-network.yml
+      fi
+      ${__as_owner} git restore ext-network.yml
       ${__as_owner} git pull origin main
+      ${__as_owner} cp ext-network.yml.bak ext-network.yml
+      if git ls-files -v | grep -q "ext-network.yml$"; then
+        ${__as_owner} git update-index --assume-unchanged ext-network.yml
+      fi
     else
       export ETHDPINNED="${value}"
       ${__as_owner} git fetch --tags
@@ -1359,15 +1393,15 @@ resync-consensus() {
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 
   case "${value}" in
-    *lighthouse.yml* ) __cl_volume='lhbeacon-data'; __cl_client="lighthouse";;
-    *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
+    *lighthouse.yml* | *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
     *teku-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="teku";;
     *teku.yml* | *teku-cl-only.yml* ) __cl_volume='tekuconsensus-data'; __cl_client="teku";;
     *nimbus-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="nimbus";;
     *nimbus.yml* | *nimbus-cl-only.yml* ) __cl_volume='nimbus-consensus-data'; __cl_client="nimbus";;
     *lodestar.yml* | *lodestar-cl-only.yml* ) __cl_volume='lsconsensus-data'; __cl_client="lodestar";;
-    *prysm.yml* ) __cl_volume='prysmbeacon-data'; __cl_client="prysm";;
-    *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
+    *prysm.yml* | *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
+    *grandine-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="grandine";;
+    *grandine.yml* | *grandine-cl-only.yml* ) __cl_volume='grandineconsensus-data'; __cl_client="grandine";;
     * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;
   esac
 
@@ -1391,12 +1425,12 @@ resync-consensus() {
     * ) echo "Aborting."; exit 130;;
   esac
 
-  __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
   echo "Stopping ${__cl_client} container"
   docompose stop consensus && docompose rm -f consensus
   if [ "${__cl_volume}" = "wipe-db" ]; then
     docompose run --rm wipe-db
   else
+    __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
     dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
   fi
   echo
@@ -1972,6 +2006,9 @@ __keys_usage() {
   echo "  get-prysm-wallet"
   echo "      Print Prysm's wallet password"
   echo
+  echo "  get-grandine-wallet"
+  echo "      Print Grandine's wallet password"
+  echo
   echo "  prepare-address-change"
   echo "      Create an offline-preparation.json with ethdo"
   echo "  send-address-change"
@@ -2430,19 +2467,19 @@ query_consensus_client() {
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
-  elif [ "${NETWORK}" = "zhejiang" ]; then
-    CONSENSUS_CLIENT=lodestar.yml
   elif uname -a | grep -q aarch64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+    "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 5 \
+    "Which consensus client do you want to run?" 13 65 6 \
     "teku.yml" "Teku (Java) - consensus and validator client" \
+    "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
@@ -2465,13 +2502,15 @@ query_consensus_only_client() {
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
+    "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 5 \
+    "Which consensus client do you want to run?" 13 65 6 \
     "teku-cl-only.yml" "Teku (Java) - consensus client" \
+    "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
@@ -2536,10 +2575,10 @@ query_execution_client() {
   else
     EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
     "Which execution client do you want to run?" 13 65 6 \
-    "nethermind.yml" "Nethermind (.NET)" \
+    "reth.yml" "Reth (Rust)" \
     "besu.yml" "Besu (Java)" \
+    "nethermind.yml" "Nethermind (.NET)" \
     "geth.yml" "Geth (Go)" \
-    "reth.yml" "Reth (Rust) - beta release" \
     "erigon.yml" "Erigon (Go)" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
@@ -2611,7 +2650,7 @@ query_checkpoint_beacon() {
         RAPID_SYNC_URL="https://beaconstate.info"
         ;;
       "gnosis")
-        RAPID_SYNC_URL="https://checkpoint.gnosis.gateway.fm"
+        RAPID_SYNC_URL="https://checkpoint.gnosischain.com"
         ;;
       *)
         RAPID_SYNC_URL=""
@@ -2966,11 +3005,30 @@ query_lido_obol_cluster_dkg() {
         whiptail --title "Finish" --msgbox "\nThe DKG is finished!" 10 40
     else
         whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
-        echo "DGK ceremony starting is canceled"
+        echo "DKG ceremony starting is canceled"
         exit 1
     fi
 }
 
+query_dkg() {
+  __ssv_operator_id=-1
+  if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremonies as an operator?" 10 60); then
+    __key_file_content=$(${__auto_sudo} cat ./ssv-config/encrypted_private_key.json)
+    __public_key=$(docompose -f ./ssv-dkg.yml run --rm curl-jq sh -c \
+      "echo '${__key_file_content}' | jq -r '.pubKey'" | tail -n 1)
+    echo "Your SSV node public key is: ${__public_key}"
+    __ssv_operator_id=$(whiptail --title "Register SSV operator" --inputbox "\n1. Your SSV node public key:\n\n${__public_key}\n\n2. Register your operator in the SSV network with the public key\n\n3. Input your Operator ID \
+(right-click to paste)" 22 85 3>&1 1>&2 2>&3)
+    if [[ -n "${__ssv_operator_id}" && ! "${__ssv_operator_id}" = "-1" ]]; then
+      sed -i'.original' "s|operatorID: .*|operatorID: ${__ssv_operator_id}|" ./ssv-config/dkg-config.yaml
+      echo "Your SSV Operator ID is: ${__ssv_operator_id}"
+    else
+      echo "Please manually edit \"./ssv-config/dkg-config.yaml\" with your SSV Operator ID"
+      echo "and add \":ssv-dkg.yml\" to \"COMPOSE_FILE\" in \".env\" after registering your operator."
+    fi
+  fi
+  rm ssv-config/dkg-config.yaml.original
+}
 
 set_value_in_env() {
 # Assumes that "var" has been set to the name of the variable to be changed
@@ -3042,11 +3100,13 @@ check_legacy() {
 
 # Literal match intended
 # shellcheck disable=SC2076
-  if [[ "${value}" =~ "-allin1.yml" ]]; then
+  if [[ "${value}" =~ "-allin1.yml" && ! "${value}" =~ "grandine-allin1.yml" ]]; then # Warn re Grandine once VC
     if [[ "${value}" =~ "teku-allin1.yml" ]]; then
       __client="Teku"
     elif [[ "${value}" =~ "nimbus-allin1.yml" ]]; then
       __client="Nimbus"
+    elif [[ "${value}" =~ "grandine-allin1.yml" ]]; then
+      __client="Grandine"
     else
       __client="Mystery"
     fi
@@ -3062,8 +3122,6 @@ config() {
   ${__as_owner} git update-index --assume-unchanged ext-network.yml
   # Create ENV file if needed
   if ! [[ -f "${ENV_FILE}" ]]; then
-    echo "Your configuration file template is: default.env"
-
     ${__as_owner} cp default.env "${ENV_FILE}"
     __minty_fresh=1
   else
@@ -3086,19 +3144,17 @@ config() {
       query_validator_client
       ;;
     "ssv" | "lido_ssv")
-      if [ ! -f "./ssv-config/config.yaml" ]; then
-        ${__as_owner} cp ./ssv-config/config-sample.yaml ./ssv-config/config.yaml
-      fi
       if [ "${NETWORK}" = "holesky" ]; then
-        sed -i'' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
+        sed -i'.original' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
-        sed -i'' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
+        sed -i'.original' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
       else
         echo "${NETWORK} is not something that works with SSV."
         echo "Please choose Holešovice or Mainnet when running $__me config again"
         echo "Aborting."
         exit 1
       fi
+      rm ssv-config/config.yaml.original
       if [ ! -f "./ssv-config/password.pass" ]; then
         echo "Creating password file for encrypted SSV secret key"
         head -c 16 /dev/urandom | base64 | tr -d '[:space:]' >./ssv-config/password.pass
@@ -3113,6 +3169,7 @@ config() {
           ./ssv-config/encrypted_private_key.json && dodocker rm ssv-node-key-generation
         ${__auto_sudo} chown 12000:12000 ./ssv-config/encrypted_private_key.json
       fi
+      query_dkg
       query_consensus_only_client
       ;;
     "rpc")
@@ -3293,29 +3350,15 @@ config() {
     sed -i'' "s|      credentials: OBOL_PROM_REMOTE_WRITE_TOKEN|      credentials: ${__obol_prom_remote_token}|" ./prometheus/custom-prom.yml
   fi
 
-  __ssv_operator_id=-1
-  if [ "${__deployment}" = "lido_ssv" ]; then
-    if (whiptail --title "DKG ceremony" --yesno "Do you want to participate in DKG ceremony as operator?" 10 60); then
-      __key_file=$(${__auto_sudo} cat ./ssv-config/encrypted_private_key.json)
-      __public_key=$(docompose -f ./ssv-dkg.yml run --rm curl-jq sh -c \
-        "echo '${__key_file}' | jq -r '.publicKey'" | tail -n 1)
-      echo "Your public key: ${__public_key}"
-      __ssv_operator_id=$(whiptail --title "Register SSV operator" --inputbox "\n1. Your public key:\n\n${__public_key}\n\n2. Register your operator in the SSV network with the public key\n\n3. Put your Operator ID \
-  (right-click to paste)" 22 85 3>&1 1>&2 2>&3)
-      if [ ! -f "./ssv-config/operator.yaml" ]; then
-        ${__as_owner} cp ./ssv-config/operator-sample.yaml ./ssv-config/operator.yaml
-      fi
-      sed -i'' "s|operatorID: .*|operatorID: ${__ssv_operator_id}|" ./ssv-config/operator.yaml
-      echo "Your SSV Operator ID: ${__ssv_operator_id}"
-    fi
-  fi
-
   COMPOSE_FILE="${CONSENSUS_CLIENT}"
   if [ -n "${EXECUTION_CLIENT+x}" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
   fi
-  if [ "${__deployment}" = "ssv" ]; then
+  if [[ "${__deployment}" = "ssv" || "${__deployment}" = "lido_ssv" ]]; then
     COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
+    if [[ -n "${__ssv_operator_id}" && ! "${__ssv_operator_id}" = "-1" ]]; then
+      COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
+    fi
   fi
   if [ -n "${GRAFANA_CLIENT+x}" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:${GRAFANA_CLIENT}"
@@ -3323,20 +3366,14 @@ config() {
   if [ "${MEV_BOOST}" = "true" ] && [ ! "${__deployment}" = "rocket" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
   fi
-  if [ "${__deployment}" = "lido_ssv" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
-  fi
-  if [ "${__deployment}" = "lido_ssv" ] && [ ! "${__ssv_operator_id}" = -1 ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
-  fi
   if [ "${__deployment}" = "lido_obol" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:lido-obol.yml"
+    COMPOSE_FILE="${COMPOSE_FILE}:lido-obol.yml"
   fi
   if [ "${__deployment}" = "lido_csm" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:lido-deposit-cli.yml"
+    COMPOSE_FILE="${COMPOSE_FILE}:lido-deposit-cli.yml"
   elif { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
   && [ "${NETWORK}" = "holesky" ]; then
-      COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
+    COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
   fi
 # Not multi-arch, this would break on ARM64
 #    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
@@ -3408,6 +3445,11 @@ config() {
 
   pull_and_build
   nag_os_version
+
+  echo
+  echo "Your configuration file is: $(dirname "$(realpath "${BASH_SOURCE[0]}")")/${ENV_FILE}"
+  echo "You can change advanced config items with \"nano .env\" when in the $(dirname "$(realpath "${BASH_SOURCE[0]}")") directory."
+  echo
 }
 
 
@@ -3470,6 +3512,14 @@ version() {
       ;;&
     *teku-vc-only* )
       docompose exec validator /opt/teku/bin/teku --version
+      echo
+      ;;&
+    *grandine.yml* | *grandine-allin1.yml* | *grandine-cl-only* )
+      docompose exec consensus grandine --version
+      echo
+      ;;&
+    *grandine-vc-only* )
+      docompose exec validator grandine --version
       echo
       ;;&
     *geth.yml* )
@@ -3625,6 +3675,7 @@ cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 # Use this to make sure root doesn't end up owning files
 # shellcheck disable=SC2012
 OWNER=$(ls -ld . | awk '{print $3}')
+OWNER_GROUP=$(id -gn "${OWNER}")
 
 if [ "${OWNER}" == "root" ]; then
   echo "Please install ${__project_name} as a non-root user."
@@ -3658,6 +3709,16 @@ if [ "${__old_compose}" -eq 1 ]; then
   echo "You can install it with \"sudo apt update && sudo apt install docker-compose-v2\"."
   echo "You can remove the old docker-compose:"
   echo "\"sudo apt-mark manual docker.io && sudo apt --autoremove remove docker-compose\"."
+  exit 0
+fi
+
+if [ "${__old_docker}" -eq 1 ]; then
+  echo
+  echo "Docker version ${__docker_version} detected. This version is no longer supported."
+  echo "Please update to a current version. Supported versions can be seen at https://endoflife.date/docker-engine."
+  echo
+  echo "This should be as simple as \"sudo apt update && sudo apt dist-upgrade\" on Debian/Ubuntu"
+  echo "or updating Docker Desktop on macOS and Windows."
   exit 0
 fi
 
@@ -3698,13 +3759,4 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
   echo
   echo "Optionally, you can switch to docker-ce."
   echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
-fi
-
-if [ "${__old_docker}" -eq 1 ]; then
-  echo
-  echo "Docker version ${__docker_version} detected. This version no longer receives security updates."
-  echo "Please update to a current version."
-  echo
-  echo "This should be as simple as \"sudo apt update && sudo apt dist-upgrade\" on Debian/Ubuntu"
-  echo "or updating Docker Desktop on macOS and Windows."
 fi

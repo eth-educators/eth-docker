@@ -1,7 +1,7 @@
 ARG DOCKER_TAG
 ARG DOCKER_REPO
 
-FROM flyway/flyway:latest as flyway
+FROM flyway/flyway:latest AS flyway
 
 FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
