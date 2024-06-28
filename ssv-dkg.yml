@@ -16,16 +16,6 @@ services:
     restart: "no"
     profiles: [ "tools" ]
 
-  ssv-dkg-operator:
-    restart: "unless-stopped"
-    image: bloxstaking/ssv-dkg:${SSV_DKG_TAG:-latest}
-    ports:
-      - "3030:3030"
-    <<: *logging
-    command: start-operator --outputPath /output --configPath /config/operator.yaml
-    volumes:
-      - ./ssv-config/:/config
-      - ./ssv-config/dkg-output:/output
   ssv-dkg:
     restart: "unless-stopped"
     image: bloxstaking/ssv-dkg:${SSV_DKG_TAG:-latest}
