@@ -28,6 +28,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=15000
       - metrics.instance=ssv-node
+      - metrics.network=${NETWORK}
 
 volumes:
   ssv-data:

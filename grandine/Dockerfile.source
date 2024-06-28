@@ -1,0 +1,64 @@
+# Build Grandine in a stock Rust build container
+FROM rust:bookworm AS builder
+
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
+ARG DOCKER_REPO
+
+ARG BUILD_TARGET
+ARG SRC_REPO
+
+RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y cmake libclang-dev protobuf-compiler libz-dev libssl-dev unzip
+
+WORKDIR /usr/src
+RUN bash -c "git clone ${SRC_REPO} grandine && cd grandine && git config advice.detachedHead false \
+&& git fetch --all --tags \
+&& if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:gd-pr; git checkout gd-pr; else git checkout ${BUILD_TARGET}; fi \
+&& git submodule update --init dedicated_executor eth2_libp2p \
+&& cargo build --bin grandine  --profile compact --features default-networks"
+
+# Pull all binaries into a second stage deploy debian container
+FROM debian:bookworm-slim
+
+RUN set -eux; \
+        apt-get update; \
+        apt-get install -y gosu; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+  libssl-dev \
+  ca-certificates \
+  wget \
+  tzdata \
+  git \
+  curl \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+ARG USER=gdconsensus
+ARG UID=10002
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/grandine/ee-secret && chown -R ${USER}:${USER} /var/lib/grandine \
+&& chmod -R 700 /var/lib/grandine && chmod 777 /var/lib/grandine/ee-secret
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /usr/src/grandine/target/compact/grandine /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
+
+USER gdconsensus
+
+ENTRYPOINT ["grandine"]

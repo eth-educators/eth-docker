@@ -1,5 +1,5 @@
 # Build Prysm in a stock Go build container
-FROM golang:1.22-bookworm as builder
+FROM golang:1.22-bookworm AS builder
 
 # Here only to avoid build-time errors
 ARG DOCKER_TAG
@@ -19,7 +19,7 @@ if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TAR
 && bazel build --config=release //cmd/client-stats:client-stats"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bookworm-slim as consensus
+FROM debian:bookworm-slim AS consensus
 
 ARG USER=prysmconsensus
 ARG UID=10002
@@ -28,6 +28,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   ca-certificates curl bash tzdata git \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+# rsync for migration
+RUN apt-get update && apt-get install -y --no-install-recommends rsync
 
 RUN set -eux; \
         apt-get update; \
@@ -46,6 +48,8 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
+# Create mount point for old volume
+RUN mkdir -p /var/lib/prysm-og && chown -R ${USER}:${USER} /var/lib/prysm-og
 # Create data mount point with permissions
 RUN mkdir -p /var/lib/prysm/ee-secret && chown -R ${USER}:${USER} /var/lib/prysm && chmod -R 700 /var/lib/prysm && chmod 777 /var/lib/prysm/ee-secret
 
@@ -61,7 +65,7 @@ USER ${USER}
 
 ENTRYPOINT ["beacon-chain"]
 
-FROM consensus as validator
+FROM consensus AS validator
 
 ARG USER=prysmvalidator
 ARG UID=10000

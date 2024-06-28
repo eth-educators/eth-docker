@@ -28,7 +28,9 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
+      - STATIC_DIR=${ANCIENT_DIR}
       # Make this RUST_LOG=${LOG_LEVEL:-info},engine=trace when requiring deep debug
+      # RPC debug can be done with jsonrpsee=trace or jsonrpsee::target=trace for a specific target
       - RUST_LOG=${LOG_LEVEL:-info}
       - RUST_LOG_STYLE=never
     volumes:
@@ -87,6 +89,7 @@ services:
       - metrics.path=/metrics
       - metrics.port=6060
       - metrics.instance=execution
+      - metrics.network=${NETWORK}
 
 volumes:
   reth-el-data:

@@ -42,14 +42,11 @@ services:
       - docker-entrypoint.sh
       - nimbus
       - --rpc
-      - --rpc-address=0.0.0.0
-      - --rpc-port=${EL_RPC_PORT:-8545}
+      - --http-address=0.0.0.0
+      - --http-port=${EL_RPC_PORT:-8545}
       - --data-dir=/var/lib/nimbus
-      - --key-store=/var/lib/nimbus/nimbus/keystore
       - --tcp-port=${EL_P2P_PORT:-30303}
       - --ws
-      - --ws-address=0.0.0.0
-      - --ws-port=${EL_WS_PORT:-8546}
       - --network=${NETWORK}
       - --metrics
       - --metrics-port=6060
@@ -58,6 +55,7 @@ services:
       - --engine-api
       - --engine-api-port=${EE_PORT:-8551}
       - --engine-api-address=0.0.0.0
+      - --engine-api-ws
       - --max-peers=${EL_MAX_PEER_COUNT:-25}
       - --log-level=${LOG_LEVEL}
     labels:

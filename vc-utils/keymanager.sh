@@ -142,6 +142,15 @@ get-prysm-wallet() {
     fi
 }
 
+get-grandine-wallet() {
+    if [ -f /var/lib/grandine/wallet-password.txt ]; then
+        echo "The password for the Grandine wallet is:"
+        cat /var/lib/grandine/wallet-password.txt
+    else
+        echo "No stored password found for a Grandine wallet."
+    fi
+}
+
 recipient-get() {
     __check_pubkey "${__pubkey}"
     get-token
@@ -329,8 +338,20 @@ exit-sign() {
     fi
     __pubkeys=()
     __api_path=eth/v1/keystores
-    get-token
     if [ "${__pubkey}" = "all" ]; then
+      if [ "${WEB3SIGNER}" = "true" ]; then
+        __token=NIL
+        __vc_api_container=${__api_container}
+        __api_container=web3signer
+        __vc_service=${__service}
+        __service=web3signer
+        __vc_api_port=${__api_port}
+        __api_port=9000
+        __vc_api_tls=${__api_tls}
+        __api_tls=false
+      else
+        get-token
+      fi
       __validator-list-call
       if [ "$(echo "$__result" | jq '.data | length')" -eq 0 ]; then
         echo "No keys loaded, cannot sign anything"
@@ -340,11 +361,18 @@ exit-sign() {
 # Word splitting is desired for the array
 # shellcheck disable=SC2206
         __pubkeys+=( ${__keys_to_array} )
+        if [ "${WEB3SIGNER}" = "true" ]; then
+            __api_container=${__vc_api_container}
+            __api_port=${__vc_api_port}
+            __api_tls=${__vc_api_tls}
+            __service=${__vc_service}
+        fi
       fi
     else
       __pubkeys+=( "${__pubkey}" )
     fi
 
+    get-token
     for __pubkey in "${__pubkeys[@]}"; do
       __api_data=""
       __http_method=POST
@@ -1076,6 +1104,9 @@ usage() {
     echo "  get-prysm-wallet"
     echo "      Print Prysm's wallet password"
     echo
+    echo "  get-grandine-wallet"
+    echo "      Print Grandine's wallet password"
+    echo
     echo "  prepare-address-change"
     echo "      Create an offline-preparation.json with ethdo"
     echo "  send-address-change"
@@ -1118,6 +1149,10 @@ if [ "$(id -u)" = '0' ]; then
             ;;
         get-prysm-wallet)
             get-prysm-wallet
+            exit 0
+            ;;
+        get-grandine-wallet)
+            get-grandine-wallet
             exit 0
             ;;
     esac

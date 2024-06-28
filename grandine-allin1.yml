@@ -1,0 +1,158 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+
+x-build: &gr-build
+  context: ./grandine
+  dockerfile: ${GRANDINE_DOCKERFILE:-Dockerfile.binary}
+  args:
+    - BUILD_TARGET=${GRANDINE_SRC_BUILD_TARGET:-master}
+    - SRC_REPO=${GRANDINE_SRC_REPO:-https://github.com/sifraitech/grandine}
+    - DOCKER_TAG=${GRANDINE_DOCKER_TAG:-latest}
+    - DOCKER_REPO=${GRANDINE_DOCKER_REPO:-sifrai/grandine}
+
+services:
+  consensus:
+    restart: "unless-stopped"
+    build:
+      <<: *gr-build
+    image: grandine:local
+    pull_policy: never
+    user: gdconsensus
+    stop_grace_period: 1m
+    volumes:
+      - grandineconsensus-data:/var/lib/grandine
+      - /etc/localtime:/etc/localtime:ro
+      - jwtsecret:/var/lib/grandine/ee-secret
+    environment:
+      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - MEV_BOOST=${MEV_BOOST}
+      - MEV_NODE=${MEV_NODE}
+      - BEACON_STATS_API=${BEACON_STATS_API}
+      - BEACON_STATS_MACHINE=${BEACON_STATS_MACHINE}
+      - EMBEDDED_VC=true
+      - CL_EXTRAS=${CL_EXTRAS:-}
+      - VC_EXTRAS=${VC_EXTRAS:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
+      - DOPPELGANGER=${DOPPELGANGER:-false}
+      - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
+      - IPV6=${IPV6:-false}
+      - CL_P2P_PORT=${CL_P2P_PORT:-9000}
+      - CL_QUIC_PORT=${CL_QUIC_PORT:-9001}
+      - NETWORK=${NETWORK}
+      - RUST_LOG=${LOG_LEVEL:-info}
+    ports:
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
+      - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp
+      - ${HOST_IP:-}:${CL_QUIC_PORT:-9001}:${CL_QUIC_PORT:-9001}/udp
+    networks:
+      default:
+        aliases:
+          - eth2
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - grandine
+      - --disable-upnp
+      - --data-dir
+      - /var/lib/grandine
+      - --http-address
+      - 0.0.0.0
+      - --http-port
+      - ${CL_REST_PORT:-5052}
+      - --http-allowed-origins=*
+      - --listen-address
+      - 0.0.0.0
+      - --libp2p-port
+      - ${CL_P2P_PORT:-9000}
+      - --discovery-port
+      - ${CL_P2P_PORT:-9000}
+      - --quic-port
+      - ${CL_QUIC_PORT:-9001}
+      - --target-peers
+      - ${CL_MAX_PEER_COUNT:-80}
+      - --back-sync
+      - --eth1-rpc-urls
+      - ${EL_NODE}
+      - --jwt-secret
+      - /var/lib/grandine/ee-secret/jwtsecret
+      - --metrics
+      - --metrics-address
+      - 0.0.0.0
+      - --metrics-port
+      - "8008"
+      - --suggested-fee-recipient
+      - ${FEE_RECIPIENT}
+      - --track-liveness
+      - --keystore-storage-password-file
+      - /var/lib/grandine/wallet-password.txt
+      - --enable-validator-api
+      - --validator-api-address
+      - 0.0.0.0
+      - --validator-api-port
+      - ${KEY_API_PORT:-7500}
+      - --validator-api-allowed-origins=*
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8008
+      - metrics.instance=consensus
+      - metrics.network=${NETWORK}
+
+  wipe-db:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:3
+    user: "10002"
+    volumes:
+      - grandineconsensus-data:/var/lib/grandine
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        rm -rf /var/lib/grandine/${NETWORK}/beacon/*
+
+  validator-keys:
+    profiles: ["tools"]
+    restart: "no"
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
+    pull_policy: never
+    # The API token has 640 permissions. Root copies it,
+    # then switches to the local user's UID or if not provided,
+    # 1000. The UID has to be able to write .eth/validator_keys
+    # for the "keys delete" command.
+    user: root
+    volumes:
+      - grandineconsensus-data:/var/lib/grandine
+      - ./.eth/validator_keys:/validator_keys
+      - ./.eth/exit_messages:/exit_messages
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=${KEY_API_PORT:-7500}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
+      - CL_NODE=${CL_NODE}
+    depends_on:
+      - consensus
+    entrypoint:
+      - keymanager.sh
+      - /var/lib/grandine/${NETWORK}/validator/api-token.txt
+      - consensus
+
+volumes:
+  grandineconsensus-data:
+  jwtsecret:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}
