@@ -41,8 +41,7 @@ services:
     ports:
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
-      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30303}/tcp
-      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30303}/udp
+      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30304}/udp
     networks:
       default:
         aliases:
