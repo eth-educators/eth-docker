@@ -2824,7 +2824,7 @@ query_dkg() {
       echo "and add \":ssv-dkg.yml\" to \"COMPOSE_FILE\" in \".env\" after registering your operator."
     fi
   fi
-  rm ssv-config/dkg-config.yaml.original
+  rm -f ssv-config/dkg-config.yaml.original
 }
 
 set_value_in_env() {
