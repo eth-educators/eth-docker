@@ -90,6 +90,16 @@ services:
       - metrics.instance=execution
       - metrics.network=${NETWORK}
 
+  set-prune-marker:
+    profiles: ["tools"]
+    image: alpine:3
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - reth-el-data:/var/lib/reth
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
+
 volumes:
   reth-el-data:
   jwtsecret:
