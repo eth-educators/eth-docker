@@ -27,6 +27,7 @@ call_api() {
       else
         echo "This was a call without data"
       fi
+      echo "The token was ${__token} from ${__token_file}"
       echo "The return code was ${__code} and if we had result data, here it is."
       if [ -f /tmp/result.txt ]; then
         cat /tmp/result.txt
@@ -76,11 +77,7 @@ call_cl_api() {
 
 get-token() {
 set +e
-    if [ -z "${PRYSM:+x}" ]; then
-        __token=$(< "${__token_file}")
-    else
-        __token=$(sed -n 2p "${__token_file}")
-    fi
+    __token=$(< "${__token_file}")
     __return=$?
     if [ $__return -ne 0 ]; then
         echo "Error encountered while trying to get the keymanager API token."
