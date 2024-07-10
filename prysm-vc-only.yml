@@ -49,6 +49,8 @@ services:
       - /var/lib/prysm
       - --wallet-dir
       - /var/lib/prysm/
+      - --keymanager-token-file
+      - /var/lib/prysm/auth-token
       - --beacon-rpc-provider
       - ${CL_NODE:-http://consensus:4000}
       - --verbosity
