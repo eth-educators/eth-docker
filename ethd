@@ -3029,7 +3029,11 @@ again or Cancel on the next screen." 10 75
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
         echo "Your number of validators is:" "${__num_validators}"
-        EXECUTION_ADDRESS=${WITHDRAWAL_CREDENTIALS} KEYSTORE_PASSWORD=${__keystore_password} NUM_VALIDATORS=${__num_validators} NETWORK=${NETWORK} docompose -f ./lido-deposit-cli.yml run --rm deposit-cli-new
+        export NUM_VALIDATORS="${__num_validators}"
+        export KEYSTORE_PASSWORD="${__keystore_password}"
+        export NETWORK="${NETWORK}"
+        export EXECUTION_ADDRESS="${WITHDRAWAL_CREDENTIALS}"
+        docompose -f ./lido-deposit-cli.yml run --rm deposit-cli-new
     else
         echo "You chose Cancel."
         exit 1
