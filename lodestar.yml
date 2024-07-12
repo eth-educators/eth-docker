@@ -126,6 +126,8 @@ services:
       - /var/lib/lodestar/validators
       - --beaconNodes
       - ${CL_NODE}
+      - --http.requestWireFormat
+      - "ssz"
       - --keymanager
       - --keymanager.address
       - 0.0.0.0
