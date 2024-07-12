@@ -1549,6 +1549,99 @@ prune-besu() {
 }
 
 
+prune-reth() {
+  __non_interactive=0
+  while :
+  do
+    if [ -z "${1+x}" ]; then
+      break
+    fi
+    case "$1" in
+      --non-interactive)
+        __non_interactive=1
+        shift
+        ;;
+      *)
+        echo "Error: Unknown option: $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
+
+  if [ ! -f "${ENV_FILE}" ]; then
+    echo "${ENV_FILE} configuration file not found, aborting."
+    exit 1
+  fi
+
+  if ! grep -q '^COMPOSE_FILE=.*reth\.yml' "${ENV_FILE}" 2>/dev/null ; then
+    echo "You do not appear to be using Reth, aborting."
+    exit 1
+  fi
+
+  # Check for archive node
+  var="ARCHIVE_NODE"
+  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  if [[ "${value}" = "true" ]]; then
+    echo "Reth is an archive node: Aborting."
+    exit 1
+  fi
+
+  rpc_line=$(grep '^EL_RPC_PORT=' "${ENV_FILE}")
+  regex='^EL_RPC_PORT=([0-9]+)'
+  if [[ ! "${rpc_line}" =~ ${regex} ]]; then
+    echo "Unable to determine EL_RPC_PORT, aborting."
+    exit 1
+  else
+    rpc_port="${BASH_REMATCH[1]}"
+  fi
+
+  set +e
+  sync_status=$(docompose exec -T execution wget -qO- "http://localhost:$rpc_port" \
+  --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+  exitstatus=$?
+  set -e
+  if [ $exitstatus -ne 0 ]; then
+    echo "Unable to connect to Reth: Is it running?"
+    echo "Output: ${sync_status}"
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [[ ! "${sync_status}" =~ "false" ]]; then
+    echo "Reth is not done syncing yet. Sync status:"
+    echo "${sync_status}"
+    echo
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [ $__non_interactive = 0 ]; then
+    while true; do
+      read -rp "WARNING - this will stop Reth and prune its database. Do you wish to continue? (No/Yes) " yn
+      case $yn in
+        [Yy][Ee][Ss] ) break;;
+        * ) echo "Aborting, no changes made"; exit 130;;
+      esac
+    done
+  fi
+
+  echo
+  echo "Starting Reth prune"
+  echo
+  docompose run --rm set-prune-marker "touch /var/lib/reth/prune-marker"
+  docompose stop execution && docompose rm -f execution
+  start
+  echo
+  echo "Prune is running, you can observe it with '$__me logs -f execution'"
+  echo
+  echo "When prune is done, Reth will automatically start again."
+  echo
+}
+
+
 prune-nethermind() {
   __non_interactive=0
   while :
@@ -3027,7 +3120,7 @@ query_dkg() {
       echo "and add \":ssv-dkg.yml\" to \"COMPOSE_FILE\" in \".env\" after registering your operator."
     fi
   fi
-  rm ssv-config/dkg-config.yaml.original
+  rm -f ssv-config/dkg-config.yaml.original
 }
 
 set_value_in_env() {
@@ -3617,6 +3710,8 @@ __full_help() {
   echo "    restarts the Nethermind execution client and prunes its DB."
   echo "  prune-besu [--non-interactive]"
   echo "    stops the Besu execution client and prunes trie-logs."
+  echo "  prune-reth [--non-interactive]"
+  echo "    stops the Reth execution client and prunes its DB."
   echo "  prune-lighthouse [--non-interactive]"
   echo "    stops the Lighthouse consensus client and prunes state."
   echo "  resync-execution"
@@ -3739,7 +3834,7 @@ fi
 
 case "$__command" in
   help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-nethermind\
-      |prune-besu|prune-lighthouse|resync-execution|resync-consensus|attach-geth|keyimport|space)
+      |prune-besu|prune-reth|prune-lighthouse|resync-execution|resync-consensus|attach-geth|keyimport|space)
     $__command "$@";;
   *)
     echo "Unrecognized command $__command"

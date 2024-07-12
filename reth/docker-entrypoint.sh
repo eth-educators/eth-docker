@@ -87,6 +87,17 @@ if [ -n "${STATIC_DIR}" ] && [ ! "${STATIC_DIR}" = ".nada" ]; then
   __static="--datadir.static-files /var/lib/static"
 fi
 
+if [ -f /var/lib/reth/prune-marker ]; then
+  rm -f /var/lib/reth/prune-marker
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Reth is an archive node. Not attempting to prune database: Aborting."
+    exit 1
+  fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__verbosity} ${__prune} ${__static} ${EL_EXTRAS}
+  exec reth prune ${__network} --datadir /var/lib/reth ${__static}
+else
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" ${__network} ${__verbosity} ${__prune} ${__static} ${EL_EXTRAS}
+fi

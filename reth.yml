@@ -41,8 +41,7 @@ services:
     ports:
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
-      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30303}/tcp
-      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30303}/udp
+      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30304}/udp
     networks:
       default:
         aliases:
@@ -90,6 +89,16 @@ services:
       - metrics.port=6060
       - metrics.instance=execution
       - metrics.network=${NETWORK}
+
+  set-prune-marker:
+    profiles: ["tools"]
+    image: alpine:3
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - reth-el-data:/var/lib/reth
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
 
 volumes:
   reth-el-data:
