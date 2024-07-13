@@ -73,7 +73,7 @@ if [ -f /var/lib/besu/prune-marker ]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__prune} ${EL_EXTRAS} storage x-trie-log prune
+  exec "$@" ${__network} ${__prune} ${EL_EXTRAS} storage trie-log prune
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
