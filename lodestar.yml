@@ -61,8 +61,6 @@ services:
       - 0.0.0.0
       - --rest.port
       - ${CL_REST_PORT:-5052}
-      - --rest.namespace
-      - "beacon,config,events,node,validator,lightclient,debug"
       - --port
       - ${CL_P2P_PORT:-9000}
       - --nat
@@ -126,6 +124,8 @@ services:
       - /var/lib/lodestar/validators
       - --beaconNodes
       - ${CL_NODE}
+      - --http.requestWireFormat
+      - "ssz"
       - --keymanager
       - --keymanager.address
       - 0.0.0.0
