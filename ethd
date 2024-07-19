@@ -3371,7 +3371,7 @@ __during_migrate=0
 __migrated=0
 __command=""
 __me=$(basename "${BASH_SOURCE[0]}")
-if ! grep -q "alias ethd" ~/.profile; then
+if [ ! -f ~/.profile ] || ! grep -q "alias ethd" ~/.profile; then
   __me="./$__me"
 fi
 
