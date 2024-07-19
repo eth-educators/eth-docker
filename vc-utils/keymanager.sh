@@ -808,6 +808,14 @@ and secrets directories into .eth/validator_keys instead."
         fi
         echo "$__protect_json" > /tmp/protect.json
 
+        if [ "${__debug}" -eq 1 ]; then
+          echo "The keystore reads as $__keystore_json"
+          echo "And your password is $__password"
+          set +e
+          echo "Testing jq on these"
+          jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}'
+          set -e
+        fi
         if [ "$__do_a_protec" -eq 0 ]; then
             jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}' >/tmp/apidata.txt
         else

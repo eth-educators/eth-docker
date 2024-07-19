@@ -1901,7 +1901,7 @@ prep-keyimport() {
     exit 1
   fi
 
-  __non_interactive=0
+  __args=""
 
   while :
   do
@@ -1949,7 +1949,11 @@ prep-keyimport() {
           echo "KEYSTORE_PASSWORD not set or empty, aborting"
           exit 1
         fi
-        __non_interactive=1
+        __args+="${__args:+ }--interactive"
+        shift
+        ;;
+      --debug)
+        __args+="${__args:+ }--debug"
         shift
         ;;
       *)
@@ -2132,11 +2136,7 @@ keys() {
     #__i_haz_keys_service
     shift
     prep-keyimport "$@"
-    if [ ${__non_interactive} = 1 ]; then
-      docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import --non-interactive
-    else
-      docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import
-    fi
+    docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import "${__args}"
   elif [ "${1:-}" = "create-prysm-wallet" ]; then
     var="COMPOSE_FILE"
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
