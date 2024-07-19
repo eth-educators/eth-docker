@@ -840,7 +840,13 @@ and secrets directories into .eth/validator_keys instead."
         call_api
         case $__code in
             200) ;;
-            400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            400)
+              if [ -z "${PRYSM:+x}" ]; then
+                echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1
+              else
+                echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.')"; exit 1
+              fi
+              ;;
             401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
             403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
