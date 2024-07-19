@@ -844,7 +844,7 @@ and secrets directories into .eth/validator_keys instead."
               if [ -z "${PRYSM:+x}" ]; then
                 echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1
               else
-                echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.')"; exit 1
+                echo "Bad format. Error: $__result"; exit 1
               fi
               ;;
             401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
