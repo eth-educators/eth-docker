@@ -2473,6 +2473,10 @@ screen.\n\nCustom testnets only work with a URL to fetch their configuration fro
 
 query_deployment() {
   if [ "${NETWORK}" = "gnosis" ]; then
+    if uname -a | grep -q riscv; then
+      echo "Gnosis network has no available client combos on RISC-V. Aborting."
+      exit 1
+    fi
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
     "What kind of deployment do you want to run?" 10 65 3 \
     "node" "Ethereum node - consensus, execution and validator client" \
@@ -2484,15 +2488,25 @@ query_deployment() {
     "node" "Ethereum node - consensus, execution and validator client" \
     "rpc" "Ethereum RPC node - consensus and execution client" \
     "rocket" "Validator client only - integrate with RocketPool" 3>&1 1>&2 2>&3)
-  else
+  elif uname -a | grep -q riscv; then
+    __deployment=$(whiptail --notags --title "Select deployment type" --menu \
+    "What kind of deployment do you want to run?" 10 65 3 \
+    "node" "Ethereum node - consensus, execution and validator client" \
+    "rpc" "Ethereum RPC node - consensus and execution client" \
+    "rocket" "Validator client only - integrate with RocketPool" 3>&1 1>&2 2>&3)
+  elif uname -a | grep -q x86_64; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
     "What kind of deployment do you want to run?" 11 65 4 \
     "node" "Ethereum node - consensus, execution and validator client" \
     "rpc" "Ethereum RPC node - consensus and execution client" \
     "rocket" "Validator client only - integrate with RocketPool" \
     "ssv" "SSV node - consensus, execution and ssv-node" 3>&1 1>&2 2>&3)
+  else
+    echo "Eth Docker does not recognize this CPU architecture. Aborting."
+    echo "Output of uname -a"
+    uname -a
+    exit 1
   fi
-
   echo "Your deployment choice is: ${__deployment}"
 }
 
@@ -2558,6 +2572,10 @@ query_consensus_client() {
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
+  elif uname -a | grep -q riscv; then
+    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+    "Which consensus client do you want to run?" 11 65 4 \
+    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 13 65 6 \
@@ -2589,6 +2607,10 @@ query_consensus_only_client() {
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
+  elif uname -a | grep -q riscv; then
+    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
+    "Which consensus client do you want to run?" 11 65 4 \
+    "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 13 65 6 \
@@ -2653,6 +2675,11 @@ query_execution_client() {
     "Which execution client do you want to run?" 11 65 4 \
     "besu.yml" "Besu (Java)" \
     "nethermind.yml" "Nethermind (.NET)" \
+    "geth.yml" "Geth (Go)" \
+    "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+  elif uname -a | grep -q riscv; then
+    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+    "Which execution client do you want to run?" 11 65 4 \
     "geth.yml" "Geth (Go)" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   else
@@ -3151,6 +3178,18 @@ config() {
 # shellcheck disable=SC2034
     NIM_DOCKERFILE=Dockerfile.sourcegnosis
     var=NIM_DOCKERFILE
+    set_value_in_env
+  fi
+  if uname -a | grep -q riscv; then
+# We are using the variable
+# shellcheck disable=SC2034
+    NM_DOCKERFILE=Dockerfile.source
+    var=NM_DOCKERFILE
+    set_value_in_env
+# We are using the variable
+# shellcheck disable=SC2034
+    GETH_DOCKERFILE=Dockerfile.source
+    var=GETH_DOCKERFILE
     set_value_in_env
   fi
 
