@@ -816,6 +816,14 @@ and secrets directories into .eth/validator_keys instead."
         fi
         echo "$__protect_json" > /tmp/protect.json
 
+        if [ "${__debug}" -eq 1 ]; then
+          echo "The keystore reads as $__keystore_json"
+          echo "And your password is $__password"
+          set +e
+          echo "Testing jq on these"
+          jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}'
+          set -e
+        fi
         if [ "$__do_a_protec" -eq 0 ]; then
             jq --arg keystore_value "$__keystore_json" --arg password_value "$__password" '. | .keystores += [$keystore_value] | .passwords += [$password_value]' <<< '{}' >/tmp/apidata.txt
         else
@@ -840,7 +848,13 @@ and secrets directories into .eth/validator_keys instead."
         call_api
         case $__code in
             200) ;;
-            400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
+            400)
+              if [ -z "${PRYSM:+x}" ]; then
+                echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1
+              else
+                echo "Bad format. Error: $__result"; exit 1
+              fi
+              ;;
             401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
             403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
