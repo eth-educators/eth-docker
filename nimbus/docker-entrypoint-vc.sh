@@ -2,7 +2,7 @@
 
 if [ "$(id -u)" = '0' ]; then
   chown -R user:user /var/lib/nimbus
-  exec gosu user docker-entrypoint-vc.sh "$@"
+  exec su-exec user docker-entrypoint-vc.sh "$@"
 fi
 
 # Remove old low-entropy token, related to Sigma Prime security audit
