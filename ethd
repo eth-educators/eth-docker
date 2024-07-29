@@ -2599,14 +2599,6 @@ query_consensus_only_client() {
     "teku-cl-only.yml" "Teku (Java) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" 3>&1 1>&2 2>&3)
-  elif [ "${__deployment}" = "ssv" ]; then # hopefully temporary to exclude Nimbus
-    CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 13 65 6 \
-    "teku-cl-only.yml" "Teku (Java) - consensus client" \
-    "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
-    "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
-    "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
-    "prysm-cl-only.yml" "Prysm (Go) - consensus client" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
