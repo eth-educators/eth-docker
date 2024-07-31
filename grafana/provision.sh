@@ -31,11 +31,11 @@ case "$CLIENT" in
     #  lighthouse_validator_client
     __url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorClient.json'
     __file='/etc/grafana/provisioning/dashboards/lighthouse_validator_client.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Lighthouse Validator Client"' >"${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Lighthouse Validator Client"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
     # lighthouse_validator_monitor
     __url='https://raw.githubusercontent.com/sigp/lighthouse-metrics/master/dashboards/ValidatorMonitor.json'
     __file='/etc/grafana/provisioning/dashboards/lighthouse_validator_monitor.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Lighthouse Validator Monitor"' >"${__file}"
+    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "Lighthouse Validator Monitor"' | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
     ;;&
   *teku* )
     #  teku_overview
