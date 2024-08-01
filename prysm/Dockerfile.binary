@@ -1,7 +1,7 @@
-ARG DOCKER_TAG
-ARG DOCKER_VC_TAG
-ARG DOCKER_REPO
-ARG DOCKER_VC_REPO
+ARG DOCKER_TAG=stable
+ARG DOCKER_VC_TAG=stable
+ARG DOCKER_REPO=gcr.io/prysmaticlabs/prysm/beacon-chain
+ARG DOCKER_VC_REPO=gcr.io/prysmaticlabs/prysm/validator
 
 FROM ${DOCKER_REPO}:${DOCKER_TAG} AS clsource
 
