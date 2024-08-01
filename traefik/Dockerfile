@@ -1,5 +1,5 @@
 # Add AWS CLI to traefik image
-ARG DOCKER_TAG
+ARG DOCKER_TAG=latest
 
 FROM traefik:${DOCKER_TAG}
 

@@ -1,7 +1,7 @@
-ARG DOCKER_TAG
-ARG DOCKER_VC_TAG
-ARG DOCKER_REPO
-ARG DOCKER_VC_REPO
+ARG DOCKER_TAG=multiarch-latest
+ARG DOCKER_VC_TAG=multiarch-latest
+ARG DOCKER_REPO=statusim/nimbus-eth2
+ARG DOCKER_VC_REPO=statusim/nimbus-validator-client
 
 FROM ${DOCKER_REPO}:${DOCKER_TAG} AS consensus
 
