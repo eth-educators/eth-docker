@@ -12,8 +12,19 @@ services:
     restart: "unless-stopped"
     image: ${SIREN_DOCKER_REPO}:${SIREN_DOCKER_TAG}
     volumes:
+      - lhvalidator-data:/var/lib/lighthouse
+      - ./siren/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - BEACON_URL=${CL_NODE}
+      - VALIDATOR_URL=http://vc:7500
+      - SESSION_PASSWORD=${SIREN_PASSWORD}
+      - SSL_ENABLED=true
+      - DEBUG=false
+      - SIREN_PORT=${SIREN_PORT}
     <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
     labels:
       - traefik.enable=true
       - traefik.http.routers.$(SIREN_HOST:-siren}.service=${SIREN_HOST:-siren}
