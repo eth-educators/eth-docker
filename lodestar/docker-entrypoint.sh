@@ -2,7 +2,7 @@
 
 if [ "$(id -u)" = '0' ]; then
   chown -R lsconsensus:lsconsensus /var/lib/lodestar
-  exec su-exec lsconsensus docker-entrypoint.sh "$@"
+  exec gosu lsconsensus docker-entrypoint.sh "$@"
 fi
 
 # Remove old low-entropy token, related to Sigma Prime security audit
