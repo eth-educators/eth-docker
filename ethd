@@ -191,10 +191,6 @@ prep_conffiles() {
   if [ ! -f "./prometheus/custom-prom.yml" ]; then
     ${__as_owner} touch "./prometheus/custom-prom.yml"
   fi
-# Move ssv-config.yaml
-  if [ -f "./ssv-config.yaml" ]; then
-    ${__as_owner} mv ./ssv-config.yaml ssv-config/config.yaml
-  fi
 # Create config.yaml if it doesn't exist
   if [ ! -f "ssv-config/config.yaml" ]; then
     ${__as_owner} cp ssv-config/config-sample.yaml ssv-config/config.yaml
@@ -631,160 +627,6 @@ migrate_compose_file() {
 }
 
 
-ssv_switch() {
-  echo "Detected legacy SSV Node. Migrating config to new testnet."
-  echo
-  echo "Stopping SSV Node container"
-  __node=$(dodocker ps --format '{{.Names}}' | grep 'ssv2-node')
-  dodocker stop "${__node}" && dodocker rm -f "${__node}"
-  dodocker volume rm "$(dodocker volume ls -q | grep "$(basename "$(realpath .)")"_ssv2-data)"
-  echo
-  echo "SSV Node stopped and database deleted."
-  echo
-  cp blox-ssv-config.yaml blox-ssv-config.yaml.bak
-  cp blox-ssv-config.yaml ssv-config/config.yaml
-  rm blox-ssv-config.yaml
-  echo "Backup copy blox-ssv-config.yaml.bak created"
-  echo "Making changes to ssv-config/config.yaml"
-  var="NETWORK"
-  NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-  sed -i'.original' 's/blox-ssv2.yml/ssv.yml/' "${ENV_FILE}".source
-  if ! grep -q "LogFilePath:" ssv-config/config.yaml; then
-# macOS-isms: Newline for sed add
-    sed -i'.original' '/global:/a\
-  LogFilePath: /tmp/ssv/debug.log
-' ssv-config/config.yaml
-  fi
-  if ! grep -q "MetricsAPIPort:" ssv-config/config.yaml; then
-    sed -i'.original' '$a\
-MetricsAPIPort: 15000
-' ssv-config/config.yaml
-  fi
-  if ! grep -q "ssv:" ssv-config/config.yaml; then
-    sed -i'.original' '/^  Network:/d' ssv-config/config.yaml # Remove old eth2 Network line if present
-    sed -i'.original' '$a\
- ssv:
- ' ssv-config/config.yaml
-    if [ "${NETWORK}" = "holesky" ]; then
-      sed -i'.original' '$a\
-  Network: holesky
-' ssv-config/config.yaml
-    elif [ "${NETWORK}" = "mainnet" ]; then
-      sed -i'.original' '$a\
-  Network: mainnet
-' ssv-config/config.yaml
-    else
-      echo "${NETWORK} is not something that works with SSV."
-      echo "Please fix this manually before running $__me update again."
-      echo "Aborting."
-      exit 1
-    fi
-  fi
-  rm ssv-config/config.yaml.original
-}
-
-
-delete_reth() {
-# Check for Reth
-  var="COMPOSE_FILE"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-# I do mean to match literally
-# shellcheck disable=SC2076
-  if [[ ! "${value}" =~ "reth.yml" ]]; then
-    return 0
-  fi
-
-# Check Reth version, only continue if not on alpha
-  var="RETH_DOCKER_TAG"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-# I do mean to match literally
-# shellcheck disable=SC2076
-  if [[ "${value}" =~ "alpha" ]]; then
-    return 0
-  fi
-
-  if [ -z "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")" ]; then # No Reth volume
-    return 0
-  fi
-
-# Check Reth db version
-  __db_version="$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
-      alpine:3 cat /var/lib/reth/db/database.version)"
-  if [ "${__db_version}" -ne "1" ]; then
-    return 0
-  fi
-
-  echo "Detected Reth. For Reth beta, it will need to be re-synced from scratch."
-  echo
-  if [ "${__non_interactive:-0}" -eq 0 ]; then
-    while true; do
-      read -rp "WARNING - About to delete the Reth database. Do you wish to continue? (Y/n) " yn
-      case $yn in
-        [Nn]o | [Nn]  ) echo "No changes made"; return 0;;
-        * ) break;;
-      esac
-    done
-  fi
-
-  echo "Stopping Reth container"
-  docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")"
-  echo
-  echo "Reth stopped and database deleted."
-  echo
-}
-
-
-delete_erigon() {
-# Check for Erigon
-  var="COMPOSE_FILE"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-# I do mean to match literally
-# shellcheck disable=SC2076
-  if [[ ! "${value}" =~ "erigon.yml" ]]; then
-    return 0
-  fi
-
-# Check Erigon version, only continue if v3
-  var="ERIGON_DOCKER_TAG"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-# I do mean to match literally
-# shellcheck disable=SC2076
-#  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "latest" ||  "${value}" = "stable") ]]; then # No stable yet
-  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "latest") ]]; then
-    return 0
-  fi
-
-  if [ -z "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")" ]; then # No Erigon volume
-    return 0
-  fi
-
-# Detect Erigon v3 by directory caplin/latest
-  __erigon_v3=$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")":"/var/lib/erigon" \
-      alpine:3 sh -c 'if [ -d "/var/lib/erigon/caplin/latest" ]; then echo true; else echo false; fi')
-  if [ "$__erigon_v3" = "true" ]; then
-    return 0
-  fi
-
-  echo "Detected Erigon. For Erigon v3, it will need to be re-synced from scratch."
-  echo
-  while true; do
-    read -rp "WARNING - About to delete the Erigon database. Do you wish to continue? (Y/n) " yn
-    case $yn in
-      [Nn]o | [Nn]  ) echo "Aborting, no changes made"; exit 130;;
-      * ) break;;
-    esac
-  done
-
-  echo "Stopping Erigon container"
-  docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")"
-  echo
-  echo "Erigon stopped and database deleted."
-  echo
-}
-
-
 upgrade_postgres() {
 # Check for web3signer
   var="COMPOSE_FILE"
@@ -908,46 +750,6 @@ upgrade_postgres() {
 }
 
 
-__lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
-  __compose_ymls=$(sed -n -e "s/^COMPOSE_FILE=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
-  __dns_token=$(sed -n -e "s/^CF_DNS_API_TOKEN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
-  __zone_token=$(sed -n -e "s/^CF_ZONE_API_TOKEN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
-  __domain=$(sed -n -e "s/^DOMAIN=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
-  if [[ ! $__compose_ymls =~ traefik-cf.yml ]]; then
-    value=""
-    return
-  elif [[ -n $__dns_token ]]; then
-    if [[ -n $__zone_token ]]; then
-      __token=$__zone_token
-    else
-      __token=$__dns_token
-    fi
-    set +e
-    value=$(docompose run --rm curl-jq sh -c \
-      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
-      -H \"Content-Type: application/json\" | jq -r '.result[0].id'" | tail -n 1)
-    __code=$?
-    if [[ "$__code" -ne 0 ]]; then
-      value=""
-      return
-    fi
-    __success=$(docompose run --rm curl-jq sh -c \
-      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
-      -H \"Content-Type: application/json\" | jq -r '.success'" | tail -n 1)
-    set -e
-    if [ "${__success}" = "true" ]; then
-      return
-    else
-      value=""
-      return
-    fi
-  else
-    value=""
-    return
-  fi
-}
-
-
 envmigrate() {
   if [ ! -f "${ENV_FILE}" ]; then
     return 0
@@ -1012,14 +814,6 @@ envmigrate() {
   __migrated=1
   ${__as_owner} cp default.env "${ENV_FILE}"
 
-  var="COMPOSE_FILE"
-  value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
-# Literal match intended
-# shellcheck disable=SC2076
-  if [[ "${value}" =~ "blox-ssv2.yml" ]]; then
-    ssv_switch
-  fi
-
   # Migrate over user settings
   for var in "${ALL_VARS[@]}"; do
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
@@ -1053,13 +847,6 @@ envmigrate() {
       fi
       # Handle & in GRAFFITI gracefully
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
-    else # empty value
-      if [ "${var}" = "CF_ZONE_ID" ]; then
-        __lookup_cf_zone
-        if [ -n "${value}" ]; then
-          sed -i'.original' -e "s~^\(${var}\s*=\s*\).*\$~\1${value//&/\\&}~" "${ENV_FILE}"
-        fi
-      fi
     fi
   done
   if [ "${__keep_targets}" -eq 1 ]; then
@@ -1295,8 +1082,6 @@ update() {
   envmigrate
   pull_and_build
 
-  delete_erigon
-  delete_reth
   upgrade_postgres
 
   echo
