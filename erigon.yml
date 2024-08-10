@@ -27,6 +27,7 @@ services:
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
+      - DOCKER_TAG=${ERIGON_DOCKER_TAG:-stable}
     volumes:
       - erigon-el-data:/var/lib/erigon
       - /etc/localtime:/etc/localtime:ro
@@ -87,15 +88,6 @@ services:
       - /var/lib/erigon/ee-secret/jwtsecret
       - --maxpeers
       - ${EL_MAX_PEER_COUNT:-100}
-      # To assist with recordsize 16k in ZFS
-      - --db.pagesize
-      - 16K
-      # Breaking change from 2.55 on
-      - --db.size.limit
-      - 8TB
-      # Memory use reduction. Not needed with 32G and does not help with 16G
-      #- --batchSize
-      #- 64m
     labels:
       - metrics.scrape=true
       - metrics.path=/debug/metrics/prometheus

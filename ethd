@@ -736,10 +736,6 @@ delete_reth() {
 
 
 delete_erigon() {
-# Enable this when Erigon v3 is out
-  if true; then
-    return 0
-  fi
 # Check for Erigon
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -754,19 +750,20 @@ delete_erigon() {
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "stable") ]]; then
+#  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "latest" ||  "${value}" = "stable") ]]; then # No stable yet
+  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "latest") ]]; then
     return 0
   fi
 
-  if [ -z "$(dodocker volume ls -q -f "name=erigon-el-data")" ]; then # No Erigon volume
+  if [ -z "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")" ]; then # No Erigon volume
     return 0
   fi
 
-# https://discord.com/channels/687972960811745322/886550095749873666/1068994749480054866
-# Detect Erigon v3 by files in snapshots/history
-  if [ -n "$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=erigon-el-data")":"/var/lib/erigon" \
-      alpine:3 ls /var/lib/erigon/snapshots/history)" ]; then
-    return 0 # Files in snapshots/history means it's v3
+# Detect Erigon v3 by directory caplin/latest
+  __erigon_v3=$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")":"/var/lib/erigon" \
+      alpine:3 sh -c 'if [ -d "/var/lib/erigon/caplin/latest" ]; then echo true; else echo false; fi')
+  if [ "$__erigon_v3" = "true" ]; then
+    return 0
   fi
 
   echo "Detected Erigon. For Erigon v3, it will need to be re-synced from scratch."
@@ -781,7 +778,7 @@ delete_erigon() {
 
   echo "Stopping Erigon container"
   docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=erigon-el-data")"
+  dodocker volume rm "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")"
   echo
   echo "Erigon stopped and database deleted."
   echo
