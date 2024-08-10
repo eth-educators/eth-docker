@@ -1440,6 +1440,17 @@ resync-consensus() {
   else
     __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
     dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
+    __volume_id=""
+    if [[ "${__cl_volume}" =~ lhconsensus-data ]]; then
+      __legacy_volume="$(basename "$(realpath .)")_lhbeacon-data"
+      __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+    elif [[ "${__cl_volume}" =~ prysmconsensus-data ]]; then
+      __legacy_volume="$(basename "$(realpath .)")_prysmbeacon-data"
+      __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+    fi
+    if [ -n "${__volume_id}" ]; then
+      dodocker volume rm "${__volume_id}"
+    fi
   fi
   echo
   echo "${__cl_client} stopped and database deleted."
