@@ -77,12 +77,14 @@ if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" ]]; then
     __caplin+=" --beacon.api.addr=0.0.0.0 --beacon.api.port=${CL_REST_PORT} --beacon.api.cors.allow-origins=*"
     if [ "${MEV_BOOST}" = "true" ]; then
       __caplin+=" --caplin.mev-relay-url=${MEV_NODE}"
+      echo "MEV Boost enabled"
     fi
     if [ "${ARCHIVE_NODE}" = "true" ]; then
       __caplin+=" --caplin.archive=true"
     fi
     if [ -n "${RAPID_SYNC_URL}" ]; then
       __caplin+=" --caplin.checkpoint-sync-url=${RAPID_SYNC_URL}"
+      echo "Checkpoint sync enabled"
     else
       __caplin+=" --caplin.checkpoint-sync.disable=true"
     fi
