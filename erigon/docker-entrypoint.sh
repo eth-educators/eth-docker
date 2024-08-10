@@ -54,6 +54,8 @@ else
   __network="--chain ${NETWORK} --http.api web3,eth,net,engine"
 fi
 
+__caplin=""
+__db_params=""
 #if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" || "${DOCKER_TAG}" = "stable" ]]; then # No stable yet
 if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" ]]; then
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -63,7 +65,29 @@ if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" ]]; then
     echo "Erigon full node with pruning"
     __prune="--prune.mode=full"
   fi
-  __db_params="--externalcl=true"
+  if [[ "${COMPOSE_FILE}" =~ (prysm\.yml|prysm-cl-only\.yml|lighthouse\.yml|lighthouse-cl-only\.yml|lodestar\.yml| \
+      lodestar-cl-only\.yml|nimbus\.yml|nimbus-cl-only\.yml|nimbus-allin1\.yml|teku\.yml|teku-cl-only\.yml| \
+      teku-allin1\.yml|grandine\.yml|grandine-cl-only\.yml|grandine-allin1\.yml) ]]; then
+    __caplin="--externalcl=true"
+  else
+    echo "Running Erigon with internal Caplin consensus layer client"
+    __caplin="--caplin.discovery.addr=0.0.0.0 --caplin.discovery.port=${CL_P2P_PORT} --caplin.backfilling.blob=true"
+    __caplin+=" --caplin.discovery.tcpport=${CL_P2P_PORT} --caplin.backfilling=true --caplin.validator-monitor=true"
+    __caplin+=" --beacon.api=beacon,builder,config,debug,events,node,validator,lighthouse"
+    __caplin+=" --beacon.api.addr=0.0.0.0 --beacon.api.port=${CL_REST_PORT} --beacon.api.cors.allow-origins=*"
+    if [ "${MEV_BOOST}" = "true" ]; then
+      __caplin+=" --caplin.mev-relay-url=${MEV_NODE}"
+    fi
+    if [ "${ARCHIVE_NODE}" = "true" ]; then
+      __caplin+=" --caplin.archive=true"
+    fi
+    if [ -n "${RAPID_SYNC_URL}" ]; then
+      __caplin+=" --caplin.checkpoint-sync-url=${RAPID_SYNC_URL}"
+    else
+      __caplin+=" --caplin.checkpoint-sync.disable=true"
+    fi
+    echo "Caplin parameters: ${__caplin}"
+  fi
 else
 # Check for network, and set prune accordingly
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -105,4 +129,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__ipv6} ${__network} ${__prune} ${__db_params} ${EL_EXTRAS}
+exec "$@" ${__ipv6} ${__network} ${__prune} ${__db_params} ${__caplin} ${EL_EXTRAS}
