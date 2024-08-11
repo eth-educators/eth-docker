@@ -65,6 +65,13 @@ else
   __spec=""
 fi
 
+# New or old datadir
+if [ -d /var/lib/besu-og/database ]; then
+  __datadir="--data-path /var/lib/besu-og"
+else
+  __datadir="--data-path /var/lib/besu"
+fi
+
 if [ -f /var/lib/besu/prune-marker ]; then
   rm -f /var/lib/besu/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -73,9 +80,9 @@ if [ -f /var/lib/besu/prune-marker ]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__prune} ${EL_EXTRAS} storage trie-log prune
+  exec "$@" ${__datadir} ${__network} ${__prune} ${EL_EXTRAS} storage trie-log prune
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__prune} ${__spec} ${EL_EXTRAS}
+  exec "$@" ${__datadir} ${__network} ${__prune} ${__spec} ${EL_EXTRAS}
 fi

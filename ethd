@@ -1361,10 +1361,10 @@ resync-execution() {
 
   case "${value}" in
     *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
-    *geth.yml* ) __el_volume='geth-eth1-data'; __el_client="geth";;
+    *geth.yml* ) __el_volume='geth-el-data'; __el_client="geth";;
     *reth.yml* ) __el_volume='reth-el-data'; __el_client="reth";;
-    *besu.yml* ) __el_volume='besu-eth1-data'; __el_client="besu";;
-    *nethermind.yml* ) __el_volume='nm-eth1-data'; __el_client="nethermind";;
+    *besu.yml* ) __el_volume='besu-el-data'; __el_client="besu";;
+    *nethermind.yml* ) __el_volume='nethermind-el-data'; __el_client="nethermind";;
     * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
   esac
 
@@ -1384,6 +1384,20 @@ resync-execution() {
   echo "Stopping ${__el_client} container"
   docompose stop execution && docompose rm -f execution
   dodocker volume rm "$(dodocker volume ls -q -f "name=${__el_volume}")"
+  __volume_id=""
+  if [[ "${__el_volume}" =~ geth-el-data ]]; then
+    __legacy_volume="$(basename "$(realpath .)")_geth-eth1-data"
+    __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+  elif [[ "${__el_volume}" =~ besu-el-data ]]; then
+    __legacy_volume="$(basename "$(realpath .)")_besu-eth1-data"
+    __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+  elif [[ "${__el_volume}" =~ nethermind-el-data ]]; then
+    __legacy_volume="$(basename "$(realpath .)")_nm-eth1-data"
+    __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+  fi
+  if [ -n "${__volume_id}" ]; then
+    dodocker volume rm "${__volume_id}"
+  fi
   echo
   echo "${__el_client} stopped and database deleted."
   echo
@@ -1467,8 +1481,15 @@ attach-geth() {
     echo "You do not appear to be using Geth, aborting."
     exit 1
   fi
+  __legacy_datadir=$(dodocker run --rm -v "$(dodocker volume ls -q -f \
+    "name=$(basename "$(realpath .)")[_-]geth-eth1-data")":"/var/lib/goethereum" \
+    alpine:3 sh -c 'if [ -d "/var/lib/goethereum/geth/chaindata" ]; then echo true; else echo false; fi')
 
-  docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
+  if [ "${__legacy_datadir}" = "true" ]; then
+    docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
+  else
+    docompose exec -it execution bash -c "geth attach /var/lib/geth/geth.ipc"
+  fi
 }
 
 
