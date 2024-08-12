@@ -48,14 +48,14 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   __network="--genesis-file=/var/lib/besu/testnet/${config_dir}/besu.json --bootnodes=${bootnodes} \
 --Xfilter-on-enr-fork-id=true --rpc-http-api=ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,ENGINE,TRACE,WEB3"
 else
-  __network="--network ${NETWORK} --rpc-http-api WEB3,ETH,NET"
+  __network="--network ${NETWORK}"
 fi
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-format=FOREST --sync-mode=FULL"
 else
-  __prune="--data-storage-format=BONSAI --sync-mode=SNAP"
+  __prune=""
 fi
 
 __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
