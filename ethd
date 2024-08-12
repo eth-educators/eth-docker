@@ -2597,8 +2597,8 @@ query_consensus_client() {
   if [ "${NETWORK}" = "gnosis" ]; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
-    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" \
+    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
@@ -2607,8 +2607,9 @@ query_consensus_client() {
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
+    "teku.yml" "Teku (Java) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
-    "teku.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
+     3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
@@ -2618,10 +2619,11 @@ query_consensus_client() {
     "Which consensus client do you want to run?" 13 65 6 \
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
-    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
-    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
-    "prysm.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
+    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
+    "prysm.yml" "Prysm (Go) - consensus and validator client" \
+    3>&1 1>&2 2>&3)
   fi
 
   echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
@@ -2725,8 +2727,8 @@ query_execution_client() {
     "reth.yml" "Reth (Rust)" \
     "besu.yml" "Besu (Java)" \
     "nethermind.yml" "Nethermind (.NET)" \
-    "geth.yml" "Geth (Go)" \
     "erigon.yml" "Erigon (Go)" \
+    "geth.yml" "Geth (Go)" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
 
