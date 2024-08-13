@@ -10,8 +10,9 @@ fi
 if [[ -d /var/lib/lighthouse-og/beacon && ! -f /var/lib/lighthouse-og/beacon/migrationdone \
     && $(ls -A /var/lib/lighthouse-og/beacon/) ]]; then
   echo "Migrating from old Lighthouse volume to new one"
-  echo "This may take 10 minutes on a fast drive. Please be patient"
-  rsync -a --remove-source-files --exclude='ee-secret' /var/lib/lighthouse-og/beacon/ /var/lib/lighthouse/beacon/
+  echo "This may take 10 minutes on a fast drive, or hours if the Lighthouse DB is very large. Please be patient"
+  echo "If your Lighthouse DB is well over 200 GiB in size, please consider \"./ethd resync-consensus\""
+  rsync -a --remove-source-files --exclude='ee-secret' --info=progress2 /var/lib/lighthouse-og/beacon/ /var/lib/lighthouse/beacon/
   touch /var/lib/lighthouse-og/beacon/migrationdone
   echo "Migration completed, data is now in volume \"lhconsensus-data\""
 fi
