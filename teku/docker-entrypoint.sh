@@ -131,12 +131,19 @@ else
   __w3s_url=""
 fi
 
+if [ "${IPV6}" = "true" ]; then
+  echo "Configuring Teku to listen on IPv6 ports"
+  __ipv6="--p2p-interface 0.0.0.0,:: --p2p-port-ipv6 ${CL_P2P_PORT:-9000}"
+else
+  __ipv6=""
+fi
+
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
 fi

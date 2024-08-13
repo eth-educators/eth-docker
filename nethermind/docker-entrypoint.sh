@@ -53,7 +53,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   __network="--config none.cfg --Init.ChainSpecPath=/var/lib/nethermind/testnet/${config_dir}/chainspec.json --Discovery.Bootnodes=${bootnodes} \
 --JsonRpc.EnabledModules=Eth,Subscribe,Trace,TxPool,Web3,Personal,Proof,Net,Parity,Health,Rpc,Debug,Admin --Pruning.Mode=None --Init.IsMining=false"
 else
-  __network="--config ${NETWORK} --JsonRpc.EnabledModules Web3,Eth,Subscribe,Net,Health,Parity,Proof,Trace,TxPool"
+  __network="--config ${NETWORK}"
 fi
 
 __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
@@ -82,6 +82,13 @@ else
   echo "${__prune}"
 fi
 
+# New or old datadir
+if [ -d /var/lib/nethermind-og/nethermind_db ]; then
+  __datadir="--datadir /var/lib/nethermind-og"
+else
+  __datadir="--datadir /var/lib/nethermind"
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
+exec "$@" ${__datadir} ${__network} ${__prune} ${EL_EXTRAS}

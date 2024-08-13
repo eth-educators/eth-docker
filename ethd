@@ -736,10 +736,6 @@ delete_reth() {
 
 
 delete_erigon() {
-# Enable this when Erigon v3 is out
-  if true; then
-    return 0
-  fi
 # Check for Erigon
   var="COMPOSE_FILE"
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
@@ -754,19 +750,20 @@ delete_erigon() {
   value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "stable") ]]; then
+#  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "latest" ||  "${value}" = "stable") ]]; then # No stable yet
+  if [[ ! ("${value}" =~ "v3" ||  "${value}" = "latest") ]]; then
     return 0
   fi
 
-  if [ -z "$(dodocker volume ls -q -f "name=erigon-el-data")" ]; then # No Erigon volume
+  if [ -z "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")" ]; then # No Erigon volume
     return 0
   fi
 
-# https://discord.com/channels/687972960811745322/886550095749873666/1068994749480054866
-# Detect Erigon v3 by files in snapshots/history
-  if [ -n "$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=erigon-el-data")":"/var/lib/erigon" \
-      alpine:3 ls /var/lib/erigon/snapshots/history)" ]; then
-    return 0 # Files in snapshots/history means it's v3
+# Detect Erigon v3 by directory caplin/latest
+  __erigon_v3=$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")":"/var/lib/erigon" \
+      alpine:3 sh -c 'if [ -d "/var/lib/erigon/caplin/latest" ]; then echo true; else echo false; fi')
+  if [ "$__erigon_v3" = "true" ]; then
+    return 0
   fi
 
   echo "Detected Erigon. For Erigon v3, it will need to be re-synced from scratch."
@@ -781,7 +778,7 @@ delete_erigon() {
 
   echo "Stopping Erigon container"
   docompose stop execution && docompose rm -f execution
-  dodocker volume rm "$(dodocker volume ls -q -f "name=erigon-el-data")"
+  dodocker volume rm "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")"
   echo
   echo "Erigon stopped and database deleted."
   echo
@@ -965,7 +962,7 @@ envmigrate() {
     PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
     EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT ERIGON_P2P_PORT_2 \
-    ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT )
+    ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD )
   TARGET_VARS=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE \
@@ -984,6 +981,14 @@ envmigrate() {
 
   OLD_VARS=( )
   NEW_VARS=( )
+
+# Always make sure we have a SIREN password
+  var="SIREN_PASSWORD"
+  SIREN_PASSWORD=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  if [ -z "${SIREN_PASSWORD}" ]; then
+    SIREN_PASSWORD=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
+    set_value_in_env
+  fi
 
   var=ENV_VERSION
   __target_ver=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "default.env" || true)
@@ -1356,10 +1361,10 @@ resync-execution() {
 
   case "${value}" in
     *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
-    *geth.yml* ) __el_volume='geth-eth1-data'; __el_client="geth";;
+    *geth.yml* ) __el_volume='geth-el-data'; __el_client="geth";;
     *reth.yml* ) __el_volume='reth-el-data'; __el_client="reth";;
-    *besu.yml* ) __el_volume='besu-eth1-data'; __el_client="besu";;
-    *nethermind.yml* ) __el_volume='nm-eth1-data'; __el_client="nethermind";;
+    *besu.yml* ) __el_volume='besu-el-data'; __el_client="besu";;
+    *nethermind.yml* ) __el_volume='nethermind-el-data'; __el_client="nethermind";;
     * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
   esac
 
@@ -1379,6 +1384,20 @@ resync-execution() {
   echo "Stopping ${__el_client} container"
   docompose stop execution && docompose rm -f execution
   dodocker volume rm "$(dodocker volume ls -q -f "name=${__el_volume}")"
+  __volume_id=""
+  if [[ "${__el_volume}" =~ geth-el-data ]]; then
+    __legacy_volume="$(basename "$(realpath .)")_geth-eth1-data"
+    __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+  elif [[ "${__el_volume}" =~ besu-el-data ]]; then
+    __legacy_volume="$(basename "$(realpath .)")_besu-eth1-data"
+    __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+  elif [[ "${__el_volume}" =~ nethermind-el-data ]]; then
+    __legacy_volume="$(basename "$(realpath .)")_nm-eth1-data"
+    __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+  fi
+  if [ -n "${__volume_id}" ]; then
+    dodocker volume rm "${__volume_id}"
+  fi
   echo
   echo "${__el_client} stopped and database deleted."
   echo
@@ -1432,6 +1451,17 @@ resync-consensus() {
   else
     __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
     dodocker volume rm "$(dodocker volume ls -q -f "name=${__cl_volume}")"
+    __volume_id=""
+    if [[ "${__cl_volume}" =~ lhconsensus-data ]]; then
+      __legacy_volume="$(basename "$(realpath .)")_lhbeacon-data"
+      __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+    elif [[ "${__cl_volume}" =~ prysmconsensus-data ]]; then
+      __legacy_volume="$(basename "$(realpath .)")_prysmbeacon-data"
+      __volume_id="$(dodocker volume ls -q -f "name=${__legacy_volume}")"
+    fi
+    if [ -n "${__volume_id}" ]; then
+      dodocker volume rm "${__volume_id}"
+    fi
   fi
   echo
   echo "${__cl_client} stopped and database deleted."
@@ -1451,8 +1481,15 @@ attach-geth() {
     echo "You do not appear to be using Geth, aborting."
     exit 1
   fi
+  __legacy_datadir=$(dodocker run --rm -v "$(dodocker volume ls -q -f \
+    "name=$(basename "$(realpath .)")[_-]geth-eth1-data")":"/var/lib/goethereum" \
+    alpine:3 sh -c 'if [ -d "/var/lib/goethereum/geth/chaindata" ]; then echo true; else echo false; fi')
 
-  docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
+  if [ "${__legacy_datadir}" = "true" ]; then
+    docompose exec -it execution bash -c "geth attach /var/lib/goethereum/geth.ipc"
+  else
+    docompose exec -it execution bash -c "geth attach /var/lib/geth/geth.ipc"
+  fi
 }
 
 
@@ -2571,8 +2608,8 @@ query_consensus_client() {
   if [ "${NETWORK}" = "gnosis" ]; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
-    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" \
+    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
@@ -2581,8 +2618,9 @@ query_consensus_client() {
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
+    "teku.yml" "Teku (Java) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
-    "teku.yml" "Teku (Java) - consensus and validator client" 3>&1 1>&2 2>&3)
+     3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
@@ -2592,10 +2630,11 @@ query_consensus_client() {
     "Which consensus client do you want to run?" 13 65 6 \
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
-    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
-    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
-    "prysm.yml" "Prysm (Go) - consensus and validator client" 3>&1 1>&2 2>&3)
+    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+    "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
+    "prysm.yml" "Prysm (Go) - consensus and validator client" \
+    3>&1 1>&2 2>&3)
   fi
 
   echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
@@ -2699,8 +2738,8 @@ query_execution_client() {
     "reth.yml" "Reth (Rust)" \
     "besu.yml" "Besu (Java)" \
     "nethermind.yml" "Nethermind (.NET)" \
-    "geth.yml" "Geth (Go)" \
     "erigon.yml" "Erigon (Go)" \
+    "geth.yml" "Geth (Go)" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
 
@@ -3588,6 +3627,12 @@ config() {
 # shellcheck disable=SC2034
     GETH_DOCKERFILE=Dockerfile.source
     var=GETH_DOCKERFILE
+    set_value_in_env
+  fi
+  var="SIREN_PASSWORD"
+  SIREN_PASSWORD=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  if [ -z "${SIREN_PASSWORD}" ]; then
+    SIREN_PASSWORD=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     set_value_in_env
   fi
 

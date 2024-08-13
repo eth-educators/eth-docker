@@ -49,7 +49,6 @@ services:
       - --data-path=/var/lib/teku
       - --log-destination=CONSOLE
       - --validator-keys=/var/lib/teku/validator-keys:/var/lib/teku/validator-passwords
-      - --validators-early-attestations-enabled=false
       - --validator-api-enabled=true
       - --validator-api-interface=0.0.0.0
       - --validator-api-port=${KEY_API_PORT:-7500}
