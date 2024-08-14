@@ -1164,6 +1164,8 @@ nag_os_version() {
      echo "Ubuntu ${__os_major_version} is older than the recommended 24.04 or 22.04 version."
      echo
      echo "Updating is neither urgent nor required, merely recommended."
+     echo
+     echo "Guide to upgrading to 24.04: https://gist.github.com/yorickdowne/94f1e5538007f4c9d3da7b22b0dc28a4"
     fi
   fi
 
@@ -1173,6 +1175,8 @@ nag_os_version() {
      echo "Debian ${__os_major_version} is older than the recommended 12 or 11 version."
      echo
      echo "Updating is neither urgent nor required, merely recommended."
+     echo
+     echo "Guide to upgrading to 12: https://gist.github.com/yorickdowne/ec9e2c6f4f8a2ee93193469d285cd54c"
     fi
   fi
 }
