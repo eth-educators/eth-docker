@@ -69,3 +69,7 @@ services:
 
 volumes:
   certs:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}
