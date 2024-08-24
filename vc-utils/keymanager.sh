@@ -485,6 +485,39 @@ validator-list() {
     fi
 }
 
+validator-count() {
+    __api_path=eth/v1/keystores
+    if [ "${WEB3SIGNER}" = "true" ]; then
+        __token=NIL
+        __vc_api_container=${__api_container}
+        __api_container=web3signer
+        __vc_api_port=${__api_port}
+        __api_port=9000
+        __vc_api_tls=${__api_tls}
+        __api_tls=false
+    else
+        get-token
+    fi
+    __validator-list-call
+    declare key_count=$(echo "$__result" | jq -r '.data | length')
+    echo "Validator keys loaded into ${__service}: $key_count"
+
+    if [ "${WEB3SIGNER}" = "true" ]; then
+        get-token
+        __api_path=eth/v1/remotekeys
+        __api_container=${__vc_api_container}
+        __service=${__vc_service}
+        __api_port=${__vc_api_port}
+        __api_tls=${__vc_api_tls}
+        __validator-list-call
+        declare remote_key_count=$(echo "$__result" | jq -r '.data | length')
+        echo "Remote Validator keys registered with ${__service}: $remote_key_count"
+        key_count=(key_count + remote_key_count)
+    fi
+
+    echo "Total keys: $key_count"
+}
+
 validator-delete() {
     if [ -z "${__pubkey}" ]; then
       echo "Please specify a validator public key to delete, or \"all\""
@@ -1064,6 +1097,8 @@ usage() {
     echo "Call keymanager with an ACTION, one of:"
     echo "  list"
     echo "     Lists the public keys of all validators currently loaded into your validator client"
+    echo "  count"
+    echo "     Counts the number of keys currently loaded into your validator client"
     echo "  import"
     echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
     echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
@@ -1213,6 +1248,9 @@ case "$3" in
         ;;
     register)
         validator-register
+        ;;
+    count)
+        validator-count
         ;;
     get-recipient)
         __pubkey=$4
