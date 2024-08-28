@@ -43,15 +43,29 @@ determine_distro() {
   __distro=$(echo "$__distro" | tr "[:upper:]" "[:lower:]")
 
   if [[ "$__distro" = "ubuntu" ]]; then
-    if ! dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -q "ok installed"; then
-      ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
+    if [ "$__cannot_sudo" -eq 0 ]; then
+      if ! dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -q "ok installed"; then
+        echo "Installing lsb-release"
+        ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
+      fi
     fi
-    __os_major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
+    if [ -n "$(command -v lsb_release 2>/dev/null)" ]; then
+      __os_major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
+    else
+      __os_major_version=24 # Without sudo and lsb_release let's just skip the check
+    fi
   elif [[ "$__distro" =~ "debian" ]]; then
-    if ! dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -q "ok installed"; then
-      ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
+    if [ "$__cannot_sudo" -eq 0 ]; then
+      if ! dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -q "ok installed"; then
+        echo "Installing lsb-release"
+        ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
+      fi
     fi
-    __os_major_version=$(lsb_release -r | cut -f2)
+    if [ -n "$(command -v lsb_release 2>/dev/null)" ]; then
+      __os_major_version=$(lsb_release -r | cut -f2)
+    else
+      __os_major_version=12 # Without sudo and lsb_release let's just skip the check
+    fi
   fi
 }
 
@@ -80,6 +94,10 @@ handle_docker_sudo() {
   fi
   __docker_sudo=""
   if ! docker images >/dev/null 2>&1; then
+    if [ "$__cannot_sudo" -eq 1 ]; then
+      echo "Cannot call Docker and cannot use sudo. Please make your user part of the docker group"
+      exit 1
+    fi
     echo "Will use sudo to access Docker"
     __docker_sudo="sudo"
   fi
@@ -87,12 +105,18 @@ handle_docker_sudo() {
 
 
 handle_root() {
+  __cannot_sudo=0
   if [ "${EUID}" -eq 0 ]; then
     __as_owner="sudo -u ${OWNER}"
     __auto_sudo=""
   else
     __as_owner=""
-    __auto_sudo="sudo"
+    if groups | grep -q '\bsudo\b' || groups | grep -q '\badmin\b'; then
+      __auto_sudo="sudo"
+    else
+      __auto_sudo=""
+      __cannot_sudo=1
+    fi
   fi
 }
 
@@ -204,7 +228,13 @@ prep_conffiles() {
   fi
 # Make sure local user owns the dkg output dir and everything in it
   if find .eth/dkg_output \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" | grep -q .; then
-    ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .eth/dkg_output
+    if [ "$__cannot_sudo" -eq 0 ]; then
+      echo "Fixing ownership of .eth/dkg_output"
+      ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .eth/dkg_output
+      ${__auto_sudo} chmod -R 755 .eth/dkg_output
+    else
+      echo "Ownership of .eth/dkg_output should be fixed, but this user can't sudo"
+    fi
   fi
 # Make sure the dkg output dir and its contents are mod 0755
   if find .eth/dkg_output \! -perm 755 | grep -q .; then
@@ -251,7 +281,10 @@ install-bash-completions() {
 
 
 install() {
-
+  if [ "$__cannot_sudo" -eq 1 ]; then
+    echo "The install command requires the user to be part of the sudo group, or on macOS the admin group"
+    exit 1
+  fi
   if [[ "$__distro" = "ubuntu" ]]; then
     ${__auto_sudo} apt-get update
     ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
