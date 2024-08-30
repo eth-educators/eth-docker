@@ -886,11 +886,7 @@ and secrets directories into .eth/validator_keys instead."
             __api_port=${__vc_api_port}
             __api_tls=${__vc_api_tls}
 
-            if [ -z "${PRYSM:+x}" ]; then
-                jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
-            else
-                jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value}]' <<< '{}' >/tmp/apidata.txt
-            fi
+            jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
 
             get-token
             __api_data=@/tmp/apidata.txt
@@ -991,11 +987,7 @@ validator-register() {
 
     __w3s_pubkeys="$(echo "$__result" | jq -r '.data[].validating_pubkey')"
     while IFS= read -r __pubkey; do
-        if [ -z "${PRYSM:+x}" ]; then
-            jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
-        else
-            jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value}]' <<< '{}' >/tmp/apidata.txt
-        fi
+         jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
 
         __api_data=@/tmp/apidata.txt
         __api_path=eth/v1/remotekeys
