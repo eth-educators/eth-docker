@@ -47,7 +47,13 @@ fi
 
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--validators-external-signer-url http://web3signer:9000 --validators-external-signer-public-keys http://web3signer:9000/api/v1/eth2/publicKeys"
+  __w3s_url="--validators-external-signer-url http://web3signer:9000 \
+  --validators-external-signer-public-keys http://web3signer:9000/api/v1/eth2/publicKeys \
+  --validators-external-signer-key-file=/var/lib/prysm/w3s-keys.txt"
+
+  if [ ! -f /var/lib/prysm/w3s-keys.txt ]; then
+    touch /var/lib/prysm/w3s-keys.txt
+  fi
 else
   __w3s_url=""
 fi
