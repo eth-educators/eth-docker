@@ -49,7 +49,7 @@ fi
 if [ "${WEB3SIGNER}" = "true" ]; then
   __w3s_url="--validators-external-signer-url http://web3signer:9000 --validators-external-signer-public-keys http://web3signer:9000/api/v1/eth2/publicKeys"
 else
-  __w3s_url=""
+  __w3s_url="--web --wallet-password-file /var/lib/prysm/password.txt"
 fi
 
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then

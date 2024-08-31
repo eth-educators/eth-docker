@@ -139,7 +139,6 @@ services:
       - 0.0.0.0
       - --monitoring-port
       - "8009"
-      - --web
       - --grpc-gateway-host
       - 0.0.0.0
       - --grpc-gateway-port
@@ -149,8 +148,6 @@ services:
       - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --wallet-password-file
-      - /var/lib/prysm/password.txt
     depends_on:
       - consensus
     labels:
