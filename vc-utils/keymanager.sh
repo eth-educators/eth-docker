@@ -516,7 +516,6 @@ validator-count() {
           echo "WARNING: The number of keys loaded into Web3signer and registered with the validator client differ."
           echo "Please run \"./ethd keys register\""
     fi
-    echo "Total keys: $key_count"
 }
 
 validator-delete() {
