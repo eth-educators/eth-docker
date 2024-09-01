@@ -510,7 +510,7 @@ validator-count() {
         __api_port=${__vc_api_port}
         __api_tls=${__vc_api_tls}
         __validator-list-call
-        declare remote_key_count=$(echo "$__result" | jq -r '.data | length')
+    remote_key_count=$(echo "$__result" | jq -r '.data | length')
         echo "Remote Validator keys registered with ${__service}: $remote_key_count"
         key_count=(key_count + remote_key_count)
     fi
