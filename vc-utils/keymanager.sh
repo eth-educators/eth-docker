@@ -499,7 +499,7 @@ validator-count() {
         get-token
     fi
     __validator-list-call
-    declare key_count=$(echo "$__result" | jq -r '.data | length')
+    key_count=$(echo "$__result" | jq -r '.data | length')
     echo "Validator keys loaded into ${__service}: $key_count"
 
     if [ "${WEB3SIGNER}" = "true" ]; then
