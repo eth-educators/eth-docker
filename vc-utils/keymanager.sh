@@ -515,6 +515,7 @@ validator-count() {
         if [ "${key_count}" -ne "${remote_key_count)" ]; then
           echo "WARNING: The number of keys loaded into Web3signer and registered with the validator client differ."
           echo "Please run \"./ethd keys register\""
+        fi
     fi
 }
 
