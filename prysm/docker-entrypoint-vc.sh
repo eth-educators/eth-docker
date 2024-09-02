@@ -55,7 +55,7 @@ if [ "${WEB3SIGNER}" = "true" ]; then
     touch /var/lib/prysm/w3s-keys.txt
   fi
 else
-  __w3s_url=""
+  __w3s_url="--web --wallet-password-file /var/lib/prysm/password.txt"
 fi
 
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
