@@ -14,7 +14,7 @@ services:
       - .eth:/opt/charon/.charon
     <<: *logging
     environment:
-      - CHARON_BEACON_NODE_ENDPOINTS=${OBOL_BEACON_NODE_ENDPOINT:-http://consensus:5052}
+      - CHARON_BEACON_NODE_ENDPOINTS=${OBOL_CL_NODE:-http://consensus:5052}
       - CHARON_LOG_LEVEL=${OBOL_LOG_LEVEL:-debug}
       - CHARON_LOG_FORMAT=${OBOL_LOG_FORMAT:-console}
       - CHARON_P2P_RELAYS=${OBOL_P2P_RELAYS:-https://0.relay.obol.tech,https://1.relay.obol.tech/}
@@ -67,8 +67,8 @@ services:
      - ./validator-ejector:/exitmessages
    restart: unless-stopped
    environment:
-     -  EXECUTION_NODE=${VE_EXECUTION_NODE_URL:-http://execution:8551}
-     -  CONSENSUS_NODE=${VE_BEACON_NODE_URL:-http://consensus:5052}
+     -  EXECUTION_NODE=${OBOL_EL_NODE:-http://execution:8545}
+     -  CONSENSUS_NODE=${OBOL_CL_NODE:-http://consensus:5052}
      -  LOCATOR_ADDRESS=${VE_LOCATOR_ADDRESS:-0x28FAB2059C713A7F9D8c86Db49f9bb0e96Af1ef8}
      -  STAKING_MODULE_ID=${VE_STAKING_MODULE_ID:-2}
      -  OPERATOR_ID=${VE_OPERATOR_ID}
@@ -91,7 +91,7 @@ services:
       - ./validator-ejector:/exitmessages
       - .eth:/charon
     environment:
-      - LIDODVEXIT_BEACON_NODE_URL=${LIDO_DV_EXIT_BEACON_NODE_URL:-http://consensus:5052}
+      - LIDODVEXIT_BEACON_NODE_URL=${OBOL_CL_NODE:-http://consensus:5052}
       - LIDODVEXIT_CHARON_RUNTIME_DIR=/charon
       - LIDODVEXIT_EJECTOR_EXIT_PATH=/exitmessages
       - LIDODVEXIT_EXIT_EPOCH=${LIDO_DV_EXIT_EXIT_EPOCH:-194048}

@@ -10,7 +10,7 @@ Please see the [official documentation](https://ethdocker.com).
 
 For a quick testnet start, you can install prerequisites and configure Eth Docker, as any user not named `root`:
 
-* `cd ~ && git clone https://github.com/lidofinance/eth-docker.git && cd eth-docker`
+* `cd ~ && git clone https://github.com/eth-educators/eth-docker.git && cd eth-docker`
 * `./ethd install`
 * `./ethd config`
 

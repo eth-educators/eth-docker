@@ -1,9 +1,0 @@
-privKey: /config/encrypted_private_key.json
-privKeyPassword: /config/password.pass
-port: 3030
-operatorID: <YOUR_OPERATOR_ID>
-storeShare: true
-logLevel: info
-logFormat: json
-logLevelFormat: capitalColor
-logFilePath: /output/debug.log
