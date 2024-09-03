@@ -2620,7 +2620,8 @@ query_validator_client() {
     "lighthouse-vc-only.yml" "Lighthouse validator client" \
     "teku-vc-only.yml" "Teku validator client" \
     "lodestar-vc-only.yml" "Lodestar validator client" \
-    "nimbus-vc-only.yml" "Nimbus validator client" 3>&1 1>&2 2>&3)
+    "nimbus-vc-only.yml" "Nimbus validator client" \
+    "prysm-vc-only.yml" "Prysm validator client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select validator client" --menu \
     "Which validator client do you want to run?" 12 65 5 \
@@ -2651,6 +2652,7 @@ query_consensus_client() {
     "lodestar.yml" "Lodestar (Javascript) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
+    "prysm.yml" "Prysm (Go) - consensus and validator client" \
      3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
@@ -2687,7 +2689,9 @@ query_consensus_only_client() {
     "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (Javascript) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
-    "teku-cl-only.yml" "Teku (Java) - consensus client" 3>&1 1>&2 2>&3)
+    "teku-cl-only.yml" "Teku (Java) - consensus client" \
+    "prysm-cl-only.yml" "Prysm (Go) - consensus client" \
+    3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 11 65 4 \
