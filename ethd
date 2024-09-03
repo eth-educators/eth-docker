@@ -2237,7 +2237,7 @@ keys() {
   elif [ "${1:-}" = "create-for-csm" ]; then
     var="NETWORK"
     NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
-    query_lido_keys_generation
+    __query_lido_keys_generation
   elif [ "${1:-}" = "prepare-address-change" ]; then
     __i_haz_ethdo
     echo "Generating offline prep file"
@@ -3121,7 +3121,7 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
   fi
 }
 
-lido_withdrawal_credentials_address() {
+__lido_withdrawal_credentials_address() {
     __lido_address=""
     case "${NETWORK}" in
         "mainnet")
@@ -3137,16 +3137,16 @@ lido_withdrawal_credentials_address() {
     echo "${__lido_address}"
 }
 
-lido_keys_attention_message() {
-  whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: $(lido_withdrawal_credentials_address)\nOtherwise, your keys will not be valid!" 10 80
+__lido_keys_attention_message() {
+  whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: $(__lido_withdrawal_credentials_address)\nOtherwise, your keys will not be valid!" 10 80
 }
 
-query_lido_keys_generation() {
+__query_lido_keys_generation() {
     if [ "${NETWORK}" = "mainnet" ]; then
       if (whiptail --title "Security warning" --yesno "Key generation is not recommended on MAINNET for security reasons.\n\nIt is recommended to Select 'No' to skip the step and generate keys in a more secure way later (ex. on an airgapped live USB)\n\nOtherwise, Select 'Yes' to proceed with key generation on this machine" 13 85) then
          echo "Proceeding with key generation on MAINNET."
       else
-         lido_keys_attention_message
+         __lido_keys_attention_message
          return 0
       fi
     fi
@@ -3187,7 +3187,7 @@ again or Cancel on the next screen." 10 75
         fi
         export NETWORK=${NETWORK} && docompose --profile tools run --rm deposit-cli-${__mnemonic} \
             --uid "$(id -u)" \
-            --execution_address "$(lido_withdrawal_credentials_address)" \
+            --execution_address "$(__lido_withdrawal_credentials_address)" \
             --num_validators "${__num_validators}" \
             --keystore_password "${__keystore_password}" \
             --non_interactive
@@ -3198,7 +3198,7 @@ again or Cancel on the next screen." 10 75
 }
 
 
-query_lido_obol_enr() {
+__query_lido_obol_enr() {
     ${__as_owner} mkdir -p ./.eth
     __outcome__=$(docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
@@ -3213,7 +3213,7 @@ query_lido_obol_enr() {
     whiptail --title "Lido Obol operator ENR creation outcome" --msgbox "Your ENR is created!\n\n1. Backup your private key (path: .eth/charon-enr-private-key)!\n2. Copy your public ENR for the futher steps\n\nYour public ENR is:\n\n${__lido_obol_operator_enr}" 16 80
 }
 
-query_lido_obol_cluster_definition() {
+__query_lido_obol_cluster_definition() {
     __cluster_definition_url=$(whiptail --title "Lido Obol cluster creation" --inputbox "\nPut your cluster definition link below:" 10 80 "https://api.obol.tech/dv/example_link_to_your_definition" 3>&1 1>&2 2>&3)
     if [ "${__cluster_definition_url}" = ""  ]; then
       echo "Cluster definition URL can't be empty"
@@ -3224,13 +3224,13 @@ query_lido_obol_cluster_definition() {
         ${__as_owner} curl -o ./.eth/cluster_definition.tmp -s "${__cluster_definition_url}" -H "Accept: application/json"
 # shellcheck disable=SC2086
         __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster_definition.tmp:/cluster_definition.json:ro curl-jq sh -c \
-          "cat /cluster_definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(lido_withdrawal_credentials_address)'\")'" | tail -n 1)
+          "cat /cluster_definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
         set -e
         if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition url is:" "${__cluster_definition_url}"
             ${__as_owner} mv ./.eth/cluster_definition.tmp ./.eth/cluster-definition.json
         else
-            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(lido_withdrawal_credentials_address)'" 14 90
+            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
             echo "Your cluster definition is NOT valid."
             ${__as_owner} rm ./.eth/cluster_definition.tmp
             exit 1
@@ -3241,7 +3241,7 @@ query_lido_obol_cluster_definition() {
     fi
 }
 
-query_lido_obol_cluster_dkg() {
+__query_lido_obol_cluster_dkg() {
     if [ -d ./.eth/validator_keys ]; then
         __folder_postfix=${EPOCHSECONDS}
         ${__as_owner} mkdir ./.eth_backup_"$__folder_postfix"
@@ -3451,9 +3451,9 @@ config() {
     fi
     if [ "${__deployment}" = "lido_csm" ]; then
       if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
-        query_lido_keys_generation
+        __query_lido_keys_generation
       else
-        lido_keys_attention_message
+        __lido_keys_attention_message
       fi
       if [ "${NETWORK}" = "holesky" ]; then
         __link="https://csm.testnet.fi"
@@ -3516,20 +3516,20 @@ config() {
       if (whiptail --title "Lido Obol cluster exists" --yesno "Your cluster has already been created. Continue with it?" 10 60); then
 # shellcheck disable=SC2086
         __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-lock.json:/cluster-lock.json:ro curl-jq sh -c \
-          "cat /cluster-lock.json | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(lido_withdrawal_credentials_address)'\")'" | tail -n 1)
+          "cat /cluster-lock.json | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
         if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
           echo "Your cluster lock is valid."
         else
-          whiptail --title "Lido Obol cluster definition" --msgbox "Your cluster lock file './.eth/cluster-lock.json' is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(lido_withdrawal_credentials_address)'" 14 90
+          whiptail --title "Lido Obol cluster definition" --msgbox "Your cluster lock file './.eth/cluster-lock.json' is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
           echo "Your cluster lock is NOT valid."
           exit 1
         fi
       elif (whiptail --title "Lido Obol cluster creation" --yesno "Backup a previously created cluster to create a new one?" 10 80); then
         ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
         ${__as_owner} rm -rf ./.eth
-        query_lido_obol_enr
-        query_lido_obol_cluster_definition
-        query_lido_obol_cluster_dkg
+        __query_lido_obol_enr
+        __query_lido_obol_cluster_definition
+        __query_lido_obol_cluster_dkg
       else
         whiptail --title "Lido Obol cluster creation" --msgbox "The \`.eth\` folder must be empty or non-existent to continue" 10 80
         echo "The \`.eth\` folder must be empty to create a new cluster"
@@ -3542,31 +3542,31 @@ config() {
         else
           ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
           ${__as_owner} rm -rf ./.eth
-          query_lido_obol_enr
+          __query_lido_obol_enr
         fi
       else
-        query_lido_obol_enr
+        __query_lido_obol_enr
       fi
 
       if [ -f "./.eth/cluster-definition.json" ]; then
         if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
 # shellcheck disable=SC2086
           __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-definition.json:/cluster-definition.json:ro curl-jq sh -c \
-            "cat /cluster-definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(lido_withdrawal_credentials_address)'\")'" | tail -n 1)
+            "cat /cluster-definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
           if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition is valid."
           else
-            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(lido_withdrawal_credentials_address)'" 14 90
+            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
             echo "Your cluster definition is NOT valid."
             exit 1
           fi
         else
-          query_lido_obol_cluster_definition
+          __query_lido_obol_cluster_definition
         fi
       else
-        query_lido_obol_cluster_definition
+        __query_lido_obol_cluster_definition
       fi
-      query_lido_obol_cluster_dkg
+      __query_lido_obol_cluster_dkg
     fi
 
 # We are using the variable
