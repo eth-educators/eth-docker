@@ -89,7 +89,6 @@ services:
       - "8008"
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --enable-debug-rpc-endpoints
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
@@ -140,7 +139,6 @@ services:
       - 0.0.0.0
       - --monitoring-port
       - "8009"
-      - --web
       - --grpc-gateway-host
       - 0.0.0.0
       - --grpc-gateway-port
@@ -150,8 +148,6 @@ services:
       - consensus:5052
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --wallet-password-file
-      - /var/lib/prysm/password.txt
       - --enable-beacon-rest-api
       - --beacon-rest-api-provider
       - ${CL_NODE:-http://consensus:5052}
