@@ -3185,7 +3185,7 @@ again or Cancel on the next screen." 10 75
         if (whiptail --title "Mnemonic" --yesno "Do you want to generate new mnemonic?" 8 60) then
             __mnemonic="new"
         fi
-        export NETWORK=${NETWORK} && docompose --profile tools run --rm deposit-cli-${__mnemonic} \
+        export NETWORK=${NETWORK} && __docompose --profile tools run --rm deposit-cli-${__mnemonic} \
             --uid "$(id -u)" \
             --execution_address "$(__lido_withdrawal_credentials_address)" \
             --num_validators "${__num_validators}" \
@@ -3200,7 +3200,7 @@ again or Cancel on the next screen." 10 75
 
 __query_lido_obol_enr() {
     ${__as_owner} mkdir -p ./.eth
-    __outcome__=$(docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-create-enr)
+    __outcome__=$(__docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
       __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
     else
@@ -3223,7 +3223,7 @@ __query_lido_obol_cluster_definition() {
     if [ $exitstatus -eq 0 ]; then
         ${__as_owner} curl -o ./.eth/cluster_definition.tmp -s "${__cluster_definition_url}" -H "Accept: application/json"
 # shellcheck disable=SC2086
-        __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster_definition.tmp:/cluster_definition.json:ro curl-jq sh -c \
+        __cluster_definition_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster_definition.tmp:/cluster_definition.json:ro curl-jq sh -c \
           "cat /cluster_definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
         set -e
         if [ "${__cluster_definition_is_valid}" = "true" ]; then
@@ -3249,7 +3249,7 @@ __query_lido_obol_cluster_dkg() {
         ${__as_owner} rm -rf ./.eth/validator_keys
     fi
     if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
-        __outcome__=$(docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-run-dkg)
+        __outcome__=$(__docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-run-dkg)
         exitstatus=$?
         if [ $exitstatus -ne 0 ]; then
             echo "Something went wrong. Please, try again."
@@ -3515,7 +3515,7 @@ config() {
     if [ -f "./.eth/cluster-lock.json" ]; then
       if (whiptail --title "Lido Obol cluster exists" --yesno "Your cluster has already been created. Continue with it?" 10 60); then
 # shellcheck disable=SC2086
-        __cluster_lock_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-lock.json:/cluster-lock.json:ro curl-jq sh -c \
+        __cluster_lock_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-lock.json:/cluster-lock.json:ro curl-jq sh -c \
           "cat /cluster-lock.json | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
         if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
           echo "Your cluster lock is valid."
@@ -3551,7 +3551,7 @@ config() {
       if [ -f "./.eth/cluster-definition.json" ]; then
         if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
 # shellcheck disable=SC2086
-          __cluster_definition_is_valid=$(docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-definition.json:/cluster-definition.json:ro curl-jq sh -c \
+          __cluster_definition_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-definition.json:/cluster-definition.json:ro curl-jq sh -c \
             "cat /cluster-definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
           if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition is valid."
@@ -3698,7 +3698,7 @@ version() {
   # Client versions
   case "${__value}" in
     *lido-obol.yml* )
-      docompose exec charon charon version
+      __docompose exec charon charon version
       echo
       ;;&
     *ssv.yml* )
