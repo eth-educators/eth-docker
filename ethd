@@ -786,8 +786,7 @@ __delete_erigon() {
   __value=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${__env_file}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
-#  if [[ ! ("${__value}" =~ "v3" ||  "${__value}" = "latest" ||  "${__value}" = "stable") ]]; then # No stable yet
-  if [[ ! ("${__value}" =~ "v3" ||  "${__value}" = "latest") ]]; then
+  if [[ ! ("${__value}" =~ "v3" ||  "${__value}" = "latest" || "${__value}" = "main-latest") ]]; then
     return 0
   fi
 
@@ -1109,8 +1108,11 @@ __env_migrate() {
         if [[ "${__var}" = "LH_DOCKER_TAG" && "${__value}" = "latest-modern" ]]; then # LH 5.2 ditched latest-modern
           __value="latest"
         fi
-        if [[ "${__var}" = "ERIGON_DOCKER_TAG" && "${__value}" = "stable" ]]; then # Erigon ditched stable
-          __value="v2.60.6"
+        if [[ "${__var}" = "ERIGON_DOCKER_TAG" && "${__value}" = "stable" ]]; then # Erigon switched to latest
+          __value="latest"
+        fi
+        if [[ "${__var}" = "ERIGON_DOCKER_REPO" && "${__value}" = "thorax/erigon" ]]; then # Erigon new repo
+          __value="erigontech/erigon"
         fi
         sed -i'.original' -e "s~^\(${__var}\s*=\s*\).*$~\1${__value}~" "${__env_file}"
       fi
@@ -2745,6 +2747,7 @@ __query_execution_client() {
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
       "Which execution client do you want to run?" 9 65 2 \
       "nethermind.yml" "Nethermind (.NET)" \
+      "erigon.yml" "Erigon (Go)" \
       "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
     else
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
@@ -2758,6 +2761,7 @@ __query_execution_client() {
     "Which execution client do you want to run?" 11 65 4 \
     "besu.yml" "Besu (Java)" \
     "nethermind.yml" "Nethermind (.NET)" \
+    "erigon.yml" "Erigon (Go)" \
     "geth.yml" "Geth (Go)" \
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
