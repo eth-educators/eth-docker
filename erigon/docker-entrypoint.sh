@@ -56,8 +56,39 @@ fi
 
 __caplin=""
 __db_params=""
-#if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" || "${DOCKER_TAG}" = "stable" ]]; then # No stable yet
-if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" ]]; then
+# Literal match intended
+# shellcheck disable=SC2076
+if [[ "${DOCKER_TAG}" =~ "2." || "${DOCKER_TAG}" = "latest" ]]; then
+# Check for network, and set prune accordingly
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Erigon archive node without pruning"
+    __prune=""
+  else
+    if [[ "${NETWORK}" = "mainnet" ]]; then
+      echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
+      __prune="--prune=htc --prune.r.before=11052984"
+    elif [[ "${NETWORK}" = "goerli" ]]; then
+      echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
+      __prune="--prune=htc --prune.r.before=4367322"
+    elif [[ "${NETWORK}" = "sepolia" ]]; then
+      echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
+      __prune="--prune=htc --prune.r.before=1273020"
+    elif [[ "${NETWORK}" = "gnosis" ]]; then
+      echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
+      __prune="--prune=htc --prune.r.before=19469077"
+    elif [[ "${NETWORK}" = "holesky" ]]; then
+      echo "holesky: Running without prune.r for eth deposit contract"
+      __prune="--prune=htc"
+    elif [[ "${NETWORK}" =~ ^https?:// ]]; then
+      echo "Custom testnet: Running without prune.r for eth deposit contract"
+      __prune="--prune=htc"
+    else
+      echo "Unable to determine eth deposit contract, running without prune.r"
+      __prune="--prune=htc"
+    fi
+  fi
+  __db_params="--db.pagesize 16K --db.size.limit 8TB"
+else  # Erigon v3
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Erigon archive node without pruning"
     __prune="--prune.mode=archive"
@@ -90,36 +121,6 @@ if [[ "${DOCKER_TAG}" =~ "v3" || "${DOCKER_TAG}" = "latest" ]]; then
     fi
     echo "Caplin parameters: ${__caplin}"
   fi
-else
-# Check for network, and set prune accordingly
-  if [ "${ARCHIVE_NODE}" = "true" ]; then
-    echo "Erigon archive node without pruning"
-    __prune=""
-  else
-    if [[ "${NETWORK}" = "mainnet" ]]; then
-      echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
-      __prune="--prune=htc --prune.r.before=11052984"
-    elif [[ "${NETWORK}" = "goerli" ]]; then
-      echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
-      __prune="--prune=htc --prune.r.before=4367322"
-    elif [[ "${NETWORK}" = "sepolia" ]]; then
-      echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
-      __prune="--prune=htc --prune.r.before=1273020"
-    elif [[ "${NETWORK}" = "gnosis" ]]; then
-      echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
-      __prune="--prune=htc --prune.r.before=19469077"
-    elif [[ "${NETWORK}" = "holesky" ]]; then
-      echo "holesky: Running without prune.r for eth deposit contract"
-      __prune="--prune=htc"
-    elif [[ "${NETWORK}" =~ ^https?:// ]]; then
-      echo "Custom testnet: Running without prune.r for eth deposit contract"
-      __prune="--prune=htc"
-    else
-      echo "Unable to determine eth deposit contract, running without prune.r"
-      __prune="--prune=htc"
-    fi
-  fi
-  __db_params="--db.pagesize 16K --db.size.limit 8TB"
 fi
 
 if [ "${IPV6}" = "true" ]; then
