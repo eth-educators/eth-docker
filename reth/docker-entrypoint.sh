@@ -74,17 +74,75 @@ case ${LOG_LEVEL} in
     ;;
 esac
 
+__static=""
+if [ -n "${STATIC_DIR}" ] && [ ! "${STATIC_DIR}" = ".nada" ]; then
+  echo "Using separate static files directory at ${STATIC_DIR}."
+  __static="--datadir.static-files /var/lib/static"
+fi
+
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Reth archive node without pruning"
   __prune=""
 else
   __prune="--full"
-fi
+  if [ ! -f "/var/lib/reth/reth.toml" ]; then  # Configure ssv, rocketpool, stakewise contracts
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+    reth init ${__network} --datadir /var/lib/reth ${__static}
+    cat <<EOF >> /var/lib/reth/reth.toml
 
-__static=""
-if [ -n "${STATIC_DIR}" ] && [ ! "${STATIC_DIR}" = ".nada" ]; then
-  echo "Using separate static files directory at ${STATIC_DIR}."
-  __static="--datadir.static-files /var/lib/static"
+[prune]
+block_interval = 5
+
+[prune.segments]
+sender_recovery = "full"
+
+[prune.segments.receipts]
+before = 0
+
+[prune.segments.account_history]
+distance = 10064
+
+[prune.segments.storage_history]
+distance = 10064
+EOF
+    case "${NETWORK}" in
+      mainnet)
+        echo "Configuring Reth pruning to include RocketPool, SSV and StakeWise contracts"
+        cat <<EOF >> /var/lib/reth/reth.toml
+
+[prune.segments.receipts_log_filter.0x00000000219ab540356cBB839Cbe05303d7705Fa]
+before = 0
+
+[prune.segments.receipts_log_filter.0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1]
+before = 0
+
+[prune.segments.receipts_log_filter.0xEE4d2A71cF479e0D3d0c3c2C923dbfEB57E73111]
+before = 0
+
+[prune.segments.receipts_log_filter.0x6B5815467da09DaA7DC83Db21c9239d98Bb487b5]
+before = 0
+EOF
+        ;;
+      holesky)
+        echo "Configuring Reth pruning to include RocketPool, SSV and StakeWise contracts"
+        cat <<EOF >> /var/lib/reth/reth.toml
+
+[prune.segments.receipts_log_filter.0x4242424242424242424242424242424242424242]
+before = 0
+
+[prune.segments.receipts_log_filter.0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA]
+before = 0
+
+[prune.segments.receipts_log_filter.0x9D210F9169bc6Cf49152F21A57A446bCcaA87b33]
+before = 0
+
+[prune.segments.receipts_log_filter.0xB580799Bf7d62721D1a523f0FDF2f5Ed7BA4e259]
+before = 0
+EOF
+        ;;
+    esac
+  fi
 fi
 
 if [ -f /var/lib/reth/prune-marker ]; then
