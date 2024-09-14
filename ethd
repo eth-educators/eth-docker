@@ -743,6 +743,13 @@ __delete_reth() {
     return 0
   fi
 
+# Has db been initialized?
+  __db_exists=$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
+      alpine:3 sh -c 'if [ -f "/var/lib/reth/db/database.version" ]; then echo true; else echo false; fi')
+  if [ "$__db_exists" = "false" ]; then
+    return 0
+  fi
+
 # Check Reth db version
   __db_version="$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
       alpine:3 cat /var/lib/reth/db/database.version)"
