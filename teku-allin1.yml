@@ -46,6 +46,7 @@ services:
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - EMBEDDED_VC=true
       - NETWORK=${NETWORK}
+      - ENABLE_DIST_ATTESTATION_AGGR=${ENABLE_DIST_ATTESTATION_AGGR:-false}
     ports:
       - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/tcp
       - ${HOST_IP:-}:${CL_P2P_PORT:-9000}:${CL_P2P_PORT:-9000}/udp

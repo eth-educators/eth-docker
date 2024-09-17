@@ -4,6 +4,9 @@ ext-network.yml
 ext-network.yml.original
 ext-network.yml.bak
 .eth/*
+.eth_backup*
+.charon/*
+validator-ejector/*
 !.eth/README.md
 !.eth/validator_keys/.empty
 !.eth/exit_messages/.empty

@@ -995,15 +995,15 @@ __env_migrate() {
     return 0
   fi
 
-  __all_vars=( COMPOSE_FILE FEE_RECIPIENT EL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID \
+  __all_vars=( COMPOSE_FILE FEE_RECIPIENT EL_NODE EL_OBOL_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS MEV_MIN_BID \
     MEV_NODE CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL ANCIENT_DIR \
     AUTOPRUNE_NM LOGS_LABEL CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID \
     GRAFANA_HOST SIREN_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP PROM_HOST HOST_IP SHARE_IP PRYSM_HOST EE_HOST \
     EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB VC_HOST DDNS_SUBDOMAIN IPV6 DDNS_PROXY RAPID_SYNC_URL \
-    CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER PRYSM_PORT DOPPELGANGER \
+    CL_NODE CL_OBOL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER PRYSM_PORT DOPPELGANGER \
     PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
-    EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP ERIGON_P2P_PORT_2 \
+    EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT ERIGON_P2P_PORT_2 \
     ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD )
   __target_vars=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
@@ -1015,7 +1015,7 @@ __env_migrate() {
     NIMEL_DOCKER_REPO NIMEL_DOCKERFILE LS_SRC_BUILD_TARGET LS_SRC_REPO LS_DOCKER_TAG LS_DOCKER_REPO LS_DOCKERFILE \
     GETH_SRC_BUILD_TARGET GETH_SRC_REPO GETH_DOCKER_TAG GETH_DOCKER_REPO TRAEFIK_TAG DDNS_TAG \
     GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_SRC_REPO NM_DOCKER_TAG NM_DOCKER_REPO NM_DOCKERFILE \
-    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG \
+    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG CHARON_VERSION \
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
@@ -2146,10 +2146,12 @@ __i_haz_keys_service() {
 
 __keys_usage() {
   echo "Call keymanager with an ACTION, one of:"
+  echo "  create-for-csm"
+  echo "      Create keys for Lido CSM"
   echo "  list"
-  echo "     Lists the public keys of all validators currently loaded into your validator client"
+  echo "      Lists the public keys of all validators currently loaded into your validator client"
   echo "  count"
-  echo "     Counts the keys currently loaded into your validator client"
+  echo "      Counts the keys currently loaded into your validator client"
   echo "  import"
   echo "      Import all keystore*.json in .eth/validator_keys while loading slashing protection data"
   echo "      in slashing_protection*.json files that match the public key(s) of the imported validator(s)"
@@ -2241,6 +2243,10 @@ keys() {
       __docompose rm --force validator
       up
     fi
+  elif [ "${1:-}" = "create-for-csm" ]; then
+    var="NETWORK"
+    NETWORK=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+    __query_lido_keys_generation
   elif [ "${1:-}" = "prepare-address-change" ]; then
     __i_haz_ethdo
     echo "Generating offline prep file"
@@ -2574,9 +2580,10 @@ __query_deployment() {
     "validator" "Validator client only" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-    "What kind of deployment do you want to run?" 10 65 3 \
+    "What kind of deployment do you want to run?" 10 65 4 \
     "node" "Ethereum node - consensus, execution and validator client" \
     "rpc" "Ethereum RPC node - consensus and execution client" \
+    "lido_comp" "Lido-compatible node (Community Staking / Simple DVT)" \
     "rocket" "Validator client only - integrate with RocketPool" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
@@ -2586,9 +2593,10 @@ __query_deployment() {
     "rocket" "Validator client only - integrate with RocketPool" 3>&1 1>&2 2>&3)
   elif uname -m | grep -q x86_64; then
     __deployment=$(whiptail --notags --title "Select deployment type" --menu \
-    "What kind of deployment do you want to run?" 11 65 4 \
+    "What kind of deployment do you want to run?" 11 65 5 \
     "node" "Ethereum node - consensus, execution and validator client" \
     "rpc" "Ethereum RPC node - consensus and execution client" \
+    "lido_comp" "Lido-compatible node (Community Staking / Simple DVT)" \
     "rocket" "Validator client only - integrate with RocketPool" \
     "ssv" "SSV node - consensus, execution and ssv-node" 3>&1 1>&2 2>&3)
   else
@@ -2597,6 +2605,15 @@ __query_deployment() {
     uname -m
     exit 1
   fi
+
+  if [ "${__deployment}" = "lido_comp" ]; then
+    __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
+    "What kind of deployment to participate in Lido protocol do you want to run?" 13 90 3 \
+    "lido_csm" "[Community Staking] CSM node - Consensus, execution and validator client" \
+    "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
+    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
+  fi
+
   echo "Your deployment choice is: ${__deployment}"
 }
 
@@ -2907,7 +2924,19 @@ __query_coinbase() {
 
   while true; do
     set +e # Can't rely on the error handler here because of the special-casing below for update()
-    if [ "${__during_update}" -eq 1 ] || [ ! "${__deployment}" = rpc ]; then
+    if [[ "${__deployment}" =~ "lido_" ]]; then
+      case "${NETWORK}" in
+        "mainnet")
+          FEE_RECIPIENT="0x388c818ca8b9251b393131c08a736a67ccb19297"
+          ;;
+        "holesky")
+          FEE_RECIPIENT="0xE73a3602b99f1f913e72F8bdcBC235e206794Ac8"
+          ;;
+        *)
+          FEE_RECIPIENT="0x0000000000000000000000000000000000000000"
+          ;;
+      esac
+    elif [ "${__during_update}" -eq 1 ] || [ ! "${__deployment}" = rpc ]; then
       FEE_RECIPIENT=$(whiptail --title "Configure rewards address" --inputbox "What is the address you want \
 transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 65 "${FEE_RECIPIENT}" \
 3>&1 1>&2 2>&3)
@@ -2983,6 +3012,89 @@ want to use MEV Boost?" 10 65); then
       fi
       return 0
   fi
+  if [[ "${__deployment}" =~ "lido_" ]]; then
+    MEV_BOOST="true"
+    while true; do
+      MEV_RELAYS=""
+      __selected=""
+      declare -A relays=()
+      declare -A optional_relays=()
+      case "${NETWORK}" in
+          "mainnet")
+              relays=(
+                  ['Agnostic']="https://0xa7ab7a996c8584251c8f925da3170bdfd6ebc75d50f5ddc4050a6fdc77f2a3b5fce2cc750d0865e05d7228af97d69561@agnostic-relay.net"
+                  ['bloXroute']="https://0xb0b07cd0abef743db4260b0ed50619cf6ad4d82064cb4fbec9d3ec530f7c5e6793d9f286c4e082c0244ffb9f2658fe88@bloxroute.regulated.blxrbdn.com"
+                  ['Aestus']="https://0xa15b52576bcbf1072f4a011c0f99f9fb6c66f3e1ff321f11f461d15e31b1cb359caa092c71bbded0bae5b5ea401aab7e@aestus.live"
+                  ['bloXroute Max-Profit']="https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com"
+                  ['Flashbots']="https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net"
+                  ['Eden Network']="https://0xb3ee7afcf27f1f1259ac1787876318c6584ee353097a50ed84f51a1f21a323b3736f271a895c7ce918c038e4265918be@relay.edennetwork.io"
+                  ['Ultra Sound']="https://0xa1559ace749633b997cb3fdacffb890aeebdb0f5a3b6aaa7eeeaf1a38af0a8fe88b9e4b1f61f236d2e64d95733327a62@relay.ultrasound.money"
+              )
+              optional_relays=(
+                  ['Manifold Finance']="https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1eea11168503240ac35d101c9135@mainnet-relay.securerpc.com/"
+              )
+              __selected=$(whiptail --title "Relays list" --checklist \
+                  "Choose relays" 15 50 9 \
+                  "Agnostic" "" ON \
+                  "bloXroute" "" ON \
+                  "Aestus" "" ON \
+                  "bloXroute Max-Profit" "" ON \
+                  "Flashbots" "" ON \
+                  "Eden Network" "" ON \
+                  "Manifold Finance" "(optional)" ON \
+                  "Ultra Sound" "" ON 3>&1 1>&2 2>&3)
+              ;;
+          "holesky")
+              relays=(
+                  ['Aestus']="https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@holesky.aestus.live"
+                  ['Titan']="https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@holesky.titanrelay.xyz"
+                  ['Flashbots Boost']="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net"
+                  ['Ultrasound']="https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
+              )
+              __selected=$(whiptail --title "Relays list" --checklist \
+                  "Choose relays" 12 30 5 \
+                  "Aestus" "" ON \
+                  "Titan" "" ON \
+                  "Flashbots Boost" "" ON \
+                  "Ultrasound" "" ON 3>&1 1>&2 2>&3)
+              ;;
+            *)
+              echo "No MEV RELAYS configured for ${NETWORK}"
+              return
+              ;;
+      esac
+      for i in "${!relays[@]}"; do
+          if [[ ${__selected} =~ ${i} ]]; then
+              if [ -z "${MEV_RELAYS}" ]; then
+                  MEV_RELAYS="${relays[$i]}"
+              else
+                  MEV_RELAYS="${MEV_RELAYS},${relays[$i]}"
+              fi
+          fi
+      done
+      exitstatus=$?
+      if [ $exitstatus -eq 0 ]; then
+          if [ -z "${MEV_RELAYS}" ]; then
+            whiptail --msgbox "At least one mandatory relay should be chosen" 10 75
+            continue
+          fi
+      else
+          echo "You chose Cancel."
+          exit 1
+      fi
+      for i in "${!optional_relays[@]}"; do
+          if [[ ${__selected} =~ ${i} ]]; then
+              if [ -z "${MEV_RELAYS}" ]; then
+                  MEV_RELAYS="${optional_relays[$i]}"
+              else
+                  MEV_RELAYS="${MEV_RELAYS},${optional_relays[$i]}"
+              fi
+          fi
+      done
+      break
+    done
+    return 0
+  fi
   if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 65) then
     MEV_BOOST="true"
     if [ "${__value}" = "true" ]; then
@@ -3017,12 +3129,154 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
     fi
     MEV_RELAYS=$(whiptail --title "Configure MEV relays" --inputbox "What MEV relay(s) do you want to use? \
 (right-click to paste)" 10 65 "${MEV_RELAYS}" 3>&1 1>&2 2>&3)
-
     echo "Your MEV relay(s): ${MEV_RELAYS}"
   else
     MEV_BOOST="false"
     MEV_RELAYS=""
   fi
+}
+
+__lido_withdrawal_credentials_address() {
+    __lido_address=""
+    case "${NETWORK}" in
+        "mainnet")
+            __lido_address="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
+            ;;
+        "holesky")
+            __lido_address="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
+            ;;
+        *)
+            __lido_address="0x0000000000000000000000000000000000000000"
+            ;;
+    esac
+    echo "${__lido_address}"
+}
+
+__lido_keys_attention_message() {
+  whiptail --title "Attention" --msgbox "Please, make sure that you set 32 ETH when generated deposit data\nAnd right execution address for your validator keys: $(__lido_withdrawal_credentials_address)\nOtherwise, your keys will not be valid!" 10 80
+}
+
+__query_lido_keys_generation() {
+    if [ "${NETWORK}" = "mainnet" ]; then
+      if (whiptail --title "Security warning" --yesno "Key generation is not recommended on MAINNET for security reasons.\n\nIt is recommended to Select 'No' to skip the step and generate keys in a more secure way later (ex. on an airgapped live USB)\n\nOtherwise, Select 'Yes' to proceed with key generation on this machine" 13 85) then
+         echo "Proceeding with key generation on MAINNET."
+      else
+         __lido_keys_attention_message
+         return 0
+      fi
+    fi
+
+    __num_validators="1"
+    __keystore_password=""
+    __keystore_password_confirm=""
+    __num_validators=$(whiptail --title "Validators count" --inputbox "Enter the number of validators" 8 60 "${__num_validators}" 3>&1 1>&2 2>&3)
+    while true; do
+        __keystore_password=$(whiptail --title "Keystore password" --passwordbox "Enter validators keystore password (at least 8 chars)" 8 60 "${__keystore_password}" 3>&1 1>&2 2>&3)
+
+        exitstatus=$?
+        if [ $exitstatus -eq 0 ]; then
+            if [[ ${#__keystore_password} -ge 8 ]]; then
+              __keystore_password_confirm=$(whiptail --title "Keystore password" --passwordbox "Confirm validators keystore password" 8 60 "${__keystore_password_confirm}" 3>&1 1>&2 2>&3)
+              if [ "${__keystore_password}" = "${__keystore_password_confirm}" ]; then
+                  echo "Keystore password set."
+                  break
+              else
+                  whiptail --msgbox "Passwords do not match. Please try again." 10 60
+              fi
+            else
+              whiptail --msgbox "The keystore password secret needs to be at least 8 characters long. You can try \
+again or Cancel on the next screen." 10 75
+            fi
+        else
+            echo "You chose Cancel."
+            exit 1
+        fi
+    done
+
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        echo "Your number of validators is:" "${__num_validators}"
+        __mnemonic="existing"
+        if (whiptail --title "Mnemonic" --yesno "Do you want to generate new mnemonic?" 8 60) then
+            __mnemonic="new"
+        fi
+        export NETWORK=${NETWORK} && __docompose --profile tools run --rm deposit-cli-${__mnemonic} \
+            --uid "$(id -u)" \
+            --execution_address "$(__lido_withdrawal_credentials_address)" \
+            --num_validators "${__num_validators}" \
+            --keystore_password "${__keystore_password}" \
+            --non_interactive
+    else
+        echo "You chose Cancel."
+        exit 1
+    fi
+}
+
+
+__query_lido_obol_enr() {
+    ${__as_owner} mkdir -p ./.eth
+    __outcome__=$(__docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-create-enr)
+    if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
+      __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')
+    else
+      echo "Something went wrong. Please, try again."
+      exit 1
+    fi
+
+    echo "Your created ENR is:" "${__lido_obol_operator_enr}"
+    echo "${__lido_obol_operator_enr}" >> "./.eth/charon-enr-public-key"
+    whiptail --title "Lido Obol operator ENR creation outcome" --msgbox "Your ENR is created!\n\n1. Backup your private key (path: .eth/charon-enr-private-key)!\n2. Copy your public ENR for the futher steps\n\nYour public ENR is:\n\n${__lido_obol_operator_enr}" 16 80
+}
+
+__query_lido_obol_cluster_definition() {
+    __cluster_definition_url=$(whiptail --title "Lido Obol cluster creation" --inputbox "\nPut your cluster definition link below:" 10 80 "https://api.obol.tech/dv/example_link_to_your_definition" 3>&1 1>&2 2>&3)
+    if [ "${__cluster_definition_url}" = ""  ]; then
+      echo "Cluster definition URL can't be empty"
+      exit 1
+    fi
+    exitstatus=$?
+    if [ $exitstatus -eq 0 ]; then
+        ${__as_owner} curl -o ./.eth/cluster_definition.tmp -s "${__cluster_definition_url}" -H "Accept: application/json"
+# shellcheck disable=SC2086
+        __cluster_definition_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster_definition.tmp:/cluster_definition.json:ro curl-jq sh -c \
+          "cat /cluster_definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
+        set -e
+        if [ "${__cluster_definition_is_valid}" = "true" ]; then
+            echo "Your cluster definition url is:" "${__cluster_definition_url}"
+            ${__as_owner} mv ./.eth/cluster_definition.tmp ./.eth/cluster-definition.json
+        else
+            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
+            echo "Your cluster definition is NOT valid."
+            ${__as_owner} rm ./.eth/cluster_definition.tmp
+            exit 1
+        fi
+    else
+        echo "You chose Cancel."
+        exit 1
+    fi
+}
+
+__query_lido_obol_cluster_dkg() {
+    if [ -d ./.eth/validator_keys ]; then
+        __folder_postfix=${EPOCHSECONDS}
+        ${__as_owner} mkdir ./.eth_backup_"$__folder_postfix"
+        ${__as_owner} cp -vr ./.eth/validator_keys ./.eth_backup_"$__folder_postfix"/validator_keys
+        ${__as_owner} rm -rf ./.eth/validator_keys
+    fi
+    if (whiptail --title "DKG ceremony" --yesno "Do you want to start DKG ceremony?\n\nMake sure all participants are ready!" 10 60) then
+        __outcome__=$(__docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-run-dkg)
+        exitstatus=$?
+        if [ $exitstatus -ne 0 ]; then
+            echo "Something went wrong. Please, try again."
+            exit 1
+        fi
+        echo "DKG ceremony finished successfully"
+        whiptail --title "Finish" --msgbox "\nThe DKG is finished!" 10 40
+    else
+        whiptail --title "DKG ceremony" --msgbox "You should start DKG ceremony before proceeding further" 8 60
+        echo "DKG ceremony starting is canceled"
+        exit 1
+    fi
 }
 
 __query_dkg() {
@@ -3149,13 +3403,16 @@ config() {
   __query_network
   __query_deployment
   case "${__deployment}" in
-    "node")
+    "node" | "lido_csm")
+      __query_consensus_client
+      ;;
+    "lido_obol")
       __query_consensus_client
       ;;
     "validator" | "rocket")
       __query_validator_client
       ;;
-    "ssv")
+    "ssv" | "lido_ssv")
       if [ "${NETWORK}" = "holesky" ]; then
         sed -i'.original' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
@@ -3204,8 +3461,21 @@ config() {
     __query_mev
     __query_grafana
     __query_coinbase
-    if [ "${__deployment}" = "node" ]; then
+    if [[ "${__deployment}" = "node" || "${__deployment}" = "lido_csm" ]]; then
       __query_graffiti
+    fi
+    if [ "${__deployment}" = "lido_csm" ]; then
+      if (whiptail --title "Keys generation" --yesno "Do you want to generate validator keys?" 10 60) then
+        __query_lido_keys_generation
+      else
+        __lido_keys_attention_message
+      fi
+      if [ "${NETWORK}" = "holesky" ]; then
+        __link="https://csm.testnet.fi"
+      else
+        __link="https://csm.lido.fi"
+      fi
+      whiptail --title "Finish" --msgbox "Final steps!\n\n1. Run your node './ethd start'\n\n2. Wait until your node is fully synchronized\n\n4. Open ${__link} to submit your keys with '.eth/validator_keys/deposit-data-*.json' file content\n\n5. Wait for keys validation\n\n6. Import your keys by './ethd keys import'" 19 85
     fi
   else
     unset EXECUTION_CLIENT
@@ -3222,11 +3492,114 @@ config() {
 
   __during_config=0
 
+  if [ "${__deployment}" = "lido_obol" ]; then
+    CL_NODE="http://charon:3600"
+    case "${NETWORK}" in
+      "mainnet")
+# We are using the variable
+# shellcheck disable=SC2034
+        VE_LOCATOR_ADDRESS="0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb"
+# We are using the variable
+# shellcheck disable=SC2034
+        VE_ORACLE_ADDRESSES_ALLOWLIST='["0x140Bd8FbDc884f48dA7cb1c09bE8A2fAdfea776E","0xA7410857ABbf75043d61ea54e07D57A6EB6EF186","0x404335BcE530400a5814375E7Ec1FB55fAff3eA2","0x946D3b081ed19173dC83Cd974fC69e1e760B7d78","0x007DE4a5F7bc37E2F26c0cb2E8A95006EE9B89b5","0xEC4BfbAF681eb505B94E4a7849877DC6c600Ca3A","0x61c91ECd902EB56e314bB2D5c5C07785444Ea1c8","0x1Ca0fEC59b86F549e1F1184d97cb47794C8Af58d","0xc79F702202E3A6B0B6310B537E786B9ACAA19BAf"]'
+# We are using the variable
+# shellcheck disable=SC2034
+        VE_STAKING_MODULE_ID="2"
+# We are using the variable
+# shellcheck disable=SC2034
+        LIDO_DV_EXIT_EXIT_EPOCH="194048" # capella
+        ;;
+      "holesky")
+# We are using the variable
+# shellcheck disable=SC2034
+        VE_LOCATOR_ADDRESS="0x28FAB2059C713A7F9D8c86Db49f9bb0e96Af1ef8"
+# We are using the variable
+# shellcheck disable=SC2034
+        VE_ORACLE_ADDRESSES_ALLOWLIST='["0x12A1D74F8697b9f4F1eEBb0a9d0FB6a751366399","0xD892c09b556b547c80B7d8c8cB8d75bf541B2284","0xf7aE520e99ed3C41180B5E12681d31Aa7302E4e5","0x31fa51343297FFce0CC1E67a50B2D3428057D1b1","0x81E411f1BFDa43493D7994F82fb61A415F6b8Fd4","0x4c75FA734a39f3a21C57e583c1c29942F021C6B7","0xD3b1e36A372Ca250eefF61f90E833Ca070559970","0xF0F23944EfC5A63c53632C571E7377b85d5E6B6f","0xb29dD2f6672C0DFF2d2f173087739A42877A5172","0x3799bDA7B884D33F79CEC926af21160dc47fbe05"]'
+# We are using the variable
+# shellcheck disable=SC2034
+        VE_STAKING_MODULE_ID="2"
+# We are using the variable
+# shellcheck disable=SC2034
+        LIDO_DV_EXIT_EXIT_EPOCH="256" # capella
+        ;;
+      *)
+        ;;
+    esac
+
+    if [ -f "./.eth/cluster-lock.json" ]; then
+      if (whiptail --title "Lido Obol cluster exists" --yesno "Your cluster has already been created. Continue with it?" 10 60); then
+# shellcheck disable=SC2086
+        __cluster_lock_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-lock.json:/cluster-lock.json:ro curl-jq sh -c \
+          "cat /cluster-lock.json | jq -r 'all(.cluster_definition.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
+        if [[ "${__cluster_lock_is_valid}" =~ "true" ]]; then
+          echo "Your cluster lock is valid."
+        else
+          whiptail --title "Lido Obol cluster definition" --msgbox "Your cluster lock file './.eth/cluster-lock.json' is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
+          echo "Your cluster lock is NOT valid."
+          exit 1
+        fi
+      elif (whiptail --title "Lido Obol cluster creation" --yesno "Backup a previously created cluster to create a new one?" 10 80); then
+        ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
+        ${__as_owner} rm -rf ./.eth
+        __query_lido_obol_enr
+        __query_lido_obol_cluster_definition
+        __query_lido_obol_cluster_dkg
+      else
+        whiptail --title "Lido Obol cluster creation" --msgbox "The \`.eth\` folder must be empty or non-existent to continue" 10 80
+        echo "The \`.eth\` folder must be empty to create a new cluster"
+        exit 1
+      fi
+    else
+      if [ -f "./.eth/charon-enr-private-key" ] && [ -f "./.eth/charon-enr-public-key" ]; then
+        if (whiptail --title "Lido Obol operator ENR creation" --yesno "You already have ENR. Use it?" 8 50); then
+          echo "Use existing ENR"
+        else
+          ${__as_owner} cp -vr ./.eth ./.eth_backup_"$EPOCHSECONDS"
+          ${__as_owner} rm -rf ./.eth
+          __query_lido_obol_enr
+        fi
+      else
+        __query_lido_obol_enr
+      fi
+
+      if [ -f "./.eth/cluster-definition.json" ]; then
+        if (whiptail --title "Lido Obol cluster creation in process" --yesno "You already have cluster definition. Use it?" 10 60); then
+# shellcheck disable=SC2086
+          __cluster_definition_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-definition.json:/cluster-definition.json:ro curl-jq sh -c \
+            "cat /cluster-definition.json | jq -r 'all(.validators[]; .fee_recipient_address == \"'${FEE_RECIPIENT}'\" and .withdrawal_address == \"'$(__lido_withdrawal_credentials_address)'\")'" | tail -n 1)
+          if [ "${__cluster_definition_is_valid}" = "true" ]; then
+            echo "Your cluster definition is valid."
+          else
+            whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
+            echo "Your cluster definition is NOT valid."
+            exit 1
+          fi
+        else
+          __query_lido_obol_cluster_definition
+        fi
+      else
+        __query_lido_obol_cluster_definition
+      fi
+      __query_lido_obol_cluster_dkg
+    fi
+
+# We are using the variable
+# shellcheck disable=SC2034
+    VE_OPERATOR_ID=$(whiptail --title "Lido Operator ID" --inputbox "Put your Operator ID from Lido Operators dashboard \
+(right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    __obol_prom_remote_token=$(whiptail --title "Obol prometheus" --inputbox "Put Obol Prometheus remote write token \
+(right-click to paste)" 10 60 3>&1 1>&2 2>&3)
+    cat ./prometheus/obol-prom.yml > ./prometheus/custom-prom.yml
+    sed -i'.original' "s|      credentials: OBOL_PROM_REMOTE_WRITE_TOKEN|      credentials: ${__obol_prom_remote_token}|" ./prometheus/custom-prom.yml
+    rm -f ./prometheus/custom-prom.yml.original
+  fi
+
   COMPOSE_FILE="${CONSENSUS_CLIENT}"
   if [ -n "${EXECUTION_CLIENT+x}" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
   fi
-  if [ "${__deployment}" = "ssv" ]; then
+  if [[ "${__deployment}" = "ssv" || "${__deployment}" = "lido_ssv" ]]; then
     COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
     if [[ -n "${__ssv_operator_id}" && ! "${__ssv_operator_id}" = "-1" ]]; then
       COMPOSE_FILE="${COMPOSE_FILE}:ssv-dkg.yml"
@@ -3238,8 +3611,14 @@ config() {
   if [ "${MEV_BOOST}" = "true" ] && [ ! "${__deployment}" = "rocket" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:mev-boost.yml"
   fi
+  if [ "${__deployment}" = "lido_obol" ]; then
+    COMPOSE_FILE="${COMPOSE_FILE}:lido-obol.yml"
+  fi
   if { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
   && [ "${NETWORK}" = "holesky" ]; then
+    COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
+  fi
+  if [ "${__deployment}" = "lido_csm" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
   fi
 # Not multi-arch, this would break on ARM64
@@ -3271,6 +3650,23 @@ config() {
   __set_value_in_env
   __var=MEV_RELAYS
   __set_value_in_env
+  if [ "${__deployment}" = "lido_obol" ]; then
+    var=LIDO_DV_EXIT_EXIT_EPOCH
+    __set_value_in_env
+    var=VE_OPERATOR_ID
+    __set_value_in_env
+    var=VE_LOCATOR_ADDRESS
+    __set_value_in_env
+    var=VE_ORACLE_ADDRESSES_ALLOWLIST
+    __set_value_in_env
+    var=VE_STAKING_MODULE_ID
+    __set_value_in_env
+# We are using the variable
+# shellcheck disable=SC2034
+    ENABLE_DIST_ATTESTATION_AGGR="true"
+    var=ENABLE_DIST_ATTESTATION_AGGR
+    __set_value_in_env
+  fi
   if [[ "${NETWORK}" = "gnosis" ]] && [[ "${CONSENSUS_CLIENT}" =~ "nimbus" ]] ; then
 # We are using the variable
 # shellcheck disable=SC2034
@@ -3316,6 +3712,10 @@ version() {
   __value=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${__env_file}" || true)
   # Client versions
   case "${__value}" in
+    *lido-obol.yml* )
+      __docompose exec charon charon version
+      echo
+      ;;&
     *ssv.yml* )
       __docompose exec ssv-node /go/bin/ssvnode --version
       echo

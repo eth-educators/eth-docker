@@ -798,6 +798,14 @@ and secrets directories into .eth/validator_keys instead."
         fi
         if [ "$__eth2_val_tools" -eq 0 ] && [ "$__justone" -eq 0 ]; then
             while true; do
+                __passfile=${__keyfile/.json/.txt}
+                if [ -f "$__passfile" ]; then
+                    echo "Password file is found: $__passfile"
+                    __password=$(< "$__passfile")
+                    break
+                else
+                    echo "Password file $__passfile not found."
+                fi
                 read -srp "Please enter the password for your validator key stored in $__keyfile with public key $__pubkey: " __password
                 echo
                 read -srp "Please re-enter the password: " __password2
