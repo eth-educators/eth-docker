@@ -744,7 +744,7 @@ __delete_reth() {
   fi
 
 # Has db been initialized?
-  __db_exists=$(dodocker run --rm -v "$(dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
+  __db_exists=$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
       alpine:3 sh -c 'if [ -f "/var/lib/reth/db/database.version" ]; then echo true; else echo false; fi')
   if [ "$__db_exists" = "false" ]; then
     return 0
