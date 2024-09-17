@@ -1115,12 +1115,12 @@ __env_migrate() {
         if [[ "${__var}" = "LH_DOCKER_TAG" && "${__value}" = "latest-modern" ]]; then # LH 5.2 ditched latest-modern
           __value="latest"
         fi
-        if [[ "${__var}" = "ERIGON_DOCKER_TAG" && "${__value}" = "stable" ]]; then # Erigon switched to latest
-          __value="latest"
-        fi
-        if [[ "${__var}" = "ERIGON_DOCKER_REPO" && "${__value}" = "thorax/erigon" ]]; then # Erigon new repo
-          __value="erigontech/erigon"
-        fi
+#        if [[ "${__var}" = "ERIGON_DOCKER_TAG" && "${__value}" = "stable" ]]; then # Erigon switched to latest
+#          __value="latest"
+#        fi
+#        if [[ "${__var}" = "ERIGON_DOCKER_REPO" && "${__value}" = "thorax/erigon" ]]; then # Erigon new repo
+#          __value="erigontech/erigon"
+#        fi
         sed -i'.original' -e "s~^\(${__var}\s*=\s*\).*$~\1${__value}~" "${__env_file}"
       fi
     done
