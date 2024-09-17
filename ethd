@@ -3214,7 +3214,7 @@ again or Cancel on the next screen." 10 75
 
 
 __query_lido_obol_enr() {
-    ${__as_owner} mkdir -p ./.eth
+    ${__as_owner} mkdir -p ./.eth/charon
     __outcome__=$(__docompose -f ./lido-obol.yml run -u "$(id -u)":"$(id -g)" --rm charon-create-enr)
     if [[ "${__outcome__}" =~ "Created ENR private key:" ]]; then
       __lido_obol_operator_enr=$(echo "${__outcome__}" | grep -e 'enr:')

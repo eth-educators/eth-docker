@@ -64,7 +64,7 @@ services:
    image: lidofinance/validator-ejector:${VALIDATOR_EJECTOR_VERSION:-1.5.0}
    user: ":"
    volumes:
-     - ./validator-ejector:/exitmessages
+     - .eth/lido-ejector:/exitmessages
    restart: unless-stopped
    environment:
      -  EXECUTION_NODE=${OBOL_EL_NODE:-http://execution:8545}
@@ -88,7 +88,7 @@ services:
     image: obolnetwork/lido-dv-exit:${LIDO_DV_EXIT_VERSION:-e8bee1f}
     user: ":"
     volumes:
-      - ./validator-ejector:/exitmessages
+      - .eth/lido-ejector:/exitmessages
       - .eth:/charon
     environment:
       - LIDODVEXIT_BEACON_NODE_URL=${OBOL_CL_NODE:-http://consensus:5052}

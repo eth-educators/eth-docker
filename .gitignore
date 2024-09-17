@@ -5,12 +5,12 @@ ext-network.yml.original
 ext-network.yml.bak
 .eth/*
 .eth_backup*
-.charon/*
-validator-ejector/*
 !.eth/README.md
 !.eth/validator_keys/.empty
 !.eth/exit_messages/.empty
 !.eth/dkg_output/.empty
+!.eth/charon/.empty
+!.eth/lido-ejector/.empty
 !.eth/ethdo/README.md
 !.eth/ethdo/create-withdrawal-change.sh
 *.swp
