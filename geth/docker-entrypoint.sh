@@ -99,13 +99,6 @@ else
   __prune=""
 fi
 
-if [ "${IPV6}" = "true" ]; then
-  echo "Configuring Geth for discv5 for IPv6 advertisements"
-  __ipv6="--discv5"
-else
-  __ipv6=""
-fi
-
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__datadir} ${__ancient} ${__ipv6} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
+exec "$@" ${__datadir} ${__ancient} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
