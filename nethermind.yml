@@ -81,8 +81,6 @@ services:
       - "6060"
       - --Pruning.FullPruningCompletionBehavior
       - AlwaysShutdown
-      - --Discovery.Discv5Enabled
-      - "true"
       - --log
       - ${LOG_LEVEL}
     labels:
