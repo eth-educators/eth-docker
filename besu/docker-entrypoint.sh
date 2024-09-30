@@ -72,6 +72,14 @@ else
   __datadir="--data-path /var/lib/besu"
 fi
 
+# DiscV5 for IPV6
+if [ "${IPV6:-false}" = "true" ]; then
+  echo "Configuring Besu for discv5 for IPv6 advertisements"
+  __ipv6="--Xv5-discovery-enabled"
+else
+  __ipv6=""
+fi
+
 if [ -f /var/lib/besu/prune-marker ]; then
   rm -f /var/lib/besu/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
@@ -84,5 +92,5 @@ if [ -f /var/lib/besu/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__datadir} ${__network} ${__prune} ${__spec} ${EL_EXTRAS}
+  exec "$@" ${__datadir} ${__network} ${__ipv6} ${__prune} ${__spec} ${EL_EXTRAS}
 fi
