@@ -795,9 +795,11 @@ __delete_erigon() {
 # Check Erigon version, only continue if v3
   __var="ERIGON_DOCKER_TAG"
   __value=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${__env_file}" || true)
+  __var="ERIGON_DOCKER_REPO"
+  __repo=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${__env_file}" || true)
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! ("${__value}" =~ "v3" ||  "${__value}" = "latest" || "${__value}" = "main-latest") ]]; then
+  if [[ ! ("${__value}" =~ "v3" || ( "${__value}" = "latest" && "${__repo}" =~ "thorax" ) || "${__value}" = "main-latest") ]]; then
     return 0
   fi
 
