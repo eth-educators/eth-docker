@@ -79,7 +79,7 @@ else
       fi
     fi
     if [ "${__memtotal}" -ge 30 ]; then
-      __prune="${__prune} --Pruning.CacheMb=4096 --Pruning.FullPruningMemoryBudgetMb=16384"
+      __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384"
     fi
   fi
   if [ -n "${__prune}" ]; then
@@ -88,6 +88,13 @@ else
   fi
 fi
 
+# New or old datadir
+if [ -d /var/lib/nethermind-og/nethermind_db ]; then
+  __datadir="--datadir /var/lib/nethermind-og"
+else
+  __datadir="--datadir /var/lib/nethermind"
+fi
+
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__network} ${__prune} ${EL_EXTRAS}
+exec "$@" ${__datadir} ${__network} ${__prune} ${EL_EXTRAS}
