@@ -996,6 +996,37 @@ __lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
 }
 
 
+__enable_v6() {
+  if [ "${__docker_major_version}" -lt 27 ]; then
+    return
+  fi
+
+  __var="IPV6"
+  IPV6=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${__env_file}" || true)
+  if [ "${IPV6}" = "true" ]; then
+    return
+  fi
+
+  echo "Testing IPv6 host connectivity"
+  if ! ping -c1 2001:4860:4860::8888 >/dev/null; then
+    return
+  fi
+
+  echo "Testing IPv6 Docker connectivity"
+  __dodocker network create --ipv6 ip6net_ethd_test
+  __v6_works=$(__dodocker run --rm --network ip6net_ethd_test busybox sh -c \
+    "if ping -c1 -6 2001:4860:4860::8888 >/dev/null; then echo true; else echo false; fi")
+  __dodocker network rm ip6net_ethd_test
+
+  if [ "${__v6_works}" = "true" ]; then
+    echo "Enabling IPv4/6 dual-stack for your Eth Docker setup"
+    IPV6="true"
+    __set_value_in_env
+    __enabled_v6=1
+  fi
+}
+
+
 __env_migrate() {
   if [ ! -f "${__env_file}" ]; then
     return 0
@@ -1055,6 +1086,7 @@ __env_migrate() {
   else
     echo "Migrating ${__env_file} to version ${__target_ver}"
   fi
+
   ${__as_owner} cp "${__env_file}" "${__env_file}".source
   __during_migrate=1
   __migrated=1
@@ -1075,6 +1107,12 @@ __env_migrate() {
         || [ "${__var}" = "ETH_DOCKER_TAG" ] || [ "${__var}" = "RAPID_SYNC_URL" ]; then
       if [ "${__var}" = "COMPOSE_FILE" ]; then
         __migrate_compose_file
+      fi
+      if [[ "${__source_ver}" -lt "17" && "${__var}" = "IPV6" ]]; then  # One-time attempt; remove after Pectra
+        __enable_v6
+        if [ "${__enabled_v6}" -eq 1 ]; then
+          __value="true"
+        fi
       fi
       if [ "${__var}" = "CL_QUIC_PORT" ]; then
         __cl_port=$(sed -n -e "s/^CL_P2P_PORT=\(.*\)/\1/p" "${__env_file}.source" || true)
@@ -1245,6 +1283,7 @@ __pull_and_build() {
 # shellcheck disable=SC2120
 update() {
   __during_update=1
+  __enabled_v6=0  # Remove after Pectra
 
   if [[ $(${__as_owner} git status --porcelain) ]]; then
     __dirty=1
@@ -1378,7 +1417,12 @@ reset to defaults."
   fi
   echo
   if [ -z "${GITEXITCODE+x}" ] || [ "${GITEXITCODE}" -eq 0 ]; then
-    echo "An \"$__me up\" command will start using the new images and configuration."
+    if [ "${__enabled_v6}" -eq 0 ]; then  # Remove after Pectra
+      echo "An \"$__me up\" command will start using the new images and configuration."
+    else
+      echo "IPv4/6 dual-stack support has been enabled."
+      echo "An \"$__me restart\" command will start using the new images and configuration."
+    fi
   else
     echo "WARNING"
     echo
@@ -3695,6 +3739,8 @@ config() {
     SIREN_PASSWORD=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     __set_value_in_env
   fi
+
+  __enable_v6
 
   ${__as_owner} rm .env.original
 
