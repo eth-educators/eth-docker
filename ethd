@@ -3528,9 +3528,9 @@ config() {
         __lido_keys_attention_message
       fi
       if [ "${NETWORK}" = "holesky" ]; then
-        __link="https://csm.testnet.fi"
+        __link="https://csm.testnet.fi/?ref=ethdocker"
       else
-        __link="https://csm.lido.fi"
+        __link="https://csm.lido.fi/?ref=ethdocker"
       fi
       whiptail --title "Finish" --msgbox "Final steps!\n\n1. Run your node './ethd start'\n\n2. Wait until your node is fully synchronized\n\n4. Open ${__link} to submit your keys with '.eth/validator_keys/deposit-data-*.json' file content\n\n5. Wait for keys validation\n\n6. Import your keys by './ethd keys import'" 19 85
     fi
