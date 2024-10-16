@@ -53,7 +53,7 @@ services:
       - --keymanager-token-file
       - /var/lib/prysm/auth-token
       - --beacon-rpc-provider
-      - ${CL_NODE:-http://consensus:4000}
+      - ${CL_NODE:-consensus:4000}
       - --verbosity
       - ${LOG_LEVEL}
       - --accept-terms-of-use
@@ -61,18 +61,13 @@ services:
       - 0.0.0.0
       - --monitoring-port
       - "8009"
-      - --grpc-gateway-host
+      - --http-host
       - 0.0.0.0
-      - --grpc-gateway-port
+      - --http-port
       - ${KEY_API_PORT:-7500}
-      - --grpc-gateway-corsdomain=*
-      - --beacon-rpc-gateway-provider
-      - consensus:5052
+      - --http-cors-domain=*
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
-      - --enable-beacon-rest-api
-      - --beacon-rest-api-provider
-      - ${CL_NODE:-http://consensus:5052}
     labels:
       - traefik.enable=true
       - traefik.http.routers.prysm.entrypoints=web,websecure
@@ -114,9 +109,7 @@ services:
       - validator
       - exit
       - --wallet-dir=/var/lib/prysm/
-      - --enable-beacon-rest-api
-      - --beacon-rest-api-provider
-      - ${CL_NODE:-http://consensus:5052}
+      - --beacon-rpc-provider=${CL_NODE:-consensus:4000}
       - --wallet-password-file=/var/lib/prysm/password.txt
       - --${NETWORK}
 
