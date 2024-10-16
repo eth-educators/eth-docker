@@ -61,6 +61,7 @@ services:
       - 0.0.0.0
       - --monitoring-port
       - "8009"
+      - --web
       - --http-host
       - 0.0.0.0
       - --http-port
@@ -68,6 +69,8 @@ services:
       - --http-cors-domain=*
       - --suggested-fee-recipient
       - ${FEE_RECIPIENT}
+      - --wallet-password-file
+      - /var/lib/prysm/password.txt
     labels:
       - traefik.enable=true
       - traefik.http.routers.prysm.entrypoints=web,websecure
