@@ -72,7 +72,7 @@ __determine_distro() {
 
 __handle_docker_sudo() {
   set +e
-  if [[ "$__distro" =~ "debian" || "$__distro" = "ubuntu" ]]; then
+  if [[ ( "$__distro" =~ "debian" || "$__distro" = "ubuntu" ) ]] && ! grep -qi microsoft /proc/version; then
     systemctl status docker >/dev/null
     __result=$?
     if [ ! "${__result}" -eq 0 ]; then
