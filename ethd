@@ -2985,7 +2985,7 @@ __query_coinbase() {
     if [[ "${__deployment}" =~ "lido_" ]]; then
       case "${NETWORK}" in
         "mainnet")
-          FEE_RECIPIENT="0x388c818ca8b9251b393131c08a736a67ccb19297"
+          FEE_RECIPIENT="0x388C818CA8B9251b393131C08a736A67ccB19297"
           ;;
         "holesky")
           FEE_RECIPIENT="0xE73a3602b99f1f913e72F8bdcBC235e206794Ac8"
