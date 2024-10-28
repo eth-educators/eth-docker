@@ -14,7 +14,16 @@ ARG GID=10002
 
 USER root
 
-RUN apk --no-cache add shadow bash su-exec git jq && groupmod -g "${GID}" ${USER} && usermod -u "${UID}" -g "${GID}" ${USER}
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+  ca-certificates \
+  tzdata \
+  gosu \
+  git \
+  jq \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN groupmod -g "${GID}" ${USER} && usermod -u "${UID}" -g "${GID}" ${USER}
 
 RUN mkdir -p /var/lib/erigon/ee-secret && chown -R ${USER}:${USER} /var/lib/erigon && chmod -R 700 /var/lib/erigon && chmod 777 /var/lib/erigon/ee-secret
 

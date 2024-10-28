@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 if [ "$(id -u)" = '0' ]; then
   chown -R erigon:erigon /var/lib/erigon
-  exec su-exec erigon "${BASH_SOURCE[0]}" "$@"
+  exec gosu erigon "${BASH_SOURCE[0]}" "$@"
 fi
 
 if [ -n "${JWT_SECRET}" ]; then
