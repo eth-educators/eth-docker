@@ -30,7 +30,6 @@ RUN set -eux; \
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
   libssl-dev \
   ca-certificates \
-  wget \
   tzdata \
   git \
   curl \
