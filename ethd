@@ -3293,18 +3293,18 @@ __query_lido_obol_cluster_definition() {
     fi
     exitstatus=$?
     if [ $exitstatus -eq 0 ]; then
-        ${__as_owner} curl -o ./.eth/cluster_definition.tmp -s "${__cluster_definition_url}" -H "Accept: application/json"
+        ${__as_owner} curl -o ./.eth/cluster-definition.tmp -s "${__cluster_definition_url}" -H "Accept: application/json"
 # shellcheck disable=SC2086
-        __cluster_definition_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster_definition.tmp:/cluster_definition.json:ro curl-jq sh -c \
-          "cat /cluster_definition.json | jq -r 'all(.validators[]; ascii_downcase(.fee_recipient_address) == ascii_downcase(\"'${FEE_RECIPIENT}'\") and ascii_downcase(.withdrawal_address) == ascii_downcase(\"'$(__lido_withdrawal_credentials_address)'\"))'" | tail -n 1)
+        __cluster_definition_is_valid=$(__docompose -f ./lido-obol.yml run --rm -v "$(pwd)"/.eth/cluster-definition.tmp:/cluster-definition.json:ro curl-jq sh -c \
+          "cat /cluster-definition.json | jq -r 'all(.validators[]; (.fee_recipient_address | ascii_downcase) == (\"'${FEE_RECIPIENT}'\" | ascii_downcase) and (.withdrawal_address | ascii_downcase) == (\"'$(__lido_withdrawal_credentials_address)'\" | ascii_downcase))'" | tail -n 1)
         set -e
         if [ "${__cluster_definition_is_valid}" = "true" ]; then
             echo "Your cluster definition url is:" "${__cluster_definition_url}"
-            ${__as_owner} mv ./.eth/cluster_definition.tmp ./.eth/cluster-definition.json
+            ${__as_owner} mv ./.eth/cluster-definition.tmp ./.eth/cluster-definition.json
         else
             whiptail --title "Lido Obol cluster creation" --msgbox "Your cluster definition is not valid.\n\nCheck that every validator has \`fee_recipient_address\` and \`withdrawal_address\` equal to Lido contracts and try again.\n\nLido fee recipient: '${FEE_RECIPIENT}'\nLido withdrawal credentials: '$(__lido_withdrawal_credentials_address)'" 14 90
             echo "Your cluster definition is NOT valid."
-            ${__as_owner} rm ./.eth/cluster_definition.tmp
+            ${__as_owner} rm ./.eth/cluster-definition.tmp
             exit 1
         fi
     else
