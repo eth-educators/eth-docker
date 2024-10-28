@@ -2463,6 +2463,7 @@ keys() {
   elif [ "${1:-}" = "send-exit" ]; then
     __var="CL_NODE"
     CL_NODE=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${__env_file}" || true)
+    CL_NODE="${CL_NODE%%,*}"
     __network_name="$(__docompose config | awk '
       BEGIN {
           found_networks=0;
