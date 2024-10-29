@@ -1173,6 +1173,9 @@ __env_migrate() {
         if [[ "${__var}" = "ERIGON_DOCKER_REPO" && "${__value}" = "thorax/erigon" ]]; then # Erigon new repo
           __value="erigontech/erigon"
         fi
+        if [[ "${__var}" = "SSV_NODE_REPO" && "${__value}" = "bloxstaking/ssv-node" ]]; then # SSV new repo
+          __value="ssvlabs/ssv-node"
+        fi
         sed -i'.original' -e "s~^\(${__var}\s*=\s*\).*$~\1${__value}~" "${__env_file}"
       fi
     done
@@ -3491,7 +3494,7 @@ config() {
       if [ ! -f "./ssv-config/encrypted_private_key.json" ]; then
         echo "Creating encrypted operator private key"
         __dodocker run --name ssv-node-key-generation -v "$(pwd)/ssv-config/password.pass":/password.pass \
-          -it bloxstaking/ssv-node:latest /go/bin/ssvnode generate-operator-keys \
+          -it ssvlabs/ssv-node:latest /go/bin/ssvnode generate-operator-keys \
           --password-file=/password.pass && __dodocker cp ssv-node-key-generation:/encrypted_private_key.json \
           ./ssv-config/encrypted_private_key.json && __dodocker rm ssv-node-key-generation
         ${__auto_sudo} chown 12000:12000 ./ssv-config/encrypted_private_key.json
