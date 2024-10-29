@@ -3815,7 +3815,7 @@ config() {
   __var=FEE_RECIPIENT
   __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
   __var=GRAFFITI
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=CL_NODE
   __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
   __var=RAPID_SYNC_URL
