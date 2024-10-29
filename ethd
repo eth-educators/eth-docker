@@ -1052,7 +1052,7 @@ __get_value_from_env() {
         # Match a quoted single-line value
         $0 ~ "^[ \t]*"var"=\"[^\"]*\"[ \t]*$" {
             gsub("^[ \t]*"var"=\"", "")
-            gsub(/\"[ \t]*$/, "", $0)
+            gsub(/"[ \t]*$/, "", $0)
             __value = "\"" $0 "\""
             __found = 1
             exit
@@ -1067,14 +1067,14 @@ __get_value_from_env() {
         }
 
         # Continue collecting lines for a multi-line value
-        __found && !/\"[ \t]*$/ {
+        __found && !/"[ \t]*$/ {
             __value = __value $0 "\n"
             next
         }
 
         # End of a multi-line value (with closing quote)
-        __found && /\"[ \t]*$/ {
-            gsub(/[ \t]*\"[ \t]*$/, "")
+        __found && /"[ \t]*$/ {
+            gsub(/[ \t]*"[ \t]*$/, "")
             __value = __value $0 "\""
             __found = 1
             exit
@@ -1134,12 +1134,12 @@ __update_value_in_env() {
             }
 
             # Continue to skip lines in a multi-line block if multi_line is true
-            multi_line && !/\"[ \t]*$/ {
+            multi_line && !/"[ \t]*$/ {
                 next
             }
 
             # If we reach the end of a multi-line value, reset flags
-            multi_line && /\"[ \t]*$/ {
+            multi_line && /"[ \t]*$/ {
                 in_block = 0
                 multi_line = 0
                 next
