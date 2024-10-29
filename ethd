@@ -3813,36 +3813,36 @@ config() {
   echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
 
   __var=FEE_RECIPIENT
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=GRAFFITI
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=CL_NODE
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=RAPID_SYNC_URL
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=COMPOSE_FILE
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=EL_NODE
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=JWT_SECRET
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=NETWORK
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=MEV_BOOST
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=MEV_RELAYS
-  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   if [ "${__deployment}" = "lido_obol" ]; then
     __var=LIDO_DV_EXIT_EXIT_EPOCH
-    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
     __var=VE_OPERATOR_ID
-    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
     __var=VE_LOCATOR_ADDRESS
-    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
     __var=VE_ORACLE_ADDRESSES_ALLOWLIST
-    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
     __var=VE_STAKING_MODULE_ID
-    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
 # We are using the variable
 # shellcheck disable=SC2034
     ENABLE_DIST_ATTESTATION_AGGR="true"
