@@ -10,5 +10,8 @@ fi
 API_TOKEN=$(cat /var/lib/lighthouse/validators/api-token.txt)
 export API_TOKEN
 
+# In case there are multiple consensus nodes, use the first one
+export BEACON_URL=${BEACON_URL%%,*}
+
 echo "Log into Siren at https://my-node-ip/${SIREN_PORT} with password ${SESSION_PASSWORD}"
 exec /app/docker-assets/docker-entrypoint.sh
