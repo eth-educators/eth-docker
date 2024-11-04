@@ -22,6 +22,7 @@ services:
       - SSL_ENABLED=true
       - DEBUG=false
       - SIREN_PORT=${SIREN_PORT}
+      - NODE_OPTIONS="--dns-result-order=ipv4first"
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
