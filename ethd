@@ -3249,22 +3249,22 @@ want to use MEV Boost?" 10 65); then
                   ['bloXroute Max-Profit']="https://0x8b5d2e73e2a3a55c6c87b8b6eb92e0149a125c852751db1422fa951e42a09b82c142c3ea98d0d9930b056a3bc9896b8f@bloxroute.max-profit.blxrbdn.com"
                   ['Flashbots']="https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net"
                   ['Ultra Sound']="https://0xa1559ace749633b997cb3fdacffb890aeebdb0f5a3b6aaa7eeeaf1a38af0a8fe88b9e4b1f61f236d2e64d95733327a62@relay.ultrasound.money"
-                  ['Titan Relay Global']="https://0x8c4ed5e24fe5c6ae21018437bde147693f68cda427cd1122cf20819c30eda7ed74f72dece09bb313f2a1855595ab677d@global.titanrelay.xyz"
-                  ['Titan Relay Regional']='https://0x8c4ed5e24fe5c6ae21018437bde147693f68cda427cd1122cf20819c30eda7ed74f72dece09bb313f2a1855595ab677d@regional.titanrelay.xyz'
               )
               optional_relays=(
+                  ['Titan Relay Global']="https://0x8c4ed5e24fe5c6ae21018437bde147693f68cda427cd1122cf20819c30eda7ed74f72dece09bb313f2a1855595ab677d@global.titanrelay.xyz"
+                  ['Titan Relay Regional']='https://0x8c4ed5e24fe5c6ae21018437bde147693f68cda427cd1122cf20819c30eda7ed74f72dece09bb313f2a1855595ab677d@regional.titanrelay.xyz'
                   ['Manifold Finance']="https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1eea11168503240ac35d101c9135@mainnet-relay.securerpc.com/"
               )
               __selected=$(whiptail --title "Relays list" --checklist \
-                  "Choose relays" 15 50 9 \
+                  "Choose relays (use spacebar to unselect)" 16 50 9 \
                   "Agnostic" "" ON \
                   "bloXroute" "" ON \
                   "Aestus" "" ON \
                   "bloXroute Max-Profit" "" ON \
                   "Flashbots" "" ON \
                   "Ultra Sound" "" ON \
-                  "Titan Relay Global" "" ON \
-                  "Titan Relay Regional" "" ON \
+                  "Titan Relay Global" "(optional)" ON \
+                  "Titan Relay Regional" "(optional)" ON \
                   "Manifold Finance" "(optional)" ON 3>&1 1>&2 2>&3)
               ;;
           "holesky")
