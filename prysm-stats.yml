@@ -1,6 +1,7 @@
 # Send client stats to beaconcha.in service using client-metrics-exporter
 services:
   client-stats:
+    restart: "unless-stopped"
     image: gobitfly/eth2-client-metrics-exporter:latest
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -18,6 +19,7 @@ services:
       - https://beaconcha.in/api/v1/client/metrics?apikey=${BEACON_STATS_API}&machine=${BEACON_STATS_MACHINE}
 # As of Nov 2022 Prysm's own client-stats would require source build. Using beaconcha.in's instead
 #  client-stats:
+#    restart: "unless-stopped"
 #    image: prysm-consensus:local
 #    pull_policy: never
 #    volumes:
