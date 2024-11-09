@@ -82,9 +82,7 @@ fi
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Reth archive node without pruning"
-  __prune=""
 else
-  __prune="--full"
   if [ ! -f "/var/lib/reth/reth.toml" ]; then  # Configure ssv, rocketpool, stakewise contracts
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
@@ -121,5 +119,5 @@ if [ -f /var/lib/reth/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__verbosity} ${__prune} ${__static} ${EL_EXTRAS}
+  exec "$@" ${__network} ${__verbosity} ${__static} ${EL_EXTRAS}
 fi
