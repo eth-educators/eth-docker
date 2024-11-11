@@ -28,7 +28,6 @@ services:
       - MINIMAL_NODE=${EL_MINIMAL_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
-      - DOCKER_TAG=${ERIGON_DOCKER_TAG:-latest}
       - COMPOSE_FILE=${COMPOSE_FILE}
       - CL_P2P_PORT=${CL_P2P_PORT:-9000}
       - CL_REST_PORT=${CL_REST_PORT:-5052}
