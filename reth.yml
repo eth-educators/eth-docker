@@ -84,7 +84,7 @@ services:
       - --authrpc.jwtsecret
       - /var/lib/reth/ee-secret/jwtsecret
       - --max-outbound-peers
-      - ${EL_MAX_PEER_COUNT:-50}
+      - ${EL_MAX_PEER_COUNT:-100}
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
