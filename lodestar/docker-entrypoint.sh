@@ -35,7 +35,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   branch=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f1)
   config_dir=$(awk -F'/tree/' '{print $2}' <<< "${NETWORK}" | cut -d'/' -f2-)
   echo "This appears to be the ${repo} repo, branch ${branch} and config directory ${config_dir}."
-  # For want of something more amazing, let's just fail if git fails to pull this
+  # For lack of something more sophisticated, let's just fail if git fails to pull this
   set -e
   if [ ! -d "/var/lib/lodestar/consensus/testnet/${config_dir}" ]; then
     mkdir -p /var/lib/lodestar/consensus/testnet
