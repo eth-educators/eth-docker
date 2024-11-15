@@ -30,7 +30,7 @@ please read the [contribution guidelines](CONTRIBUTING.md) so you can run lint c
 ## Version
 
 Eth Docker uses a "semver-ish" scheme.
-- First digit, major shifts in how things work. The last one was Ethereum merge. I do not expect another shift that
+- First digit, major shifts in how things work. The last one was the Ethereum merge. I do not expect another shift that
 large.
 - Second through fourth digit, [semver](https://semver.org/).
 
