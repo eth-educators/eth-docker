@@ -32,7 +32,7 @@ else
   __mev_boost=""
 fi
 
-# accomodate comma separated list of concensus nodes
+# accomodate comma separated list of consensus nodes
 NODES=$(echo $CL_NODE | tr ',' ' ')
 for NODE in $NODES; do
   __beacon_nodes="$__beacon_nodes --beacon-node=$NODE"
