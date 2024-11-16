@@ -32,6 +32,7 @@ services:
       - jwtsecret:/var/lib/nimbus/ee-secret
     environment:
       - MEV_BOOST=${MEV_BOOST}
+      - CL_NODE=${CL_NODE}
       - DOPPELGANGER=${DOPPELGANGER}
       - LOG_LEVEL=${LOG_LEVEL}
       - VC_EXTRAS=${VC_EXTRAS:-}
@@ -49,7 +50,6 @@ services:
       - /usr/local/bin/nimbus_validator_client
       - --data-dir=/var/lib/nimbus
       - --non-interactive
-      - --beacon-node=${CL_NODE}
       - --metrics
       - --metrics-port=8009
       - --metrics-address=0.0.0.0

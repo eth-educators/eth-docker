@@ -32,6 +32,12 @@ else
   __mev_boost=""
 fi
 
+# accomodate comma separated list of concensus nodes
+NODES=$(echo $CL_NODE | tr ',' ' ')
+for NODE in $NODES; do
+  __beacon_nodes="$__beacon_nodes --beacon-node=$NODE"
+done
+
 __log_level="--log-level=${LOG_LEVEL^^}"
 
 # Web3signer URL
@@ -60,9 +66,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__w3s_url} ${__log_level} ${__doppel} ${__mev_boost} ${__att_aggr} ${VC_EXTRAS}
+  exec "$@"${__beacon_nodes} ${__w3s_url} ${__log_level} ${__doppel} ${__mev_boost} ${__att_aggr} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__w3s_url} "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${__mev_boost} ${__att_aggr} ${VC_EXTRAS}
+  exec "$@"${__beacon_nodes} ${__w3s_url} "--graffiti=${GRAFFITI}" ${__log_level} ${__doppel} ${__mev_boost} ${__att_aggr} ${VC_EXTRAS}
 fi
