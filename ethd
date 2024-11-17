@@ -70,7 +70,7 @@ __determine_distro() {
 }
 
 
-__handle_docker_sudo() {
+__handle_docker() {
   set +e
   if [[ ( "$__distro" =~ "debian" || "$__distro" = "ubuntu" ) ]] && ! grep -qi microsoft /proc/version; then
     systemctl status docker >/dev/null
@@ -100,6 +100,23 @@ __handle_docker_sudo() {
     fi
     echo "Will use sudo to access Docker"
     __docker_sudo="sudo"
+  fi
+  if [[ ( "$__distro" =~ "debian" || "$__distro" = "ubuntu" ) ]] && ! grep -qi microsoft /proc/version; then
+# This gets used, but shellcheck doesn't recognize that
+# shellcheck disable=SC2034
+    DOCKER_ROOT=$(__dodocker system info --format '{{.DockerRootDir}}')
+    __var=DOCKER_ROOT
+    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+
+    __var=NODE_EXPORTER_IGNORE_MOUNT_REGEX
+    __value=$(__get_value_from_env "${__var}" "${__env_file}")
+    __regex="^'\^/\(dev\|proc\|sys\|run\|.+/\.\+\)\(\$\|/\)'$"
+    if [[ "${__value}" =~ ${__regex} ]]; then
+# This gets used, but shellcheck doesn't recognize that
+# shellcheck disable=SC2034
+      NODE_EXPORTER_IGNORE_MOUNT_REGEX="'^/(dev|proc|sys|run|${DOCKER_ROOT#/}/.+)($|/)'"
+      __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    fi
   fi
 }
 
@@ -409,7 +426,7 @@ __get_docker_free_space() { # set __free_space to what's available to Docker
   fi
 
   __regex='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $__regex ]] ; then
+  if ! [[ "${__free_space}" =~ ${__regex} ]] ; then
     echo "Unable to determine free disk space. This is likely a bug."
     if [[ "$OSTYPE" == "darwin"* ]]; then
       echo "df reports $(__dodocker run --rm -v macos-space-check:/dummy busybox df -P /dummy) and __free_space is ${__free_space}"
@@ -874,7 +891,7 @@ __upgrade_postgres() {
     alpine:3 du -s /var/lib/postgresql/data/ | awk '{print $1}')"
 
   __regex='^[0-9]+$'
-  if ! [[ "${__source_size}" =~ $__regex ]] ; then
+  if ! [[ "${__source_size}" =~ ${__regex} ]] ; then
     echo "Unable to determine database size. This is likely a bug."
     echo "__source_size is ${__source_size}"
     return 70
@@ -1184,7 +1201,7 @@ __env_migrate() {
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
-    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX )
+    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX DOCKER_ROOT )
 
   __old_vars=( )
   __new_vars=( )
@@ -1431,7 +1448,7 @@ update() {
   __free_space=$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')
 
   __regex='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $__regex ]] ; then
+  if ! [[ "${__free_space}" =~ ${__regex} ]] ; then
     echo "Unable to determine free disk space. This is likely a bug."
     echo "df reports $(df -P "$(pwd)") and __free_space is ${__free_space}"
     exit 70
@@ -4169,7 +4186,7 @@ if [ "$__command" = "install" ]; then
   exit "$?"
 fi
 
-__handle_docker_sudo
+__handle_docker
 __check_compose_version
 
 if [ "${__old_compose}" -eq 1 ]; then

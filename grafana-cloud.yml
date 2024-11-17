@@ -115,7 +115,7 @@ services:
       - /:/rootfs:ro,rslave
       - /var/run:/var/run
       - /sys:/sys:ro,rslave
-      - /var/lib/docker:/var/lib/docker:ro,rslave
+      - ${DOCKER_ROOT:-/var/lib/docker}:/var/lib/docker:ro,rslave
     command:
       - --docker_only
       - --housekeeping_interval=30s
@@ -134,7 +134,7 @@ services:
       - /etc/machine-id:/etc/machine-id:ro
       - ./promtail:/etc/promtail
       - promtail-data:/tmp
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro,rslave
+      - ${DOCKER_ROOT:-/var/lib/docker}/containers:/var/lib/docker/containers:ro,rslave
     entrypoint: ./etc/promtail/entrypoint.sh
     command: ["/usr/bin/promtail"]
     environment:
