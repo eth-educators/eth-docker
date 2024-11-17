@@ -33,10 +33,10 @@ else
 fi
 
 # accomodate comma separated list of consensus nodes
-NODES=$(echo "$CL_NODE" | tr ',' ' ')
+__nodes=$(echo "$CL_NODE" | tr ',' ' ')
 __beacon_nodes=()
-for NODE in $NODES; do
-  __beacon_nodes+=("--beacon-node=$NODE")
+for __node in $__nodes; do
+  __beacon_nodes+=("--beacon-node=$__node")
 done
 
 __log_level="--log-level=${LOG_LEVEL^^}"
