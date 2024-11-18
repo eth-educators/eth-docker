@@ -15,8 +15,8 @@ services:
       args:
         - BUILD_TARGET=${NIMEL_SRC_BUILD_TARGET:-master}
         - SRC_REPO=${NIMEL_SRC_REPO:-https://github.com/status-im/nimbus-eth1}
-        - DOCKER_TAG=${NIMEL_DOCKER_TAG:-nonesuch}
-        - DOCKER_REPO=${NIMEL_DOCKER_REPO:-nonesuch}
+        - DOCKER_TAG=${NIMEL_DOCKER_TAG:-multiarch-latest}
+        - DOCKER_REPO=${NIMEL_DOCKER_REPO:-statusim/nimbus-eth1}
     stop_grace_period: 5m
     stop_signal: SIGINT
     image: nimbus-el:local
@@ -26,6 +26,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - NETWORK=${NETWORK}
     volumes:
       - nimbus-el-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
@@ -40,14 +41,14 @@ services:
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
-      - nimbus
+      - nimbus_execution_client
       - --rpc
       - --http-address=0.0.0.0
       - --http-port=${EL_RPC_PORT:-8545}
+      - --ws
       - --data-dir=/var/lib/nimbus
       - --tcp-port=${EL_P2P_PORT:-30303}
-      - --ws
-      - --network=${NETWORK}
+      - --discovery=V5
       - --metrics
       - --metrics-port=6060
       - --metrics-address=0.0.0.0

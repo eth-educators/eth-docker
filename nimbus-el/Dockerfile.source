@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y build-essential git ca-certificates lib
 
 WORKDIR /usr/src
 
-RUN bash -c "git clone ${SRC_REPO} nimbus-eth1 && cd nimbus-eth1 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make update && make -j$(nproc) nimbus"
+RUN bash -c "git clone ${SRC_REPO} nimbus-eth1 && cd nimbus-eth1 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) update && make -j$(nproc) nimbus_execution_client"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bookworm-slim
@@ -45,11 +45,11 @@ RUN adduser \
 RUN mkdir -p /var/lib/nimbus/ee-secret && chown -R ${USER}:${USER} /var/lib/nimbus && chmod 700 /var/lib/nimbus && chmod 777 /var/lib/nimbus/ee-secret
 
 # Cannot assume buildkit, hence no chmod
-COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth1/build/nimbus /usr/local/bin/nimbus
+COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth1/build/nimbus_execution_client /usr/local/bin/
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
-ENTRYPOINT ["nimbus"]
+ENTRYPOINT ["nimbus_execution_client"]

@@ -4011,6 +4011,10 @@ version() {
       __docompose exec execution erigon --version
       echo
       ;;&
+    *nimbus-el.yml* )
+      __docompose exec execution nimbus_execution_client --version
+      echo
+      ;;&
     *web3signer.yml* )
       __docompose exec web3signer /opt/web3signer/bin/web3signer --version
       echo
