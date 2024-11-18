@@ -103,6 +103,7 @@ services:
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - ENABLE_DIST_ATTESTATION_AGGR=${ENABLE_DIST_ATTESTATION_AGGR:-false}
+      - CL_NODE=${CL_NODE}
     networks:
       default:
         aliases:
@@ -113,7 +114,6 @@ services:
       - /usr/local/bin/nimbus_validator_client
       - --data-dir=/var/lib/nimbus
       - --non-interactive
-      - --beacon-node=${CL_NODE}
       - --metrics
       - --metrics-port=8009
       - --metrics-address=0.0.0.0
