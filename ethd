@@ -427,7 +427,7 @@ __get_docker_free_space() { # set __free_space to what's available to Docker
 
   __regex='^[0-9]+$'
   if ! [[ "${__free_space}" =~ ${__regex} ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
+    echo "Unable to determine free disk space. This is likely to be a bug."
     if [[ "$OSTYPE" == "darwin"* ]]; then
       echo "df reports $(__dodocker run --rm -v macos-space-check:/dummy busybox df -P /dummy) and __free_space is ${__free_space}"
     else
