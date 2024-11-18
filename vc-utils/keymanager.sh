@@ -1167,9 +1167,9 @@ set -e
 if [ "$(id -u)" = '0' ]; then
     __token_file=$1
     __api_container=$2
-    case "$__api_container" in
-        vc) __service=validator;;
-        *) __service="$__api_container";;
+    case "$__api_container" in  # It's either consensus or some alias for the validator service
+        consensus) __service=consensus;;
+        *) __service=validator;;
     esac
     __api_port=${KEY_API_PORT:-7500}
     if [ -z "${TLS:+x}" ]; then
@@ -1218,9 +1218,9 @@ else
     __api_tls=true
 fi
 
-case "$__api_container" in
-    vc) __service=validator;;
-    *) __service="$__api_container";;
+case "$__api_container" in  # It's either consensus or some alias for the validator service
+    consensus) __service=consensus;;
+    *) __service=validator;;
 esac
 
 if echo "$@" | grep -q '.*--debug.*' 2>/dev/null ; then

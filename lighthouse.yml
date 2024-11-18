@@ -116,7 +116,7 @@ services:
     networks:
       default:
         aliases:
-          - vc
+          - ${VC_ALIAS}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -217,7 +217,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/lighthouse/validators/api-token.txt
-      - vc
+      - ${VC_ALIAS}
 
   set-cl-prune-marker:
     profiles: ["tools"]
