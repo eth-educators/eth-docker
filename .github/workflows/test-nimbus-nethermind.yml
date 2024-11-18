@@ -35,8 +35,10 @@ jobs:
         run: ./ethd up
       - name: Pause for 30 seconds
         run: sleep 30
-      - name: Test Nimbus
+      - name: Test Nimbus CL
         run: ./.github/check-service.sh consensus
+      - name: Test Nimbus VC
+        run: ./.github/check-service.sh validator
       - name: Test Nethermind
         run: ./.github/check-service.sh execution
       - name: Set Nimbus/Nethermind w/ VC

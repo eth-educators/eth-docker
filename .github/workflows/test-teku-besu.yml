@@ -35,8 +35,10 @@ jobs:
         run: ./ethd up
       - name: Pause for 30 seconds
         run: sleep 30
-      - name: Test Teku
+      - name: Test Teku CL
         run: ./.github/check-service.sh consensus
+      - name: Test Teku VC
+        run: ./.github/check-service.sh validator
       - name: Test Besu
         run: ./.github/check-service.sh execution
       - name: Set Teku/Besu w/ VC
