@@ -101,7 +101,7 @@ __handle_docker() {
     echo "Will use sudo to access Docker"
     __docker_sudo="sudo"
   fi
-  if [[ ( "$__distro" =~ "debian" || "$__distro" = "ubuntu" ) ]] && ! grep -qi microsoft /proc/version; then
+  if [[ -f "${__env_file}" && ( "$__distro" =~ "debian" || "$__distro" = "ubuntu" ) ]] && ! grep -qi microsoft /proc/version; then
 # This gets used, but shellcheck doesn't recognize that
 # shellcheck disable=SC2034
     DOCKER_ROOT=$(__dodocker system info --format '{{.DockerRootDir}}')
