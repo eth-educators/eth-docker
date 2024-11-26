@@ -10,7 +10,7 @@ This follows the [ethdo instructions](https://github.com/wealdtech/ethdo/blob/ma
 [Metrika](https://app.metrika.co/ethereum/dashboard/withdrawals-overview) will let you see whether your validator has a withdrawal address set.
 If yes, that is where consensus layer rewards will be swept automatically (every 4-5 days at ~500,000 validators total) and where your funds will be sent when exiting.
 
-You can use `./ethd keys list` to get a list of your validator public keys that are currently active on your system.
+You can use `./ethdo keys list` to get a list of your validator public keys that are currently active on your system.
 
 ## Offline preparation
 
