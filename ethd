@@ -550,7 +550,11 @@ __source_build() {
 
   case "${__value}" in
     *deposit-cli.yml* )
-      __docompose --profile tools build --pull --no-cache deposit-cli-new
+      __var="DEPCLI_DOCKERFILE"
+      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      if [ "${__build}" = "Dockerfile.source" ]; then
+        __docompose --profile tools build --pull --no-cache deposit-cli-new
+      fi
       ;;
   esac
   case "${__value}" in
