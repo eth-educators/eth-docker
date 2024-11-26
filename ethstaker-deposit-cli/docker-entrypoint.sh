@@ -51,7 +51,7 @@ for i in "${!ARGS[@]}"; do
   fi
 done
 
-su-exec depcli "${ARGS[@]}"
+gosu depcli "${ARGS[@]}"
 
 if [[ "$*" =~ "generate-bls-to-execution-change" ]]; then
   cp -rp /app/bls_to_execution_changes /app/.eth/
