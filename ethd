@@ -1199,10 +1199,10 @@ __env_migrate() {
     GETH_SRC_BUILD_TARGET GETH_SRC_REPO GETH_DOCKER_TAG GETH_DOCKER_REPO TRAEFIK_TAG DDNS_TAG CB_PBS_DOCKER_TAG \
     GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_SRC_REPO NM_DOCKER_TAG NM_DOCKER_REPO NM_DOCKERFILE CB_PBS_DOCKER_REPO \
     BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG CHARON_VERSION \
-    DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG W3S_DOCKER_TAG W3S_DOCKER_REPO \
+    DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG DEPCLI_DOCKER_REPO W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
-    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX DOCKER_ROOT )
+    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX DOCKER_ROOT DEPCLI_DOCKERFILE )
 
   __old_vars=( )
   __new_vars=( )
@@ -1321,6 +1321,12 @@ __env_migrate() {
         fi
         if [[ "${__var}" = "SSV_NODE_REPO" && "${__value}" = "bloxstaking/ssv-node" ]]; then # SSV new repo
           __value="ssvlabs/ssv-node"
+        fi
+        if [[ "${__var}" = "DEPCLI_SRC_REPO" && "${__source_ver}" -lt "21" ]]; then
+          __value="https://github.com/eth-educators/ethstaker-deposit-cli"
+        fi
+        if [[ "${__var}" = "DEPCLI_DOCKER_TAG" && "${__value}" = "nonesuch" ]]; then
+          __value="latest"
         fi
         __update_value_in_env "${__var}" "$__value" "${__env_file}"
       fi
@@ -3165,7 +3171,7 @@ __query_coinbase() {
 
   while true; do
     set +e # Can't rely on the error handler here because of the special-casing below for update()
-    if [[ "${__deployment}" =~ "lido_" ]]; then
+    if [[  "${__during_update}" -eq 0 && "${__deployment}" =~ "lido_" ]]; then
       case "${NETWORK}" in
         "mainnet")
           FEE_RECIPIENT="0x388C818CA8B9251b393131C08a736A67ccB19297"

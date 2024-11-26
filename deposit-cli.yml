@@ -3,18 +3,22 @@ services:
     profiles: ["tools"]
     restart: "no"
     build:
-      context: ./staking-deposit-cli
+      context: ./ethstaker-deposit-cli
+      dockerfile: ${DEPCLI_DOCKERFILE}
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
-        - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/ethereum/staking-deposit-cli}
-    image: staking-deposit-cli:local
+        - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/eth-educators/ethstaker-deposit-cli}
+        - DOCKER_TAG=${DEPLCI_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DEPLCI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
+    image: ethstaker-deposit-cli:local
     pull_policy: never
     volumes:
       - ./.eth:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3
-      - /app/staking_deposit/deposit.py
+      - -m
+      - ethstaker_deposit
       - new-mnemonic
       - --chain
       - ${NETWORK}
@@ -22,37 +26,45 @@ services:
     profiles: ["tools"]
     restart: "no"
     build:
-      context: ./staking-deposit-cli
+      context: ./ethstaker-deposit-cli
+      dockerfile: ${DEPCLI_DOCKERFILE}
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
-        - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/ethereum/staking-deposit-cli}
-    image: staking-deposit-cli:local
+        - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/eth-educators/ethstaker-deposit-cli}
+        - DOCKER_TAG=${DEPLCI_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DEPLCI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
+    image: ethstaker-deposit-cli:local
     pull_policy: never
     volumes:
       - ./.eth:/app/.eth/
     entrypoint:
       - docker-entrypoint.sh
       - python3
-      - /app/staking_deposit/deposit.py
+      - -m
+      - ethstaker_deposit
       - existing-mnemonic
       - --chain
       - ${NETWORK}
   deposit-cli-change:
     profiles: ["tools"]
     build:
-      context: ./staking-deposit-cli
+      context: ./ethstaker-deposit-cli
+      dockerfile: ${DEPCLI_DOCKERFILE}
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
-        - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/ethereum/staking-deposit-cli}
+        - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/eth-educators/ethstaker-deposit-cli}
+        - DOCKER_TAG=${DEPLCI_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DEPLCI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
     restart: "no"
-    image: staking-deposit-cli:local
+    image: ethstaker-deposit-cli:local
     pull_policy: never
     volumes:
       - ./.eth:/app/.eth
     entrypoint:
       - docker-entrypoint.sh
       - python3
-      - /app/staking_deposit/deposit.py
+      - -m
+      - ethstaker_deposit
       - generate-bls-to-execution-change
       - --chain
       - ${NETWORK}

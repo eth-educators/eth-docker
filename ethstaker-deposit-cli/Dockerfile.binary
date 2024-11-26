@@ -1,0 +1,30 @@
+ARG DOCKER_TAG=latest
+ARG DOCKER_REPO=ghcr.io/eth-educators/ethstaker-deposit-cli
+
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
+
+ARG BUILD_TARGET
+ARG SRC_REPO
+
+ARG USER=depcli
+ARG UID=1000
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN apt-get update && apt-get install -y gosu
+
+WORKDIR /app
+
+RUN chown -R ${USER}:${USER} /app
+
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT [ "python3", "-m", "ethstaker_deposit" ]
