@@ -7,6 +7,7 @@ __sample_service="consensus"
 __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
+__target_pg=16
 
 
 __dodocker() {
@@ -869,7 +870,6 @@ __upgrade_postgres() {
     return 0
   fi
 
-  __target_pg=16
   __during_postgres=1
 
   __source_pg="$(__dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \

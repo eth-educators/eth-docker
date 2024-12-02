@@ -128,7 +128,6 @@ services:
       - ${CL_NODE:-http://consensus:5052}
       - --broadcast
       - attestations,sync-committee,blocks,subscriptions
-      - --produce-block-v3
       - --debug-level=${LOG_LEVEL}
       - --metrics
       - --metrics-address
