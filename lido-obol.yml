@@ -85,7 +85,7 @@ services:
      - metrics.instance=validator-ejector
 
   lido-dv-exit:
-    image: obolnetwork/lido-dv-exit:${LIDO_DV_EXIT_VERSION:-e8bee1f}
+    image: obolnetwork/lido-dv-exit:${LIDO_DV_EXIT_VERSION:-c4c00c3}
     user: ":"
     volumes:
       - .eth/lido-ejector:/exitmessages
@@ -97,7 +97,7 @@ services:
       - LIDODVEXIT_EXIT_EPOCH=${LIDO_DV_EXIT_EXIT_EPOCH:-194048}
       - LIDODVEXIT_LOG_LEVEL=${LIDO_DV_EXIT_LOG_LEVEL:-info}
       - LIDODVEXIT_VALIDATOR_QUERY_CHUNK_SIZE=${LIDO_DV_EXIT_VALIDATOR_QUERY_CHUNK_SIZE:-5}
-    restart: on-failure
+    restart: unless-stopped
 
 networks:
   default:
