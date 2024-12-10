@@ -266,6 +266,19 @@ __prep_conffiles() {
   if [ ! -f "commit-boost/cb-config.toml" ]; then
     ${__as_owner} cp commit-boost/cb-config.toml.sample commit-boost/cb-config.toml
   fi
+# Make sure local user owns .env
+  if find .env \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" | grep -q .; then
+    if [ "$__cannot_sudo" -eq 0 ]; then
+      echo "Fixing ownership of .env"
+      ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .env
+      ${__auto_sudo} chmod -R 644 .env
+      if [ -f .env.tmp ]; then
+        ${__auto_sudo} rm -f .env.tmp
+      fi
+    else
+      echo "Ownership of .env should be fixed, but this user can't sudo"
+    fi
+  fi
 }
 
 
@@ -1114,7 +1127,7 @@ __get_value_from_env() {
 
 
 __update_value_in_env() {
-# Call as __update_value_in_env "$__var" "$__value" "$__env_file"
+# Call as __update_value_in_env "${__var}" "${__value}" "${__env_file}"
     local __var_name="$1"
     local __new_value="$2"
     local __env_file="$3"
@@ -1126,7 +1139,7 @@ __update_value_in_env() {
     # Check if the variable already exists in the .env file
     if grep -q "^[ \t]*${__var_name}=" "${__env_file}"; then
         # Variable exists, update it
-        awk -v var="$__var_name" -v new_value="$__escaped_value" '
+        awk -v var="${__var_name}" -v new_value="${__escaped_value}" '
             BEGIN { in_block = 0; multi_line = 0 }
 
             # Match the line that starts with the variable name
@@ -1168,10 +1181,11 @@ __update_value_in_env() {
 
             # Print all lines if not in the target variable block
             { print }
-        ' "$__env_file" > "${__env_file}.tmp" && mv "${__env_file}.tmp" "$__env_file"
+        ' "${__env_file}" | ${__as_owner} tee "${__env_file}.tmp" >/dev/null
+        ${__as_owner} mv "${__env_file}.tmp" "${__env_file}"
     else
         # Variable does not exist, append it
-        printf "%s=%s\n" "$__var_name" "$__escaped_value" >> "$__env_file"
+        printf "%s=%s\n" "${__var_name}" "${__escaped_value}" | ${__as_owner} tee -a "${__env_file}" >/dev/null
     fi
 }
 
