@@ -83,9 +83,9 @@ fi
 
 # New or old datadir
 if [ -d /var/lib/nethermind-og/nethermind_db ]; then
-  __datadir="--datadir /var/lib/nethermind-og"
+  __datadir="--data-dir /var/lib/nethermind-og"
 else
-  __datadir="--datadir /var/lib/nethermind"
+  __datadir="--data-dir /var/lib/nethermind"
 fi
 
 # Word splitting is desired for the command line parameters
