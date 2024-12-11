@@ -1498,7 +1498,7 @@ update() {
     if [ -z "${__value}" ] || [ "${__value}" = "latest" ]; then
       export ETHDPINNED=""
       __branch=$(git rev-parse --abbrev-ref HEAD)
-      if [[ "${__branch}" =~ ^tag-v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      if [[ "${__branch}" =~ ^tag-* ]]; then
         git checkout main
       fi
 # This preps for a removal of ext-network.yml in a future update, after Pectra
