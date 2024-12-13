@@ -470,7 +470,7 @@ __display_docker_volumes() {
     echo
   else
     echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
-    __dodocker system df -v | grep -A 50 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+    __dodocker system df -v | grep -A 500 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
     echo
     echo "If your Consensus Layer client takes more than 300 GiB, you can resync it with"
     echo "\"${__me} resync-consensus\"."
