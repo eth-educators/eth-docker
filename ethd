@@ -465,12 +465,12 @@ __display_docker_dir() {
 
 __display_docker_volumes() {
   echo
-  if [ -z "$(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
+  if [ -z "$(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_[^_]+")" ]; then
     echo "There are no Docker volumes for this copy of ${__project_name}"
     echo
   else
     echo "Here are the Docker volumes used by this copy of ${__project_name} and their space usage:"
-    __dodocker system df -v | grep -A 500 "VOLUME NAME" | grep "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+    __dodocker system df -v | grep -A 500 "VOLUME NAME" | grep -i "^$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
     echo
     echo "If your Consensus Layer client takes more than 300 GiB, you can resync it with"
     echo "\"${__me} resync-consensus\"."
@@ -712,7 +712,7 @@ __ssv_switch() {
   echo "Stopping SSV Node container"
   __node=$(__dodocker ps --format '{{.Names}}' | grep 'ssv2-node')
   __dodocker stop "${__node}" && __dodocker rm -f "${__node}"
-  __dodocker volume rm "$(__dodocker volume ls -q | grep "$(basename "$(realpath .)")"_ssv2-data)"
+  __dodocker volume rm "$(__dodocker volume ls -q | grep -i "$(basename "$(realpath .)")"_ssv2-data)"
   echo
   echo "SSV Node stopped and database deleted."
   echo
@@ -778,19 +778,19 @@ __delete_reth() {
     return 0
   fi
 
-  if [ -z "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")" ]; then # No Reth volume
+  if [ -z "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]reth-el-data")" ]; then # No Reth volume
     return 0
   fi
 
 # Has db been initialized?
-  __db_exists=$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
+  __db_exists=$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]reth-el-data")":"/var/lib/reth" \
       alpine:3 sh -c 'if [ -f "/var/lib/reth/db/database.version" ]; then echo true; else echo false; fi')
   if [ "$__db_exists" = "false" ]; then
     return 0
   fi
 
 # Check Reth db version
-  __db_version="$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")":"/var/lib/reth" \
+  __db_version="$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]reth-el-data")":"/var/lib/reth" \
       alpine:3 cat /var/lib/reth/db/database.version)"
   if [ "${__db_version}" -ne "1" ]; then
     return 0
@@ -810,7 +810,7 @@ __delete_reth() {
 
   echo "Stopping Reth container"
   __docompose stop execution && __docompose rm -f execution
-  __dodocker volume rm "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]reth-el-data")"
+  __dodocker volume rm "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]reth-el-data")"
   echo
   echo "Reth stopped and database deleted."
   echo
@@ -838,12 +838,12 @@ __delete_erigon() {
     return 0
   fi
 
-  if [ -z "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")" ]; then # No Erigon volume
+  if [ -z "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]erigon-el-data")" ]; then # No Erigon volume
     return 0
   fi
 
 # Detect Erigon v3 by directory caplin/latest
-  __erigon_v3=$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")":"/var/lib/erigon" \
+  __erigon_v3=$(__dodocker run --rm -v "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]erigon-el-data")":"/var/lib/erigon" \
       alpine:3 sh -c 'if [ -d "/var/lib/erigon/caplin/latest" ]; then echo true; else echo false; fi')
   if [ "$__erigon_v3" = "true" ]; then
     return 0
@@ -861,7 +861,7 @@ __delete_erigon() {
 
   echo "Stopping Erigon container"
   __docompose stop execution && __docompose rm -f execution
-  __dodocker volume rm "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)")[_-]erigon-el-data")"
+  __dodocker volume rm "$(__dodocker volume ls -q -f "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]erigon-el-data")"
   echo
   echo "Erigon stopped and database deleted."
   echo
@@ -878,7 +878,7 @@ __upgrade_postgres() {
     return 0
   fi
 
-  __source_vol="$(basename "$(pwd)")_web3signer-slashing-data"
+  __source_vol="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')_web3signer-slashing-data"
   if [ -z "$(__dodocker volume ls -q -f "name=${__source_vol}")" ]; then
     return 0
   fi
@@ -926,8 +926,8 @@ __upgrade_postgres() {
     return
   fi
 
-  __migrated_vol="$(basename "$(pwd)")_web3signer-slashing-data-pg${__target_pg}-migrated"
-  __backup_vol="$(basename "$(pwd)")_web3signer-slashing-data-pg${__source_pg}-backup"
+  __migrated_vol="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')_web3signer-slashing-data-pg${__target_pg}-migrated"
+  __backup_vol="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')_web3signer-slashing-data-pg${__source_pg}-backup"
 
   echo "Stopping Web3signer"
   __docompose stop web3signer && __docompose rm -f web3signer
@@ -1648,7 +1648,7 @@ resync-execution() {
     * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
   esac
 
-  if ! __dodocker volume ls -q | grep -q "$(basename "$(realpath .)")[_-]${__el_volume}"; then
+  if ! __dodocker volume ls -q | grep -qi "$(basename "$(realpath .)")[_-]${__el_volume}"; then
     echo "Did not find Docker volume for ${__el_client}. Nothing to do."
     return 0
   fi
@@ -1660,19 +1660,19 @@ resync-execution() {
     * ) echo "Aborting."; exit 130;;
   esac
 
-  __el_volume="$(basename "$(realpath .)")_${__el_volume}"
+  __el_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_${__el_volume}"
   echo "Stopping ${__el_client} container"
   __docompose stop execution && __docompose rm -f execution
   __dodocker volume rm "$(__dodocker volume ls -q -f "name=${__el_volume}")"
   __volume_id=""
   if [[ "${__el_volume}" =~ geth-el-data ]]; then
-    __legacy_volume="$(basename "$(realpath .)")_geth-eth1-data"
+    __legacy_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_geth-eth1-data"
     __volume_id="$(__dodocker volume ls -q -f "name=${__legacy_volume}")"
   elif [[ "${__el_volume}" =~ besu-el-data ]]; then
-    __legacy_volume="$(basename "$(realpath .)")_besu-eth1-data"
+    __legacy_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_besu-eth1-data"
     __volume_id="$(__dodocker volume ls -q -f "name=${__legacy_volume}")"
   elif [[ "${__el_volume}" =~ nethermind-el-data ]]; then
-    __legacy_volume="$(basename "$(realpath .)")_nm-eth1-data"
+    __legacy_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_nm-eth1-data"
     __volume_id="$(__dodocker volume ls -q -f "name=${__legacy_volume}")"
   fi
   if [ -n "${__volume_id}" ]; then
@@ -1705,7 +1705,7 @@ resync-consensus() {
   esac
 
   if [ ! "${__cl_volume}" = "wipe-db" ] && ! __dodocker volume ls -q \
-      | grep -q "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
+      | grep -qi "$(basename "$(realpath .)")[_-]${__cl_volume}"; then
     echo "Did not find Docker volume for ${__cl_client}. Nothing to do."
     return 0
   fi
@@ -1729,14 +1729,14 @@ resync-consensus() {
   if [ "${__cl_volume}" = "wipe-db" ]; then
     __docompose run --rm wipe-db
   else
-    __cl_volume="$(basename "$(realpath .)")_${__cl_volume}"
+    __cl_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_${__cl_volume}"
     __dodocker volume rm "$(__dodocker volume ls -q -f "name=${__cl_volume}")"
     __volume_id=""
     if [[ "${__cl_volume}" =~ lhconsensus-data ]]; then
-      __legacy_volume="$(basename "$(realpath .)")_lhbeacon-data"
+      __legacy_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_lhbeacon-data"
       __volume_id="$(__dodocker volume ls -q -f "name=${__legacy_volume}")"
     elif [[ "${__cl_volume}" =~ prysmconsensus-data ]]; then
-      __legacy_volume="$(basename "$(realpath .)")_prysmbeacon-data"
+      __legacy_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_prysmbeacon-data"
       __volume_id="$(__dodocker volume ls -q -f "name=${__legacy_volume}")"
     fi
     if [ -n "${__volume_id}" ]; then
@@ -1762,7 +1762,7 @@ attach-geth() {
     exit 1
   fi
   __legacy_datadir=$(__dodocker run --rm -v "$(__dodocker volume ls -q -f \
-    "name=$(basename "$(realpath .)")[_-]geth-eth1-data")":"/var/lib/goethereum" \
+    "name=$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')[_-]geth-eth1-data")":"/var/lib/goethereum" \
     alpine:3 sh -c 'if [ -d "/var/lib/goethereum/geth/chaindata" ]; then echo true; else echo false; fi')
 
   if [ "${__legacy_datadir}" = "true" ]; then
@@ -2729,7 +2729,7 @@ cmd() {
 
 
 terminate() {
-  if [ -z "$(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
+  if [ -z "$(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_[^_]+")" ]; then
     echo "There are no data stores - Docker volumes - left to remove for this Ethereum node."
     stop
     return 0
@@ -2747,7 +2747,7 @@ terminate() {
   stop
 # In this case I want the word splitting, so rm can remove all volumes
 # shellcheck disable=SC2046
-  __dodocker volume rm $(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")
+  __dodocker volume rm $(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_[^_]+")
   echo
   echo "All containers stopped and all volumes deleted"
   echo
