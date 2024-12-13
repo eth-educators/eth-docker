@@ -4046,6 +4046,7 @@ version() {
       echo
       ;;&
     *nethermind.yml* )
+      echo "Nethermind version"
       __docompose exec execution /nethermind/nethermind --version
       echo
       ;;&
