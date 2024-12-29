@@ -51,39 +51,46 @@ call_api() {
 }
 
 call_cl_api() {
-    set +e
-    if [ -z "${__api_data}" ]; then
-        __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" \
-            "${CL_NODE}"/"${__api_path}")
-    else
-        __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Content-Type: application/json" \
-            --data "${__api_data}" "${CL_NODE}"/"${__api_path}")
-    fi
-    __return=$?
-    if [ $__return -ne 0 ]; then
-        echo "Error encountered while trying to call the consensus client REST API via curl."
-        echo "Please make sure the ${CL_NODE} URL is reachable."
-        echo "Error code $__return"
-        exit $__return
-    fi
-    if [ -f /tmp/result.txt ]; then
-        __result=$(cat /tmp/result.txt)
-    else
-        echo "Error encountered while trying to call the consensus client REST API via curl."
-        echo "HTTP code: ${__code}"
-        exit 1
-    fi
+  set +e
+  if [ -z "${__api_data}" ]; then
+    __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" \
+        "${CL_NODE}"/"${__api_path}")
+  else
+    __code=$(curl -m 60 -s --show-error -o /tmp/result.txt -w "%{http_code}" -X "${__http_method}" -H "Accept: application/json" -H "Content-Type: application/json" \
+        --data "${__api_data}" "${CL_NODE}"/"${__api_path}")
+  fi
+  __return=$?
+  if [ $__return -ne 0 ]; then
+    echo "Error encountered while trying to call the consensus client REST API via curl."
+    echo "Please make sure the ${CL_NODE} URL is reachable."
+    echo "Error code $__return"
+    exit $__return
+  fi
+  if [ -f /tmp/result.txt ]; then
+    __result=$(cat /tmp/result.txt)
+  else
+    echo "Error encountered while trying to call the consensus client REST API via curl."
+    echo "HTTP code: ${__code}"
+    exit 1
+  fi
 }
 
 get-token() {
 set +e
-    __token=$(< "${__token_file}")
-    __return=$?
-    if [ $__return -ne 0 ]; then
-        echo "Error encountered while trying to get the keymanager API token."
-        echo "Please make sure the ${__service} service is up and its logs show the key manager API, port ${__api_port}, enabled."
-        exit $__return
-    fi
+  __token=$(tail -n 1 "${__token_file}")
+  __return=$?
+  if [ $__return -ne 0 ]; then
+    echo "Error encountered while trying to get the keymanager API token."
+    echo "Please make sure the ${__service} service is up and its logs show the key manager API, port ${__api_port}, enabled."
+    exit $__return
+  fi
+  if [ -z "${__token}" ]; then
+    echo "The keymnanager API token in ${__token_file_client} is empty."
+    echo "The token path is relative to the ${__service} container."
+    echo "This could happen if the file ends with an empty line, which is a client bug."
+    echo "Please report this on Github. Aborting."
+    exit 1
+  fi
 set -e
 }
 
@@ -882,13 +889,7 @@ and secrets directories into .eth/validator_keys instead."
         call_api
         case $__code in
             200) ;;
-            400)
-              if [ -z "${PRYSM:+x}" ]; then
-                echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1
-              else
-                echo "Bad format. Error: $__result"; exit 1
-              fi
-              ;;
+            400) echo "The pubkey was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
             403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
             500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
@@ -1209,6 +1210,7 @@ if [ "$(id -u)" = '0' ]; then
         exit 1
     fi
 fi
+__token_file_client="$1"
 __token_file=/tmp/api-token.txt
 __api_container=$2
 __api_port=${KEY_API_PORT:-7500}
