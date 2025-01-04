@@ -1043,6 +1043,7 @@ __enable_v6() {
 
   echo "Testing IPv6 host connectivity"
   if ! ping -c1 2001:4860:4860::8888 >/dev/null; then
+    echo "No IPv6 detected; continuing with IPv4"
     return
   fi
 
@@ -1057,6 +1058,8 @@ __enable_v6() {
     IPV6="true"
     __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
     __enabled_v6=1
+  else
+    echo "Docker cannot use IPv6; continuing with IPv4"
   fi
 }
 
@@ -1452,6 +1455,7 @@ __nag_os_version() {
 
 
 __pull_and_build() {
+  echo "Building local client images"
   __dodocker system prune --force
   __docompose --profile tools pull
   __source_build
@@ -2849,11 +2853,23 @@ __query_deployment() {
   fi
 
   if [ "${__deployment}" = "lido_comp" ]; then
-    __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
-    "What kind of deployment to participate in Lido protocol do you want to run?" 11 90 3 \
-    "lido_csm" "[Community Staking] CSM node - Consensus, execution and validator client" \
-    "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
-    "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
+    if uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
+      __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
+      "What kind of deployment to participate in Lido protocol do you want to run?" 11 90 3 \
+      "lido_csm" "[Community Staking] CSM node - Consensus, execution and validator client" \
+      "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
+    elif uname -m | grep -q x86_64; then
+      __deployment=$(whiptail --notags --title "Select deployment type for Lido" --menu \
+      "What kind of deployment to participate in Lido protocol do you want to run?" 11 90 3 \
+      "lido_csm" "[Community Staking] CSM node - Consensus, execution and validator client" \
+      "lido_ssv" "[Simple DVT] SSV node - Consensus, execution and ssv-node" \
+      "lido_obol" "[Simple DVT] Obol node - Nodes, validator client and charon node (obol middleware)" 3>&1 1>&2 2>&3)
+    else
+      echo "Eth Docker does not support Lido on this CPU architecture. Aborting."
+      echo "Output of uname -m"
+      uname -m
+      exit 1
+    fi
   fi
 
   echo "Your deployment choice is: ${__deployment}"
