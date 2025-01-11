@@ -1,5 +1,8 @@
 name: Test Prysm and Geth
-run-name: Test Prysm and Geth
+
+defaults:
+  run:
+    shell: bash
 
 on:
   push:
@@ -34,29 +37,13 @@ jobs:
           CL_NODE=consensus:4000
           var=CL_NODE
           set_value_in_env
-      - name: Start Prysm/Geth
-        run: ./ethd up
-      - name: Pause for 30 seconds
-        run: sleep 30
-      - name: Test Prysm CL
-        run: ./.github/check-service.sh consensus
-      - name: Test Prysm VC
-        run: ./.github/check-service.sh validator
-      - name: Test Geth
-        run: ./.github/check-service.sh execution
+      - name: Test the stack
+        uses: ./.github/actions/test_client_stack
       - name: Set Prysm/Geth w/ VC
         run: |
           source ./.github/helper.sh
           COMPOSE_FILE=prysm-cl-only.yml:prysm-vc-only.yml:geth.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Prysm/Geth
-        run: ./ethd up
-      - name: Pause for 30 seconds
-        run: sleep 30
-      - name: Test Prysm CL
-        run: ./.github/check-service.sh consensus
-      - name: Test Prysm VC
-        run: ./.github/check-service.sh validator
-      - name: Test Geth
-        run: ./.github/check-service.sh execution
+      - name: Test the stack
+        uses: ./.github/actions/test_client_stack

@@ -1,22 +1,16 @@
-name: Test Lodestar and Erigon
+name: Source build Erigon
 
 defaults:
   run:
     shell: bash
 
 on:
-  push:
-  pull_request:
-    types: [opened, synchronize, labeled, unlabeled]
-    branches: [main]
+  schedule:
+    - cron: "42 7 * * 2"  # Weekly Tuesday at 7:42 AM UTC
+  workflow_dispatch:
 
 jobs:
-  test-lodestar-erigon:
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'test-lodestar') ||
-      contains(github.event.pull_request.labels.*.name, 'test-erigon') ||
-      contains(github.event.pull_request.labels.*.name, 'test-all') ||
-      github.event_name == 'push'
+  build-erigon:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,6 +28,11 @@ jobs:
           FEE_RECIPIENT=0xDccf8451070a86183eE70D330C4c43b686E9CF86
           var=FEE_RECIPIENT
           set_value_in_env
+          ERIGON_DOCKERFILE=Dockerfile.source
+          var=ERIGON_DOCKERFILE
+          set_value_in_env
+      - name: Build clients
+        run: ./ethd update
       - name: Test the stack
         uses: ./.github/actions/test_client_stack
       - name: Set Lodestar/Erigon w/ VC
