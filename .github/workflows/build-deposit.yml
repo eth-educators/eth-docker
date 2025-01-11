@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-besu:
+  build-deposit-cli:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
