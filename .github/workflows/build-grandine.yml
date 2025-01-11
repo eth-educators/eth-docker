@@ -1,21 +1,16 @@
-name: Test Grandine and Reth
+name: Source build Grandine
 
 defaults:
   run:
     shell: bash
 
 on:
-  push:
-  pull_request:
-    types: [opened, synchronize, labeled, unlabeled]
-    branches: [main]
+  schedule:
+    - cron: "42 7 * * 2"  # Weekly Tuesday at 7:42 AM UTC
+  workflow_dispatch:
 
 jobs:
-  test-grandine-reth:
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'test-grandine') ||
-      contains(github.event.pull_request.labels.*.name, 'test-all') ||
-      github.event_name == 'push'
+  build-grandine:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -30,6 +25,11 @@ jobs:
           FEE_RECIPIENT=0xDccf8451070a86183eE70D330C4c43b686E9CF86
           var=FEE_RECIPIENT
           set_value_in_env
+          GRANDINE_DOCKERFILE=Dockerfile.source
+          var=GRANDINE_DOCKERFILE
+          set_value_in_env
+      - name: Build Grandine
+        run: ./ethd update
       - name: Start Grandine/Reth
         run: ./ethd up
       - name: Pause for 30 seconds

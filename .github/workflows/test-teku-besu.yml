@@ -1,5 +1,8 @@
 name: Test Teku and Besu
-run-name: Test Teku and Besu
+
+defaults:
+  run:
+    shell: bash
 
 on:
   push:
@@ -31,29 +34,13 @@ jobs:
           FEE_RECIPIENT=0xDccf8451070a86183eE70D330C4c43b686E9CF86
           var=FEE_RECIPIENT
           set_value_in_env
-      - name: Start Teku/Besu
-        run: ./ethd up
-      - name: Pause for 30 seconds
-        run: sleep 30
-      - name: Test Teku CL
-        run: ./.github/check-service.sh consensus
-      - name: Test Teku VC
-        run: ./.github/check-service.sh validator
-      - name: Test Besu
-        run: ./.github/check-service.sh execution
+      - name: Test the stack
+        uses: ./.github/actions/test_client_stack
       - name: Set Teku/Besu w/ VC
         run: |
           source ./.github/helper.sh
           COMPOSE_FILE=teku-cl-only.yml:teku-vc-only.yml:besu.yml
           var=COMPOSE_FILE
           set_value_in_env
-      - name: Start Teku/Besu
-        run: ./ethd up
-      - name: Pause for 30 seconds
-        run: sleep 30
-      - name: Test Teku CL
-        run: ./.github/check-service.sh consensus
-      - name: Test Teku VC
-        run: ./.github/check-service.sh validator
-      - name: Test Besu
-        run: ./.github/check-service.sh execution
+      - name: Test the stack
+        uses: ./.github/actions/test_client_stack

@@ -1,5 +1,8 @@
 name: Test Grafana
-run-name: Test Grafana
+
+defaults:
+  run:
+    shell: bash
 
 on:
   push:

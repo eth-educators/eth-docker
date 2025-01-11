@@ -1,28 +1,19 @@
-name: Test Lighthouse and Reth
+name: Source build Reth
 
 defaults:
   run:
     shell: bash
 
 on:
-  push:
-  pull_request:
-    types: [opened, synchronize, labeled, unlabeled]
-    branches: [main]
+  schedule:
+    - cron: "42 7 * * 2"  # Weekly Tuesday at 7:42 AM UTC
+  workflow_dispatch:
 
 jobs:
-  test-lighthouse-reth:
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'test-lighthouse') ||
-      contains(github.event.pull_request.labels.*.name, 'test-reth') ||
-      contains(github.event.pull_request.labels.*.name, 'test-all') ||
-      github.event_name == 'push'
+  build-reth:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v3
       - name: Create .env file
         run: cp default.env .env
       - name: Set Lighthouse/Reth
@@ -34,6 +25,11 @@ jobs:
           FEE_RECIPIENT=0xDccf8451070a86183eE70D330C4c43b686E9CF86
           var=FEE_RECIPIENT
           set_value_in_env
+          RETH_DOCKERFILE=Dockerfile.source
+          var=RETH_DOCKERFILE
+          set_value_in_env
+      - name: Build clients
+        run: ./ethd update
       - name: Test the stack
         uses: ./.github/actions/test_client_stack
       - name: Set Lighthouse/Reth w/ VC

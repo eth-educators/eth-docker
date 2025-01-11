@@ -1,0 +1,21 @@
+name: "Test Client Stack"
+description: "A custom action to test CL, VC and EL"
+
+runs:
+  using: "composite"
+  steps:
+  - name: Start client combo
+    run: ./ethd up
+    shell: bash
+  - name: Pause for 30 seconds
+    run: sleep 30
+    shell: bash
+  - name: Test CL
+    run: ./.github/check-service.sh consensus
+    shell: bash
+  - name: Test VC
+    run: ./.github/check-service.sh validator
+    shell: bash
+  - name: Test EL
+    run: ./.github/check-service.sh execution
+    shell: bash
