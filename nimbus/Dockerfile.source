@@ -1,5 +1,5 @@
-# Build Nimbus in a stock alpine container
-FROM alpine:3 AS builder
+# Build Nimbus in a stock Debian container
+FROM debian:bookworm-slim AS builder
 
 # Included here to avoid build-time complaints
 ARG DOCKER_TAG
@@ -10,19 +10,19 @@ ARG DOCKER_VC_REPO
 ARG BUILD_TARGET
 ARG SRC_REPO
 
-RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git bash git-lfs nim
+RUN apt-get update && apt-get install -y build-essential bash git-lfs
 
 WORKDIR /usr/src
-RUN bash -c "git clone --recurse-submodules -j8 ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make USE_SYSTEM_NIM=1 -j$(nproc) update && make USE_SYSTEM_NIM=1 -j$(nproc) nimbus_beacon_node nimbus_validator_client"
+RUN bash -c "git clone --recurse-submodules -j8 ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make USE_SYSTEM_NIM=1 -j$(nproc) update && make -j$(nproc) nimbus_beacon_node nimbus_validator_client"
 
 # Pull all binaries into a second stage deploy debian container
-FROM alpine:3 AS consensus
+FROM debian:bookworm-slim AS consensus
 
 ARG USER=user
 ARG UID=10002
 
-RUN apk update && apk add \
-  ca-certificates bash tzdata git curl su-exec gcc
+RUN apt-get update && apt-get install -y \
+  ca-certificates bash tzdata git curl gosu
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -47,13 +47,13 @@ USER ${USER}
 
 ENTRYPOINT ["nimbus_beacon_node"]
 
-FROM alpine:3 AS validator
+FROM debian:bookworm-slim AS validator
 
 ARG USER=user
 ARG UID=10000
 
-RUN apk update && apk add \
-  ca-certificates bash tzdata curl su-exec gcc
+RUN apt-get update && apt-get install -y \
+  ca-certificates bash tzdata curl gosu
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
