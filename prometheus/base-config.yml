@@ -61,5 +61,5 @@ scrape_configs:
         - source_labels: [__meta_docker_container_label_metrics_network]
           target_label: network
 
-scrape_config_files:
+scrape_configs_files:
   - /etc/prometheus/conf.d/*.yml
