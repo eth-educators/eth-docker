@@ -1,4 +1,4 @@
-name: Source build Besu
+name: Source build ethstaker-deposit-cli
 
 defaults:
   run:
