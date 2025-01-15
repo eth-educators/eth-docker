@@ -7,7 +7,7 @@ ARG DOCKER_REPO
 ARG BUILD_TARGET
 ARG SRC_REPO
 
-RUN apt-get update && apt-get install -y --no-install-recommends git g++ make python3 python3-setuptools bash && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates git g++ make python3 python3-setuptools bash && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/app
 
