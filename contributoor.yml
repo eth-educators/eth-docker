@@ -1,0 +1,21 @@
+# EthPandaOps Contributoor, for use alongside a consensus layer client
+## Read more: https://github.com/ethpandaops/contributoor
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  contributoor:
+    restart: "unless-stopped"
+    image: ${CONTRIBUTOOR_DOCKER_REPO}:${CONTRIBUTOOR_DOCKER_TAG}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    <<: *logging
+    command:
+      - --beacon-node-url=${CL_NODE}
+      - --username=${CONTRIBUTOOR_USERNAME}
+      - --password=${CONTRIBUTOOR_PASSWORD}
