@@ -16,6 +16,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
     command:
+      - --network=${NETWORK}
       - --beacon-node-url=${CL_NODE}
       - --username=${CONTRIBUTOOR_USERNAME}
       - --password=${CONTRIBUTOOR_PASSWORD}
