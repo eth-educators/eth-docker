@@ -15,7 +15,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
     <<: *logging
-    args:
+    command:
       - --network=${NETWORK}
       - --beacon-node-address=${CL_NODE}
       - --username=${CONTRIBUTOOR_USERNAME}
