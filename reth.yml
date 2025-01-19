@@ -41,7 +41,7 @@ services:
     ports:
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${HOST_IP:-}:${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
-      - ${HOST_IP:-}:${ERIGON_P2P_PORT_2:-30304}:${ERIGON_P2P_PORT_2:-30304}/udp
+      - ${HOST_IP:-}:${EL_P2P_PORT_2:-30304}:${EL_P2P_PORT_2:-30304}/udp
     networks:
       default:
         aliases:
@@ -62,7 +62,7 @@ services:
       - ${EL_P2P_PORT:-30303}
       - --enable-discv5-discovery
       - --discovery.v5.port
-      - ${ERIGON_P2P_PORT_2:-30304}
+      - ${EL_P2P_PORT_2:-30304}
       - --nat
       - publicip
       - --http
