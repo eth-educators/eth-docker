@@ -674,8 +674,8 @@ __source_build() {
 __migrate_compose_file() {
 # When this gets called $__var is COMPOSE_FILE and $__value is what is set in .env for it
 # Some files have been renamed and others removed altogether
-  __from_yml=( )
-  __to_yml=( )
+  __from_yml=( xatu.yml )
+  __to_yml=( contributoor.yml )
 
   IFS=":"
   set -o noglob
@@ -1208,7 +1208,7 @@ __env_migrate() {
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
     EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT ERIGON_P2P_PORT_2 \
     ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD LIDO_DV_EXIT_VERSION OBOL_CHARON_CL_ENDPOINTS VC_ALIAS \
-    CL_IPV6_P2P_PORT XATU_KEY CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD )
+    CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD )
   __target_vars=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE SSV_NODE_REPO \
@@ -1224,10 +1224,10 @@ __env_migrate() {
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
     SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX DOCKER_ROOT DEPCLI_DOCKERFILE \
-    XATU_DOCKER_REPO XATU_DOCKER_TAG CONTRIBUTOOR_DOCKER_REPO CONTRIBUTOOR_DOCKER_TAG)
+    CONTRIBUTOOR_DOCKER_REPO CONTRIBUTOOR_DOCKER_TAG)
 
-  __old_vars=( )
-  __new_vars=( )
+  __old_vars=( XATU_KEY )
+  __new_vars=( CONTRIBUTOOR_USERNAME )
 
 # Always make sure we have a SIREN password
   __var="SIREN_PASSWORD"
@@ -1359,6 +1359,13 @@ __env_migrate() {
     __var=${__old_vars[__index]}
     __value=$(__get_value_from_env "${__var}" "${__env_file}.source")
     if [ -n "${__value}" ]; then
+      if [[ "${__source_ver}" -lt "23" && "${__var}" = "XATU_KEY" ]]; then
+        __xatu_decode="$(base64 -d <<< "${__value}")"
+        __user="${__xatu_decode%%:*}"
+        __password="${__xatu_decode#*:}"
+        __value="${__user}"  # Is updated in .env after this if section
+        __update_value_in_env "CONTRIBUTOOR_PASSWORD" "$__password" "${__env_file}"
+      fi
       __update_value_in_env "${__new_vars[__index]}" "$__value" "${__env_file}"
     fi
   done
