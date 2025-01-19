@@ -1226,8 +1226,8 @@ __env_migrate() {
     SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG NODE_EXPORTER_IGNORE_MOUNT_REGEX DOCKER_ROOT DEPCLI_DOCKERFILE \
     XATU_DOCKER_REPO XATU_DOCKER_TAG )
 
-  __old_vars=( )
-  __new_vars=( )
+  __old_vars=( ERIGON_P2P_PORT_2 )
+  __new_vars=( EL_P2P_PORT_2 )
 
 # Always make sure we have a SIREN password
   __var="SIREN_PASSWORD"
