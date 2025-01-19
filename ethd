@@ -4104,6 +4104,11 @@ version() {
       __docompose exec traefik traefik version
       echo
       ;;&
+    *contributoor.yml* )
+      echo - n "Contributoor "
+      __docompose exec contributoor sentry --release
+      echo
+      ;;&
   esac
 }
 
