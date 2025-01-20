@@ -4105,7 +4105,7 @@ version() {
       echo
       ;;&
     *contributoor.yml* )
-      echo - n "Contributoor "
+      echo -n "Contributoor "
       __docompose exec contributoor sentry --release
       echo
       ;;&
