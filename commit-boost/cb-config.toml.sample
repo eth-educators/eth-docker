@@ -2,6 +2,7 @@ chain = "Holesky"
 
 [pbs]
 port = 18550
+host = "0.0.0.0"
 
 [[relays]]
 id = "bloxroute"
