@@ -62,7 +62,7 @@ __determine_distro() {
         ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
       fi
     fi
-    if [ -n "$(command -v lsb_release 2>/dev/null)" ]; then
+    if [[ -n "$(command -v lsb_release 2>/dev/null)" && $(lsb_release -r | cut -f2 2>/dev/null) =~ ^[0-9]+$ ]]; then
       __os_major_version=$(lsb_release -r | cut -f2)
     else
       __os_major_version=12 # Without sudo and lsb_release let's just skip the check
