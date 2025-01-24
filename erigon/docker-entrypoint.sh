@@ -92,6 +92,9 @@ else  # Erigon v3
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Erigon archive node without pruning"
     __prune="--prune.mode=archive"
+  elif [ "${MINIMAL_NODE}" = "true" ]; then
+    echo "Erigon minimal node with EIP-4444 expiry"
+    __prune="--prune.mode=minimal"
   else
     echo "Erigon full node with pruning"
     __prune="--prune.mode=full"
@@ -111,7 +114,7 @@ else  # Erigon v3
       echo "MEV Boost enabled"
     fi
     if [ "${ARCHIVE_NODE}" = "true" ]; then
-      __caplin+=" --caplin.archive=true"
+      __caplin+=" --caplin.states-archive=true --caplin.blobs-archive=true --caplin.blocks-archive=true"
     fi
     if [ -n "${RAPID_SYNC_URL}" ]; then
       __caplin+=" --caplin.checkpoint-sync-url=${RAPID_SYNC_URL}"
