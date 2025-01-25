@@ -3042,7 +3042,7 @@ execution client? (right-click to paste)" 10 60 "${JWT_SECRET}" 3>&1 1>&2 2>&3)
     JWT_SECRET=${JWT_SECRET#0x}
 
     # Check if the JWT_SECRET is exactly 64 hex characters long
-    if [[ ${#JWT_SECRET} -eq 64 && $JWT_SECRET =~ ^[0-9A-Fa-f]{64}$ ]]; then
+    if [[ $JWT_SECRET =~ ^[0-9A-Fa-f]{64}$ ]]; then
       echo "JWT Secret set. Please make sure it matches on CL and EL."
       break
     else
