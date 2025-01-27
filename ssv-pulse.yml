@@ -1,0 +1,25 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  ssv-pulse:
+    image: ghcr.io/ssvlabs/ssv-pulse:latest
+    pull_policy: always
+    restart: no
+    command:
+      - 'benchmark'
+      - '--consensus-addr=${CL_NODE}'
+      - '--execution-addr=${EL_RPC_NODE}'
+      - '--ssv-addr=http://ssv-node:16000' # Change to your SSV Node's address with SSVAPIPort
+      - '--duration=60m'
+      - '--network=${NETWORK}'
+      # - '--platform linux/arm64' # Add this if you run on an arm64 machine
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}
