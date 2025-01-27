@@ -62,7 +62,7 @@ __determine_distro() {
         ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install lsb-release
       fi
     fi
-    if [ -n "$(command -v lsb_release 2>/dev/null)" ]; then
+    if [[ -n "$(command -v lsb_release 2>/dev/null)" && $(lsb_release -r | cut -f2 2>/dev/null) =~ ^[0-9]+$ ]]; then
       __os_major_version=$(lsb_release -r | cut -f2)
     else
       __os_major_version=12 # Without sudo and lsb_release let's just skip the check
@@ -834,7 +834,7 @@ __delete_erigon() {
   __repo=$(__get_value_from_env "${__var}" "${__env_file}")
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! ("${__value}" =~ "v3" || ( "${__value}" = "latest" && "${__repo}" =~ "thorax" ) || "${__value}" = "main-latest") ]]; then
+  if [[ ! ("${__value}" =~ "v3" || "${__value}" = "main-latest") ]]; then
     return 0
   fi
 
@@ -1208,7 +1208,7 @@ __env_migrate() {
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
     EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT EL_P2P_PORT_2 \
     ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD LIDO_DV_EXIT_VERSION OBOL_CHARON_CL_ENDPOINTS VC_ALIAS \
-    CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD )
+    CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD MINIMAL_NODE )
   __target_vars=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE SSV_NODE_REPO \
@@ -3038,7 +3038,11 @@ execution client? (right-click to paste)" 10 65 "${EL_CUSTOM_NODE}" 3>&1 1>&2 2>
     JWT_SECRET=$(whiptail --title "Configure JWT secret" --inputbox "What is the JWT secret shared with the \
 execution client? (right-click to paste)" 10 60 "${JWT_SECRET}" 3>&1 1>&2 2>&3)
 
-    if [[ ${#JWT_SECRET} -eq 64 ]]; then
+    # Remove '0x' prefix if present
+    JWT_SECRET=${JWT_SECRET#0x}
+
+    # Check if the JWT_SECRET is exactly 64 hex characters long
+    if [[ $JWT_SECRET =~ ^[0-9A-Fa-f]{64}$ ]]; then
       echo "JWT Secret set. Please make sure it matches on CL and EL."
       break
     else

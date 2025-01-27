@@ -25,6 +25,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - MINIMAL_NODE=${MINIMAL_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
       - DOCKER_TAG=${ERIGON_DOCKER_TAG:-latest}
