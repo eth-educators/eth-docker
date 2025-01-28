@@ -1,8 +1,7 @@
 .env*
 docker-compose.yml
-ext-network.yml
-ext-network.yml.original
-ext-network.yml.bak
+*.original
+*.bak
 .eth/*
 .eth_backup*
 !.eth/README.md
@@ -14,6 +13,7 @@ ext-network.yml.bak
 !.eth/ethdo/README.md
 !.eth/ethdo/create-withdrawal-change.sh
 *.swp
+custom.yml
 ssv-config.yaml
 ssv-config.yaml.bak
 blox-ssv-config.yaml
