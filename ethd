@@ -3939,7 +3939,7 @@ config() {
   __var=COMPOSE_FILE
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=EL_NODE
-  __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
+  __update_value_in_env "${__var}" "${!__var:-"http://execution:8551"}" "${__env_file}"
   __var=JWT_SECRET
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=NETWORK
