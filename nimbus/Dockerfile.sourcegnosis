@@ -10,10 +10,10 @@ ARG DOCKER_VC_REPO
 ARG BUILD_TARGET
 ARG SRC_REPO
 
-RUN apt-get update && apt-get install -y build-essential git ca-certificates
+RUN apt-get update && apt-get install -y build-essential ca-certificates bash git-lfs cmake
 
 WORKDIR /usr/src
-RUN bash -c "git clone --recurse-submodules -j8 ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) update && make -j$(nproc) gnosis-build nimbus_validator_client"
+RUN bash -c "git clone --recurse-submodules -j8 ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:nim-pr; git checkout nim-pr; else git checkout ${BUILD_TARGET}; fi && make -j$(nproc) update && make -j$(nproc) gnosis-build gnosis-vc-build"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bookworm-slim AS consensus
@@ -74,7 +74,7 @@ RUN adduser \
 RUN mkdir -p /var/lib/nimbus && chown -R ${USER}:${USER} /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
 
 # Cannot assume buildkit, hence no chmod
-COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth2/build/nimbus_validator_client /usr/local/bin/
+COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth2/build/nimbus_validator_client_gnosis /usr/local/bin/nimbus_validator_client
 COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
