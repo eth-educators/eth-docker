@@ -3186,9 +3186,11 @@ checkpoint sync provider? (right-click to paste)" 10 65 "${RAPID_SYNC_URL}" 3>&1
 __query_graffiti() {
   __var="GRAFFITI"
   GRAFFITI=$(__get_value_from_env "${__var}" "${__env_file}")
+  __var="DEFAULT_GRAFFITI"
+  DEFAULT_GRAFFITI=$(__get_value_from_env "${__var}" "${__env_file}")
 
   while true; do
-    GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What Graffiti do you want to send with your blocks? \
+    GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What optional Graffiti do you want to send with your blocks? \
 (up to 32 characters)" 10 65 "${GRAFFITI}" 3>&1 1>&2 2>&3)
 
     if [[ $(echo -n "${GRAFFITI}" | wc -c) -gt 32 ]]; then
@@ -3198,7 +3200,14 @@ __query_graffiti() {
     fi
   done
 
-  echo "your Graffiti is:" "${GRAFFITI}"
+  if [ -n "${GRAFFITI}" ]; then
+    DEFAULT_GRAFFITI="false"
+  fi
+  if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
+    echo "You are using the client's default Graffiti"
+  else
+    echo "your Graffiti is:" "${GRAFFITI}"
+  fi
 }
 
 
@@ -3921,6 +3930,8 @@ config() {
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=GRAFFITI
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
+  __var=DEFAULT_GRAFFITI
+  __update_value_in_env "${__var}" "${!__var:-"true"}" "${__env_file}"
   __var=CL_NODE
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=RAPID_SYNC_URL
