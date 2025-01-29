@@ -11,11 +11,11 @@ ARG BUILD_TARGET
 ARG SRC_REPO
 ARG SECONDS_PER_SLOT=12
 
-RUN apt-get update && apt-get install -y build-essential git libpcre3-dev ca-certificates
+RUN apt-get update && apt-get install -y build-essential ca-certificates bash git-lfs cmake
 
 WORKDIR /usr/src
 RUN bash -c "git clone ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET} && \
-	make -j$(nproc) NIMFLAGS="-d:SECONDS_PER_SLOT=${SECONDS_PER_SLOT}" nimbus_beacon_node"
+	make -j$(nproc) update && make -j$(nproc) NIMFLAGS="-d:SECONDS_PER_SLOT=${SECONDS_PER_SLOT}" nimbus_beacon_node nimbus_validator_client"
 
 # Pull all binaries into a second stage deploy debian container
 FROM debian:bookworm-slim
