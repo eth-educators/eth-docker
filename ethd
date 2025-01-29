@@ -267,7 +267,7 @@ __prep_conffiles() {
     ${__as_owner} cp commit-boost/cb-config.toml.sample commit-boost/cb-config.toml
   fi
 # Make sure local user owns .env
-  if find .env \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" | grep -q .; then
+  if find . -name .env \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" | grep -q ./.env; then
     if [ "$__cannot_sudo" -eq 0 ]; then
       echo "Fixing ownership of .env"
       ${__auto_sudo} chown -R "${OWNER}:${OWNER_GROUP}" .env
