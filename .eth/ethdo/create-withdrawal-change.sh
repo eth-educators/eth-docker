@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-set -e
-echo "Copying ethdo to home directory, ~/ethdo"
-mkdir -p ~/ethdo
-cp ethdo ~/ethdo/
-cp ethdo-arm64 ~/ethdo/
-chmod +x ~/ethdo/*
-set +e
 
 __arch=$(uname -m)
-
-if [ "${__arch}" = "aarch64" ]; then
-    __ethdo=~/ethdo/ethdo-arm64
+if [[ "${__arch}" = "aarch64" || "${__arch}" = "arm64" ]]; then
+    __arch_dir=arm64
 elif [ "${__arch}" = "x86_64" ]; then
-    __ethdo=~/ethdo/ethdo
+    __arch_dir=amd64
 else
     echo "Architecture ${__arch} not recognized - unsure which ethdo to use. Aborting."
     exit 1
 fi
+
+__ethdo=~/bin/ethdo
+__jq=~/bin/jq
+
+set -e
+echo "Copying ethdo and jq to home directory, ~/bin"
+mkdir -p ~/bin
+cp "${__arch_dir}/ethdo" ~/bin/
+cp "${__arch_dir}/jq" ~/bin/
+chmod +x ~/bin/*
+set +e
+
 if [ ! -f "${__ethdo}" ]; then
-    echo "Unable to find ethdo executable at \"${BASH_SOURCE[0]}/${__ethdo}\". Aborting."
+    echo "Unable to find ethdo executable at \"${__ethdo}\". Aborting."
     exit 1
 fi
 echo "Checking whether Bluetooth is enabled"
@@ -56,6 +60,7 @@ while true; do
 done
 echo "MAKE SURE YOU CONTROL THE WITHDRAWAL ADDRESS"
 echo "This can only be changed once."
+echo
 while true; do
     read -rp "What is your validator mnemonic? : " __mnemonic
     if [ ! "$(echo "$__mnemonic" | wc -w)" -eq 24 ] && [ ! "$(echo "$__mnemonic" | wc -w)" -eq 12 ]; then
@@ -65,6 +70,7 @@ while true; do
         break
     fi
 done
+echo
 echo "You may have used a 25th word for the mnemonic. This is not the passphrase for the"
 echo "validator signing keys. When in doubt, say no to the next question."
 echo
@@ -90,6 +96,7 @@ esac
 __advancedCommand=""
 read -rp "Did you use a third party such as StakeFish/Staked.us or know that multiple validators share credentials? This is uncommon.  (no/yes) : " __advancedCommand
 
+echo
 echo "Creating change-operations.json"
 case "${__advancedCommand}" in
     [Yy]* )
@@ -114,3 +121,7 @@ echo "change-operations.json can be found on your USB drive"
 echo
 echo "Please shut down this machine and continue online, with the created change-operations.json file"
 echo "You can submit it to https://beaconcha.in/tools/broadcast, for example"
+echo
+if [ -f "${__jq}" ]; then
+    echo "There are change messages for $(${__jq} 'length' change-operations.json) validators in change-operations.json"
+fi

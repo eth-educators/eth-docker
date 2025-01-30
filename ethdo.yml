@@ -17,6 +17,7 @@ services:
       - docker-entrypoint.sh
       - /app/ethdo
       - --allow-insecure-connections
+      - --debug
 
 volumes:
   ethdo-wallet:
