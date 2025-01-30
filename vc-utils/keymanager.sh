@@ -376,6 +376,8 @@ exit-sign() {
       __pubkeys+=( "${__pubkey}" )
     fi
 
+    __skipped=0
+    __signed=0
     get-token
     for __pubkey in "${__pubkeys[@]}"; do
       __api_data=""
@@ -383,11 +385,16 @@ exit-sign() {
       __api_path=eth/v1/validator/$__pubkey/voluntary_exit
       call_api
       case $__code in
-        200) echo "Signed voluntary exit for validator with public key $__pubkey";;
+        200) echo "Signed voluntary exit for validator with public key $__pubkey"; (( __signed+=1 ));;
         400) echo "The pubkey or limit was formatted wrong. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         401) echo "No authorization token found. This is a bug. Error: $(echo "$__result" | jq -r '.message')"; exit 70;;
         403) echo "The authorization token is invalid. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
-        404) echo "Path not found error. Was that the right pubkey? Error: $(echo "$__result" | jq -r '.message')"; exit 0;;
+        404)
+          echo "Path not found error. The key ${__pubkey} has to be active with an index on the beacon chain to be able to sign an exit message."
+          echo "Error: $(echo "$__result" | jq -r '.message')"
+          (( __skipped+=1 ))
+          continue
+          ;;
         500) echo "Internal server error. Error: $(echo "$__result" | jq -r '.message')"; exit 1;;
         *) echo "Unexpected return code $__code. Result: $__result"; exit 1;;
       esac
@@ -404,6 +411,9 @@ exit-sign() {
       fi
       echo
     done
+
+    echo "Signed exit messages for ${__signed} keys"
+    echo "Skipped ${__skipped} keys because they weren't found or were not active on the beacon chain"
 }
 
 
