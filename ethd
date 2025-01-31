@@ -258,10 +258,6 @@ __prep_conffiles() {
   if find .eth/dkg_output \! -perm 755 | grep -q .; then
     chmod -R 755 .eth/dkg_output
   fi
-# Create ext-network.yml if it doesn't exist
-  if [ ! -f "ext-network.yml" ]; then
-    ${__as_owner} cp ext-network.yml.sample ext-network.yml
-  fi
 # Create cb-config.toml if it doesn't exist
   if [ ! -f "commit-boost/cb-config.toml" ]; then
     ${__as_owner} cp commit-boost/cb-config.toml.sample commit-boost/cb-config.toml
@@ -1208,7 +1204,7 @@ __env_migrate() {
     TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
     EL_EXTRAS CL_EXTRAS VC_EXTRAS ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT EL_P2P_PORT_2 \
     ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD LIDO_DV_EXIT_VERSION OBOL_CHARON_CL_ENDPOINTS VC_ALIAS \
-    CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD MINIMAL_NODE )
+    CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD MINIMAL_NODE DOCKER_EXT_NETWORK )
   __target_vars=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE SSV_NODE_REPO \
@@ -1513,17 +1509,19 @@ update() {
       if [[ "${__branch}" =~ ^tag-* ]]; then
         git checkout main
       fi
-# This preps for a removal of ext-network.yml in a future update, after Pectra
+# This preps for a change of ext-network.yml in a future update, after Pectra
       ${__as_owner} cp ext-network.yml ext-network.yml.bak
-      if git ls-files -v | grep -q "^h" | grep -q "ext-network.yml$"; then
-        ${__as_owner} git update-index --no-assume-unchanged ext-network.yml
+      ${__as_owner} git update-index --no-assume-unchanged ext-network.yml
+      DOCKER_EXT_NETWORK=$(${__as_owner} sed -n 's/^\s*name:\s*\(.*\)/\1/p' ext-network.yml)
+# I mean this literally
+# shellcheck disable=SC2016
+      if [ ! "${DOCKER_EXT_NETWORK:-"rocketpool_net"}" = '${DOCKER_EXT_NETWORK}' ]; then
+        __var=DOCKER_EXT_NETWORK
+        __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
       fi
       ${__as_owner} git restore ext-network.yml
+# End ext-network prep
       ${__as_owner} git pull origin main
-      ${__as_owner} cp ext-network.yml.bak ext-network.yml
-      if git ls-files -v | grep -q "ext-network.yml$"; then
-        ${__as_owner} git update-index --assume-unchanged ext-network.yml
-      fi
     else
       export ETHDPINNED="${__value}"
       ${__as_owner} git fetch --tags
@@ -1535,6 +1533,17 @@ update() {
     # to avoid infinite loop
     export ETHDSECUNDO=1
     exec "${BASH_SOURCE[0]}" update "$@"
+  fi
+
+# This part changes in a future post-Pectra update, it gets executed on the second run of update
+# For now, change nothing
+  if [ -f "ext-network.yml.bak" ]; then
+    ${__as_owner} cp ext-network.yml.bak ext-network.yml
+    ${__as_owner} rm ext-network.yml.bak
+  fi
+  ${__as_owner} git update-index --assume-unchanged ext-network.yml
+  if [ -f "ext-network.yml.original" ]; then
+    ${__as_owner} rm ext-network.yml.original
   fi
 
   __keep_targets=1
@@ -3682,7 +3691,7 @@ __check_legacy() {
 }
 
 config() {
-  # Do not track changes to ext-network.yml
+  # Do not track changes to ext-network.yml now. This is removed post-Pectra
   ${__as_owner} git update-index --assume-unchanged ext-network.yml
   # Create ENV file if needed
   if ! [[ -f "${__env_file}" ]]; then
@@ -3921,7 +3930,9 @@ config() {
 #    COMPOSE_FILE="${COMPOSE_FILE}:ethdo.yml"
   if [ "${__deployment}" = "rocket" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:ext-network.yml"
+    # Remove the sed line post-Pectra
     sed -i'.original' -e "s~name: traefik_default~name: rocketpool_net~" ext-network.yml
+    DOCKER_EXT_NETWORK="rocketpool_net"
   fi
 
   echo "Your COMPOSE_FILE is:" "${COMPOSE_FILE}"
@@ -3948,6 +3959,8 @@ config() {
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=MEV_RELAYS
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
+  __var=DOCKER_EXT_NETWORK
+  __update_value_in_env "${__var}" "${!__var:-"rocketpool_net"}" "${__env_file}"
   if [ "${__deployment}" = "lido_obol" ]; then
     __var=LIDO_DV_EXIT_EXIT_EPOCH
     __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
