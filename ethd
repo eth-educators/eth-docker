@@ -2465,6 +2465,35 @@ __keys_usage() {
 }
 
 
+__get_github_release() {
+# Call with repo and expected suffix as well as directory and target name.
+
+  local __repo=$1
+  local __suffix=$2
+  local __dirname=$3
+  local __targetname=$4
+
+  ${__as_owner} mkdir -p "${__dirname}"
+  if [ "${__targetname}" = "__untar__" ]; then
+    wget -q -O- https://api.github.com/repos/"${__repo}"/releases/latest | grep "browser_download_url.*${__suffix}" \
+      | head -1 \
+      | cut -d : -f 2,3 \
+      | tr -d \" \
+      | wget -qi- -O- \
+      | ${__as_owner} tar zxf - -C "${__dirname}" \
+      || echo "-> Could not download the latest version of '${__suffix}' from github '${__repo}'."
+  else
+    wget -q -O- https://api.github.com/repos/"${__repo}"/releases/latest | grep "browser_download_url.*${__suffix}" \
+      | head -1 \
+      | cut -d : -f 2,3 \
+      | tr -d \" \
+      | ${__as_owner} wget -qi- -O "${__dirname}/${__targetname}" \
+      && ${__as_owner} chmod +x "${__dirname}/${__targetname}" \
+      || echo "-> Could not download the latest version of '${__suffix}' from github '${__repo}'."
+  fi
+}
+
+
 keys() {
   if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
     __keys_usage
@@ -2511,24 +2540,12 @@ keys() {
     fi
     echo
     echo "Downloading ethdo"
-    __repo="wealdtech/ethdo"; \
-    wget -q -O- https://api.github.com/repos/${__repo}/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" \
-      | head -1 \
-      | cut -d : -f 2,3 \
-      | tr -d \" \
-      | wget -qi- -O- \
-      | ${__as_owner} tar zxf - -C ./.eth/ethdo/ \
-      || echo "-> Could not download the latest version of '${__repo}' for amd64."
-    ${__as_owner} mkdir -p ./.eth/ethdo/arm64
-    wget -q -O- https://api.github.com/repos/${__repo}/releases/latest | grep "browser_download_url.*linux-arm64.tar.gz" \
-      | head -1 \
-      | cut -d : -f 2,3 \
-      | tr -d \" \
-      | wget -qi- -O- \
-      | ${__as_owner} tar zxf - -C ./.eth/ethdo/arm64 \
-      || echo "-> Could not download the latest version of '${__repo}' for arm64."
-    ${__as_owner} mv ./.eth/ethdo/arm64/ethdo ./.eth/ethdo/ethdo-arm64
-    ${__as_owner} rm -rf ./.eth/ethdo/arm64
+    __get_github_release wealdtech/ethdo linux-amd64.tar.gz ./.eth/ethdo/amd64 __untar__
+    __get_github_release wealdtech/ethdo linux-arm64.tar.gz ./.eth/ethdo/arm64 __untar__
+    echo
+    echo "Downloading jq"
+    __get_github_release jqlang/jq jq-linux-amd64 ./.eth/ethdo/amd64 jq
+    __get_github_release jqlang/jq jq-linux-arm64 ./.eth/ethdo/arm64 jq
     echo
     echo "Copy the contents of ./.eth/ethdo to a USB drive, and prepare a Linux Live USB to safely enter your mnemonic."
     echo "Please see https://ethdocker.com/Support/ChangingWithdrawalCredentials for details"
