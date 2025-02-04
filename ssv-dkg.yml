@@ -20,9 +20,9 @@ services:
     restart: "unless-stopped"
     image: ${SSV_DKG_REPO:-ssvlabs/ssv-dkg}:${SSV_DKG_TAG:-latest}
     volumes:
-      - ./ssv-config:/config
-      - ssv-dkg-tls:/ssl
-      - .eth/dkg_output:/output
+      - ./ssv-config:/ssv-dkg/config
+      - ssv-dkg-tls:/ssv-dkg/data/ssl
+      - .eth/dkg_output:/ssv-dkg/output
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${HOST_IP:-}:${SSV_DKG_PORT}:${SSV_DKG_PORT}/tcp
@@ -30,7 +30,7 @@ services:
     command: >
       start-operator
       --configPath
-      /config/dkg-config.yaml
+      ./config/dkg-config.yaml
       --port
       ${SSV_DKG_PORT}
 
