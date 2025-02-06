@@ -43,7 +43,7 @@ services:
       - DOPPELGANGER=false
       - GRAFFITI=
       - DEFAULT_GRAFFITI=true
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
+      - ARCHIVE_NODE=${CL_ARCHIVE_NODE:-false}
       - MINIMAL_NODE=${MINIMAL_NODE:-true}
       - IPV6=${IPV6:-false}
       - CL_P2P_PORT=${CL_P2P_PORT:-9000}
