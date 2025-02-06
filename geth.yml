@@ -25,7 +25,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - EL_EXTRAS=${EL_EXTRAS:-}
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
       - ANCIENT_DIR=${ANCIENT_DIR:-}

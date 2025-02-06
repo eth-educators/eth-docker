@@ -40,7 +40,7 @@ services:
       - EMBEDDED_VC=false
       - VC_EXTRAS=
       - DOPPELGANGER=false
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-false}
+      - ARCHIVE_NODE=${CL_ARCHIVE_NODE:-false}
       - GRAFFITI=
       - DEFAULT_GRAFFITI=true
       - WEB3SIGNER=false

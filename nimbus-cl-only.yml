@@ -41,7 +41,7 @@ services:
       - DOPPELGANGER=false
       - CL_EXTRAS=${CL_EXTRAS:-}
       - VC_EXTRAS=
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - ARCHIVE_NODE=${CL_ARCHIVE_NODE:-}
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=true
       - WEB3SIGNER=false

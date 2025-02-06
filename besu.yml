@@ -25,7 +25,7 @@ services:
       - JAVA_OPTS=${BESU_HEAP:--Xmx5g}
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
     volumes:
