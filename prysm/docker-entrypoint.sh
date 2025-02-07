@@ -74,7 +74,7 @@ fi
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Prysm archive node without pruning"
-  __prune="--slots-per-archive-point=32"
+  __prune="--slots-per-archive-point=32 --blob-retention-epochs=4294967295"
 else
   __prune=""
 fi

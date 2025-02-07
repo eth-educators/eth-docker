@@ -25,7 +25,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - EL_EXTRAS=${EL_EXTRAS:-}
-      - ARCHIVE_NODE=${ARCHIVE_NODE:-}
+      - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-}
       - AUTOPRUNE_NM=${AUTOPRUNE_NM:-true}
       - NETWORK=${NETWORK}
     volumes:

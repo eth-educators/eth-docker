@@ -74,7 +74,7 @@ fi
 if [ -n "${RAPID_SYNC_URL}" ]; then
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Lodestar archive node cannot use checkpoint sync: Syncing from genesis."
-    __rapid_sync=""
+    __rapid_sync="--chain.archiveBlobEpochs Infinity"
   else
     __rapid_sync="--checkpointSyncUrl=${RAPID_SYNC_URL}"
     echo "Checkpoint sync enabled"
