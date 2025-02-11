@@ -73,8 +73,6 @@ services:
       - --JsonRpc.JwtSecretFile=/var/lib/nethermind/ee-secret/jwtsecret
       - --Metrics.Enabled
       - "true"
-      - --Metrics.PushGatewayUrl
-      - ""
       - --Metrics.ExposeHost
       - 0.0.0.0
       - --Metrics.ExposePort
