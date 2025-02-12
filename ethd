@@ -233,6 +233,13 @@ __prep_conffiles() {
   if [ ! -f "./prometheus/custom-prom.yml" ]; then
     ${__as_owner} touch "./prometheus/custom-prom.yml"
   fi
+# Make sure the prometheus dir and its contents are accessible to user nobody
+  if find prometheus -type d \! -perm 755 | grep -q .; then
+    find prometheus -type d -exec chmod 755 {} \;
+  fi
+  if find prometheus -name '*.yml' \! -perm 664 | grep -q .; then
+    find prometheus -name '*.yml' -exec chmod 664 {} \;
+  fi
 # Move ssv-config.yaml
   if [ -f "./ssv-config.yaml" ]; then
     ${__as_owner} mv ./ssv-config.yaml ssv-config/config.yaml
@@ -243,6 +250,13 @@ __prep_conffiles() {
   fi
   if [ ! -f "ssv-config/dkg-config.yaml" ]; then
     ${__as_owner} cp ssv-config/dkg-config-sample.yaml ssv-config/dkg-config.yaml
+  fi
+# Make sure ssv-config yaml files are 664
+  if find ssv-config -maxdepth 0 \! -perm 755 | grep -q .; then
+    chmod 755 ssv-config
+  fi
+  if find ssv-config -name '*.yaml' \! -perm 664 | grep -q .; then
+    chmod 664 ssv-config/*.yaml
   fi
 # Make sure local user owns the dkg output dir and everything in it
   if find .eth/dkg_output \! -user "${OWNER}" -o \! -group "${OWNER_GROUP}" | grep -q .; then
