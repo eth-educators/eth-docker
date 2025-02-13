@@ -7,7 +7,7 @@ __sample_service="consensus"
 __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
-__target_pg=16
+__target_pg=17
 
 
 __dodocker() {
@@ -922,7 +922,6 @@ __upgrade_postgres() {
     return
   fi
 
-  __migrated_vol="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')_web3signer-slashing-data-pg${__target_pg}-migrated"
   __backup_vol="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')_web3signer-slashing-data-pg${__source_pg}-backup"
 
   echo "Stopping Web3signer"
@@ -930,43 +929,25 @@ __upgrade_postgres() {
   echo "Stopping PostgreSQL"
   __docompose stop postgres && __docompose rm -f postgres
 
+  echo "Copying data in web3signer-slashing-data volume to backup"
+  __dodocker volume create "${__backup_vol}"
+  __dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
+    -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
+    alpine:3 cp -a /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
+
   echo
   echo "Migrating database from PostgreSQL ${__source_pg} to PostgreSQL ${__target_pg}"
   echo "If this step fails, the Web3signer slashing protection database is no longer protecting you."
   echo "In failure case, do not start Web3signer again, instead seek help on Ethstaker Discord."
   echo
 
-  __dodocker pull "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
-  __dodocker volume create "${__migrated_vol}"
-  __dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/${__source_pg}/data" \
-   -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
-   "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
-# Adjust ownership. We use 70; postgres-upgrade creates it with 999
-  __dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
-    alpine:3 chown -R 70:70 /var/lib/postgres
-# Conversion can leave us with a pg_hba.conf that does not allow connections
-  __dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
-    alpine:3 sh -c 'grep -qxE "host\s+all\s+all\s+all\s+scram-sha-256" /var/lib/postgres/pg_hba.conf \
-    || echo "host    all             all             all                     scram-sha-256" \
-    >> /var/lib/postgres/pg_hba.conf'
-
-  echo
-  echo "Migration complete, copying data in web3signer-slashing-data volume to backup"
-  __dodocker volume create "${__backup_vol}"
-  __dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
-    alpine:3 cp -a /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
-
+  __dodocker pull "pgautoupgrade/pgautoupgrade:${__target_pg}-bookworm"
   __during_migrate=1
-  echo "Moving migrated data to web3signer-slashing-data volume"
   __dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    alpine:3 rm -rf /var/lib/postgresql/data/*
-  __dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
-    alpine:3 cp -a "/var/lib/postgresql/${__target_pg}/data/." /var/lib/postgresql/data/
+   -e PGAUTO_ONESHOT=yes -e POSTGRES_PASSWORD=postgres \
+   "pgautoupgrade/pgautoupgrade:${__target_pg}-bookworm"
 
   __migrated=1
-  __dodocker volume remove "${__migrated_vol}"
 
   echo
   echo "Adjusting PostgreSQL Docker tag"
