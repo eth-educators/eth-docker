@@ -318,7 +318,7 @@ install() {
   fi
   if [[ "$__distro" = "ubuntu" ]]; then
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config
+    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen
     echo
     echo
     if [ -z "$(command -v docker)" ]; then
@@ -357,7 +357,7 @@ continue? (no/yes) " __yn
     fi
   elif [[ "$__distro" =~ "debian" ]]; then
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config
+    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config screen
     echo
     echo
     if [ -z "$(command -v docker)" ]; then
@@ -1469,6 +1469,17 @@ __pull_and_build() {
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
+# Only one copy of update() should run per Eth Docker stack
+  local __script_dir
+  __script_dir="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+  local __uniq_id="${__script_dir//\//_}"
+  local __lock_file="${__uniq_id}_lock"
+  exec 200>"/tmp/${__lock_file}"
+  if ! flock -n 200; then
+      echo "Another instance of \"${__me} update\" is running. Aborting."
+      exit 1
+  fi
+
   __during_update=1
   __enabled_v6=0  # Remove after Pectra
 
@@ -1496,6 +1507,40 @@ update() {
     echo "You have less than 1 GiB of space left for Docker volumes."
     echo "Aborting, as an update is not safe."
     exit 1
+  fi
+
+# This is long-running, and it's better if we're in a protected session if interactive
+  if [[ -z "${STY:-}" && -z "${TMUX:-}" && ! "$*" =~ "--non-interactive" && ! "${ETHD_FRONTEND:-}" = "noninteractive" ]]; then
+    local __no_screen_cmd=0
+    echo "\"${__me} update\" is not running in a session protected against disconnects."
+    if [ -z "$(command -v screen)" ]; then
+      if [[ "__cannot_sudo" -eq 0 && ("$__distro" = "ubuntu" || "$__distro" = "debian") ]]; then
+        echo "Installing screen"
+        ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install screen
+      else
+        echo "\"screen\" command not found, continuing as-is"
+        __no_screen_cmd=1
+      fi
+    fi
+    if [ "$__no_screen_cmd" -eq 0 ]; then
+      local __screen_session="${__uniq_id}"
+      echo "Starting a new screen session with identifier ${__screen_session}"
+      echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
+      exec 200>&-
+# Launch a new detached screen session and attach to it.
+# Use bash -c to run 'ethd update', and pass along "$@"
+#
+#     ${BASH_SOURCE[0]} update "\$@"; exec bash
+#   Escape \$@ so the outer shell doesn't expand it. Inner shell expands it.
+#
+#   "dummy" becomes $0 in the inner shell; "$@" parameters are assigned to $1, $2, etc.
+#
+#   exec bash replaces bash -c , so that the user is still inside screen at the end
+#
+      screen -S "${__screen_session}" -dm bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash" dummy "$@"
+      screen -r "${__screen_session}"
+      exit 0
+    fi
   fi
 
   if [ -z "${ETHDSECUNDO-}" ]; then
@@ -1651,6 +1696,17 @@ reset to defaults."
     echo "${__project_name} version is pinned to ${ETHDPINNED} in \".env\"."
     echo "Please make sure to run compatible client versions."
   fi
+
+# Release lock and remove lock file
+  exec 200>&-
+  rm -f "/tmp/${__lock_file}"
+
+  if [[ -n "${STY:-}" || -n "${TMUX:-}" ]]; then
+    echo
+    echo "You are in a screen or tmux session. Remember to \"exit\" when done."
+    echo
+  fi
+
   __during_update=0
 }
 
