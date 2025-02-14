@@ -1,5 +1,5 @@
 # Build Erigon in a stock Go build container
-FROM golang:1.23-bookworm AS builder
+FROM golang:1.24-bookworm AS builder
 
 # Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
