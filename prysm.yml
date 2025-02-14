@@ -77,7 +77,6 @@ services:
       - ${PRYSM_UDP_PORT}
       - --p2p-quic-port
       - ${CL_QUIC_PORT}
-      - --enable-quic
       - --p2p-max-peers
       - ${CL_MAX_PEER_COUNT:-70}
       - --verbosity
