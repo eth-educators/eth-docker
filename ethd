@@ -1507,7 +1507,7 @@ update() {
 # This is long-running, and it's better if we're in a protected session if interactive
   if [[ -z "${STY:-}" && -z "${TMUX:-}" && ! "$*" =~ "--non-interactive" && ! "${ETHD_FRONTEND:-}" = "noninteractive" ]]; then
     local __no_screen_cmd=0
-    echo "\"${__me} update\" is not running in a session protected against disconnects."
+    echo "\"${__me} update\" benefits from running in a session that protects it against disconnects."
     if [ -z "$(command -v screen)" ]; then
       if [[ "__cannot_sudo" -eq 0 && ("$__distro" = "ubuntu" || "$__distro" = "debian") ]]; then
         echo "Installing screen"
@@ -1698,7 +1698,9 @@ reset to defaults."
 
   if [[ -n "${STY:-}" || -n "${TMUX:-}" ]]; then
     echo
-    echo "You are in a screen or tmux session. Remember to \"exit\" when done."
+    echo "You are in a screen or tmux session. This is good!"
+    echo "\"${__me} update\" may have started it for you to ensure the update finishes."
+    echo "When you are done, remember to \"exit\" the session."
     echo
   fi
 
