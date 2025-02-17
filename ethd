@@ -1521,7 +1521,9 @@ update() {
       local __screen_session="${__uniq_id}"
 # Find old lingering screen sessions and close them
       local __old_sessions
+      set +e
       __old_sessions=$(screen -ls 2>/dev/null | awk -v name="${__screen_session}" -v status="Detached" '$0 ~ name && $0 ~ status {print $1}')
+      set -e
       if [ -n "${__old_sessions}" ]; then
         local __session_id
         echo "Closing old, detached screen sessions"
