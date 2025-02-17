@@ -1519,6 +1519,20 @@ update() {
     fi
     if [ "$__no_screen_cmd" -eq 0 ]; then
       local __screen_session="${__uniq_id}"
+# Find old lingering screen sessions and close them
+      local __old_sessions
+      __old_sessions=$(screen -ls 2>/dev/null | awk -v name="${__screen_session}" -v status="Detached" '$0 ~ name && $0 ~ status {print $1}')
+      if [ -n "${__old_sessions}" ]; then
+        local __session_id
+        echo "Closing old, detached screen sessions"
+        while IFS= read -r __session_id; do
+          if [ -n "${__session_id}" ]; then
+            echo "Closing screen session ${__session_id}"
+            screen -S "${__session_id}" -X quit
+          fi
+        done <<< "$__old_sessions"
+        echo
+      fi
       echo "Starting a new screen session with identifier ${__screen_session}"
       echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
       exec 200>&-
