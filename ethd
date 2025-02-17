@@ -1469,7 +1469,7 @@ update() {
   __script_dir="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
   local __uniq_id="${__script_dir//\//_}"
   local __lock_file="${__uniq_id}_lock"
-  exec 200>"/tmp/${__lock_file}"
+  ${__as_owner} exec 200>"/tmp/${__lock_file}"
   if ! flock -n 200; then
       echo "Another instance of \"${__me} update\" is running. Aborting."
       exit 1
@@ -1522,7 +1522,7 @@ update() {
 # Find old lingering screen sessions and close them
       local __old_sessions
       set +e
-      __old_sessions=$(screen -ls 2>/dev/null | awk -v name="${__screen_session}" -v status="Detached" '$0 ~ name && $0 ~ status {print $1}')
+      __old_sessions=$(${__as_owner} screen -ls 2>/dev/null | awk -v name="${__screen_session}" -v status="Detached" '$0 ~ name && $0 ~ status {print $1}')
       set -e
       if [ -n "${__old_sessions}" ]; then
         local __session_id
@@ -1530,14 +1530,14 @@ update() {
         while IFS= read -r __session_id; do
           if [ -n "${__session_id}" ]; then
             echo "Closing screen session ${__session_id}"
-            screen -S "${__session_id}" -X quit
+            ${__as_owner} screen -S "${__session_id}" -X quit
           fi
         done <<< "$__old_sessions"
         echo
       fi
       echo "Starting a new screen session with identifier ${__screen_session}"
       echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
-      exec 200>&-
+      ${__as_owner} exec 200>&-
 # Launch a new detached screen session and attach to it.
 # Use bash -c to run 'ethd update', and pass along "$@"
 #
@@ -1548,8 +1548,8 @@ update() {
 #
 #   exec bash replaces bash -c , so that the user is still inside screen at the end
 #
-      screen -S "${__screen_session}" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash" dummy "$@"
-      screen -RR "${__screen_session}"
+      ${__as_owner} screen -S "${__screen_session}" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash" dummy "$@"
+      ${__as_owner} screen -RR "${__screen_session}"
       exit 0
     fi
   fi
@@ -1709,7 +1709,7 @@ reset to defaults."
   fi
 
 # Release lock and remove lock file
-  exec 200>&-
+  ${__as_owner} exec 200>&-
   rm -f "/tmp/${__lock_file}"
 
   if [[ -n "${STY:-}" || -n "${TMUX:-}" ]]; then
