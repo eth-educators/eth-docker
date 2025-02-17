@@ -1533,7 +1533,7 @@ update() {
 #   exec bash replaces bash -c , so that the user is still inside screen at the end
 #
       screen -S "${__screen_session}" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash" dummy "$@"
-      screen -r "${__screen_session}"
+      screen -RR "${__screen_session}"
       exit 0
     fi
   fi
