@@ -1469,7 +1469,8 @@ update() {
   __script_dir="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
   local __uniq_id="${__script_dir//\//_}"
   local __lock_file="${__uniq_id}_lock"
-  ${__as_owner} exec 200>"/tmp/${__lock_file}"
+  ${__as_owner} touch "/tmp/${__lock_file}"
+  exec 200<"/tmp/${__lock_file}"
   if ! flock -n 200; then
       echo "Another instance of \"${__me} update\" is running. Aborting."
       exit 1
@@ -1537,7 +1538,7 @@ update() {
       fi
       echo "Starting a new screen session with identifier ${__screen_session}"
       echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
-      ${__as_owner} exec 200>&-
+      exec 200<&-
 # Launch a new detached screen session and attach to it.
 # Use bash -c to run 'ethd update', and pass along "$@"
 #
@@ -1709,8 +1710,8 @@ reset to defaults."
   fi
 
 # Release lock and remove lock file
-  ${__as_owner} exec 200>&-
-  rm -f "/tmp/${__lock_file}"
+  exec 200<&-
+  ${__as_owner} rm -f "/tmp/${__lock_file}"
 
   if [[ -n "${STY:-}" || -n "${TMUX:-}" ]]; then
     echo
