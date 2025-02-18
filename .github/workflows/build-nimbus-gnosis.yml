@@ -35,7 +35,7 @@ jobs:
           var=NETWORK
           set_value_in_env
       - name: Build clients
-        run: ./ethd update
+        run: ./ethd update --non-interactive
       - name: Start Nimbus/Nethermind
         run: ./ethd up
       - name: Pause for 30 seconds

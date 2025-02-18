@@ -32,7 +32,7 @@ jobs:
           var=LS_DOCKERFILE
           set_value_in_env
       - name: Build clients
-        run: ./ethd update
+        run: ./ethd update --non-interactive
       - name: Test the stack
         uses: ./.github/actions/test_client_stack
       - name: Set Lodestar/Erigon w/ VC
