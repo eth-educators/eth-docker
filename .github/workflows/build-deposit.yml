@@ -29,4 +29,4 @@ jobs:
           var=DEPCLI_DOCKERFILE
           set_value_in_env
       - name: Build clients
-        run: ./ethd update
+        run: ./ethd update --non-interactive

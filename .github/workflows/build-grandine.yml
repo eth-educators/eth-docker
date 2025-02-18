@@ -29,7 +29,7 @@ jobs:
           var=GRANDINE_DOCKERFILE
           set_value_in_env
       - name: Build Grandine
-        run: ./ethd update
+        run: ./ethd update --non-interactive
       - name: Start Grandine/Reth
         run: ./ethd up
       - name: Pause for 30 seconds
