@@ -8,8 +8,8 @@ services:
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
         - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/eth-educators/ethstaker-deposit-cli}
-        - DOCKER_TAG=${DEPLCI_DOCKER_TAG:-latest}
-        - DOCKER_REPO=${DEPLCI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
+        - DOCKER_TAG=${DEPCLI_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DEPCLI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
     image: ethstaker-deposit-cli:local
     pull_policy: never
     volumes:
@@ -31,8 +31,8 @@ services:
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
         - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/eth-educators/ethstaker-deposit-cli}
-        - DOCKER_TAG=${DEPLCI_DOCKER_TAG:-latest}
-        - DOCKER_REPO=${DEPLCI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
+        - DOCKER_TAG=${DEPCLI_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DEPCLI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
     image: ethstaker-deposit-cli:local
     pull_policy: never
     volumes:
@@ -53,8 +53,8 @@ services:
       args:
         - BUILD_TARGET=${DEPCLI_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
         - SRC_REPO=${DEPCLI_SRC_REPO:-https://github.com/eth-educators/ethstaker-deposit-cli}
-        - DOCKER_TAG=${DEPLCI_DOCKER_TAG:-latest}
-        - DOCKER_REPO=${DEPLCI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
+        - DOCKER_TAG=${DEPCLI_DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DEPCLI_DOCKER_REPO:-ghcr.io/eth-educators/ethstaker-deposit-cli}
     restart: "no"
     image: ethstaker-deposit-cli:local
     pull_policy: never
