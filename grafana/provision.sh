@@ -122,15 +122,10 @@ case "$CLIENT" in
     wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
     ;;&
   *ssv.yml* )
-    # SSV Operator Dashboard
-    __url='https://raw.githubusercontent.com/ssvlabs/ssv/main/monitoring/grafana/dashboard_ssv_operator_performance.json'
-    __file='/etc/grafana/provisioning/dashboards/ssv_operator_dashboard.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Operator Performance Dashboard"' \
-        | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
-    __url='https://raw.githubusercontent.com/ssvlabs/ssv/main/monitoring/grafana/dashboard_ssv_node.json'
-    __file='/etc/grafana/provisioning/dashboards/ssv_node_dashboard.json'
-    wget -t 3 -T 10 -qcO - "${__url}" | jq '.title = "SSV Node Dashboard"' \
-        | jq 'walk(if . == "${DS_PROMETHEUS}" then "Prometheus" else . end)' >"${__file}"
+    # SSV Operational Dashboard
+    __url='https://docs.ssv.network/files/SSV-Operational-dashboard.json'
+    __file='/etc/grafana/provisioning/dashboards/ssv_operational_dashboard.json'
+    wget -t 3 -T 10 -qcO - "${__url}" >"${__file}"
     ;;&
   *lido-obol.yml* )
     # Lido Obol Dashboard
