@@ -1,0 +1,53 @@
+ARG VENV_LOCATION="/opt/venv"
+
+# Build image
+FROM python:3.13-bookworm AS builder
+
+# Unused but included to avoid warnings
+ARG DOCKER_TAG
+ARG DOCKER_REPO
+
+ARG BUILD_TARGET=master
+ARG SRC_REPO=https://github.com/serenita-org/vero
+
+ARG VENV_LOCATION
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install --no-install-recommends -y bash git && \
+   apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="$VENV_LOCATION/bin:$PATH"
+RUN pip install --no-cache-dir uv && uv venv ${VENV_LOCATION}
+RUN bash -c "git clone ${SRC_REPO} vero && cd vero && git config advice.detachedHead false && git fetch --all --tags \
+  && if [[ ${BUILD_TARGET} =~ pr-.+ ]]; then git fetch origin pull/$(echo ${BUILD_TARGET} | cut -d '-' -f 2)/head:vero-pr; git checkout vero-pr; else git checkout ${BUILD_TARGET}; fi \
+  && uv pip sync --prefix ${VENV_LOCATION} requirements.txt"
+
+# App image
+FROM python:3.13-bookworm
+
+ARG VENV_LOCATION
+COPY --from=builder $VENV_LOCATION $VENV_LOCATION
+ENV PATH="$VENV_LOCATION/bin:$PATH"
+
+RUN groupadd -g 10000 vero && \
+    useradd --no-create-home --shell /bin/false -u 10000 -g vero vero
+
+RUN set -eux; \
+        apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y gosu ca-certificates tzdata git wget; \
+        rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+        gosu nobody true
+
+RUN mkdir -p /vero && chown -R vero:vero /vero
+WORKDIR /vero
+
+# Create directory for prometheus in multiprocess mode
+RUN mkdir /tmp/multiprocessing && chown -R vero:vero /tmp/multiprocessing
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp/multiprocessing
+
+COPY --from=builder /build/vero/src .
+
+USER vero
+
+ENTRYPOINT ["python", "main.py"]

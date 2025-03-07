@@ -1,0 +1,93 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+x-build: &vero-build
+  context: ./vero
+  dockerfile: ${VERO_DOCKERFILE}
+  args:
+    - BUILD_TARGET=${VERO_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
+    - SRC_REPO=${VERO_SRC_REPO:-https://github.com/serenita-org/vero}
+    - DOCKER_TAG=${VERO_DOCKER_TAG:-latest}
+    - DOCKER_REPO=${VERO_DOCKER_REPO:-ghcr.io/serenita-org/vero}
+
+services:
+  validator:
+    restart: "unless-stopped"
+    build:
+      <<: *vero-build
+    image: vero:local
+    pull_policy: never
+    user: vero
+    environment:
+      - MEV_BOOST=${MEV_BOOST}
+      - VC_EXTRAS=${VC_EXTRAS:-}
+      - GRAFFITI=${GRAFFITI:-}
+      - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
+      - WEB3SIGNER=${WEB3SIGNER}
+      - NETWORK=${NETWORK}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - vero-data:/var/lib/vero
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      default:
+        aliases:
+          - ${VC_ALIAS}
+    <<: *logging
+    entrypoint:
+      - docker-entrypoint.sh
+      - python
+      - main.py
+      - --beacon-node-urls
+      - ${CL_NODE}
+      - --data-dir
+      - /var/lib/vero
+      - --metrics-port
+      - "8009"
+      - --metrics-address
+      - 0.0.0.0
+      - --fee-recipient
+      - ${FEE_RECIPIENT}
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=8009
+      - metrics.instance=validator
+      - metrics.network=${NETWORK}
+
+#  validator-keys:
+#    profiles: ["tools"]
+#    restart: "no"
+#    build:
+#      context: ./vc-utils
+#    image: vc-utils:local
+#    pull_policy: never
+#    user: root
+#    volumes:
+#      - vero-data:/var/lib/vero
+#      - ./.eth/validator_keys:/validator_keys
+#      - ./.eth/exit_messages:/exit_messages
+#      - /etc/localtime:/etc/localtime:ro
+#    environment:
+#      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+#      - KEY_API_PORT=${KEY_API_PORT:-7500}
+#      - WEB3SIGNER=${WEB3SIGNER:-false}
+#      - CL_NODE=${CL_NODE}
+#    depends_on:
+#      - validator
+#    entrypoint:
+#      - keymanager.sh
+#      - /var/lib/vero/api-token.txt
+#      - ${VC_ALIAS}
+
+volumes:
+  vero-data:
+
+networks:
+  default:
+    enable_ipv6: ${IPV6:-false}
