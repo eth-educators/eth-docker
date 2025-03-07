@@ -678,6 +678,15 @@ __source_build() {
       fi
       ;;
   esac
+  case "${__value}" in
+    *vero-vc-only.yml* )
+      __var="VERO_DOCKERFILE"
+      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      if [ "${__build}" = "Dockerfile.source" ]; then
+        __docompose build --pull --no-cache validator
+      fi
+      ;;
+  esac
 }
 
 

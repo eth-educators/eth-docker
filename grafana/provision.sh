@@ -64,6 +64,16 @@ case "$CLIENT" in
         | jq '.templating.list[3].query |= "consensus" | .templating.list[4].query |= "validator"' \
         | jq 'walk(if . == "prometheus_local" then "Prometheus" else . end)' >"${__file}"
     ;;&
+  *vero* )
+    #  vero detailed
+    __url='https://raw.githubusercontent.com/serenita-org/vero/refs/heads/master/grafana/vero-detailed.json'
+    __file='/etc/grafana/provisioning/dashboards/vero-detailed.json'
+    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${datasource}" then "Prometheus" else . end)' >"${__file}"
+    #  vero simple
+    __url='https://raw.githubusercontent.com/serenita-org/vero/refs/heads/master/grafana/vero-simple.json'
+    __file='/etc/grafana/provisioning/dashboards/vero-simple.json'
+    wget -t 3 -T 10 -qcO - "${__url}" | jq 'walk(if . == "${datasource}" then "Prometheus" else . end)' >"${__file}"
+    ;;&
   *geth* )
     # geth_dashboard
     __url='https://gist.githubusercontent.com/karalabe/e7ca79abdec54755ceae09c08bd090cd/raw/3a400ab90f9402f2233280afd086cb9d6aac2111/dashboard.json'
