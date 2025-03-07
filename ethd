@@ -1545,6 +1545,12 @@ update() {
         done <<< "$__old_sessions"
         echo
       fi
+# Screen should run with login shell so that .profile gets loaded and aliases work
+      if [[ ! -f "${HOME}/.screenrc" ]] || ! grep -q 'shell' "${HOME}/.screenrc"; then
+# Intentional, I want this verbatim
+# shellcheck disable=SC2016
+        echo 'shell -$SHELL' >>"${HOME}/.screenrc"
+      fi
       echo "Starting a new screen session with identifier ${__screen_session}"
       echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
       exec 200<&-
@@ -1558,7 +1564,7 @@ update() {
 #
 #   exec bash replaces bash -c , so that the user is still inside screen at the end
 #
-      screen -S "${__screen_session}" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash" dummy "$@"
+      screen -S "${__screen_session}" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash --login" dummy "$@"
       screen -RR "${__screen_session}"
       exit 0
     fi
