@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 if [ "$(id -u)" = '0' ]; then
   chown -R prysmvalidator:prysmvalidator /var/lib/prysm
-  exec gosu prysmvalidator docker-entrypoint.sh "$@"
+  exec gosu prysmvalidator docker-entrypoint-vc.sh "$@"
 fi
 
 if [[ "${NETWORK}" =~ ^https?:// ]]; then
