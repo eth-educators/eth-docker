@@ -23,6 +23,7 @@ services:
     image: vero:local
     pull_policy: never
     user: vero
+    stop_grace_period: 1m
     environment:
       - MEV_BOOST=${MEV_BOOST}
       - VC_EXTRAS=${VC_EXTRAS:-}
