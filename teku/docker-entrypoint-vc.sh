@@ -2,7 +2,7 @@
 
 if [ "$(id -u)" = '0' ]; then
   chown -R teku:teku /var/lib/teku
-  exec gosu teku docker-entrypoint.sh "$@"
+  exec gosu teku docker-entrypoint-vc.sh "$@"
 fi
 
 if [[ "${NETWORK}" =~ ^https?:// ]]; then

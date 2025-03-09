@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 if [ "$(id -u)" = '0' ]; then
   chown -R lsvalidator:lsvalidator /var/lib/lodestar
-  exec gosu lsvalidator docker-entrypoint.sh "$@"
+  exec gosu lsvalidator docker-entrypoint-vc.sh "$@"
 fi
 
 if [[ "${NETWORK}" =~ ^https?:// ]]; then
