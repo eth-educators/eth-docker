@@ -1807,6 +1807,7 @@ resync-consensus() {
     *prysm.yml* | *prysm-cl-only.yml* ) __cl_volume='prysmconsensus-data'; __cl_client="prysm";;
     *grandine-allin1.yml* ) __cl_volume='wipe-db'; __cl_client="grandine";;
     *grandine.yml* | *grandine-cl-only.yml* ) __cl_volume='grandineconsensus-data'; __cl_client="grandine";;
+    *erigon.yml* ) __cl_volume='wipe-db'; __cl_client="caplin";;
     * ) echo "You do not appear to be running a consensus layer client. Nothing to do."; return;;
   esac
 
@@ -1831,7 +1832,11 @@ resync-consensus() {
   esac
 
   echo "Stopping ${__cl_client} container"
-  __docompose stop consensus && __docompose rm -f consensus
+  if [[ "${__cl_client}" = "caplin" ]]; then
+    __docompose stop execution && __docompose rm -f execution
+  else
+    __docompose stop consensus && __docompose rm -f consensus
+  fi
   if [ "${__cl_volume}" = "wipe-db" ]; then
     __docompose run --rm wipe-db
   else
