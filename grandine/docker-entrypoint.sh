@@ -58,11 +58,11 @@ else
 fi
 
 # Check whether we should rapid sync
-if [ -n "${RAPID_SYNC_URL}" ]; then
-  __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
+if [ -n "${CHECKPOINT_SYNC_URL}" ]; then
+  __checkpoint_sync="--checkpoint-sync-url=${CHECKPOINT_SYNC_URL}"
   echo "Checkpoint sync enabled"
 else
-  __rapid_sync=""
+  __checkpoint_sync=""
 fi
 
 # Check whether we should send stats to beaconcha.in
@@ -125,9 +125,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__checkpoint_sync} ${__prune} ${__beacon_stats} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__ipv6} --graffiti "${GRAFFITI}" ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__checkpoint_sync} ${__prune} ${__beacon_stats} ${__ipv6} --graffiti "${GRAFFITI}" ${CL_EXTRAS} ${VC_EXTRAS}
 fi

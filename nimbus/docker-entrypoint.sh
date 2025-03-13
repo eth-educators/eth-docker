@@ -53,18 +53,18 @@ else
   __network="--network=${NETWORK}"
 fi
 
-if [ -n "${RAPID_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
+if [ -n "${CHECKPOINT_SYNC_URL:+x}" ] && [ ! -f "/var/lib/nimbus/setupdone" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Starting checkpoint sync with backfill and archive reindex. Nimbus will restart when done."
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=true --reindex ${__network} --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
+        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=true --reindex ${__network} --data-dir=/var/lib/nimbus --trusted-node-url="${CHECKPOINT_SYNC_URL}"
         touch /var/lib/nimbus/setupdone
     else
         echo "Starting checkpoint sync. Nimbus will restart when done."
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false ${__network} --data-dir=/var/lib/nimbus --trusted-node-url="${RAPID_SYNC_URL}"
+        /usr/local/bin/nimbus_beacon_node trustedNodeSync --backfill=false ${__network} --data-dir=/var/lib/nimbus --trusted-node-url="${CHECKPOINT_SYNC_URL}"
         touch /var/lib/nimbus/setupdone
     fi
 fi

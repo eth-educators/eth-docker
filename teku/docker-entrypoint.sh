@@ -38,21 +38,21 @@ if [[ -O "/var/lib/teku/ee-secret/jwtsecret" ]]; then
 fi
 
 # Check whether we should rapid sync
-if [ -n "${RAPID_SYNC_URL:+x}" ]; then
+if [ -n "${CHECKPOINT_SYNC_URL:+x}" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Teku archive node cannot use checkpoint sync: Syncing from genesis."
-        __rapid_sync="--ignore-weak-subjectivity-period-enabled=true"
+        __checkpoint_sync="--ignore-weak-subjectivity-period-enabled=true"
       if [ "${NETWORK}" = "holesky" ]; then
-        __rapid_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
+        __checkpoint_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
       fi
     else
-        __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
+        __checkpoint_sync="--checkpoint-sync-url=${CHECKPOINT_SYNC_URL}"
         echo "Checkpoint sync enabled"
     fi
 else
-    __rapid_sync="--ignore-weak-subjectivity-period-enabled=true"
+    __checkpoint_sync="--ignore-weak-subjectivity-period-enabled=true"
     if [ "${NETWORK}" = "holesky" ]; then
-      __rapid_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
+      __checkpoint_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
     fi
 fi
 
@@ -75,7 +75,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   fi
   bootnodes="$(paste -s -d, "/var/lib/teku/testnet/${config_dir}/bootstrap_nodes.txt")"
   set +e
-  __rapid_sync="--initial-state=/var/lib/teku/testnet/${config_dir}/genesis.ssz --ignore-weak-subjectivity-period-enabled=true"
+  __checkpoint_sync="--initial-state=/var/lib/teku/testnet/${config_dir}/genesis.ssz --ignore-weak-subjectivity-period-enabled=true"
   __network="--network=/var/lib/teku/testnet/${config_dir}/config.yaml --p2p-discovery-bootnodes=${bootnodes} \
 --data-storage-non-canonical-blocks-enabled=true --Xlog-include-p2p-warnings-enabled \
 --metrics-block-timing-tracking-enabled --Xmetrics-blob-sidecars-storage-enabled=true \
@@ -159,9 +159,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__w3s_url} ${__mev_boost} ${__checkpoint_sync} ${__prune} ${__beacon_stats} ${__doppel} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__rapid_sync} ${__prune} ${__beacon_stats} ${__doppel} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
+  exec "$@" ${__network} "--validators-graffiti=${GRAFFITI}" ${__w3s_url} ${__mev_boost} ${__checkpoint_sync} ${__prune} ${__beacon_stats} ${__doppel} ${__ipv6} ${CL_EXTRAS} ${VC_EXTRAS}
 fi

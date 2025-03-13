@@ -71,16 +71,16 @@ else
 fi
 
 # Check whether we should rapid sync
-if [ -n "${RAPID_SYNC_URL}" ]; then
+if [ -n "${CHECKPOINT_SYNC_URL}" ]; then
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Lodestar archive node cannot use checkpoint sync: Syncing from genesis."
-    __rapid_sync="--chain.archiveBlobEpochs Infinity"
+    __checkpoint_sync="--chain.archiveBlobEpochs Infinity"
   else
-    __rapid_sync="--checkpointSyncUrl=${RAPID_SYNC_URL}"
+    __checkpoint_sync="--checkpointSyncUrl=${CHECKPOINT_SYNC_URL}"
     echo "Checkpoint sync enabled"
   fi
 else
-  __rapid_sync=""
+  __checkpoint_sync=""
 fi
 
 if [ "${IPV6}" = "true" ]; then
@@ -100,4 +100,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__ipv6} ${__network} ${__mev_boost} ${__beacon_stats} ${__rapid_sync} ${CL_EXTRAS}
+exec "$@" ${__ipv6} ${__network} ${__mev_boost} ${__beacon_stats} ${__checkpoint_sync} ${CL_EXTRAS}
