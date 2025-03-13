@@ -102,6 +102,19 @@ services:
       - metrics.instance=execution
       - metrics.network=${NETWORK}
 
+  wipe-db:
+    profiles: ["tools"]
+    restart: "no"
+    image: alpine:3
+    user: "10001"
+    volumes:
+      - erigon-el-data:/var/lib/erigon
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        rm -rf /var/lib/erigon/caplin/*
+
 volumes:
   erigon-el-data:
   jwtsecret:
