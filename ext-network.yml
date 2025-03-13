@@ -1,4 +1,4 @@
 networks:
   default:
-    name: traefik_default
+    name: ${DOCKER_EXT_NETWORK}
     external: true
