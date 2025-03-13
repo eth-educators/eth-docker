@@ -1,4 +1,4 @@
-# To be used in conjunction with erigon.yml
+# To be used in conjunction with erigon.yml when it is using Caplin
 # For remote validator setups only. Please be very cautious when exposing your consensus API port
 services:
   execution:
