@@ -29,7 +29,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jwtsecret:/var/lib/lighthouse/beacon/ee-secret
     environment:
-      - RAPID_SYNC_URL=${RAPID_SYNC_URL}
+      - CHECKPOINT_SYNC_URL=${CHECKPOINT_SYNC_URL}
       - JWT_SECRET=${JWT_SECRET}
       - MEV_BOOST=${MEV_BOOST}
       - MEV_NODE=${MEV_NODE}

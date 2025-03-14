@@ -57,11 +57,11 @@ else
 fi
 
 # Check whether we should rapid sync
-if [ -n "${RAPID_SYNC_URL:+x}" ]; then
-  __rapid_sync="--checkpoint-sync-url=${RAPID_SYNC_URL}"
+if [ -n "${CHECKPOINT_SYNC_URL:+x}" ]; then
+  __checkpoint_sync="--checkpoint-sync-url=${CHECKPOINT_SYNC_URL}"
   echo "Checkpoint sync enabled"
 else
-  __rapid_sync=""
+  __checkpoint_sync=""
 fi
 
 # Check whether we should use MEV Boost
@@ -87,7 +87,7 @@ if [[ "${NETWORK}" = "sepolia" ]]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
+  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__checkpoint_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
 elif [[ "${NETWORK}" = "holesky" ]]; then
   GENESIS=/var/lib/prysm/genesis.ssz
   if [ ! -f "$GENESIS" ]; then
@@ -96,9 +96,9 @@ elif [[ "${NETWORK}" = "holesky" ]]; then
   fi
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
+  exec "$@" "--genesis-state=$GENESIS" ${__network} ${__checkpoint_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__rapid_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
+  exec "$@" ${__network} ${__checkpoint_sync} ${__prune} ${__mev_boost} ${CL_EXTRAS}
 fi
