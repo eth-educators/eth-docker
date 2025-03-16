@@ -43,7 +43,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
     echo "${config_dir}" > .git/info/sparse-checkout
     git pull origin "${branch}"
   fi
-  bootnodes="$(paste -s -d, "/var/lib/erigon/testnet/${config_dir}/bootnode.txt")"
+  bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/erigon/testnet/${config_dir}/enodes.yaml" | paste -sd ",")"
   networkid="$(jq -r '.config.chainId' "/var/lib/erigon/testnet/${config_dir}/genesis.json")"
   set +e
   __network="--bootnodes=${bootnodes} --networkid=${networkid} --http.api=eth,erigon,engine,web3,net,debug,trace,txpool,admin"
