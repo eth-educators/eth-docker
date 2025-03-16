@@ -76,10 +76,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/teku/testnet/${config_dir}/bootstrap_nodes.yaml" | paste -sd ",")"
   set +e
   __checkpoint_sync="--initial-state=/var/lib/teku/testnet/${config_dir}/genesis.ssz --ignore-weak-subjectivity-period-enabled=true"
-  __network="--network=/var/lib/teku/testnet/${config_dir}/config.yaml --p2p-discovery-bootnodes=${bootnodes} \
---data-storage-non-canonical-blocks-enabled=true --Xlog-include-p2p-warnings-enabled \
---metrics-block-timing-tracking-enabled --Xmetrics-blob-sidecars-storage-enabled=true \
---Xpeer-rate-limit=100000 --Xpeer-request-limit=1000"
+  __network="--network=/var/lib/teku/testnet/${config_dir}/config.yaml --p2p-discovery-bootnodes=${bootnodes}"
 else
   __network="--network=${NETWORK}"
 fi
