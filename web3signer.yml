@@ -21,6 +21,8 @@ services:
     volumes:
       - web3signer-keys:/var/lib/web3signer
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NETWORK=${NETWORK}
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,7 +36,6 @@ services:
       - --http-host-allowlist=*
       - --logging=${LOG_LEVEL:-info}
       - eth2
-      - --network=${NETWORK}
       - --enable-key-manager-api=true
       - --slashing-protection-db-url=jdbc:postgresql://postgres/web3signer
       - --slashing-protection-db-username=postgres
