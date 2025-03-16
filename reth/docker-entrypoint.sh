@@ -43,7 +43,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
     echo "${config_dir}" > .git/info/sparse-checkout
     git pull origin "${branch}"
   fi
-  bootnodes="$(paste -s -d, "/var/lib/reth/testnet/${config_dir}/bootnode.txt")"
+  bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/lighthouse/beacon/testnet/${config_dir}/enodes.yaml" | paste -sd ",")"
   set +e
   __network="--chain=/var/lib/reth/testnet/${config_dir}/genesis.json --bootnodes=${bootnodes}"
 else

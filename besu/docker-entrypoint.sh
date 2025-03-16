@@ -43,7 +43,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
     echo "${config_dir}" > .git/info/sparse-checkout
     git pull origin "${branch}"
   fi
-  bootnodes="$(paste -s -d, "/var/lib/besu/testnet/${config_dir}/bootnode.txt")"
+  bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/lighthouse/beacon/testnet/${config_dir}/enodes.yaml" | paste -sd ",")"
   set +e
   __network="--genesis-file=/var/lib/besu/testnet/${config_dir}/besu.json --bootnodes=${bootnodes} \
 --Xfilter-on-enr-fork-id=true --rpc-http-api=ADMIN,CLIQUE,MINER,ETH,NET,DEBUG,TXPOOL,ENGINE,TRACE,WEB3"
