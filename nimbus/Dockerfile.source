@@ -22,7 +22,7 @@ ARG USER=user
 ARG UID=10002
 
 RUN apt-get update && apt-get install -y \
-  ca-certificates bash tzdata git curl gosu
+  ca-certificates bash tzdata git git-lfs curl gosu
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
