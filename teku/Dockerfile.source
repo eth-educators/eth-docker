@@ -30,6 +30,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   ca-certificates \
   tzdata \
   git \
+  git-lfs \
   adduser \
   libjemalloc-dev \
   && apt-get clean \

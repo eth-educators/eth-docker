@@ -25,7 +25,7 @@ ARG USER=prysmconsensus
 ARG UID=10002
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
-  ca-certificates curl bash tzdata git \
+  ca-certificates curl bash tzdata git git-lfs \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 # rsync for migration
