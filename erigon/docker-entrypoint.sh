@@ -46,7 +46,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/erigon/testnet/${config_dir}/enodes.yaml" | paste -sd ",")"
   networkid="$(jq -r '.config.chainId' "/var/lib/erigon/testnet/${config_dir}/genesis.json")"
   set +e
-  __network="--bootnodes=${bootnodes} --networkid=${networkid} --http.api=eth,erigon,engine,web3,net,debug,trace,txpool,admin"
+  __network="--bootnodes=${bootnodes} --networkid=${networkid}"
   if [ ! -d /var/lib/erigon/chaindata ]; then
     erigon init --datadir /var/lib/erigon "/var/lib/erigon/testnet/${config_dir}/genesis.json"
   fi
