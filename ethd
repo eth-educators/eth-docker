@@ -759,9 +759,9 @@ MetricsAPIPort: 15000
     sed -i'.original' '$a\
  ssv:
  ' ssv-config/config.yaml
-    if [ "${NETWORK}" = "holesky" ]; then
+    if [ "${NETWORK}" = "hoodi" ]; then
       sed -i'.original' '$a\
-  Network: holesky
+  Network: hoodi
 ' ssv-config/config.yaml
     elif [ "${NETWORK}" = "mainnet" ]; then
       sed -i'.original' '$a\
@@ -2902,7 +2902,7 @@ __query_network() {
   __prev_network=$(__get_value_from_env "${__var}" "${__env_file}")
   NETWORK=$(whiptail --notags --title "Select Network" --menu \
   "Which network do you want to run on?" 14 65 6 \
-  "holesky" "Holešovice Testnet" \
+  "hoodi" "Hoodi Testnet" \
   "ephemery" "Ephemery Testnet" \
   "mainnet" "Ethereum Mainnet" \
   "gnosis" "Gnosis Chain" \
@@ -2916,7 +2916,7 @@ __query_network() {
     "gnosis")
       echo "You chose to run on Gnosis Chain"
       ;;
-    "sepolia" | "holesky" )
+    "sepolia" | "hoodi" )
       echo "You chose to run on ${NETWORK} testnet"
       ;;
     "custom" )
@@ -3299,8 +3299,8 @@ __query_checkpoint_beacon() {
       "sepolia")
         CHECKPOINT_SYNC_URL="https://sepolia.beaconstate.info"
         ;;
-      "holesky")
-        CHECKPOINT_SYNC_URL="https://holesky.beaconstate.info"
+      "hoodi")
+        CHECKPOINT_SYNC_URL="https://hoodi.beaconstate.info"
         ;;
       "ephemery")
         CHECKPOINT_SYNC_URL="https://ephemery.beaconstate.ethstaker.cc/"
@@ -3367,13 +3367,13 @@ __query_coinbase() {
 
   while true; do
     set +e # Can't rely on the error handler here because of the special-casing below for update()
-    if [[  "${__during_update}" -eq 0 && "${__deployment}" =~ "lido_" ]]; then
+    if [[  "${__during_update}" -eq 0 && "${__deployment}" =~ "lido_" ]]; then  # Lido Execution Layer Rewards Vault
       case "${NETWORK}" in
         "mainnet")
           FEE_RECIPIENT="0x388C818CA8B9251b393131C08a736A67ccB19297"
           ;;
-        "holesky")
-          FEE_RECIPIENT="0xE73a3602b99f1f913e72F8bdcBC235e206794Ac8"
+        "hoodi")
+          FEE_RECIPIENT="0x9b108015fe433F173696Af3Aa0CF7CDb3E104258"
           ;;
         *)
           FEE_RECIPIENT="0x0000000000000000000000000000000000000000"
@@ -3425,11 +3425,8 @@ __query_mev() {
   if [ "${__deployment}" = "ssv" ]; then
     MEV_BOOST="true"
     case "${NETWORK}" in
-      "holesky")
-        MEV_RELAYS="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net,\
-https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@holesky.titanrelay.xyz,\
-https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.holesky.blxrbdn.com,\
-https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
+      "hoodi")
+        MEV_RELAYS="https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@hoodi.titanrelay.xyz,https://0x98f0ef62f00780cf8eb06701a7d22725b9437d4768bb19b363e882ae87129945ec206ec2dc16933f31d983f8225772b6@hoodi.aestus.live"
         ;;
       "mainnet")
         MEV_RELAYS="https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,\
@@ -3487,19 +3484,16 @@ want to use MEV Boost?" 10 65); then
                   "Titan Relay Regional" "(optional)" ON \
                   "Manifold Finance" "(optional)" ON 3>&1 1>&2 2>&3)
               ;;
-          "holesky")
+          "hoodi")
               relays=(
-                  ['Aestus']="https://0xab78bf8c781c58078c3beb5710c57940874dd96aef2835e7742c866b4c7c0406754376c2c8285a36c630346aa5c5f833@holesky.aestus.live"
-                  ['Titan']="https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@holesky.titanrelay.xyz"
-                  ['Flashbots Boost']="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net"
-                  ['Ultrasound']="https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
+                  ['Aestus']="https://0x98f0ef62f00780cf8eb06701a7d22725b9437d4768bb19b363e882ae87129945ec206ec2dc16933f31d983f8225772b6@hoodi.aestus.live"
+                  ['Titan']="https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@hoodi.titanrelay.xyz"
               )
               __selected=$(whiptail --title "Relays list" --checklist \
                   "Choose relays" 12 30 5 \
                   "Aestus" "" ON \
                   "Titan" "" ON \
-                  "Flashbots Boost" "" ON \
-                  "Ultrasound" "" ON 3>&1 1>&2 2>&3)
+                  3>&1 1>&2 2>&3)
               ;;
             *)
               echo "No MEV RELAYS configured for ${NETWORK}"
@@ -3548,11 +3542,8 @@ want to use MEV Boost?" 10 65); then
         "sepolia")
           MEV_RELAYS=https://0x845bd072b7cd566f02faeb0a4033ce9399e42839ced64e8b2adcfc859ed1e8e1a5a293336a49feac6d9a5edb779be53a@boost-relay-sepolia.flashbots.net
           ;;
-        "holesky")
-          MEV_RELAYS="https://0xafa4c6985aa049fb79dd37010438cfebeb0f2bd42b115b89dd678dab0670c1de38da0c4e9138c9290a398ecd9a0b3110@boost-relay-holesky.flashbots.net,\
-https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@holesky.titanrelay.xyz,\
-https://0x821f2a65afb70e7f2e820a925a9b4c80a159620582c1766b1b09729fec178b11ea22abb3a51f07b288be815a1a2ff516@bloxroute.holesky.blxrbdn.com,\
-https://0xb1559beef7b5ba3127485bbbb090362d9f497ba64e177ee2c8e7db74746306efad687f2cf8574e38d70067d40ef136dc@relay-stag.ultrasound.money"
+        "hoodi")
+          MEV_RELAYS="https://https://0xaa58208899c6105603b74396734a6263cc7d947f444f396a90f7b7d3e65d102aec7e5e5291b27e08d02c50a050825c2f@hoodi.titanrelay.xyz,https://0x98f0ef62f00780cf8eb06701a7d22725b9437d4768bb19b363e882ae87129945ec206ec2dc16933f31d983f8225772b6@hoodi.aestus.live"
           ;;
         "mainnet")
           MEV_RELAYS=https://0xac6e77dfe25ecd6110b8e780608cce0dab71fdd5ebea22a16c0205200f2f8e2e3ad3b71d3499c54ad14d6c21b41a37ae@boost-relay.flashbots.net,\
@@ -3586,12 +3577,12 @@ https://0x8c7d33605ecef85403f8b7289c8058f440cbb6bf72b055dfe2f3e2c6695b6a1ea5a9cd
 
 __lido_withdrawal_credentials_address() {
     __lido_address=""
-    case "${NETWORK}" in
+    case "${NETWORK}" in  # Lido Withdrawal Vault
         "mainnet")
             __lido_address="0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
             ;;
-        "holesky")
-            __lido_address="0xF0179dEC45a37423EAD4FaD5fCb136197872EAd9"
+        "hoodi")
+            __lido_address="0x4473dCDDbf77679A643BdB654dbd86D67F8d32f2"
             ;;
         *)
             __lido_address="0x0000000000000000000000000000000000000000"
@@ -3849,8 +3840,8 @@ config() {
       __query_validator_client
       ;;
     "ssv" | "lido_ssv")
-      if [ "${NETWORK}" = "holesky" ]; then
-        sed -i'.original' 's/  Network: .*/  Network: holesky/' ssv-config/config.yaml
+      if [ "${NETWORK}" = "hoodi" ]; then
+        sed -i'.original' 's/  Network: .*/  Network: hoodi/' ssv-config/config.yaml
       elif [ "${NETWORK}" = "mainnet" ]; then
         sed -i'.original' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
       else
@@ -3913,7 +3904,7 @@ config() {
       else
         __lido_keys_attention_message
       fi
-      if [ "${NETWORK}" = "holesky" ]; then
+      if [ "${NETWORK}" = "hoodi" ]; then
         __link="https://csm.testnet.fi/?ref=ethdocker"
       else
         __link="https://csm.lido.fi/?ref=ethdocker"
@@ -3937,7 +3928,7 @@ config() {
 
   if [ "${__deployment}" = "lido_obol" ]; then
     CL_NODE="http://charon:3600"
-    case "${NETWORK}" in
+    case "${NETWORK}" in  # Lido Locator, and oracle allowlist for exits
       "mainnet")
 # We are using the variable
 # shellcheck disable=SC2034
@@ -3952,13 +3943,13 @@ config() {
 # shellcheck disable=SC2034
         LIDO_DV_EXIT_EXIT_EPOCH="194048" # capella
         ;;
-      "holesky")
+      "hoodi")
 # We are using the variable
 # shellcheck disable=SC2034
-        VE_LOCATOR_ADDRESS="0x28FAB2059C713A7F9D8c86Db49f9bb0e96Af1ef8"
+        VE_LOCATOR_ADDRESS="0xe2EF9536DAAAEBFf5b1c130957AB3E80056b06D8"
 # We are using the variable
 # shellcheck disable=SC2034
-        VE_ORACLE_ADDRESSES_ALLOWLIST='["0x12A1D74F8697b9f4F1eEBb0a9d0FB6a751366399","0xD892c09b556b547c80B7d8c8cB8d75bf541B2284","0xf7aE520e99ed3C41180B5E12681d31Aa7302E4e5","0x31fa51343297FFce0CC1E67a50B2D3428057D1b1","0x81E411f1BFDa43493D7994F82fb61A415F6b8Fd4","0x4c75FA734a39f3a21C57e583c1c29942F021C6B7","0xD3b1e36A372Ca250eefF61f90E833Ca070559970","0xF0F23944EfC5A63c53632C571E7377b85d5E6B6f","0xb29dD2f6672C0DFF2d2f173087739A42877A5172","0x3799bDA7B884D33F79CEC926af21160dc47fbe05"]'
+        VE_ORACLE_ADDRESSES_ALLOWLIST='["0xcA80ee7313A315879f326105134F938676Cfd7a9","0xf03B8DC8762B97F13Ac82e6F94bE3Ed002FF7459","0x1932f53B1457a5987791a40Ba91f71c5Efd5788F"]'
 # We are using the variable
 # shellcheck disable=SC2034
         VE_STAKING_MODULE_ID="2"
@@ -4058,7 +4049,7 @@ config() {
     COMPOSE_FILE="${COMPOSE_FILE}:lido-obol.yml"
   fi
   if { [ "${__deployment}" = "node" ] || [ "${__deployment}" = "rocket" ]; } \
-  && [ "${NETWORK}" = "holesky" ]; then
+  && [ "${NETWORK}" = "hoodi" ]; then
     COMPOSE_FILE="${COMPOSE_FILE}:deposit-cli.yml"
   fi
   if [ "${__deployment}" = "lido_csm" ]; then

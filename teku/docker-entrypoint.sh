@@ -42,8 +42,8 @@ if [ -n "${CHECKPOINT_SYNC_URL:+x}" ]; then
     if [ "${ARCHIVE_NODE}" = "true" ]; then
         echo "Teku archive node cannot use checkpoint sync: Syncing from genesis."
         __checkpoint_sync="--ignore-weak-subjectivity-period-enabled=true"
-      if [ "${NETWORK}" = "holesky" ]; then
-        __checkpoint_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
+      if [ "${NETWORK}" = "hoodi" ]; then
+        __checkpoint_sync+=" --initial-state=https://checkpoint-sync.hoodi.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
       fi
     else
         __checkpoint_sync="--checkpoint-sync-url=${CHECKPOINT_SYNC_URL}"
@@ -51,8 +51,8 @@ if [ -n "${CHECKPOINT_SYNC_URL:+x}" ]; then
     fi
 else
     __checkpoint_sync="--ignore-weak-subjectivity-period-enabled=true"
-    if [ "${NETWORK}" = "holesky" ]; then
-      __checkpoint_sync+=" --initial-state=https://checkpoint-sync.holesky.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
+    if [ "${NETWORK}" = "hoodi" ]; then
+      __checkpoint_sync+=" --initial-state=https://checkpoint-sync.hoodi.ethpandaops.io/eth/v2/debug/beacon/states/genesis"
     fi
 fi
 

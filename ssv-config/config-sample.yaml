@@ -1,5 +1,5 @@
 ssv:
-  Network: holesky
+  Network: hoodi
   ValidatorOptions:
     BuilderProposals: true
 KeyStore:
