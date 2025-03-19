@@ -1201,7 +1201,7 @@ __env_migrate() {
   __all_vars=( COMPOSE_FILE FEE_RECIPIENT EL_NODE EL_RPC_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS \
     MEV_MIN_BID MEV_NODE CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL \
     ANCIENT_DIR AUTOPRUNE_NM LOGS_LABEL CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID \
-    GRAFANA_HOST SIREN_HOST DISTRIBUTED BESU_HEAP TEKU_HEAP PROM_HOST HOST_IP SHARE_IP PRYSM_HOST EE_HOST \
+    GRAFANA_HOST SIREN_HOST BESU_HEAP TEKU_HEAP PROM_HOST HOST_IP SHARE_IP PRYSM_HOST EE_HOST \
     EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB VC_HOST DDNS_SUBDOMAIN IPV6 DDNS_PROXY CHECKPOINT_SYNC_URL \
     CL_NODE OBOL_CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER PRYSM_PORT \
     DOPPELGANGER PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
@@ -1393,41 +1393,6 @@ __env_migrate() {
         echo "A fee recipient ETH wallet address is required in order to start the client. Please set one in \".env\"."
         echo "CAUTION: \"$__me up\" will fail if no valid address is set."
       fi
-    fi
-  fi
-
-  # User signals it's a distributed setup and not to nag
-  __var="DISTRIBUTED"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
-  if [[ "${__value}" = "true" || "${__non_interactive:-0}" -eq 1 ]]; then
-    __during_migrate=0
-    return 0
-  fi
-  # Check for CL and EL, nag if we have only one without the other
-  __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
-  # Case 1 ... CL, do we have an EL?
-# I do mean to match literally
-# shellcheck disable=SC2076
-  if [[ "${__value}" =~ "prysm.yml" || "${__value}" =~ "lighthouse.yml" || "${__value}" =~ "teku.yml" \
-    || "${__value}" =~ "nimbus.yml" || "${__value}" =~ "lodestar.yml" || "${__value}" =~ "-cl-only.yml" \
-    || "${__value}" =~ "-allin1.yml" ]]; then
-    if [[ ! "${__value}" =~ "geth.yml" && ! "${__value}" =~ "besu.yml" && ! "${__value}" =~ "erigon.yml" \
-      && ! "${__value}" =~ "nethermind.yml"  && ! "${__value}" =~ "nimbus-el.yml" \
-      && ! "${__value}" =~ "reth.yml" ]]; then
-      whiptail --msgbox "An Execution Layer client is required alongside your Consensus Layer client since \
-Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
-${__env_file}" 12 75
-    fi
-# Case 2 ... EL, do we have a CL?
-  elif [[ "${__value}" =~ "geth.yml" || "${__value}" =~ "besu.yml" || "${__value}" =~ "nethermind.yml" \
-      || "${__value}" =~ "nimbus-el.yml" || "${__value}" =~ "reth.yml" ]]; then
-    if [[ ! "${__value}" =~ "prysm.yml"  && ! "${__value}" =~ "lighthouse.yml"  && ! "${__value}" =~ "teku.yml"  \
-      && ! "${__value}" =~ "nimbus.yml"  && ! "${__value}" =~ "lodestar.yml"  && ! "${__value}" =~ "-cl-only.yml" \
-      && ! "${__value}" =~ "-allin1.yml" ]]; then
-      whiptail --msgbox "A Consensus Layer client is required alongside your Execution Layer client since \
-Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag screen by setting DISTRIBUTED=true in \
-${__env_file}" 12 75
     fi
   fi
 
