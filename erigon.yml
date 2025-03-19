@@ -75,6 +75,9 @@ services:
       - --metrics
       - --metrics.addr
       - 0.0.0.0
+# Erigon needs this to be explicit. When it's covered by defaults, remove
+      - --http.api
+      - web3,eth,net,engine
       - --http
       - --http.addr
       - 0.0.0.0
