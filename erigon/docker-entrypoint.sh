@@ -116,7 +116,7 @@ else  # Erigon v3
     if [ "${ARCHIVE_NODE}" = "true" ]; then
       __caplin+=" --caplin.states-archive=true --caplin.blobs-archive=true --caplin.blobs-no-pruning=true --caplin.blocks-archive=true"
     fi
-    if [ -n "${RAPID_SYNC_URL}" ]; then
+    if [ -n "${CHECKPOINT_SYNC_URL}" ]; then
       __caplin+=" --caplin.checkpoint-sync-url=${CHECKPOINT_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
       echo "Checkpoint sync enabled"
     else
