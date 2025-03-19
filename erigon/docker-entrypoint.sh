@@ -51,7 +51,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
     erigon init --datadir /var/lib/erigon "/var/lib/erigon/testnet/${config_dir}/genesis.json"
   fi
 else
-  __network="--chain ${NETWORK} --http.api web3,eth,net,engine"
+  __network="--chain ${NETWORK}"
 fi
 
 __caplin=""
