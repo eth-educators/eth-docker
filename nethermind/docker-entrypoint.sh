@@ -50,8 +50,10 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
     set +e
   fi
   bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/nethermind/testnet/${config_dir}/enodes.yaml" | paste -sd ",")"
-  __network="--config none.cfg --Init.ChainSpecPath=/var/lib/nethermind/testnet/${config_dir}/chainspec.json --Discovery.Bootnodes=${bootnodes} \
---Pruning.Mode=None --Init.IsMining=false"
+  __network="--config none.cfg --Init.ChainSpecPath=/var/lib/nethermind/testnet/${config_dir}/chainspec.json --Discovery.Bootnodes=${bootnodes} --Init.IsMining=false"
+  if [ "${ARCHIVE_NODE}" == "false" ]; then
+    __prune="--Pruning.Mode=None"
+  fi
 else
   __network="--config ${NETWORK}"
 fi
