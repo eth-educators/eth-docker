@@ -1420,8 +1420,8 @@ Ethereum Merge.\n\nIf you run a distributed setup, you can shut off this nag scr
 ${__env_file}" 12 75
     fi
 # Case 2 ... EL, do we have a CL?
-  elif [[ "${__value}" =~ "geth.yml" || "${__value}" =~ "besu.yml" || "${__value}" =~ "erigon.yml" \
-    || "${__value}" =~ "nethermind.yml" || "${__value}" =~ "nimbus-el.yml" || "${__value}" =~ "reth.yml" ]]; then
+  elif [[ "${__value}" =~ "geth.yml" || "${__value}" =~ "besu.yml" || "${__value}" =~ "nethermind.yml" \
+      || "${__value}" =~ "nimbus-el.yml" || "${__value}" =~ "reth.yml" ]]; then
     if [[ ! "${__value}" =~ "prysm.yml"  && ! "${__value}" =~ "lighthouse.yml"  && ! "${__value}" =~ "teku.yml"  \
       && ! "${__value}" =~ "nimbus.yml"  && ! "${__value}" =~ "lodestar.yml"  && ! "${__value}" =~ "-cl-only.yml" \
       && ! "${__value}" =~ "-allin1.yml" ]]; then
