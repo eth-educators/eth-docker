@@ -55,7 +55,7 @@ fi
 
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--externalSigner.url http://web3signer:9000 --externalSigner.fetch"
+  __w3s_url="--externalSigner.url ${W3S_NODE} --externalSigner.fetch"
 else
   __w3s_url=""
 fi
