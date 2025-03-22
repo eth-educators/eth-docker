@@ -1231,7 +1231,8 @@ __env_migrate() {
   __old_vars=( XATU_KEY ERIGON_P2P_PORT_2 OBOL_EL_NODE ARCHIVE_NODE RAPID_SYNC_URL )
   __new_vars=( CONTRIBUTOOR_USERNAME EL_P2P_PORT_2 EL_RPC_NODE EL_ARCHIVE_NODE CHECKPOINT_SYNC_URL )
 
-  if [ "${__debug}" -eq 1 ]; then  # Find any values in .env that would not be migrated
+  if [ "${__debug}" -eq 1 ]; then  # Find any values in default.env that would not be migrated
+    __error=0
     while IFS= read -r __line; do
       # Skip blank lines and comments
       [[ -z "${__line}" || "${__line}" =~ ^# ]] && continue
@@ -1240,8 +1241,8 @@ __env_migrate() {
       if [[ "${__line}" =~ ^([A-Za-z0-9_-]+)= ]]; then
         __varname="${BASH_REMATCH[1]}"
         if [[ "${__varname}" = *-* ]]; then
-          echo "⚠️  Warning: Variable '${__varname}' contains a dash and may not be usable in Bash."
-          continue
+          echo "❌ Error: Variable '${__varname}' contains a dash and would not be usable in Bash."
+          (( ++__error ))
         fi
         if [[ "${__varname}" = "ENV_VERSION" ]]; then
           continue
@@ -1266,9 +1267,13 @@ __env_migrate() {
       done
 
       if [ "${__found}" -eq 0 ]; then
-        echo "🔍 Variable '${__varname}' in ${__env_file} will not be preserved."
+        echo "❌ Error: Variable '${__varname}' in default.env will not be preserved."
+        (( ++__error ))
       fi
-    done < "${__env_file}"
+    done < "./default.env"
+    if [ "${__error}" -gt 0 ]; then
+      exit 1
+    fi
   fi
 
 # Always make sure we have a SIREN password
