@@ -1209,7 +1209,8 @@ __env_migrate() {
     EL_EXTRAS CL_EXTRAS VC_EXTRAS EL_ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT EL_P2P_PORT_2 \
     ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD LIDO_DV_EXIT_VERSION OBOL_CHARON_CL_ENDPOINTS VC_ALIAS \
     CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD MINIMAL_NODE DOCKER_EXT_NETWORK CL_ARCHIVE_NODE \
-    DOCKER_ROOT NODE_EXPORTER_IGNORE_MOUNT_REGEX )
+    OBOL_P2P_RELAYS VE_OPERATOR_ID VE_STAKING_MODULE_ID VE_LOCATOR_ADDRESS VE_ORACLE_ADDRESSES_ALLOWLIST \
+    ENABLE_DIST_ATTESTATION_AGGR LIDO_DV_EXIT_EXIT_EPOCH LIDO_DV_EXIT_VERSION DOCKER_ROOT NODE_EXPORTER_IGNORE_MOUNT_REGEX )
   __target_vars=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
     NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
     TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE SSV_NODE_REPO \
@@ -1224,10 +1225,51 @@ __env_migrate() {
     DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG DEPCLI_DOCKER_REPO W3S_DOCKER_TAG W3S_DOCKER_REPO \
     PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
     GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
-    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG DEPCLI_DOCKERFILE CONTRIBUTOOR_DOCKER_REPO CONTRIBUTOOR_DOCKER_TAG)
+    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG DEPCLI_DOCKERFILE CONTRIBUTOOR_DOCKER_REPO CONTRIBUTOOR_DOCKER_TAG \
+    VERO_SRC_BUILD_TARGET VERO_SRC_REPO VERO_DOCKER_TAG VERO_DOCKER_REPO VERO_DOCKERFILE )
 
   __old_vars=( XATU_KEY ERIGON_P2P_PORT_2 OBOL_EL_NODE ARCHIVE_NODE RAPID_SYNC_URL )
   __new_vars=( CONTRIBUTOOR_USERNAME EL_P2P_PORT_2 EL_RPC_NODE EL_ARCHIVE_NODE CHECKPOINT_SYNC_URL )
+
+  if [ "${__debug}" -eq 1 ]; then  # Find any values in .env that would not be migrated
+    while IFS= read -r __line; do
+      # Skip blank lines and comments
+      [[ -z "${__line}" || "${__line}" =~ ^# ]] && continue
+
+      # Warn on dash-containing variable names
+      if [[ "${__line}" =~ ^([A-Za-z0-9_-]+)= ]]; then
+        __varname="${BASH_REMATCH[1]}"
+        if [[ "${__varname}" = *-* ]]; then
+          echo "⚠️  Warning: Variable '${__varname}' contains a dash and may not be usable in Bash."
+          continue
+        fi
+        if [[ "${__varname}" = "ENV_VERSION" ]]; then
+          continue
+        fi
+      else
+        continue  # Doesn't match variable assignment format
+      fi
+
+      # Only reach here if varname is valid (no dash)
+      __found=0
+      for __array in __all_vars __target_vars __old_vars; do
+        eval "__array_values=(\"\${${__array}[@]}\")"
+# Assigned by eval
+# shellcheck disable=SC2154
+        for __element in "${__array_values[@]}"; do
+          if [[ "${__element}" == "${__varname}" ]]; then
+            __found=1
+            break  # Break inner loop
+          fi
+        done
+        (( __found )) && break  # Break outer loop if match was found
+      done
+
+      if [ "${__found}" -eq 0 ]; then
+        echo "🔍 Variable '${__varname}' in ${__env_file} will not be preserved."
+      fi
+    done < "${__env_file}"
+  fi
 
 # Always make sure we have a SIREN password
   __var="SIREN_PASSWORD"
@@ -1584,6 +1626,7 @@ update() {
   fi
 
   __keep_targets=1
+  __debug=0
   __targetcli=""
   while :
   do
@@ -1611,6 +1654,10 @@ update() {
         ;;
       --non-interactive)
         __non_interactive=1
+        shift
+        ;;
+      --debug)
+        __debug=1
         shift
         ;;
       *)
