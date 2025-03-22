@@ -55,7 +55,7 @@ fi
 
 # Web3signer URL
 if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--remote-signer-url http://web3signer:9000"
+  __w3s_url="--remote-signer-url ${W3S_NODE}"
 else
   echo "Vero requires the use of web3signer.yml and WEB3SIGNER=true. Please reconfigure to use Web3Signer and start again"
   sleep 60

@@ -19,6 +19,10 @@ services:
         - DOCKER_REPO=${MEV_DOCKER_REPO:-flashbots/mev-boost}
     image: mev-boost:local
     pull_policy: never
+    networks:
+      default:
+        aliases:
+          - ${NETWORK}-mev-boost # This allows multiple Eth Docker stacks all connected to the same central traefik
     entrypoint:
       - /app/mev-boost
       - -addr

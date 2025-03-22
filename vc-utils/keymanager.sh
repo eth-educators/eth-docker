@@ -346,11 +346,11 @@ exit-sign() {
       if [ "${WEB3SIGNER}" = "true" ]; then
         __token=NIL
         __vc_api_container=${__api_container}
-        __api_container=web3signer
+        __api_container=${__w3s_container}
         __vc_service=${__service}
         __service=web3signer
         __vc_api_port=${__api_port}
-        __api_port=9000
+        __api_port=${__w3s_port}
         __vc_api_tls=${__api_tls}
         __api_tls=false
       else
@@ -468,11 +468,11 @@ validator-list() {
     if [ "${WEB3SIGNER}" = "true" ]; then
         __token=NIL
         __vc_api_container=${__api_container}
-        __api_container=web3signer
+        __api_container=${__w3s_container}
         __vc_service=${__service}
         __service=web3signer
         __vc_api_port=${__api_port}
-        __api_port=9000
+        __api_port=${__w3s_port}
         __vc_api_tls=${__api_tls}
         __api_tls=false
     else
@@ -507,9 +507,9 @@ validator-count() {
     if [ "${WEB3SIGNER}" = "true" ]; then
         __token=NIL
         __vc_api_container=${__api_container}
-        __api_container=web3signer
+        __api_container=${__w3s_container}
         __vc_api_port=${__api_port}
-        __api_port=9000
+        __api_port=${__w3s_port}
         __vc_api_tls=${__api_tls}
         __api_tls=false
     else
@@ -561,9 +561,9 @@ validator-delete() {
         if [ "${WEB3SIGNER}" = "true" ]; then
             __token=NIL
             __vc_api_container=${__api_container}
-            __api_container=web3signer
+            __api_container=${__w3s_container}
             __vc_api_port=${__api_port}
-            __api_port=9000
+            __api_port=${__w3s_port}
             __vc_api_tls=${__api_tls}
             __api_tls=false
         else
@@ -635,9 +635,9 @@ to delete it:"
         if [ "${WEB3SIGNER}" = "true" ]; then
             __token=NIL
             __vc_api_container=${__api_container}
-            __api_container=web3signer
+            __api_container=${__w3s_container}
             __vc_api_port=${__api_port}
-            __api_port=9000
+            __api_port=${__w3s_port}
             __vc_api_tls=${__api_tls}
             __api_tls=false
         else
@@ -884,9 +884,9 @@ and secrets directories into .eth/validator_keys instead."
         if [ "${WEB3SIGNER}" = "true" ]; then
             __token=NIL
             __vc_api_container=${__api_container}
-            __api_container=web3signer
+            __api_container=${__w3s_container}
             __vc_api_port=${__api_port}
-            __api_port=9000
+            __api_port=${__w3s_port}
             __vc_api_tls=${__api_tls}
             __api_tls=false
         else
@@ -938,8 +938,8 @@ and secrets directories into .eth/validator_keys instead."
             __api_container=${__vc_api_container}
             __api_port=${__vc_api_port}
             __api_tls=${__vc_api_tls}
-
-            jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
+# shellcheck disable=SC2153
+            jq --arg pubkey_value "$__pubkey" --arg url_value "${W3S_NODE}" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
 
             get-token
             __api_data=@/tmp/apidata.txt
@@ -1019,9 +1019,9 @@ validator-register() {
     __api_path=eth/v1/keystores
     __token=NIL
     __vc_api_container=${__api_container}
-    __api_container=web3signer
+    __api_container=${__w3s_container}
     __vc_api_port=${__api_port}
-    __api_port=9000
+    __api_port=${__w3s_port}
     __vc_api_tls=${__api_tls}
     __api_tls=false
     __validator-list-call
@@ -1040,7 +1040,7 @@ validator-register() {
 
     __w3s_pubkeys="$(echo "$__result" | jq -r '.data[].validating_pubkey')"
     while IFS= read -r __pubkey; do
-         jq --arg pubkey_value "$__pubkey" --arg url_value "http://web3signer:9000" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
+         jq --arg pubkey_value "$__pubkey" --arg url_value "${W3S_NODE}" '. | .remote_keys += [{"pubkey": $pubkey_value, "url": $url_value}]' <<< '{}' >/tmp/apidata.txt
 
         __api_data=@/tmp/apidata.txt
         __api_path=eth/v1/remotekeys
@@ -1224,6 +1224,8 @@ __token_file_client="$1"
 __token_file=/tmp/api-token.txt
 __api_container=$2
 __api_port=${KEY_API_PORT:-7500}
+__w3s_container=$(echo "${W3S_NODE}" | awk -F[/:] '{print $4}')
+__w3s_port=$(echo "${W3S_NODE}" | awk -F[/:] '{print $5}')
 if [ -z "${TLS:+x}" ]; then
     __api_tls=false
 else

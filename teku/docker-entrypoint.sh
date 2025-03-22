@@ -114,9 +114,9 @@ fi
 
 # Web3signer URL
 if [[ "${EMBEDDED_VC}" = "true" && "${WEB3SIGNER}" = "true" ]]; then
-  __w3s_url="--validators-external-signer-url http://web3signer:9000"
+  __w3s_url="--validators-external-signer-url ${W3S_NODE}"
 #  while true; do
-#    if curl -s -m 5 http://web3signer:9000 &> /dev/null; then
+#    if curl -s -m 5 ${W3S_NODE} &> /dev/null; then
 #        echo "web3signer is up, starting Teku"
 #        break
 #    else

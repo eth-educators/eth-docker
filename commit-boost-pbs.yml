@@ -14,6 +14,10 @@ services:
       CB_METRICS_PORT: 10000
     volumes:
     - ./commit-boost/cb-config.toml:/cb-config.toml:ro
+    networks:
+      default:
+        aliases:
+          - ${NETWORK}-cb-pbs # This allows multiple Eth Docker stacks all connected to the same central traefik
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
