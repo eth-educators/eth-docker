@@ -31,6 +31,7 @@ services:
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER}
       - NETWORK=${NETWORK}
+      - CL_NODE=${CL_NODE}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - vero-data:/var/lib/vero
