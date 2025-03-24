@@ -22,6 +22,7 @@ services:
       - web3signer-keys:/var/lib/web3signer
       - /etc/localtime:/etc/localtime:ro
     environment:
+      - JAVA_OPTS=-Xmx2g
       - NETWORK=${NETWORK}
     networks:
       default:
