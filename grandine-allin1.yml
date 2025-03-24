@@ -44,7 +44,7 @@ services:
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - DOPPELGANGER=${DOPPELGANGER:-false}
       - ARCHIVE_NODE=${CL_ARCHIVE_NODE:-false}
-      - MINIMAL_NODE=${MINIMAL_NODE:-true}
+      - CL_MINIMAL_NODE=${CL_MINIMAL_NODE:-true}
       - IPV6=${IPV6:-false}
       - CL_P2P_PORT=${CL_P2P_PORT:-9000}
       - CL_QUIC_PORT=${CL_QUIC_PORT:-9001}
