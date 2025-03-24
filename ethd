@@ -3104,6 +3104,10 @@ __query_consensus_client() {
     3>&1 1>&2 2>&3)
   fi
 
+  if [[ "${__deployment}" = "lido_obol" && "${CONSENSUS_CLIENT}" = "lodestar.yml" ]]; then
+    CONSENSUS_CLIENT="lodestar-cl-only.yml:lodestar-vc-only.yml"  # Charon does not handle SSZ
+  fi
+
   echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
 }
 
@@ -3445,7 +3449,7 @@ https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1e
   __value=$(__get_value_from_env "${__var}" "${__env_file}")
   # I do mean to match literally
   # shellcheck disable=SC2076
-  if [[ "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" ]]; then
+  if [[ "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" && ! "${__deployment}" =~ "lido_obol" ]]; then
     if (whiptail --title "MEV Boost" --yesno "Is MEV Boost configured on your remote consensus client and do you \
 want to use MEV Boost?" 10 65); then
         MEV_BOOST="true"
@@ -3889,7 +3893,7 @@ config() {
   MEV_BOOST=false
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" ]]; then
+  if [[ ! "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" || "${__deployment}" = "lido_obol" ]]; then
     CL_NODE="http://consensus:5052"
 
     __query_execution_client
