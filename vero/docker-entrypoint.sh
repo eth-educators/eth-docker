@@ -65,6 +65,24 @@ fi
 # Uppercase log level
 __log_level="--log-level ${LOG_LEVEL^^}"
 
+__cl_up=0
+__count=0
+while [ "${__count}" -lt 36 ]; do
+ if curl -s -m 5 "${CL_NODE}" &> /dev/null; then
+   echo "Consensus Layer client is up, starting Vero"
+   __cl_up=1
+   break
+ else
+   echo "Waiting for Consensus Layer client to be reachable..."
+   sleep 5
+   (( ++__count ))
+ fi
+done
+if [ "${__cl_up}" -eq 0 ]; then
+  echo "Consensus Layer client remained unreachable for 3 minutes. Please check its logs."
+  exit 1
+fi
+
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
