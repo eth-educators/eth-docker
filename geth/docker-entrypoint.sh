@@ -95,10 +95,24 @@ esac
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Geth archive node without pruning"
   __prune="--syncmode=full --gcmode=archive"
+elif [ "${MINIMAL_NODE}" = "true" ]; then
+   echo "Geth minimal node with pre-merge history expiry"
+  __prune="--history.chain postmerge"
 else
   __prune=""
 fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__datadir} ${__ancient} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
+if [ -f /var/lib/geth/prune-marker ]; then
+  rm -f /var/lib/geth/prune-marker
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Geth is an archive node. Not attempting to prune: Aborting."
+    exit 1
+  fi
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec "$@" ${__datadir} ${__ancient} ${__network} ${EL_EXTRAS} prune-history
+else
+  exec "$@" ${__datadir} ${__ancient} ${__network} ${__prune} ${__verbosity} ${EL_EXTRAS}
+fi
