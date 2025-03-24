@@ -30,6 +30,7 @@ services:
       - GRAFFITI=${GRAFFITI:-}
       - DEFAULT_GRAFFITI=${DEFAULT_GRAFFITI:-false}
       - WEB3SIGNER=${WEB3SIGNER}
+      - W3S_NODE=${W3S_NODE}
       - NETWORK=${NETWORK}
       - CL_NODE=${CL_NODE}
       - LOG_LEVEL=${LOG_LEVEL}

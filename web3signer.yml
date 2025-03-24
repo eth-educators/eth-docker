@@ -23,6 +23,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - NETWORK=${NETWORK}
+    networks:
+      default:
+        aliases:
+          - ${NETWORK}-web3signer # This allows multiple Eth Docker stacks all connected to the same central traefik
     depends_on:
       postgres:
         condition: service_healthy

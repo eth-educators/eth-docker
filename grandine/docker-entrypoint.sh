@@ -108,9 +108,9 @@ fi
 
 # Web3signer URL
 if [[ "${EMBEDDED_VC}" = "true" && "${WEB3SIGNER}" = "true" ]]; then
-  __w3s_url="--web3signer-urls http://web3signer:9000"
+  __w3s_url="--web3signer-urls ${W3S_NODE}"
   while true; do
-    if curl -s -m 5 http://web3signer:9000 &> /dev/null; then
+    if curl -s -m 5 "${W3S_NODE}" &> /dev/null; then
         echo "web3signer is up, starting Grandine"
         break
     else
