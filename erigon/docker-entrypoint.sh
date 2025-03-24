@@ -58,7 +58,7 @@ __caplin=""
 __db_params=""
 # Literal match intended
 # shellcheck disable=SC2076
-if [[ "${DOCKER_TAG}" =~ "2." || "${DOCKER_TAG}" = "latest" ]]; then
+if [[ "${DOCKER_TAG}" =~ ^(v?2\.).* ]]; then
 # Check for network, and set prune accordingly
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Erigon archive node without pruning"

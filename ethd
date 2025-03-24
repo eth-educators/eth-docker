@@ -851,9 +851,7 @@ __delete_erigon() {
   __value=$(__get_value_from_env "${__var}" "${__env_file}")
   __var="ERIGON_DOCKER_REPO"
   __repo=$(__get_value_from_env "${__var}" "${__env_file}")
-# I do mean to match literally
-# shellcheck disable=SC2076
-  if [[ ! ("${__value}" =~ "v3" || "${__value}" = "main-latest") ]]; then
+  if [[ "${__value}" =~ ^(v?2\.).* ]]; then
     return 0
   fi
 
