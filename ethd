@@ -3195,6 +3195,16 @@ __query_execution_client() {
 }
 
 
+__query_4444() {  # Call with with --defaultno for RPC
+  if (whiptail --title "History expiry" --yesno "Do you want to expire pre-merge history? Good for a validator node, but makes eth_getLogs RPC calls impossible pre-merge" 10 65 "$1") then
+    EL_MINIMAL_NODE=true
+  else
+# shellcheck disable=SC2034
+    EL_MINIMAL_NODE=false
+  fi
+}
+
+
 __query_grafana() {
   if (whiptail --title "Grafana" --yesno "Do you want to use Grafana dashboards?" 10 65) then
       if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -3833,6 +3843,13 @@ config() {
     CL_NODE="http://consensus:5052"
 
     __query_execution_client
+    if [[ "${EXECUTION_CLIENT}" = "erigon.yml" ]]; then
+      if [[ "${__deployment}" = "rpc" ]]; then
+        __query_4444 --defaultno
+      else
+        __query_4444 ""
+      fi
+    fi
     __query_checkpoint_sync
     __query_mev
     __query_grafana
@@ -4031,6 +4048,8 @@ config() {
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=MEV_RELAYS
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
+  __var=EL_MINIMAL_NODE
+  __update_value_in_env "${__var}" "${!__var-false}" "${__env_file}"
   __var=DOCKER_EXT_NETWORK
   __update_value_in_env "${__var}" "${!__var:-"rocketpool_net"}" "${__env_file}"
   if [ "${__deployment}" = "lido_obol" ]; then
