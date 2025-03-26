@@ -9,7 +9,7 @@ x-logging: &logging
 services:
   charon:
     restart: "unless-stopped"
-    image: obolnetwork/charon:${CHARON_VERSION:-latest}
+    image: obolnetwork/charon:${CHARON_TAG:-latest}
     volumes:
       - .eth:/opt/charon/.charon
     <<: *logging
@@ -39,14 +39,14 @@ services:
   charon-create-enr:
     profiles: ["tools"]
     restart: "no"
-    image: obolnetwork/charon:${CHARON_VERSION:-latest}
+    image: obolnetwork/charon:${CHARON_TAG:-latest}
     command: create enr
     volumes:
       - .eth:/opt/charon/.charon
   charon-run-dkg:
     profiles: ["tools"]
     restart: "no"
-    image: obolnetwork/charon:${CHARON_VERSION:-latest}
+    image: obolnetwork/charon:${CHARON_TAG:-latest}
     volumes:
       - .eth:/opt/charon/.charon
     command: dkg --publish
@@ -61,7 +61,7 @@ services:
 
   validator-ejector:
    platform: linux/amd64
-   image: lidofinance/validator-ejector:${VALIDATOR_EJECTOR_VERSION:-1.5.0}
+   image: lidofinance/validator-ejector:${VALIDATOR_EJECTOR_TAG:-1.7.0}
    user: ":"
    volumes:
      - .eth/lido-ejector:/exitmessages
@@ -85,7 +85,7 @@ services:
      - metrics.instance=validator-ejector
 
   lido-dv-exit:
-    image: obolnetwork/lido-dv-exit:${LIDO_DV_EXIT_VERSION:-c4c00c3}
+    image: obolnetwork/lido-dv-exit:${LIDO_DV_EXIT_TAG:-latest}
     user: ":"
     volumes:
       - .eth/lido-ejector:/exitmessages
