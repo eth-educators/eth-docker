@@ -24,6 +24,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx2g
       - NETWORK=${NETWORK}
+      - PG_ALIAS=${PG_ALIAS:-${NETWORK}-postgres}
     networks:
       default:
         aliases:
