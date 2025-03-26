@@ -31,7 +31,7 @@ fi
 if [ -f /var/lib/teku/teku-keyapi.keystore ]; then
     if [ "$(date +%s -r /var/lib/teku/teku-keyapi.keystore)" -lt "$(date +%s --date="300 days ago")" ]; then
        rm /var/lib/teku/teku-keyapi.keystore
-    elif ! openssl x509 -noout -ext subjectAltName -in /var/lib/teku/teku-keyapi.crt | grep -q 'DNS:vc'; then
+    elif ! openssl x509 -noout -ext subjectAltName -in /var/lib/teku/teku-keyapi.crt | grep -q "DNS:${VC_ALIAS}"; then
        rm /var/lib/teku/teku-keyapi.keystore
     fi
 fi
@@ -43,7 +43,7 @@ if [ ! -f /var/lib/teku/teku-keyapi.keystore ]; then
       echo '[req]'; \
       echo 'distinguished_name=req'; \
       echo '[san]'; \
-      echo 'subjectAltName=DNS:localhost,DNS:consensus,DNS:validator,DNS:vc,IP:127.0.0.1')
+      echo "subjectAltName=DNS:localhost,DNS:consensus,DNS:validator,DNS:${VC_ALIAS},IP:127.0.0.1")
     openssl pkcs12 -export -in /var/lib/teku/teku-keyapi.crt -inkey /var/lib/teku/teku-keyapi.key -out /var/lib/teku/teku-keyapi.keystore -name teku-keyapi -passout pass:"$__password"
 fi
 
