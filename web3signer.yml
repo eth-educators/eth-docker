@@ -42,7 +42,7 @@ services:
       - --logging=${LOG_LEVEL:-info}
       - eth2
       - --enable-key-manager-api=true
-      - --slashing-protection-db-url=jdbc:postgresql://postgres/web3signer
+      - --slashing-protection-db-url=jdbc:postgresql://${PG_ALIAS:-${NETWORK}-postgres}/web3signer
       - --slashing-protection-db-username=postgres
       - --slashing-protection-db-password=postgres
       - --slashing-protection-pruning-enabled=true
@@ -67,6 +67,10 @@ services:
       timeout: 5s
     volumes:
       - web3signer-slashing-data:/var/lib/postgresql/data/
+    networks:
+      default:
+        aliases:
+          - ${PG_ALIAS:-${NETWORK}-postgres} # This allows multiple Eth Docker stacks all connected to the same bridge network
 
 volumes:
   web3signer-keys:
