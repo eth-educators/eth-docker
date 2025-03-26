@@ -110,7 +110,7 @@ __handle_docker() {
     __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
 
     __var=NODE_EXPORTER_IGNORE_MOUNT_REGEX
-    __value=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "__value"
     __regex="^'\^/\(dev\|proc\|sys\|run\|.+/\.\+\)\(\$\|/\)'$"
     if [[ "${__value}" =~ ${__regex} ]]; then
 # This gets used, but shellcheck doesn't recognize that
@@ -510,11 +510,11 @@ __check_disk_space() {
   __get_docker_free_space
 
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   __var="AUTOPRUNE_NM"
-  __auto_prune=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__auto_prune"
   __var="NETWORK"
-  NETWORK=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "NETWORK"
 
   if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
     __min_free=314572800
@@ -531,6 +531,7 @@ __check_disk_space() {
   if [[ "${__value}" =~ "nethermind.yml" ]] && [[ "${__free_space}" -lt "${__min_free}" ]]; then
     echo
     echo "You are running Nethermind and have less than ${__min_gib} GiB of free disk space."
+# shellcheck disable=SC2154
     if [ "${__auto_prune}" = true ]; then
       echo "It should currently be auto-pruning, check logs with \"$__me logs -f --tail 500 execution | grep \
 Full\". Free space:"
@@ -570,12 +571,13 @@ Full\". Free space:"
 __source_build() {
 # Check whether there's a source-built client and if so, force it with --no-cache
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 
   case "${__value}" in
     *deposit-cli.yml* )
       __var="DEPCLI_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
+# shellcheck disable=SC2154
       if [ "${__build}" = "Dockerfile.source" ]; then
         __docompose --profile tools build --pull --no-cache deposit-cli-new
       fi
@@ -584,7 +586,7 @@ __source_build() {
   case "${__value}" in
     *mev-boost.yml* )
       __var="MEV_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache mev-boost
       fi
@@ -593,42 +595,42 @@ __source_build() {
   case "${__value}" in
     *reth.yml* )
       __var="RETH_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache execution
       fi
       ;;
     *geth.yml* )
       __var="GETH_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache execution
       fi
       ;;
     *besu.yml* )
       __var="BESU_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache execution
       fi
       ;;
     *nethermind.yml* )
       __var="NM_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache execution
       fi
       ;;
     *erigon.yml* )
       __var="ERIGON_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache execution
       fi
       ;;
     *nimbus-el.yml* )
       __var="NIMEL_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache execution
       fi
@@ -637,42 +639,42 @@ __source_build() {
   case "${__value}" in
     *lighthouse.yml* | *lighthouse-cl-only.yml* )
       __var="LH_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache consensus
       fi
       ;;
     *teku.yml* | *teku-allin1.yml* | *teku-cl-only.yml* )
       __var="TEKU_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache consensus
       fi
       ;;
     *lodestar.yml* | *lodestar-cl-only.yml* )
       __var="LS_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache consensus
       fi
       ;;
     *nimbus.yml* | *nimbus-allin1.yml* | *nimbus-cl-only.yml* )
       __var="NIM_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache consensus
       fi
       ;;
     *prysm.yml* | *prysm-cl-only.yml* )
       __var="PRYSM_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache consensus
       fi
       ;;
     *grandine.yml* | *grandine-allin1.yml* | *grandine-cl-only.yml* )
       __var="GRANDINE_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
           __docompose build --pull --no-cache consensus
       fi
@@ -681,7 +683,7 @@ __source_build() {
   case "${__value}" in
     *vero-vc-only.yml* )
       __var="VERO_DOCKERFILE"
-      __build=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "__build"
       if [ "${__build}" = "Dockerfile.source" ]; then
         __docompose build --pull --no-cache validator
       fi
@@ -741,7 +743,7 @@ __ssv_switch() {
   echo "Backup copy blox-ssv-config.yaml.bak created"
   echo "Making changes to ssv-config/config.yaml"
   __var="NETWORK"
-  NETWORK=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "NETWORK"
   sed -i'.original' 's/blox-ssv2.yml/ssv.yml/' "${__env_file}".source
   if ! grep -q "LogFilePath:" ssv-config/config.yaml; then
 # macOS-isms: Newline for sed add
@@ -781,7 +783,7 @@ MetricsAPIPort: 15000
 __delete_reth() {
 # Check for Reth
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # I do mean to match literally
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "reth.yml" ]]; then
@@ -790,7 +792,7 @@ __delete_reth() {
 
 # Check Reth version, only continue if not on alpha
   __var="RETH_DOCKER_TAG"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # I do mean to match literally
 # shellcheck disable=SC2076
   if [[ "${__value}" =~ "alpha" ]]; then
@@ -839,7 +841,7 @@ __delete_reth() {
 __delete_erigon() {
 # Check for Erigon
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # I do mean to match literally
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "erigon.yml" ]]; then
@@ -848,9 +850,9 @@ __delete_erigon() {
 
 # Check Erigon version, only continue if v3
   __var="ERIGON_DOCKER_TAG"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   __var="ERIGON_DOCKER_REPO"
-  __repo=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__repo"
   if [[ "${__value}" =~ ^(v?2\.).* ]]; then
     return 0
   fi
@@ -888,7 +890,7 @@ __delete_erigon() {
 __upgrade_postgres() {
 # Check for web3signer
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # I do mean to match literally
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "web3signer.yml" ]]; then
@@ -989,10 +991,11 @@ __upgrade_postgres() {
 
 
 __lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
-  __compose_ymls=$(__get_value_from_env "COMPOSE_FILE" "${__env_file}.source")
-  __dns_token=$(__get_value_from_env "CF_DNS_API_TOKEN" "${__env_file}.source")
-  __zone_token=$(__get_value_from_env "CF_ZONE_API_TOKEN" "${__env_file}.source")
-  __domain=$(__get_value_from_env "DOMAIN" "${__env_file}.source")
+  __get_value_from_env "COMPOSE_FILE" "${__env_file}.source" "__compose_ymls"
+  __get_value_from_env "CF_DNS_API_TOKEN" "${__env_file}.source" "__dns_token"
+  __get_value_from_env "CF_ZONE_API_TOKEN" "${__env_file}.source" "__zone_token"
+  __get_value_from_env "DOMAIN" "${__env_file}.source" "__domain"
+# shellcheck disable=SC2154
   if [[ ! $__compose_ymls =~ traefik-cf.yml ]]; then
     __value=""
     return
@@ -1034,7 +1037,7 @@ __enable_v6() {
   fi
 
   __var="IPV6"
-  IPV6=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "IPV6"
   if [ "${IPV6}" = "true" ]; then
     return
   fi
@@ -1063,11 +1066,23 @@ __enable_v6() {
 
 
 __get_value_from_env() {
+  # Call with variable name to read, env file name, and global variable to assign the value to
+  # Also sets global __found
     local __var_name="$1"
     local __env_file="$2"
-    local __value
+    local __output_var="$3"
+    local __output
+    local __parsed_value
 
-    __value=$(awk -v var="$__var_name" '
+    if [[ "${__output_var}" == "__parsed_value" || "${__output_var}" == "__output_var" \
+        || "${__output_var}" == "__output" || "${__output_var}" == "__env_file" \
+        || "${__output_var}" == "__var_name" ]]; then
+      echo "❌ __get_value_from_env was called with a conflicting output variable: $__output_var" >&2
+      echo "This is a bug."  >&2
+      exit 1
+    fi
+
+    __output=$(awk -v var="$__var_name" '
         BEGIN { __found = 0; __value = "" }
 
         # Skip empty lines and comments
@@ -1116,14 +1131,22 @@ __get_value_from_env() {
         }
 
         END {
-            if (__found) {
-                # Print the value as is, including quotes for multi-line
-                print __value
-            }
+            # Print here-doc style so we can parse with awk
+            # Print the value as is, including quotes for multi-line
+            print "__value<<EOF"
+            print __value
+            print "EOF"
+            print "__found=" __found
         }
     ' "$__env_file")
 
-    printf "%s" "$__value"
+    # Parse __value using here-doc style
+    __parsed_value=$(awk '/^__value<<EOF$/ {getline; while ($0 != "EOF") { print; getline } }' <<< "$__output")
+    # Parse __found directly into a global variable
+    __found=$(awk -F= '/^__found=/ {print $2}' <<< "$__output")
+
+    # assign value to caller’s variable
+    printf -v "$__output_var" '%s' "$__parsed_value"
 }
 
 
@@ -1196,44 +1219,12 @@ __env_migrate() {
     return 0
   fi
 
-  __all_vars=( COMPOSE_FILE FEE_RECIPIENT EL_NODE EL_RPC_NODE GRAFFITI DEFAULT_GRAFFITI NETWORK MEV_BOOST MEV_RELAYS \
-    MEV_MIN_BID MEV_NODE CL_MAX_PEER_COUNT CL_MIN_PEER_COUNT EL_MAX_PEER_COUNT EL_MIN_PEER_COUNT DOMAIN ACME_EMAIL \
-    ANCIENT_DIR AUTOPRUNE_NM LOGS_LABEL CF_DNS_API_TOKEN CF_ZONE_API_TOKEN CF_ZONE_ID AWS_PROFILE AWS_HOSTED_ZONE_ID \
-    GRAFANA_HOST SIREN_HOST BESU_HEAP TEKU_HEAP PROM_HOST HOST_IP SHARE_IP PRYSM_HOST EE_HOST W3S_NODE \
-    EL_HOST EL_LB EL_WS_HOST EL_WS_LB CL_HOST CL_LB VC_HOST DDNS_SUBDOMAIN IPV6 DDNS_PROXY CHECKPOINT_SYNC_URL \
-    CL_NODE OBOL_CL_NODE BEACON_STATS_API BEACON_STATS_MACHINE EL_P2P_PORT CL_P2P_PORT WEB3SIGNER PRYSM_PORT \
-    DOPPELGANGER PRYSM_UDP_PORT CL_QUIC_PORT GRAFANA_PORT SIREN_PORT PROMETHEUS_PORT KEY_API_PORT TRAEFIK_WEB_PORT \
-    TRAEFIK_WEB_HTTP_PORT CL_REST_PORT EL_RPC_PORT EL_WS_PORT EE_PORT ERIGON_TORRENT_PORT LOG_LEVEL JWT_SECRET \
-    EL_EXTRAS CL_EXTRAS VC_EXTRAS EL_ARCHIVE_NODE SSV_P2P_PORT SSV_P2P_PORT_UDP OBOL_P2P_PORT EL_P2P_PORT_2 \
-    ERIGON_P2P_PORT_3 LODESTAR_HEAP SSV_DKG_PORT SIREN_PASSWORD OBOL_CHARON_CL_ENDPOINTS VC_ALIAS \
-    CL_IPV6_P2P_PORT CONTRIBUTOOR_USERNAME CONTRIBUTOOR_PASSWORD CL_MINIMAL_NODE EL_MINIMAL_NODE DOCKER_EXT_NETWORK \
-    CL_ARCHIVE_NODE OBOL_P2P_RELAYS VE_OPERATOR_ID VE_STAKING_MODULE_ID VE_LOCATOR_ADDRESS VE_ORACLE_ADDRESSES_ALLOWLIST \
-    ENABLE_DIST_ATTESTATION_AGGR LIDO_DV_EXIT_EXIT_EPOCH DOCKER_ROOT NODE_EXPORTER_IGNORE_MOUNT_REGEX \
-    W3S_ALIAS EL_ALIAS CL_ALIAS MEV_ALIAS PG_ALIAS )
-  __target_vars=( ETH_DOCKER_TAG NIM_SRC_BUILD_TARGET NIM_SRC_REPO NIM_DOCKER_TAG NIM_DOCKER_VC_TAG NIM_DOCKER_REPO \
-    NIM_DOCKER_VC_REPO NIM_DOCKERFILE TEKU_SRC_BUILD_TARGET TEKU_SRC_REPO TEKU_DOCKER_TAG TEKU_DOCKER_REPO \
-    TEKU_DOCKERFILE LH_SRC_BUILD_TARGET LH_SRC_REPO LH_DOCKER_TAG LH_DOCKER_REPO LH_DOCKERFILE SSV_NODE_REPO \
-    PRYSM_SRC_BUILD_TARGET PRYSM_SRC_REPO PRYSM_DOCKER_TAG PRYSM_DOCKER_VC_TAG PRYSM_DOCKER_CTL_TAG SSV_DKG_REPO \
-    PRYSM_DOCKER_REPO PRYSM_DOCKER_VC_REPO PRYSM_DOCKER_CTL_REPO PRYSM_DOCKERFILE ERIGON_SRC_BUILD_TARGET \
-    ERIGON_SRC_REPO ERIGON_DOCKER_TAG ERIGON_DOCKER_REPO ERIGON_DOCKERFILE MEV_SRC_BUILD_TARGET MEV_SRC_REPO \
-    MEV_DOCKERFILE MEV_DOCKER_TAG MEV_DOCKER_REPO NIMEL_SRC_BUILD_TARGET NIMEL_SRC_REPO NIMEL_DOCKER_TAG \
-    NIMEL_DOCKER_REPO NIMEL_DOCKERFILE LS_SRC_BUILD_TARGET LS_SRC_REPO LS_DOCKER_TAG LS_DOCKER_REPO LS_DOCKERFILE \
-    GETH_SRC_BUILD_TARGET GETH_SRC_REPO GETH_DOCKER_TAG GETH_DOCKER_REPO TRAEFIK_TAG DDNS_TAG CB_PBS_DOCKER_TAG \
-    GETH_DOCKERFILE NM_SRC_BUILD_TARGET NM_SRC_REPO NM_DOCKER_TAG NM_DOCKER_REPO NM_DOCKERFILE CB_PBS_DOCKER_REPO \
-    BESU_SRC_BUILD_TARGET BESU_SRC_REPO BESU_DOCKER_TAG BESU_DOCKER_REPO BESU_DOCKERFILE SSV_NODE_TAG CHARON_TAG \
-    DEPCLI_SRC_BUILD_TARGET DEPCLI_SRC_REPO DEPCLI_DOCKER_TAG DEPCLI_DOCKER_REPO W3S_DOCKER_TAG W3S_DOCKER_REPO \
-    PG_DOCKER_TAG RETH_SRC_BUILD_TARGET RETH_SRC_REPO RETH_DOCKER_TAG RETH_DOCKER_REPO RETH_DOCKERFILE \
-    GRANDINE_SRC_BUILD_TARGET GRANDINE_SRC_REPO GRANDINE_DOCKER_TAG GRANDINE_DOCKER_REPO GRANDINE_DOCKERFILE \
-    SIREN_DOCKER_TAG SIREN_DOCKER_REPO SSV_DKG_TAG DEPCLI_DOCKERFILE CONTRIBUTOOR_DOCKER_REPO CONTRIBUTOOR_DOCKER_TAG \
-    VERO_SRC_BUILD_TARGET VERO_SRC_REPO VERO_DOCKER_TAG VERO_DOCKER_REPO VERO_DOCKERFILE VALIDATOR_EJECTOR_TAG \
-    LIDO_DV_EXIT_TAG )
-
   __old_vars=( XATU_KEY ERIGON_P2P_PORT_2 OBOL_EL_NODE ARCHIVE_NODE RAPID_SYNC_URL MINIMAL_NODE \
     CHARON_VERSION VALIDATOR_EJECTOR_VERSION LIDO_DV_EXIT_VERSION )
   __new_vars=( CONTRIBUTOOR_USERNAME EL_P2P_PORT_2 EL_RPC_NODE EL_ARCHIVE_NODE CHECKPOINT_SYNC_URL CL_MINIMAL_NODE \
     CHARON_TAG VALIDATOR_EJECTOR_TAG LIDO_DV_EXIT_TAG )
 
-  if [ "${__debug}" -eq 1 ]; then  # Find any values in default.env that would not be migrated
+  if [ "${__debug}" -eq 1 ]; then  # Find any values in default.env that contain dashes
     __error=0
     while IFS= read -r __line; do
       # Skip blank lines and comments
@@ -1252,26 +1243,6 @@ __env_migrate() {
       else
         continue  # Doesn't match variable assignment format
       fi
-
-      # Only reach here if varname is valid (no dash)
-      __found=0
-      for __array in __all_vars __target_vars __old_vars; do
-        eval "__array_values=(\"\${${__array}[@]}\")"
-# Assigned by eval
-# shellcheck disable=SC2154
-        for __element in "${__array_values[@]}"; do
-          if [[ "${__element}" == "${__varname}" ]]; then
-            __found=1
-            break  # Break inner loop
-          fi
-        done
-        (( __found )) && break  # Break outer loop if match was found
-      done
-
-      if [ "${__found}" -eq 0 ]; then
-        echo "❌ Error: Variable '${__varname}' in default.env will not be preserved."
-        (( ++__error ))
-      fi
     done < "./default.env"
     if [ "${__error}" -gt 0 ]; then
       exit 1
@@ -1280,27 +1251,30 @@ __env_migrate() {
 
 # Always make sure we have a SIREN password
   __var="SIREN_PASSWORD"
-  SIREN_PASSWORD=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "SIREN_PASSWORD"
   if [ -z "${SIREN_PASSWORD}" ]; then
     SIREN_PASSWORD=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
   fi
 
   __var=ENV_VERSION
-  __target_ver=$(__get_value_from_env "${__var}" "default.env")
-  __source_ver=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "default.env" "__target_ver"
+  __get_value_from_env "${__var}" "${__env_file}" "__source_ver"
 # Aggressive prune to work around Docker grabbing old clients. Here so it doesn't get called during config
+# shellcheck disable=SC2154
   if [[ "${__source_ver}" -lt "9" ]]; then
     __dodocker system prune --force -a
   fi
 
+# shellcheck disable=SC2154
   if [[ "${__keep_targets}" -eq 1 && "${__target_ver}" -le "${__source_ver}" ]]; then # No changes in template, do nothing
     return 0
   fi
 
   if [ "${__keep_targets}" -eq 0 ]; then
     echo "Refreshing build targets in ${__env_file}"
-  else
+  fi
+  if [[ "${__target_ver}" -gt "${__source_ver}" ]]; then
     echo "Migrating ${__env_file} to version ${__target_ver}"
   fi
 
@@ -1310,7 +1284,7 @@ __env_migrate() {
   ${__as_owner} cp default.env "${__env_file}"
 
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}.source")
+  __get_value_from_env "${__var}" "${__env_file}.source" "__value"
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ "${__value}" =~ "blox-ssv2.yml" ]]; then
@@ -1318,11 +1292,21 @@ __env_migrate() {
   fi
 
   # Migrate over user settings
-  for __var in "${__all_vars[@]}"; do
-    __value=$(__get_value_from_env "${__var}" "${__env_file}.source")
-    if [ -n "${__value}" ] || [ "${__var}" = "GRAFFITI" ] || [ "${__var}" = "MEV_RELAYS" ] \
-        || [ "${__var}" = "ETH_DOCKER_TAG" ] || [ "${__var}" = "CHECKPOINT_SYNC_URL" ] \
-        || [ "${__var}" = "OBOL_CHARON_CL_ENDPOINTS" ]; then
+  while IFS= read -r __line; do  # read default.env and process all variables in it
+    # Skip blank lines and comments
+    [[ -z "${__line}" || "${__line}" =~ ^# ]] && continue
+
+    if [[ "${__line}" =~ ^([A-Za-z0-9_-]+)= ]]; then
+      __var="${BASH_REMATCH[1]}"
+    else
+      continue  # Doesn't match variable assignment format
+    fi
+    if [[ "${__var}" = "ENV_VERSION" ]]; then
+      continue
+    fi
+
+    __get_value_from_env "${__var}" "${__env_file}.source" "__value"
+    if [ "${__found}" -eq 1 ]; then  # Only if variable isn't new in default.env
       if [ "${__var}" = "COMPOSE_FILE" ]; then
         __migrate_compose_file
       fi
@@ -1333,19 +1317,19 @@ __env_migrate() {
         fi
       fi
       if [[ "${__source_ver}" -lt "18" && "${__var}" = "OBOL_CHARON_CL_ENDPOINTS" ]]; then
-        __obol_cl_node=$(__get_value_from_env "OBOL_CL_NODE" "${__env_file}.source")
+        __get_value_from_env "OBOL_CL_NODE" "${__env_file}.source" "_obol_cl_node"
         if [ -n "${__obol_cl_node}" ]; then
           __value="${__obol_cl_node}"
           echo "Set OBOL_CHARON_CL_ENDPOINTS to ${__value}"
         fi
       fi
       if [ "${__var}" = "CL_QUIC_PORT" ]; then
-        __cl_port=$(__get_value_from_env "CL_P2P_PORT" "${__env_file}.source")
+        __get_value_from_env "CL_P2P_PORT" "${__env_file}.source" "__cl_port"
         if [ -n "${__cl_port}" ] && [ "${__cl_port}" = "${__value}" ]; then
           __value=$((__value + 1))
           echo "Adjusted CL_QUIC_PORT to ${__value} so it does not conflict with CL_P2P_PORT"
         fi
-        __prysm_port=$(__get_value_from_env "PRYSM_UDP_PORT" "${__env_file}.source")
+        __get_value_from_env "PRYSM_UDP_PORT" "${__env_file}.source" "__prysm_port"
         if [ -n "${__prysm_port}" ] && [ "${__prysm_port}" = "${__value}" ]; then # just in case this is one ahead
           __value=$((__value + 1))
           echo "Adjusted CL_QUIC_PORT to ${__value} so it does not conflict with PRYSM_UDP_PORT"
@@ -1362,22 +1346,9 @@ __env_migrate() {
       if [[ "${__var}" = "SHARE_IP" && "${__value: -1}" = ":" ]]; then
         __value="${__value%:}" # Undo Compose V1 accommodation
       fi
-      # Handle & in GRAFFITI gracefully, as well as multi-line
-      __update_value_in_env "${__var}" "$__value" "${__env_file}"
-    else # empty __value
-      if [ "${__var}" = "CF_ZONE_ID" ]; then
-        __lookup_cf_zone
-        if [ -n "${__value}" ]; then
-          __update_value_in_env "${__var}" "$__value" "${__env_file}"
-        fi
-      fi
-    fi
-  done
-  if [ "${__keep_targets}" -eq 1 ]; then
-    # Migrate over build targets
-    for __var in "${__target_vars[@]}"; do
-      __value=$(__get_value_from_env "${__var}" "${__env_file}.source")
-      if [ -n "${__value}" ]; then
+      if [[ "${__keep_targets}" -eq 0 && "$__var" =~ (_TAG|_REPO|_TARGET|_DOCKERFILE)$ ]]; then
+        __get_value_from_env "${__var}" "default.env" "__value" # Reset build target to default.env value
+      else
         if [[ "${__var}" = "DDNS_TAG" && "${__source_ver}" -lt "8" ]]; then # Switch to ddns-updater
           __value="v2"
         fi
@@ -1399,15 +1370,24 @@ __env_migrate() {
         if [[ "${__var}" = "DEPCLI_DOCKER_TAG" && "${__value}" = "nonesuch" ]]; then
           __value="latest"
         fi
-        __update_value_in_env "${__var}" "$__value" "${__env_file}"
       fi
-    done
-  fi
+      # Handle & in GRAFFITI gracefully, as well as multi-line
+      __update_value_in_env "${__var}" "$__value" "${__env_file}"
+    else # empty __value
+      if [ "${__var}" = "CF_ZONE_ID" ]; then
+        __lookup_cf_zone
+        if [ -n "${__value}" ]; then
+          __update_value_in_env "${__var}" "$__value" "${__env_file}"
+        fi
+      fi
+    fi
+  done < "./default.env"
+
   # Move value from old variable name(s) to new one(s)
   for __index in "${!__old_vars[@]}"; do
     __var=${__old_vars[__index]}
-    __value=$(__get_value_from_env "${__var}" "${__env_file}.source")
-    if [ -n "${__value}" ]; then
+    __get_value_from_env "${__var}" "${__env_file}.source" "__value"
+    if [ "${__found}" -eq 1 ]; then
       if [[ "${__source_ver}" -lt "23" && "${__var}" = "XATU_KEY" ]]; then
         __xatu_decode="$(base64 -d <<< "${__value}")"
         __user="${__xatu_decode%%:*}"
@@ -1420,7 +1400,7 @@ __env_migrate() {
   done
   # Check whether we run a CL or VC, if so nag about FEE_RECIPIENT
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   # It's CL&VC, CL-only, or VC-only
 # I do mean to match literally
 # shellcheck disable=SC2076
@@ -1429,7 +1409,7 @@ __env_migrate() {
     || "${__value}" =~ "-allin1.yml" || "${__value}" =~ "-vc-only.yml" ]]; then
     # Check for rewards
     __var="FEE_RECIPIENT"
-    __value=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "__value"
     if [[ -z "${__value}" || ${__value} != 0x* || ${#__value} -ne 42 ]]; then
       if [ "${__non_interactive:-0}" -eq 0 ]; then
         whiptail --msgbox "A fee recipient ETH wallet address is required in order to start the client. This is \
@@ -1588,7 +1568,7 @@ update() {
     set +e
     ${__as_owner} git config pull.rebase false
     __var="ETH_DOCKER_TAG"
-    __value=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "__value"
     if [ -z "${__value}" ] || [ "${__value}" = "latest" ]; then
       export ETHDPINNED=""
       __branch=$(git rev-parse --abbrev-ref HEAD)
@@ -1762,7 +1742,7 @@ reset to defaults."
 resync-execution() {
 # Check for EL client
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 
   case "${__value}" in
     *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
@@ -1814,7 +1794,7 @@ resync-execution() {
 resync-consensus() {
   # Check for CL client
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 
   case "${__value}" in
     *lighthouse.yml* | *lighthouse-cl-only.yml* ) __cl_volume='lhconsensus-data'; __cl_client="lighthouse";;
@@ -1838,7 +1818,7 @@ resync-consensus() {
 
   # Can we checkpoint sync?
   __var="CHECKPOINT_SYNC_URL"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   echo "This will stop ${__cl_client} and delete its database to force a resync."
   if [ -z "${__value}" ]; then
     read -rp "WARNING - CHECKPOINT_SYNC_URL not set, resync may take days. Do you wish to continue? (No/yes) " __yn
@@ -1937,7 +1917,7 @@ prune-besu() {
 
   # Check for archive node
   __var="ARCHIVE_NODE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   if [[ "${__value}" = "true" ]]; then
     echo "Besu is an archive node: Aborting."
     exit 1
@@ -2030,7 +2010,7 @@ prune-reth() {
 
   # Check for archive node
   __var="ARCHIVE_NODE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   if [[ "${__value}" = "true" ]]; then
     echo "Reth is an archive node: Aborting."
     exit 1
@@ -2123,7 +2103,7 @@ prune-nethermind() {
 
   # Check for archive node
   __var="ARCHIVE_NODE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   if [[ "${__value}" = "true" ]]; then
     echo "Nethermind is an archive node: Aborting."
     exit 1
@@ -2132,7 +2112,7 @@ prune-nethermind() {
   __get_docker_free_space
 
   __var="NETWORK"
-  NETWORK=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "NETWORK"
 
   if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
     __min_free=262144000
@@ -2181,7 +2161,7 @@ prune-nethermind() {
   fi
 
   __var="AUTOPRUNE_NM"
-  __auto_prune=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__auto_prune"
 
   if [ $__non_interactive = 0 ]; then
     while true; do
@@ -2263,7 +2243,7 @@ prune-lighthouse() {
   fi
 
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "lighthouse.yml" && ! "${__value}" =~ "lighthouse-cl-only.yml" ]]; then
@@ -2273,7 +2253,7 @@ prune-lighthouse() {
 
   # Check for archive node
   __var="ARCHIVE_NODE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   if [[ "${__value}" = "true" ]]; then
     echo "Lighthouse is an archive node: Aborting."
     exit 1
@@ -2338,7 +2318,7 @@ __prep-keyimport() {
   fi
 
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "prysm.yml" ]] && [[ ! "${__value}" =~ "lighthouse.yml" ]] && [[ ! "${__value}" =~ "teku.yml" ]] \
@@ -2421,7 +2401,7 @@ __i_haz_ethdo() {
     exit 0
   fi
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "ethdo.yml" ]]; then
@@ -2453,13 +2433,14 @@ __i_haz_web3signer() {
   fi
 
   __var="WEB3SIGNER"
-  __w3s=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__w3s"
+# shellcheck disable=SC2154
   if [ ! "${__w3s}" = "true" ]; then
     return 0
   fi
 
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Literal match intended
 # shellcheck disable=SC2076
   if [[ ! "${__value}" =~ "web3signer.yml" ]]; then
@@ -2619,7 +2600,7 @@ keys() {
     __docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys import "${__args}"
   elif [ "${1:-}" = "create-prysm-wallet" ]; then
     __var="COMPOSE_FILE"
-    __value=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Literal match intended
 # shellcheck disable=SC2076
     if [[ ! "${__value}" =~ "prysm.yml" ]] && [[ ! "${__value}" =~ "prysm-vc-only.yml" ]]; then
@@ -2633,7 +2614,7 @@ keys() {
     fi
   elif [ "${1:-}" = "create-for-csm" ]; then
     __var="NETWORK"
-    NETWORK=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "NETWORK"
     __query_lido_keys_generation
   elif [ "${1:-}" = "prepare-address-change" ]; then
     __i_haz_ethdo
@@ -2780,7 +2761,7 @@ keys() {
   #elif [ "${1:-}" = "send-exit" ] && ! __i_haz_keys_service silent; then
   elif [ "${1:-}" = "send-exit" ]; then
     __var="CL_NODE"
-    CL_NODE=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "CL_NODE"
     CL_NODE="${CL_NODE%%,*}"
     __network_name="$(__docompose config | awk '
       BEGIN {
@@ -2824,7 +2805,7 @@ keys() {
     __docompose run --rm -e OWNER_UID="${__owner_uid}" validator-keys "$@"
   fi
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 }
 
 
@@ -2903,7 +2884,7 @@ terminate() {
 
 __query_network() {
   __var="NETWORK"
-  __prev_network=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__prev_network"
   NETWORK=$(whiptail --notags --title "Select Network" --menu \
   "Which network do you want to run on?" 14 65 6 \
   "hoodi" "Hoodi Testnet" \
@@ -2937,6 +2918,7 @@ screen.\n\nCustom testnets only work with a URL to fetch their configuration fro
       done
       ;;
   esac
+# shellcheck disable=SC2154
   if [ ! "${NETWORK}" = "${__prev_network}" ]; then
     __network_change=1
   else
@@ -3164,9 +3146,9 @@ __query_custom_execution_client() {
     JWT_SECRET=""
   else
     __var="EL_NODE"
-    EL_CUSTOM_NODE=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "EL_CUSTOM_NODE"
     __var="JWT_SECRET"
-    JWT_SECRET=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "JWT_SECRET"
   fi
   EL_CUSTOM_NODE=$(whiptail --title "Configure custom execution client" --inputbox "What is the URL for your custom \
 execution client? (right-click to paste)" 10 65 "${EL_CUSTOM_NODE}" 3>&1 1>&2 2>&3)
@@ -3286,7 +3268,7 @@ __query_remote_beacon() {
     fi
   else
     __var="CL_NODE"
-    REMOTE_BEACON=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "REMOTE_BEACON"
   fi
   REMOTE_BEACON=$(whiptail --title "Configure remote consensus client" --inputbox "What is the URL for your remote \
 consensus client? (right-click to paste)" 10 60 "${REMOTE_BEACON}" 3>&1 1>&2 2>&3)
@@ -3300,7 +3282,7 @@ __query_checkpoint_beacon() {
     CHECKPOINT_SYNC_URL=""
   else
     __var="CHECKPOINT_SYNC_URL"
-    CHECKPOINT_SYNC_URL=$(__get_value_from_env "${__var}" "${__env_file}")
+    __get_value_from_env "${__var}" "${__env_file}" "CHECKPOINT_SYNC_URL"
   fi
   if [ -z "${CHECKPOINT_SYNC_URL}" ]; then
     case "${NETWORK}" in
@@ -3334,9 +3316,9 @@ checkpoint sync provider? (right-click to paste)" 10 65 "${CHECKPOINT_SYNC_URL}"
 
 __query_graffiti() {
   __var="GRAFFITI"
-  GRAFFITI=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "GRAFFITI"
   __var="DEFAULT_GRAFFITI"
-  DEFAULT_GRAFFITI=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "DEFAULT_GRAFFITI"
 
   while true; do
     GRAFFITI=$(whiptail --title "Configure Graffiti" --inputbox "What optional Graffiti do you want to send with your blocks? \
@@ -3371,7 +3353,7 @@ __query_checkpoint_sync() {
 
 __query_coinbase() {
   __var="FEE_RECIPIENT"
-  FEE_RECIPIENT=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "FEE_RECIPIENT"
 
   while true; do
     set +e # Can't rely on the error handler here because of the special-casing below for update()
@@ -3447,7 +3429,7 @@ https://0x98650451ba02064f7b000f5768cf0cf4d4e492317d82871bdc87ef841a0743f69f0f1e
     return 0
   fi
   __var="MEV_BOOST"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   # I do mean to match literally
   # shellcheck disable=SC2076
   if [[ "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" && ! "${__deployment}" =~ "lido_obol" ]]; then
@@ -3544,7 +3526,7 @@ want to use MEV Boost?" 10 65); then
     MEV_BOOST="true"
     if [ "${__value}" = "true" ]; then
       __var="MEV_RELAYS"
-      MEV_RELAYS=$(__get_value_from_env "${__var}" "${__env_file}")
+      __get_value_from_env "${__var}" "${__env_file}" "MEV_RELAYS"
     else
       case "${NETWORK}" in
         "sepolia")
@@ -3800,7 +3782,7 @@ __handle_error() {
 
 __check_legacy() {
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
 
 # Literal match intended
 # shellcheck disable=SC2076
@@ -4138,7 +4120,7 @@ config() {
     __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
   fi
   __var="SIREN_PASSWORD"
-  SIREN_PASSWORD=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "SIREN_PASSWORD"
   if [ -z "${SIREN_PASSWORD}" ]; then
     SIREN_PASSWORD=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
     __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
@@ -4160,7 +4142,7 @@ version() {
   grep "^This is" README.md
   echo
   __var="COMPOSE_FILE"
-  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
   # Client versions
   case "${__value}" in
     *lido-obol.yml* )
