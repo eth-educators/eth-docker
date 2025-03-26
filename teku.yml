@@ -108,6 +108,7 @@ services:
       - WEB3SIGNER=${WEB3SIGNER:-false}
       - W3S_NODE=${W3S_NODE}
       - NETWORK=${NETWORK}
+      - VC_ALIAS=${VC_ALIAS}
       - ENABLE_DIST_ATTESTATION_AGGR=${ENABLE_DIST_ATTESTATION_AGGR:-false}
     networks:
       default:
