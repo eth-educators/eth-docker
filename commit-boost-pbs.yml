@@ -17,7 +17,7 @@ services:
     networks:
       default:
         aliases:
-          - ${NETWORK}-cb-pbs # This allows multiple Eth Docker stacks all connected to the same central traefik
+          - ${MEV_ALIAS:-${NETWORK}-mev} # This allows multiple Eth Docker stacks all connected to the same bridge network
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
