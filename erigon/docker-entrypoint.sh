@@ -76,8 +76,8 @@ if [[ "${DOCKER_TAG}" =~ ^(v?2\.).* ]]; then
     elif [[ "${NETWORK}" = "gnosis" ]]; then
       echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
       __prune="--prune=htc --prune.r.before=19469077"
-    elif [[ "${NETWORK}" = "holesky" ]]; then
-      echo "holesky: Running without prune.r for eth deposit contract"
+    elif [[ "${NETWORK}" = "hoodi" ]]; then
+      echo "hoodi: Running without prune.r for eth deposit contract"
       __prune="--prune=htc"
     elif [[ "${NETWORK}" =~ ^https?:// ]]; then
       echo "Custom testnet: Running without prune.r for eth deposit contract"
