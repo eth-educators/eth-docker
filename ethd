@@ -4093,6 +4093,18 @@ config() {
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=NETWORK
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
+  if [[ ${NETWORK} =~ ^https?:// ]]; then  # The aliases need to not use ${NETWORK}
+    __var=W3S_ALIAS
+    __update_value_in_env "${__var}" "custom-web3signer" "${__env_file}"
+    __var=PG_ALIAS
+    __update_value_in_env "${__var}" "custom-postgres" "${__env_file}"
+    __var=CL_ALIAS
+    __update_value_in_env "${__var}" "custom-consensus" "${__env_file}"
+    __var=EL_ALIAS
+    __update_value_in_env "${__var}" "custom-execution" "${__env_file}"
+    __var=MEV_ALIAS
+    __update_value_in_env "${__var}" "custom-mev" "${__env_file}"
+  fi
   __var=MEV_BOOST
   __update_value_in_env "${__var}" "${!__var-}" "${__env_file}"
   __var=MEV_RELAYS
