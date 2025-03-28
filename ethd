@@ -3072,11 +3072,13 @@ __query_validator_client() {
 __query_consensus_client() {
   if [ "${NETWORK}" = "gnosis" ]; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 4 \
+    "Which consensus client do you want to run?" 13 65 5 \
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "lodestar.yml" "Lodestar (TypeScript) - consensus and validator client" \
-    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
+    "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
+    "caplin" "Caplin (Go) - Erigon's built-in CL" \
+    3>&1 1>&2 2>&3)
   elif [ "${NETWORK}" = "ephemery" ]; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 9 65 1 \
@@ -3084,13 +3086,14 @@ __query_consensus_client() {
     3>&1 1>&2 2>&3)
   elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 14 65 6 \
+    "Which consensus client do you want to run?" 15 65 7 \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lodestar.yml" "Lodestar (TypeScript) - consensus and validator client" \
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "prysm.yml" "Prysm (Go) - consensus and validator client" \
+    "caplin" "Caplin (Go) - Erigon's built-in CL" \
      3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
@@ -3098,13 +3101,14 @@ __query_consensus_client() {
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 14 65 6 \
+    "Which consensus client do you want to run?" 15 65 7 \
     "teku.yml" "Teku (Java) - consensus and validator client" \
     "grandine-allin1.yml" "Grandine (Rust) - consensus with built-in validator client" \
     "lodestar.yml" "Lodestar (TypeScript) - consensus and validator client" \
     "nimbus.yml" "Nimbus (Nim) - consensus and validator client" \
     "lighthouse.yml" "Lighthouse (Rust) - consensus and validator client" \
     "prysm.yml" "Prysm (Go) - consensus and validator client" \
+    "caplin" "Caplin (Go) - Erigon's built-in CL" \
     3>&1 1>&2 2>&3)
   fi
 
@@ -3119,11 +3123,13 @@ __query_consensus_client() {
 __query_consensus_only_client() {
   if [ "${NETWORK}" = "gnosis" ]; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 4 \
+    "Which consensus client do you want to run?" 13 65 5 \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "teku-cl-only.yml" "Teku (Java) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (TypeScript) - consensus client" \
-    "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" 3>&1 1>&2 2>&3)
+    "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
+    "caplin" "Caplin (Go) - Erigon's built-in CL" \
+    3>&1 1>&2 2>&3)
   elif [ "${NETWORK}" = "ephemery" ]; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
     "Which consensus client do you want to run?" 9 65 1 \
@@ -3131,13 +3137,14 @@ __query_consensus_only_client() {
     3>&1 1>&2 2>&3)
   elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 12 65 4 \
+    "Which consensus client do you want to run?" 13 65 7 \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
     "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (TypeScript) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "teku-cl-only.yml" "Teku (Java) - consensus client" \
     "prysm-cl-only.yml" "Prysm (Go) - consensus client" \
+    "caplin" "Caplin (Go) - Erigon's built-in CL" \
     3>&1 1>&2 2>&3)
   elif uname -m | grep -q riscv64; then
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
@@ -3145,13 +3152,15 @@ __query_consensus_only_client() {
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" 3>&1 1>&2 2>&3)
   else
     CONSENSUS_CLIENT=$(whiptail --notags --title "Select consensus client" --menu \
-    "Which consensus client do you want to run?" 14 65 6 \
+    "Which consensus client do you want to run?" 14 65 7 \
     "teku-cl-only.yml" "Teku (Java) - consensus client" \
     "grandine-cl-only.yml" "Grandine (Rust) - consensus client" \
     "lighthouse-cl-only.yml" "Lighthouse (Rust) - consensus client" \
     "nimbus-cl-only.yml" "Nimbus (Nim) - consensus client" \
     "lodestar-cl-only.yml" "Lodestar (TypeScript) - consensus client" \
-    "prysm-cl-only.yml" "Prysm (Go) - consensus client" 3>&1 1>&2 2>&3)
+    "prysm-cl-only.yml" "Prysm (Go) - consensus client" \
+    "caplin" "Caplin (Go) - Erigon's built-in CL" \
+    3>&1 1>&2 2>&3)
   fi
 
   echo "Your consensus client file is:" "${CONSENSUS_CLIENT}"
@@ -3193,6 +3202,16 @@ again or Cancel on the next screen." 10 65
 
 
 __query_execution_client() {
+  if [ "${CONSENSUS_CLIENT}" = "caplin" ]; then
+    EXECUTION_CLIENT="erigon.yml"
+    echo "Your execution client file is:" "${EXECUTION_CLIENT}"
+# This gets used, but shellcheck doesn't recognize that
+# shellcheck disable=SC2034
+    EL_NODE="http://execution:8551"
+    echo "Please remember to set your EL_WS_PORT to match EL_RPC_PORT for Erigon"
+    return 0
+  fi
+
   if [ "${NETWORK}" = "gnosis" ]; then
     if uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
       EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
@@ -3888,10 +3907,18 @@ config() {
   MEV_BOOST=false
 # I do mean to match literally
 # shellcheck disable=SC2076
-  if [[ ! "${CONSENSUS_CLIENT}" =~ "-vc-only.yml" || "${__deployment}" = "lido_obol" ]]; then
-    CL_NODE="http://consensus:5052"
+  if [[ ! "${__deployment}" =~ ^(validator|rocket)$  ]]; then
+    if [ "${CONSENSUS_CLIENT}" = "caplin" ]; then
+      CL_NODE=http://execution:5052
+      __query_execution_client
+      if [[ ! "${__deployment}" =~ ^(ssv|lido_ssv|rpc)$  ]]; then
+        __query_validator_client  # This sets CONSENSUS_CLIENT
+      fi
+    else
+      CL_NODE="http://consensus:5052"
+      __query_execution_client
+    fi
 
-    __query_execution_client
     if [[ "${EXECUTION_CLIENT}" = "erigon.yml" ]]; then
       if [[ "${__deployment}" = "rpc" ]]; then
         __query_4444 --defaultno
@@ -4037,9 +4064,13 @@ config() {
     rm -f ./prometheus/custom-prom.yml.original
   fi
 
-  COMPOSE_FILE="${CONSENSUS_CLIENT}"
-  if [ -n "${EXECUTION_CLIENT+x}" ]; then
-    COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+  if [ "${CONSENSUS_CLIENT}" = "caplin" ]; then
+    COMPOSE_FILE="${EXECUTION_CLIENT}"
+  else
+    COMPOSE_FILE="${CONSENSUS_CLIENT}"
+    if [ -n "${EXECUTION_CLIENT+x}" ]; then
+      COMPOSE_FILE="${COMPOSE_FILE}:${EXECUTION_CLIENT}"
+    fi
   fi
   if [[ "${__deployment}" = "ssv" || "${__deployment}" = "lido_ssv" ]]; then
     COMPOSE_FILE="${COMPOSE_FILE}:ssv.yml"
