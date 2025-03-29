@@ -3854,7 +3854,7 @@ config() {
         sed -i'.original' 's/  Network: .*/  Network: mainnet/' ssv-config/config.yaml
       else
         echo "${NETWORK} is not something that works with SSV."
-        echo "Please choose Holešovice or Mainnet when running $__me config again"
+        echo "Please choose Hoodi or Mainnet when running $__me config again"
         echo "Aborting."
         exit 1
       fi
