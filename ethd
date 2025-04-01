@@ -1091,7 +1091,7 @@ __get_value_from_env() {
         }
 
         # Match single-line unquoted value
-        $0 ~ "^[ \t]*"var"=[^\"].*$" {
+        $0 ~ "^"var"=[^\"].*$" {
             gsub("^[ \t]*"var"=", "")
             gsub(/^[ \t]*|[ \t]*$/, "", $0)
             __value = $0
@@ -1099,8 +1099,15 @@ __get_value_from_env() {
             exit
         }
 
+        # Match empty unquoted value
+        $0 ~ "^"var"=$" {
+            __value = ""
+            __found = 1
+            exit
+        }
+
         # Match a quoted single-line value
-        $0 ~ "^[ \t]*"var"=\"[^\"]*\"[ \t]*$" {
+        $0 ~ "^"var"=\"[^\"]*\"[ \t]*$" {
             gsub("^[ \t]*"var"=\"", "")
             gsub(/"[ \t]*$/, "", $0)
             __value = "\"" $0 "\""
@@ -1109,7 +1116,7 @@ __get_value_from_env() {
         }
 
         # Match the start of a multi-line value (with opening quote)
-        $0 ~ "^[ \t]*"var"=\"[^\"]*$" {
+        $0 ~ "^"var"=\"[^\"]*$" {
             gsub("^[ \t]*"var"=\"", "")
             __value = "\"" $0 "\n"
             __found = 1
@@ -1346,6 +1353,12 @@ __env_migrate() {
       if [[ "${__var}" = "SHARE_IP" && "${__value: -1}" = ":" ]]; then
         __value="${__value%:}" # Undo Compose V1 accommodation
       fi
+      if [ "${__var}" = "CF_ZONE_ID" ]; then
+        __lookup_cf_zone
+        if [ -n "${__value}" ]; then
+          __update_value_in_env "${__var}" "$__value" "${__env_file}"
+        fi
+      fi
       if [[ "${__keep_targets}" -eq 0 && "$__var" =~ (_TAG|_REPO|_TARGET|_DOCKERFILE)$ ]]; then
         __get_value_from_env "${__var}" "default.env" "__value" # Reset build target to default.env value
       else
@@ -1373,13 +1386,6 @@ __env_migrate() {
       fi
       # Handle & in GRAFFITI gracefully, as well as multi-line
       __update_value_in_env "${__var}" "$__value" "${__env_file}"
-    else # empty __value
-      if [ "${__var}" = "CF_ZONE_ID" ]; then
-        __lookup_cf_zone
-        if [ -n "${__value}" ]; then
-          __update_value_in_env "${__var}" "$__value" "${__env_file}"
-        fi
-      fi
     fi
   done < "./default.env"
 
