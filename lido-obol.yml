@@ -26,6 +26,7 @@ services:
       - CHARON_FEATURE_SET_ENABLE=eager_double_linear,consensus_participate
       - CHARON_LOKI_ADDRESSES=${CHARON_LOKI_ADDRESSES:-http://loki:3100/loki/api/v1/push}
       - CHARON_LOKI_SERVICE=charon
+      - CHARON_NICKNAME=${OBOL_CHARON_NICKNAME:-}
     ports:
       - ${OBOL_P2P_PORT:-3610}:${OBOL_P2P_PORT:-3610}/tcp # P2P TCP libp2p
     healthcheck:
