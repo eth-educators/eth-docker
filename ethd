@@ -1091,7 +1091,7 @@ __get_value_from_env() {
         }
 
         # Match single-line unquoted value
-        $0 ~ "^"var"=[^\"].*$" {
+        $0 ~ "^[ \t]*"var"=[^\"].*$" {
             gsub("^[ \t]*"var"=", "")
             gsub(/^[ \t]*|[ \t]*$/, "", $0)
             __value = $0
@@ -1100,14 +1100,14 @@ __get_value_from_env() {
         }
 
         # Match empty unquoted value
-        $0 ~ "^"var"=$" {
+        $0 ~ "^[ \t]*"var"=$" {
             __value = ""
             __found = 1
             exit
         }
 
         # Match a quoted single-line value
-        $0 ~ "^"var"=\"[^\"]*\"[ \t]*$" {
+        $0 ~ "^[ \t]*"var"=\"[^\"]*\"[ \t]*$" {
             gsub("^[ \t]*"var"=\"", "")
             gsub(/"[ \t]*$/, "", $0)
             __value = "\"" $0 "\""
@@ -1116,7 +1116,7 @@ __get_value_from_env() {
         }
 
         # Match the start of a multi-line value (with opening quote)
-        $0 ~ "^"var"=\"[^\"]*$" {
+        $0 ~ "^[ \t]*"var"=\"[^\"]*$" {
             gsub("^[ \t]*"var"=\"", "")
             __value = "\"" $0 "\n"
             __found = 1
