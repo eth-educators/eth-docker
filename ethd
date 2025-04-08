@@ -4260,6 +4260,10 @@ version() {
       __docompose exec validator grandine --version
       echo
       ;;&
+    *vero-vc-only* )
+      __docompose exec validator python main.py --version
+      echo
+      ;;&
     *geth.yml* )
       __docompose exec execution geth version
       echo
