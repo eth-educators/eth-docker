@@ -2221,6 +2221,99 @@ execution | grep Full\" to see whether it is."
 }
 
 
+prune-geth-history() {
+  __non_interactive=0
+  while :
+  do
+    if [ -z "${1+x}" ]; then
+      break
+    fi
+    case "$1" in
+      --non-interactive)
+        __non_interactive=1
+        shift
+        ;;
+      *)
+        echo "Error: Unknown option: $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
+
+  if [ ! -f "${__env_file}" ]; then
+    echo "${__env_file} configuration file not found, aborting."
+    exit 1
+  fi
+
+  if ! grep -q '^COMPOSE_FILE=.*geth\.yml' "${__env_file}" 2>/dev/null ; then
+    echo "You do not appear to be using Geth, aborting."
+    exit 1
+  fi
+
+  # Check for archive node
+  __var="ARCHIVE_NODE"
+  __value=$(__get_value_from_env "${__var}" "${__env_file}")
+  if [[ "${__value}" = "true" ]]; then
+    echo "Geth is an archive node: Aborting."
+    exit 1
+  fi
+
+  __rpc_line=$(grep '^EL_RPC_PORT=' "${__env_file}")
+  __regex='^EL_RPC_PORT=([0-9]+)'
+  if [[ ! "${__rpc_line}" =~ ${__regex} ]]; then
+    echo "Unable to determine EL_RPC_PORT, aborting."
+    exit 1
+  else
+    __rpc_port="${BASH_REMATCH[1]}"
+  fi
+
+  set +e
+  __sync_status=$(__docompose exec -T execution wget -qO- "http://localhost:$__rpc_port" \
+  --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+  __exitstatus=$?
+  set -e
+  if [ $__exitstatus -ne 0 ]; then
+    echo "Unable to connect to Geth: Is it running?"
+    echo "Output: ${__sync_status}"
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [[ ! "${__sync_status}" =~ "false" ]]; then
+    echo "Geth is not done syncing yet. Sync status:"
+    echo "${__sync_status}"
+    echo
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [ $__non_interactive = 0 ]; then
+    while true; do
+      read -rp "WARNING - this will stop Geth and remove pre-merge history. Do you wish to continue? (No/Yes) " __yn
+      case $__yn in
+        [Yy][Ee][Ss] ) break;;
+        * ) echo "Aborting, no changes made"; exit 130;;
+      esac
+    done
+  fi
+
+  echo
+  echo "Starting Geth pre-merge history prune"
+  echo
+  __docompose run --rm set-prune-marker "touch /var/lib/geth/prune-marker"
+  __docompose stop execution && __docompose rm -f execution
+  start
+  echo
+  echo "Pre-merge history prune is running, you can observe it with '$__me logs -f execution'"
+  echo
+  echo "When prune is done, Geth will automatically start again."
+  echo
+}
+
+
 prune-lighthouse() {
   __non_interactive=0
   while :
@@ -4371,6 +4464,8 @@ __full_help() {
   echo "    stops the Besu execution client and prunes trie-logs."
   echo "  prune-reth [--non-interactive]"
   echo "    stops the Reth execution client and prunes its DB."
+  echo "  prune-geth-history [--non-interactive]"
+  echo "    stops the Geth execution client and prunes pre-merge history."
   echo "  prune-lighthouse [--non-interactive]"
   echo "    stops the Lighthouse consensus client and prunes state."
   echo "  resync-execution"
@@ -4420,7 +4515,7 @@ fi
 
 trap '__handle_error $? $LINENO' ERR
 
-if [[ "$#" -eq 0 || "$*" =~ "-h" ]]; then # Lazy match for -h and --help but also --histogram, so careful here
+if [[ "$#" -eq 0 || ("$*" =~ "-h" && ! "$*" =~ "-history") ]]; then  # Lazy match for -h needs some care
   help "$@"
   exit 0
 fi
@@ -4493,7 +4588,8 @@ fi
 
 case "$__command" in
   help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-nethermind\
-      |prune-besu|prune-reth|prune-lighthouse|resync-execution|resync-consensus|attach-geth|keyimport|space)
+      |prune-besu|prune-reth|prune-geth-history|prune-lighthouse|resync-execution|resync-consensus|attach-geth\
+      |keyimport|space)
     $__command "$@";;
   *)
     echo "Unrecognized command $__command"
