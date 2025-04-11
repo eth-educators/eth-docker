@@ -357,6 +357,7 @@ continue? (no/yes) " __yn
       ${__auto_sudo} apt-get update
       ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
         docker-buildx-plugin
+      ${__auto_sudo} systemctl start systemd-logind
       echo "Installed docker-ce and docker-compose-plugin"
     else
       echo "Docker is already installed"
@@ -396,6 +397,7 @@ continue? (no/yes) " __yn
       ${__auto_sudo} apt-get update
       ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
         docker-buildx-plugin
+      ${__auto_sudo} systemctl start systemd-logind
       echo "Installed docker-ce and docker-compose-plugin"
     else
       echo "Docker is already installed"
