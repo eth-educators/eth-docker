@@ -332,7 +332,7 @@ install() {
   fi
   if [[ "$__distro" = "ubuntu" ]]; then
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen
+    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu
     echo
     echo
     if [ -z "$(command -v docker)" ]; then
@@ -372,7 +372,7 @@ continue? (no/yes) " __yn
     fi
   elif [[ "$__distro" =~ "debian" ]]; then
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config screen
+    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu
     echo
     echo
     if [ -z "$(command -v docker)" ]; then
@@ -488,7 +488,18 @@ __display_docker_volumes() {
     echo "\"${__me} resync-consensus\"."
     echo
   fi
-  echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+  if command -v ncdu >/dev/null 2>&1; then
+    echo "If there is some mystery space being taken up, try \"sudo ncdu /\"."
+  else
+    echo "If there is some mystery space being taken up, install ncdu, then try \"sudo ncdu /\"."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      echo "To install ncdu, run \"brew install ncdu\"."
+    elif [[ "$__distro" = "ubuntu" || "$__distro" =~ "debian" ]]; then
+      echo "To install ncdu, run \"sudo apt update && sudo apt install ncdu\"."
+    else
+      echo "How to install ncdu will be specific to your distribution ${__distro}."
+    fi
+  fi
   echo
 }
 
