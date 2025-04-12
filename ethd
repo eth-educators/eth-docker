@@ -26,7 +26,7 @@ __determine_distro() {
 # Determine OS platform
   __uname=$(uname | tr "[:upper:]" "[:lower:]")
 # If Linux, try to determine specific distribution
-  if [ "$__uname" == "linux" ]; then
+  if [ "$__uname" = "linux" ]; then
 # If available, use LSB to identify distribution
     if [ -n "$(command -v lsb_release 2>/dev/null)" ]; then
       __distro=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
@@ -39,7 +39,7 @@ __determine_distro() {
     __distro=""
   fi
 # For everything else (or if above failed), just use generic identifier
-  [ "$__distro" == "" ] && __distro=$__uname
+  [ "$__distro" = "" ] && __distro=$__uname
   unset __uname
   __distro=$(echo "$__distro" | tr "[:upper:]" "[:lower:]")
 
@@ -313,7 +313,7 @@ __check_for_snap() {
 
 
 __install_bash_completions() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
+  if [[ "$OSTYPE" = "darwin"* ]]; then
     echo "Skipping installation of tab completions (not supported on macOS)"
   else
     if [ ! -f "$(pkg-config --variable=completionsdir bash-completion)/ethd" ]; then
@@ -444,7 +444,7 @@ continue? (no/yes) " __yn
 
 
 __get_docker_free_space() { # set __free_space to what's available to Docker
-  if [[ "$OSTYPE" == "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
+  if [[ "$OSTYPE" = "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
     __free_space=$(__dodocker run --rm -v macos-space-check:/dummy busybox df -P /dummy | awk '/[0-9]%/{print $(NF-2)}')
   else
     __docker_dir=$(__dodocker system info --format '{{.DockerRootDir}}')
@@ -454,7 +454,7 @@ __get_docker_free_space() { # set __free_space to what's available to Docker
   __regex='^[0-9]+$'
   if ! [[ "${__free_space}" =~ ${__regex} ]] ; then
     echo "Unable to determine free disk space. This is likely to be a bug."
-    if [[ "$OSTYPE" == "darwin"* ]]; then
+    if [[ "$OSTYPE" = "darwin"* ]]; then
       echo "df reports $(__dodocker run --rm -v macos-space-check:/dummy busybox df -P /dummy) and __free_space is ${__free_space}"
     else
       echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
@@ -465,7 +465,7 @@ __get_docker_free_space() { # set __free_space to what's available to Docker
 
 
 __display_docker_dir() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
+  if [[ "$OSTYPE" = "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
     echo "Here's total and used space on Docker's virtual volume"
     __dodocker run --rm -v macos-space-check:/dummy busybox df -h /dummy
   else
@@ -507,7 +507,7 @@ __display_docker_volumes() {
 space() {
   __get_docker_free_space
   echo
-  if [[ "$OSTYPE" == "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
+  if [[ "$OSTYPE" = "darwin"* ]]; then # macOS doesn't expose docker root dir to the OS
     echo "You have $(( __free_space / 1024 / 1024 )) GiB free for Docker volumes"
   else
     echo "You have $(( __free_space / 1024 / 1024 )) GiB free on ${__docker_dir}"
@@ -1087,9 +1087,9 @@ __get_value_from_env() {
     local __output
     local __parsed_value
 
-    if [[ "${__output_var}" == "__parsed_value" || "${__output_var}" == "__output_var" \
-        || "${__output_var}" == "__output" || "${__output_var}" == "__env_file" \
-        || "${__output_var}" == "__var_name" ]]; then
+    if [[ "${__output_var}" = "__parsed_value" || "${__output_var}" = "__output_var" \
+        || "${__output_var}" = "__output" || "${__output_var}" = "__env_file" \
+        || "${__output_var}" = "__var_name" ]]; then
       echo "❌ __get_value_from_env was called with a conflicting output variable: $__output_var" >&2
       echo "This is a bug."  >&2
       exit 1
@@ -2604,7 +2604,7 @@ __get_github_release() {
 
 
 keys() {
-  if [[ "$#" -eq 0 || "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
+  if [[ "$#" -eq 0 || "$1" = "help" || "$1" = "-h" || "$1" = "--help" ]]; then
     __keys_usage
     return 0
   fi
@@ -2707,7 +2707,7 @@ keys() {
           echo
           read -srp "Please re-enter the password: " __password2
           echo
-          if [ "${__password}" == "${__password2}" ]; then
+          if [ "${__password}" = "${__password2}" ]; then
             break
           else
             echo "The two entered passwords do not match, please try again."
@@ -2728,7 +2728,7 @@ keys() {
           echo
           read -srp "Please re-enter the password: " __password2
           echo
-          if [ "${__password}" == "${__password2}" ]; then
+          if [ "${__password}" = "${__password2}" ]; then
             break
           else
             echo "The two entered passwords do not match, please try again."
@@ -3257,7 +3257,7 @@ __query_execution_client() {
     "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
   fi
 
-  if [ "${EXECUTION_CLIENT}" == "NONE" ]; then
+  if [ "${EXECUTION_CLIENT}" = "NONE" ]; then
     unset EXECUTION_CLIENT
     __query_custom_execution_client
     EL_NODE="${EL_CUSTOM_NODE}"
@@ -3285,7 +3285,7 @@ __query_4444() {  # Call with with --defaultno for RPC
 
 __query_grafana() {
   if (whiptail --title "Grafana" --yesno "Do you want to use Grafana dashboards?" 10 65) then
-      if [[ "$OSTYPE" == "darwin"* ]]; then
+      if [[ "$OSTYPE" = "darwin"* ]]; then
       # macOS doesn't do well with / bind mount - leave node-exporter, cadvisor and loki/promtail off by default
         GRAFANA_CLIENT="grafana-rootless.yml:grafana-shared.yml"
       else
@@ -3420,7 +3420,7 @@ address? Yes even on an RPC node. Can be any address at all. (right-click to pas
     __exitstatus=$?
     set -e
     if [ $__exitstatus -eq 0 ]; then
-      if [[ ${FEE_RECIPIENT} == 0x* && ${#FEE_RECIPIENT} -eq 42 ]]; then
+      if [[ ${FEE_RECIPIENT} = 0x* && ${#FEE_RECIPIENT} -eq 42 ]]; then
         echo "Your rewards address is: ${FEE_RECIPIENT}"
         break
       else
@@ -4444,7 +4444,7 @@ cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 OWNER=$(ls -ld . | awk '{print $3}')
 OWNER_GROUP=$(id -gn "${OWNER}")
 
-if [ "${OWNER}" == "root" ]; then
+if [ "${OWNER}" = "root" ]; then
   echo "Please install ${__project_name} as a non-root user."
   exit 0
 fi
