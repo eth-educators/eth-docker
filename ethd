@@ -2414,6 +2414,32 @@ __prep-keyimport() {
 }
 
 
+__i_haz_deposit_cli() {
+  if [ ! -f "${__env_file}" ]; then
+    echo "${__project_name} has not been configured. Please run $__me config first."
+    exit 0
+  fi
+  __var="COMPOSE_FILE"
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
+# Literal match intended
+# shellcheck disable=SC2076
+  if [[ ! "${__value}" =~ "deposit-cli.yml" ]]; then
+    echo "Please edit the ${__env_file} file and make sure \":deposit-cli.yml\" is added to the \"COMPOSE_FILE\" line"
+    echo "For example, \"nano ${__env_file}\" will open the nano text editor with the \"${__env_file}\" file loaded."
+    echo "Without it, this step cannot be run"
+    echo
+    __var="NETWORK"
+    __get_value_from_env "${__var}" "${__env_file}" "__value"
+    if [[ "${__value}" = "mainnet" ]]; then
+      echo "WARNING: On Ethereum mainnet, best practice is to run key generation on an air-gapped live USB,"
+      echo "such as Ubuntu Live or Tails."
+      echo
+    fi
+    exit 1
+  fi
+}
+
+
 __i_haz_ethdo() {
   if [ ! -f "${__env_file}" ]; then
     echo "${__project_name} has not been configured. Please run $__me config first."
@@ -2632,6 +2658,7 @@ keys() {
       up
     fi
   elif [ "${1:-}" = "create-for-csm" ]; then
+    __i_haz_deposit_cli
     __var="NETWORK"
     __get_value_from_env "${__var}" "${__env_file}" "NETWORK"
     __query_lido_keys_generation
