@@ -57,13 +57,6 @@ else
   __prune=""
 fi
 
-__memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
-if [ "${__memtotal}" -ge 60 ]; then
-  __spec="--Xplugin-rocksdb-high-spec-enabled=true"
-else
-  __spec=""
-fi
-
 # New or old datadir
 if [ -d /var/lib/besu-og/database ]; then
   __datadir="--data-path /var/lib/besu-og"
@@ -91,5 +84,5 @@ if [ -f /var/lib/besu/prune-marker ]; then
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__datadir} ${__network} ${__ipv6} ${__prune} ${__spec} ${EL_EXTRAS}
+  exec "$@" ${__datadir} ${__network} ${__ipv6} ${__prune} ${EL_EXTRAS}
 fi
