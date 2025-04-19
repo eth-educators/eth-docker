@@ -1090,9 +1090,9 @@ __get_value_from_env() {
     if [[ "${__output_var}" = "__parsed_value" || "${__output_var}" = "__output_var" \
         || "${__output_var}" = "__output" || "${__output_var}" = "__env_file" \
         || "${__output_var}" = "__var_name" ]]; then
-      echo "❌ __get_value_from_env was called with a conflicting output variable: $__output_var" >&2
-      echo "This is a bug."  >&2
-      exit 1
+      echo "__get_value_from_env was called with a conflicting output variable: $__output_var"
+      echo "This is a bug."
+      exit 70
     fi
 
     __output=$(awk -v var="$__var_name" '
