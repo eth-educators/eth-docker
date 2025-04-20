@@ -3439,8 +3439,9 @@ __query_coinbase() {
 transaction rewards to be sent to by default? (right-click to paste, CANNOT be an ENS)" 10 65 "${FEE_RECIPIENT}" \
 3>&1 1>&2 2>&3)
     else
-      FEE_RECIPIENT=$(whiptail --title "Configure fee recipient" --inputbox "What is the fallback fee recipient \
-address? Yes even on an RPC node. Can be any address at all. (right-click to paste, CANNOT be an ENS)" 10 65 \
+      FEE_RECIPIENT=$(whiptail --title "Configure fallback fee recipient" --inputbox "What is the fallback fee recipient \
+address? Required so that a) the CL doesn't print warnings and b) you can use the CL REST API for validators. \
+(right-click to paste, CANNOT be an ENS)" 10 65 \
 "${FEE_RECIPIENT}" 3>&1 1>&2 2>&3)
     fi
 
@@ -3591,7 +3592,14 @@ want to use MEV Boost?" 10 65); then
     done
     return 0
   fi
-  if (whiptail --title "MEV Boost" --yesno "Do you want to use MEV Boost?" 10 65) then
+  if [ "${__deployment}" = "rpc" ]; then
+    __message="Do you want to use MEV Boost, e.g. because you will connect validators to CL REST API?"
+    __default="--defaultno"
+  else
+    __message="Do you want to use MEV Boost?"
+    __default=""
+  fi
+  if (whiptail --title "MEV Boost" --yesno "${__message}" 10 65 "${__default}") then
     MEV_BOOST="true"
     if [ "${__value}" = "true" ]; then
       __var="MEV_RELAYS"
