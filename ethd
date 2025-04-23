@@ -4475,7 +4475,7 @@ fi
 trap '__handle_error $? $LINENO' ERR
 trap '__handle_error $? $LINENO' EXIT
 
-if [[ "$#" -eq 0 || "$*" =~ "-h" ]]; then # Lazy match for -h and --help but also --histogram, so careful here
+if [[ "$#" -eq 0 || "$*" = "--help" || "$*" = "-h" || "$*" = "update --help" || "$*" = "update -h" ]]; then
   help "$@"
   exit 0
 fi
