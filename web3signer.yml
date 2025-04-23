@@ -22,7 +22,7 @@ services:
       - web3signer-keys:/var/lib/web3signer
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - JAVA_OPTS=${W3S_HEAP:--Xmx4g}
+      - JAVA_OPTS=${W3S_HEAP:--Xmx6g}
       - NETWORK=${NETWORK}
       - PG_ALIAS=${PG_ALIAS:-${NETWORK}-postgres}
     networks:
