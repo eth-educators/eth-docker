@@ -22,6 +22,7 @@ services:
     environment:
       - CONFIG_PATH=/config/config.yaml
       - HOME=/tmp
+      - ENABLE_DOPPELGANGER_PROTECTION=${DOPPELGANGER:-false}
     command: make BUILD_PATH=/go/bin/ssvnode start-node
     labels:
       - metrics.scrape=true
