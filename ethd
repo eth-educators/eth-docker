@@ -1680,6 +1680,9 @@ update() {
 # __env_migrate used to be called w/ arguments and checks for that
 # shellcheck disable=SC2119
   __env_migrate
+  if [ "${__migrated}" -eq 1 ] && ! cmp -s "${__env_file}" "${__env_file}".source; then  # Create .bak early
+    ${__as_owner} cp "${__env_file}".source "${__env_file}".bak
+  fi
   __pull_and_build
 
   __delete_erigon
@@ -1688,8 +1691,7 @@ update() {
 
   echo
   if [ "${__migrated}" -eq 1 ] && ! cmp -s "${__env_file}" "${__env_file}".source; then
-    ${__as_owner} cp "${__env_file}".source "${__env_file}".bak
-    ${__as_owner} rm "${__env_file}".source
+    ${__as_owner} rm "${__env_file}".source  # .bak was created earlier
     echo "Your ${__env_file} configuration settings have been migrated to a fresh copy. You can \
 find the original contents in ${__env_file}.bak."
     if [ "${__keep_targets}" -eq 0 ]; then
@@ -3814,6 +3816,9 @@ __handle_error() {
   fi
 
   local __exit_code=$1
+  if [ "$__exit_code" -eq 0 ]; then
+    return 0
+  fi
   echo
   if [ "$__exit_code" -eq 130 ]; then
     echo "$__me terminated by user"
@@ -4468,6 +4473,7 @@ if [ ! -f ~/.profile ] || ! grep -q "alias ethd" ~/.profile; then
 fi
 
 trap '__handle_error $? $LINENO' ERR
+trap '__handle_error $? $LINENO' EXIT
 
 if [[ "$#" -eq 0 || "$*" =~ "-h" ]]; then # Lazy match for -h and --help but also --histogram, so careful here
   help "$@"
