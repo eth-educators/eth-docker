@@ -1566,6 +1566,7 @@ update() {
       fi
       echo "Starting a new screen session with identifier ${__screen_session}"
       echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
+      echo "A log of the update run can be found in \"/tmp/${__screen_session}.log\""
       exec 200<&-
 # Launch a new detached screen session and attach to it.
 # Use bash -c to run 'ethd update', and pass along "$@"
@@ -1577,7 +1578,7 @@ update() {
 #
 #   exec bash replaces bash -c , so that the user is still inside screen at the end
 #
-      screen -S "${__screen_session}" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash --login" dummy "$@"
+      screen -S "${__screen_session}" -L -Logfile "/tmp/${__screen_session}.log" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash --login" dummy "$@"
       screen -RR "${__screen_session}"
       exit 0
     fi
