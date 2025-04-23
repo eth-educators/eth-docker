@@ -109,6 +109,9 @@ services:
       - /var/run:/var/run
       - /sys:/sys:ro,rslave
       - ${DOCKER_ROOT:-/var/lib/docker}:/var/lib/docker:ro,rslave
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    privileged: true
     command:
       - --docker_only
       - --housekeeping_interval=30s
