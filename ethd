@@ -3819,6 +3819,12 @@ __handle_error() {
   if [ "$__exit_code" -eq 0 ]; then
     return 0
   fi
+
+  if [[ -n "${__handler_ran:-}" ]]; then
+    return 0
+  fi
+  __handler_ran=1
+
   echo
   if [ "$__exit_code" -eq 130 ]; then
     echo "$__me terminated by user"
