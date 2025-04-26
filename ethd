@@ -1387,6 +1387,9 @@ __env_migrate() {
         if [[ "${__var}" = "ERIGON_DOCKER_REPO" && "${__value}" = "thorax/erigon" ]]; then # Erigon new repo
           __value="erigontech/erigon"
         fi
+        if [[ "${__var}" = "BESU_DOCKER_TAG" && ( "${__value}" =~ "latest-openjdk" || "${__value}" =~ "latest-openj9" || "${__value}" =~ "latest-graalvm" ) ]]; then  # Besu switched to latest
+          __value="latest"
+        fi
         if [[ "${__var}" = "SSV_NODE_REPO" && "${__value}" = "bloxstaking/ssv-node" ]]; then # SSV new repo
           __value="ssvlabs/ssv-node"
         fi
