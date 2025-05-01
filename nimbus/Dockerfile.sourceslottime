@@ -18,7 +18,7 @@ RUN bash -c "git clone ${SRC_REPO} nimbus-eth2 && cd nimbus-eth2 && git config a
 	make -j$(nproc) update && make -j$(nproc) NIMFLAGS="-d:SECONDS_PER_SLOT=${SECONDS_PER_SLOT}" nimbus_beacon_node nimbus_validator_client"
 
 # Pull all binaries into a second stage deploy debian container
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim as consensus
 
 ARG USER=user
 ARG UID=10002
@@ -50,9 +50,41 @@ RUN mkdir -p /var/lib/nimbus && chown ${USER}:${USER} /var/lib/nimbus && chmod 7
 # Cannot assume buildkit, hence no chmod
 COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth2/build/nimbus_beacon_node /usr/local/bin/nimbus_beacon_node
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} ./validator-exit.sh /usr/local/bin/
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*
 
 USER ${USER}
 
 ENTRYPOINT ["nimbus_beacon_node"]
+
+FROM debian:bookworm-slim AS validator
+
+ARG USER=user
+ARG UID=10000
+
+RUN apt-get update && apt-get install -y \
+  ca-certificates bash tzdata curl gosu
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Create data mount point with permissions
+RUN mkdir -p /var/lib/nimbus && chown -R ${USER}:${USER} /var/lib/nimbus && chmod -R 700 /var/lib/nimbus
+
+# Cannot assume buildkit, hence no chmod
+COPY --from=builder --chown=${USER}:${USER} /usr/src/nimbus-eth2/build/nimbus_validator_client /usr/local/bin/
+COPY --chown=${USER}:${USER} ./docker-entrypoint-vc.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/*
+
+USER ${USER}
+
+ENTRYPOINT ["nimbus_validator_client"]
