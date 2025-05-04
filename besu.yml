@@ -40,7 +40,7 @@ services:
       default:
         aliases:
           - eth1
-          - ${EL_ALIAS:-${NETWORK}-execution} # This allows multiple Eth Docker stacks all connected to the same bridge network
+          - ${EL_ALIAS:-default-execution}  # This allows multiple Eth Docker stacks all connected to the same bridge network
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh

@@ -48,7 +48,7 @@ services:
       default:
         aliases:
           - eth2
-          - ${CL_ALIAS:-${NETWORK}-consensus} # This allows multiple Eth Docker stacks all connected to the same bridge network
+          - ${CL_ALIAS:-default-consensus}  # This allows multiple Eth Docker stacks all connected to the same bridge network
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
@@ -119,7 +119,7 @@ services:
     networks:
       default:
         aliases:
-          - ${VC_ALIAS}
+          - ${VC_ALIAS:-vc}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -254,7 +254,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/prysm/auth-token
-      - ${VC_ALIAS}
+      - ${VC_ALIAS:-vc}
 
 volumes:
   prysmbeacon-data:

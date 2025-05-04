@@ -59,7 +59,7 @@ services:
       default:
         aliases:
           - eth2
-          - ${CL_ALIAS:-${NETWORK}-consensus} # This allows multiple Eth Docker stacks all connected to the same bridge network
+          - ${CL_ALIAS:-default-consensus}  # This allows multiple Eth Docker stacks all connected to the same bridge network
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh

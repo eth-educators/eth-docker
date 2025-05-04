@@ -40,7 +40,7 @@ services:
     networks:
       default:
         aliases:
-          - ${VC_ALIAS}
+          - ${VC_ALIAS:-vc}
     <<: *logging
     entrypoint:
       - docker-entrypoint.sh
@@ -86,7 +86,7 @@ services:
 #    entrypoint:
 #      - keymanager.sh
 #      - /var/lib/vero/api-token.txt
-#      - ${VC_ALIAS}
+#      - ${VC_ALIAS:-vc}
 
 volumes:
   vero-data:

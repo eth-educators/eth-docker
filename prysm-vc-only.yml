@@ -42,7 +42,7 @@ services:
     networks:
       default:
         aliases:
-          - ${VC_ALIAS}
+          - ${VC_ALIAS:-vc}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -169,7 +169,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/prysm/auth-token
-      - ${VC_ALIAS}
+      - ${VC_ALIAS:-vc}
 
 volumes:
   prysmvalidator-data:
