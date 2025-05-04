@@ -4583,15 +4583,12 @@ if [ "${__compose_upgraded}" -eq 1 ]; then
   echo "You updated Docker Compose to V2."
   echo "The \"docker-compose\" command is gone and replaced with \"docker compose\"."
   echo
-  echo "You can create an alias for \"docker-compose\" by adding this line to your \"~/.profile\":"
-  echo "alias docker-compose=\"docker compose\""
-  echo
   echo "Optionally, you can switch to docker-ce."
   echo "Please see https://ethdocker.com/Usage/Prerequisites#switching-from-dockerio-to-docker-ce for instructions."
 fi
 
 if [[ "${__old_compose}" -eq 1 && "${__compose_major}" -eq 2 ]]; then
-  echo "You are using docker-compose ${__compose_version}, which has been shown to cause issues with new features"
+  echo "You are using Docker Compose ${__compose_version}, which has been shown to cause issues with new features"
   echo "${__project_name} may require Compose v2.18.1 or later in future"
   echo
   echo "It is recommended that you update Compose."
