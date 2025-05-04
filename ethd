@@ -1395,6 +1395,18 @@ __env_migrate() {
         if [[ "${__var}" = "ERIGON_DOCKER_REPO" && "${__value}" = "thorax/erigon" ]]; then # Erigon new repo
           __value="erigontech/erigon"
         fi
+        if [[ "${__var}" = "PRYSM_DOCKER_REPO" && "${__value}" = "gcr.io/prysmaticlabs/prysm/beacon-chain" ]]; then  # Prysm new repo
+          __value="gcr.io/offchainlabs/prysm/beacon-chain"
+        fi
+        if [[ "${__var}" = "PRYSM_DOCKER_VC_REPO" && "${__value}" = "gcr.io/prysmaticlabs/prysm/validator" ]]; then  # Prysm new repo
+          __value="gcr.io/offchainlabs/prysm/validator"
+        fi
+        if [[ "${__var}" = "PRYSM_DOCKER_CTL_REPO" && "${__value}" = "gcr.io/prysmaticlabs/prysm/cmd/prysmctl" ]]; then  # Prysm new repo
+          __value="gcr.io/offchainlabs/prysm/cmd/prysmctl"
+        fi
+        if [[ "${__var}" = "PRYSM_DOCKER_CTL_TAG" && "${__value}" = "latest" && "${__source_ver}" -lt "34" ]]; then  # Prysm new stable ctl tag
+          __value="stable"
+        fi
         if [[ "${__var}" = "BESU_DOCKER_TAG" && ( "${__value}" =~ "latest-openjdk" || "${__value}" =~ "latest-openj9" || "${__value}" =~ "latest-graalvm" ) ]]; then  # Besu switched to latest
           __value="latest"
         fi
