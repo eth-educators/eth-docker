@@ -17,7 +17,7 @@ services:
     networks:
       default:
         aliases:
-          - ${MEV_ALIAS:-${NETWORK}-mev} # This allows multiple Eth Docker stacks all connected to the same bridge network
+          - ${MEV_ALIAS:-default-mev}  # This allows multiple Eth Docker stacks all connected to the same bridge network
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics

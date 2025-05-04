@@ -44,7 +44,7 @@ services:
     networks:
       default:
         aliases:
-          - ${VC_ALIAS}
+          - ${VC_ALIAS:-vc}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -100,7 +100,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/nimbus/api-token.txt
-      - ${VC_ALIAS}
+      - ${VC_ALIAS:-vc}
 
 volumes:
   nimbus-vc-data:

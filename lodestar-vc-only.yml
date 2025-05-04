@@ -41,7 +41,7 @@ services:
     networks:
       default:
         aliases:
-          - ${VC_ALIAS}
+          - ${VC_ALIAS:-vc}
     <<: *logging
     entrypoint:
       - docker-entrypoint-vc.sh
@@ -125,7 +125,7 @@ services:
     entrypoint:
       - keymanager.sh
       - /var/lib/lodestar/validators/validator-db/api-token.txt
-      - ${VC_ALIAS}
+      - ${VC_ALIAS:-vc}
 
 volumes:
   lsvalidator-data:
