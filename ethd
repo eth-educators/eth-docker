@@ -1497,6 +1497,31 @@ __nag_os_version() {
 }
 
 
+__nag_os_update() {
+  if [[ "$__distro" = "ubuntu" || "$__distro" =~ "debian" ]]; then
+    __dpkg_log="/var/log/dpkg.log"
+
+    if [[ ! -f "${__dpkg_log}" ]]; then
+      return 0
+    fi
+
+    __last_upgrade_date=$(grep 'upgrade ' "${__dpkg_log}" | tail -n1 | awk '{print $1}')
+    if [[ -z "${__last_upgrade_date}" ]]; then
+      return 0
+    fi
+
+   __last_epoch=$(date -d "${__last_upgrade_date}" +%s)
+   __now_epoch=$(date +%s)
+   __days_diff=$(( (__now_epoch - __last_epoch) / 86400 ))
+
+    if [[ "${__days_diff}" -gt 365 ]]; then
+      echo "Your ${__distro} Linux was last updated ${__days_diff} days ago on ${__last_upgrade_date}."
+      echo "Please run \"sudo apt update && sudo apt dist-upgrade\" to bring in security updates and bug fixes."
+    fi
+  fi
+}
+
+
 __pull_and_build() {
   echo "Building local client images"
   __dodocker system prune --force
@@ -1750,6 +1775,7 @@ reset to defaults."
   fi
 
   __nag_os_version
+  __nag_os_update
 
   unset ETHDSECUNDO
   unset GITEXITCODE
