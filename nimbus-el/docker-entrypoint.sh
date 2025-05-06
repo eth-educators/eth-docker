@@ -26,10 +26,16 @@ if [[ -O "/var/lib/nimbus/ee-secret/jwtsecret" ]]; then
 fi
 
 if [ "${ARCHIVE_NODE}" = "true" ]; then
-  echo "Nimbus EL archive node without pruning"
-  __prune="--prune-mode=Archive --sync-mode=Full"
+  echo "Nimbus EL does not support running an archive node"
+  sleep 30
+  exit 1
 else
-  __prune=""
+  if [ "${MINIMAL_NODE}" = "true" ]; then
+    echo "Nimbus EL minimal node with pre-merge history expiry"
+    __prune="--history-expiry=true"
+  else
+    __prune=""
+  fi
 fi
 
 if [[ "${NETWORK}" =~ ^https?:// ]]; then

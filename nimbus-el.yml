@@ -15,7 +15,7 @@ services:
       args:
         - BUILD_TARGET=${NIMEL_SRC_BUILD_TARGET:-master}
         - SRC_REPO=${NIMEL_SRC_REPO:-https://github.com/status-im/nimbus-eth1}
-        - DOCKER_TAG=${NIMEL_DOCKER_TAG:-multiarch-latest}
+        - DOCKER_TAG=${NIMEL_DOCKER_TAG:-master}
         - DOCKER_REPO=${NIMEL_DOCKER_REPO:-statusim/nimbus-eth1}
     stop_grace_period: 5m
     stop_signal: SIGINT
@@ -25,7 +25,8 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
-      - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-}
+      - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-false}
+      - MINIMAL_NODE=${EL_MINIMAL_NODE:-false}
       - NETWORK=${NETWORK}
     volumes:
       - nimbus-el-data:/var/lib/nimbus

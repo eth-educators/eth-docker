@@ -3269,49 +3269,45 @@ __query_execution_client() {
     return 0
   fi
 
+  __choices=()
+  __arch=$(uname -m)
+
   if [ "${NETWORK}" = "gnosis" ]; then
-    if uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
-      EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?" 11 65 3 \
-      "nethermind.yml" "Nethermind (.NET)" \
-      "erigon.yml" "Erigon (Go)" \
-      "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+    __choices+=("nethermind.yml" "Nethermind (.NET)")
+    __choices+=("erigon.yml" "Erigon (Go)")
+  elif [[ "${NETWORK}" = "ephemery" ]]; then
+    if [[ "${__arch}" != *"riscv64"* ]]; then
+      __choices+=("besu.yml" "Besu (Java)")
     else
-      EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-      "Which execution client do you want to run?" 11 65 3 \
-      "nethermind.yml" "Nethermind (.NET)" \
-      "erigon.yml" "Erigon (Go)" \
-      "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+      echo "Epheremy testnet is not supported on ${__arch}"
+      exit 1
     fi
-  elif [ "${NETWORK}" = "ephemery" ]; then
-    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-    "Which execution client do you want to run?" 10 65 2 \
-    "besu.yml" "Besu (Java)" \
-    "NONE" "Custom - Distributed" \
-    3>&1 1>&2 2>&3)
-  elif uname -m | grep -q aarch64 || uname -m | grep -q arm64; then
-    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-    "Which execution client do you want to run?" 13 65 5 \
-    "besu.yml" "Besu (Java)" \
-    "nethermind.yml" "Nethermind (.NET)" \
-    "erigon.yml" "Erigon (Go)" \
-    "geth.yml" "Geth (Go)" \
-    "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
-  elif uname -m | grep -q riscv64; then
-    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-    "Which execution client do you want to run?" 10 65 2 \
-    "geth.yml" "Geth (Go)" \
-    "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+  elif [[ "${__arch}" =~ (aarch64|arm64) ]] ; then
+    __choices+=("besu.yml" "Besu (Java)")
+    __choices+=("nethermind.yml" "Nethermind (.NET)")
+    __choices+=("erigon.yml" "Erigon (Go)")
+    __choices+=("geth.yml" "Geth (Go)")
+  elif [[ "${__arch}" = *"riscv64"* ]]; then
+    __choices+=("geth.yml" "Geth (Go)")
   else
-    EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
-    "Which execution client do you want to run?" 14 65 6 \
-    "reth.yml" "Reth (Rust)" \
-    "besu.yml" "Besu (Java)" \
-    "nethermind.yml" "Nethermind (.NET)" \
-    "erigon.yml" "Erigon (Go)" \
-    "geth.yml" "Geth (Go)" \
-    "NONE" "Custom - Distributed" 3>&1 1>&2 2>&3)
+    __choices+=("reth.yml" "Reth (Rust)")
+    __choices+=("besu.yml" "Besu (Java)")
+    __choices+=("nethermind.yml" "Nethermind (.NET)")
+    __choices+=("erigon.yml" "Erigon (Go)")
+    __choices+=("geth.yml" "Geth (Go)")
   fi
+
+  if [[ "${__arch}" != *"riscv64"* ]] && [[ "${NETWORK}" =~ (hoodi|sepolia) ]]; then
+    __choices+=("nimbus-el.yml" "Nimbus (Nim) - alpha")
+  fi
+
+  __choices+=("NONE" "Custom - Distributed")
+  __num_items=$(( ${#__choices[@]} / 2 ))
+  __menu_height=$(( 8 + __num_items ))
+
+  EXECUTION_CLIENT=$(whiptail --notags --title "Select execution client" --menu \
+  "Which execution client do you want to run?" "${__menu_height}" 65 "${__num_items}" \
+  "${__choices[@]}" 3>&1 1>&2 2>&3)
 
   if [ "${EXECUTION_CLIENT}" = "NONE" ]; then
     unset EXECUTION_CLIENT
@@ -3997,7 +3993,8 @@ config() {
       __query_execution_client
     fi
 
-    if [[ "${EXECUTION_CLIENT}" = "erigon.yml" ]]; then
+    if [[ "${EXECUTION_CLIENT}" =~ (erigon.yml|nimbus-el.yml) ]] \
+        && [[ "${NETWORK}" =~ (mainnet|sepolia) ]]; then
       if [[ "${__deployment}" = "rpc" ]]; then
         __query_4444 --defaultno
       else
