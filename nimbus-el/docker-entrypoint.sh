@@ -1,4 +1,85 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+__download_era_files() {
+# Copyright (c) 2025 Status Research & Development GmbH. Licensed under
+# either of:
+# - Apache License, version 2.0
+# - MIT license
+# at your option. This file may not be copied, modified, or distributed except
+# according to those terms.
+
+# Usage: __download_era_files <download_url> <download_path>
+
+  if [ $# -ne 2 ]; then
+    echo "__download_era_files called without <download_url> <download_path>. This is a bug."
+    exit 70
+  fi
+
+  DOWNLOAD_URL="$1"
+  DOWNLOAD_DIR="$2"
+
+  mkdir -p "$DOWNLOAD_DIR"
+  cd "$DOWNLOAD_DIR" || { echo "Could not change directory to $DOWNLOAD_DIR. This is a bug."; exit 70; }
+
+  # Generate safe temp files for URL lists
+  URLS_RAW_FILE=$(mktemp)
+  URLS_FILE=$(mktemp)
+
+  # Scrape and filter
+  curl -s "$DOWNLOAD_URL" | \
+  grep -Eo 'href="[^"]+"' | \
+  cut -d'"' -f2 | \
+  grep -Ei '\.(era|era1|txt)$' | \
+  sort -u > "$URLS_RAW_FILE"
+
+  # Remove trailing file (like index.html) to get actual base path
+  BASE_URL=$(echo "$DOWNLOAD_URL" | sed -E 's|/[^/]*\.[a-zA-Z0-9]+$||')
+
+  # 🔧 Normalize base URL (handle trailing slash or index.html)
+  case "$DOWNLOAD_URL" in
+    */index.html) BASE_URL="${DOWNLOAD_URL%/index.html}" ;;
+    */)           BASE_URL="${DOWNLOAD_URL%/}" ;;
+    *)            BASE_URL="$DOWNLOAD_URL" ;;
+  esac
+
+  # Prepend full URL
+  awk -v url="$BASE_URL" '{ print url "/" $0 }' "$URLS_RAW_FILE" > "$URLS_FILE"
+
+  TOTAL_FILES=$(wc -l < "$URLS_FILE")
+
+  if [ "$TOTAL_FILES" -eq 0 ]; then
+    echo "❌ No .era, .era1, or .txt files found at $DOWNLOAD_URL"
+    exit 1
+  fi
+
+  aria2c -x 8 -j 5 -c -i "$URLS_FILE" \
+    --dir="." \
+    --console-log-level=warn \
+    --quiet=true \
+    --summary-interval=0 \
+    > /dev/null 2>&1 &
+
+  ARIA_PID=$!
+
+  echo "Downloading Era/Era1 history files"
+  echo "📥 Starting download of $TOTAL_FILES files..."
+  while kill -0 "$ARIA_PID" 2> /dev/null; do
+    COMPLETED=$(find . -type f \( -name '*.era' -o -name '*.era1' -o -name '*.txt' \) | wc -l)
+    PERCENT=$(awk "BEGIN { printf \"%.1f\", ($COMPLETED/$TOTAL_FILES)*100 }")
+    echo "📦 Download Progress: $PERCENT% complete ($COMPLETED / $TOTAL_FILES files)"
+    sleep 10
+  done
+
+  COMPLETED=$(find . -type f \( -name '*.era' -o -name '*.era1' -o -name '*.txt' \) | wc -l)
+  echo "📦 Download Progress: 100% complete ($COMPLETED / $TOTAL_FILES files)"
+
+  # ✅ Cleanup temp files
+  rm -f "$URLS_RAW_FILE" "$URLS_FILE"
+
+  echo "✅ All files downloaded to: $DOWNLOAD_DIR"
+}
+
 
 if [ "$(id -u)" = '0' ]; then
   chown -R user:user /var/lib/nimbus
@@ -61,6 +142,33 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   __network="--bootstrap-node=${bootnodes} --network=${networkid} --custom-network /var/lib/nimbus/testnet/${config_dir}/genesis.json"
 else
   __network="--network=${NETWORK}"
+fi
+
+# Era1 and/or Era import
+if [[ ! -d /var/lib/nimbus/nimbus && ! "${NETWORK}" =~ ^https?:// ]]; then  # Fresh sync and named network
+  __era=""
+  if [[ -n "${ERA1_URL}" ]]; then
+    __download_era_files "${ERA1_URL}" /var/lib/nimbus/era1
+    __era+="--era1-dir=/var/lib/nimbus/era1 "
+  fi
+  if [[ -n "${ERA_URL}" ]]; then
+    if [[ -z "${ERA1_URL}" && "${NETWORK}" =~ (mainnet|sepolia) ]]; then
+      echo "The ${NETWORK} network has pre-merge history. You cannot import era files without era1."
+      echo "Please set an ERA1_URL and try again"
+      sleep 30
+      exit 1
+    fi
+    __download_era_files "${ERA_URL}" /var/lib/nimbus/era
+    __era+="--era-dir=/var/lib/nimbus/era"
+  fi
+
+  if [[ -n "${ERA1_URL}" || -n "${ERA_URL}" ]]; then
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+    nimbus_execution_client import --network=${NETWORK} --data-dir=/var/lib/nimbus ${__era}
+    rm -rf /var/lib/nimbus/era
+    rm -rf /var/lib/nimbus/era1
+  fi
 fi
 
 # Word splitting is desired for the command line parameters

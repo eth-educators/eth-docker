@@ -11,7 +11,7 @@ ARG USER=user
 ARG UID=10001
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
-  ca-certificates bash tzdata librocksdb-dev adduser \
+  ca-certificates bash tzdata librocksdb-dev adduser curl aria2 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
