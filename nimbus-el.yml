@@ -28,6 +28,8 @@ services:
       - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-false}
       - MINIMAL_NODE=${EL_MINIMAL_NODE:-false}
       - NETWORK=${NETWORK}
+      - ERA1_URL=${ERA1_URL:-}
+      - ERA_URL=${ERA_URL:-}
     volumes:
       - nimbus-el-data:/var/lib/nimbus
       - /etc/localtime:/etc/localtime:ro
