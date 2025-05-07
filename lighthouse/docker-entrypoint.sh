@@ -91,7 +91,7 @@ if [ "${IPV6}" = "true" ]; then
 # ENR discovery on v6 is not yet working, likely too few peers. Manual for now
   __ipv6_pattern="^[0-9A-Fa-f]{1,4}:" # Sufficient to check the start
   set +e
-  __public_v6=$(wget -6 -q -O- ifconfig.me)
+  __public_v6=$(curl -6 -s ifconfig.me)
   set -e
   if [[ "$__public_v6" =~ $__ipv6_pattern ]]; then
     __ipv6+=" --enr-address ${__public_v6}"
