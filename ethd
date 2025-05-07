@@ -340,7 +340,7 @@ install() {
   fi
   if [[ "$__distro" = "ubuntu" ]]; then
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu
+    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip
     echo
     echo
     if [ -z "$(command -v docker)" ]; then
@@ -380,7 +380,7 @@ continue? (no/yes) " __yn
     fi
   elif [[ "$__distro" =~ "debian" ]]; then
     ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu
+    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip
     echo
     echo
     if [ -z "$(command -v docker)" ]; then
@@ -1497,6 +1497,80 @@ __nag_os_version() {
 }
 
 
+__nag_os_update() {
+  if [[ "$__distro" != "ubuntu" &&  "$__distro" != *"debian"* ]]; then
+    return 0
+  fi
+
+  __logdir="/var/log/"
+  __dpkg_logs=()
+
+  mapfile -t __dpkg_logs < <(
+    find "${__logdir}" -maxdepth 1 -type f -name 'dpkg.log*' -printf '%T@ %p\n' 2>/dev/null |
+      sort -n |  # Numeric sort of UNIX timestamps, oldest first
+      cut -d' ' -f2-
+  )
+  if [[ ${#__dpkg_logs[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  __last_upgrade_line=""
+  __last_upgrade_date=""
+  for __dpkg_log in "${__dpkg_logs[@]}"; do  # Oldest to newest, end up with the newest upgrade line
+    if [[ "${__dpkg_log}" = *.gz ]]; then
+      if [ -z "$(command -v zgrep)" ]; then
+        return 0
+      fi
+      __grep_cmd="zgrep"
+    else
+      __grep_cmd="grep"
+    fi
+    __line=$(${__grep_cmd} 'upgrade ' "${__dpkg_log}" | tail -n1 || true)
+    if [[ -n "${__line}" ]]; then
+      __last_upgrade_line="${__line}"
+    fi
+  done
+  if [[ -z "${__last_upgrade_line}" ]]; then  # No upgrade line found; use the oldest file timestamp or log entry
+    __oldest_log="${__dpkg_logs[0]}"
+    if [[ -n "${__oldest_log}" && -f "${__oldest_log}" ]]; then
+      if [[ "${__oldest_log}" = *.gz ]]; then
+        if [ -z "$(command -v zcat)" ]; then
+          return 0
+        fi
+        __cat_cmd="zcat"
+      else
+        __cat_cmd="cat"
+      fi
+      __last_upgrade_date=$(stat -c %y "${__oldest_log}" 2>/dev/null | cut -d' ' -f1 \
+        || ${__cat_cmd} "${__oldest_log}" | head -n1 | cut -d' ' -f1)
+    fi
+  else
+    __last_upgrade_date=$(awk '{print $1}' <<< "${__last_upgrade_line}")
+  fi
+  if [[ ! "${__last_upgrade_date}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then  # Verify we have a YYYY-MM-DD date
+    return 0
+  fi
+
+  __last_epoch=$(date -d "${__last_upgrade_date}" +%s)
+  __now_epoch=$(date +%s)
+  __days_diff=$(( (__now_epoch - __last_epoch) / 86400 ))
+
+  if [[ "${__days_diff}" -gt 300 ]]; then
+    if [[ -n "${__last_upgrade_line}" ]]; then
+      echo "Your ${__distro} Linux was last updated ${__days_diff} days ago on ${__last_upgrade_date}."
+    else
+      echo "Your ${__distro} Linux was last updated more than ${__days_diff} days ago."
+    fi
+    echo "Please run \"sudo apt update && sudo apt dist-upgrade\" to bring in security updates and bug fixes."
+  fi
+
+  if [[ -f "/var/run/reboot-required" ]]; then
+    echo "A previous OS update requires you to reboot this machine to complete the update."
+    echo "Please run \"sudo reboot\" to activate the updated components, like for example the kernel."
+  fi
+}
+
+
 __pull_and_build() {
   echo "Building local client images"
   __dodocker system prune --force
@@ -1750,6 +1824,7 @@ reset to defaults."
   fi
 
   __nag_os_version
+  __nag_os_update
 
   unset ETHDSECUNDO
   unset GITEXITCODE
