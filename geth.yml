@@ -26,6 +26,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-}
+      - MINIMAL_NODE=${EL_MINIMAL_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
       - ANCIENT_DIR=${ANCIENT_DIR:-}
@@ -81,6 +82,16 @@ services:
       - metrics.port=6060
       - metrics.instance=execution
       - metrics.network=${NETWORK}
+
+  set-prune-marker:
+    profiles: ["tools"]
+    image: alpine:3
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - geth-el-data:/var/lib/geth
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
 
 volumes:
   geth-el-data:

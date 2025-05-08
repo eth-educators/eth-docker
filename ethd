@@ -1865,11 +1865,12 @@ resync-execution() {
   __get_value_from_env "${__var}" "${__env_file}" "__value"
 
   case "${__value}" in
-    *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="erigon";;
-    *geth.yml* ) __el_volume='geth-el-data'; __el_client="geth";;
-    *reth.yml* ) __el_volume='reth-el-data'; __el_client="reth";;
-    *besu.yml* ) __el_volume='besu-el-data'; __el_client="besu";;
-    *nethermind.yml* ) __el_volume='nethermind-el-data'; __el_client="nethermind";;
+    *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="Erigon";;
+    *geth.yml* ) __el_volume='geth-el-data'; __el_client="Geth";;
+    *reth.yml* ) __el_volume='reth-el-data'; __el_client="Reth";;
+    *besu.yml* ) __el_volume='besu-el-data'; __el_client="Besu";;
+    *nethermind.yml* ) __el_volume='nethermind-el-data'; __el_client="Nethermind";;
+    *nimbus-el.yml* ) __el_volume='nimbus-el-data'; __el_client="Nimbus";;
     * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
   esac
 
@@ -1878,12 +1879,14 @@ resync-execution() {
     return 0
   fi
 
-  echo "This will stop ${__el_client} and delete its database to force a resync."
-  read -rp "WARNING - resync may take days. Do you wish to continue? (No/yes) " __yn
-  case $__yn in
-    [Yy][Ee][Ss] ) ;;
-    * ) echo "Aborting."; exit 130;;
-  esac
+  if [ "${__non_interactive:-0}" -eq 0 ]; then
+    echo "This will stop ${__el_client} and delete its database to force a resync."
+    read -rp "WARNING - resync may take days. Do you wish to continue? (No/yes) " __yn
+    case $__yn in
+      [Yy][Ee][Ss] ) ;;
+      * ) echo "Aborting."; exit 130;;
+    esac
+  fi
 
   __el_volume="$(basename "$(realpath .)" | tr '[:upper:]' '[:lower:]')_${__el_volume}"
   echo "Stopping ${__el_client} container"
@@ -2331,6 +2334,159 @@ execution | grep Full\" to see whether it is."
   echo "Please do not restart the node or restart Nethermind until prune is done."
   echo
   echo "When prune is done, Nethermind will automatically re-start."
+  echo
+}
+
+
+prune-history() {
+  __non_interactive=0
+  while :
+  do
+    if [ -z "${1+x}" ]; then
+      break
+    fi
+    case "$1" in
+      --non-interactive)
+        __non_interactive=1
+        shift
+        ;;
+      *)
+        echo "Error: Unknown option: $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+  if [ "${ETHD_FRONTEND:-}" = "noninteractive" ]; then
+    __non_interactive=1
+  fi
+
+  if [ ! -f "${__env_file}" ]; then
+    echo "${__env_file} configuration file not found, aborting."
+    exit 1
+  fi
+
+# Check whether this has already been done
+  __var=EL_MINIMAL_NODE
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
+  if [[ "${__value}" =~ ^(true|aggressive)$ ]]; then
+    echo "This node is already configured for \"${__var}=${__value}\"."
+    echo "Nothing to do. Aborting."
+    exit 0
+  fi
+
+  __var="COMPOSE_FILE"
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
+  case "${__value}" in
+    *geth.yml* )
+      __client="Geth"
+      __prune_marker="/var/lib/geth/prune-marker"
+      ;;
+    *nimbus-el.yml* )
+      __client="Nimbus"
+      __prune_marker=""
+      ;;
+    *nethermind.yml* )
+      __client="Nethermind"
+      __prune_marker=""
+      ;;
+    *besu.yml* )
+      __client="Besu"
+      __prune_marker=""
+      ;;&
+    *reth.yml* )
+      __client="Reth"
+      __prune_marker=""
+      ;;&
+    *erigon.yml* )
+      __client="Erigon"
+      __prune_marker=""
+      ;;&
+    * )
+      echo "${__me} does not know how to prune pre-merge history on ${__client:-MysteryClient},"
+      echo "nor how to configure it for pre-merge history expiry on fresh sync."
+      exit 0
+      ;;
+  esac
+
+  # Check for archive node
+  __var="ARCHIVE_NODE"
+  __get_value_from_env "${__var}" "${__env_file}" "__value"
+  if [[ "${__value}" = "true" ]]; then
+    echo "${__client} is an archive node: Aborting."
+    exit 1
+  fi
+
+  if [ -z "${__prune_marker}" ]; then  # Full resync
+    if [ $__non_interactive = 0 ]; then
+      __warning="WARNING - this will stop ${__client} and resync it from scratch without pre-merge history. Do you wish to continue? (No/Yes) "
+      while true; do
+        read -rp "${__warning}" __yn
+        case $__yn in
+          [Yy][Ee][Ss] ) break;;
+          * ) echo "Aborting, no changes made"; exit 130;;
+        esac
+      done
+    fi
+    __var=EL_MINIMAL_NODE
+    EL_MINIMAL_NODE=true
+    __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+    __non_interactive=1
+    resync-execution
+    return 0
+  fi
+
+# We only get here if the client can prune
+  __rpc_line=$(grep '^EL_RPC_PORT=' "${__env_file}")
+  __regex='^EL_RPC_PORT=([0-9]+)'
+  if [[ ! "${__rpc_line}" =~ ${__regex} ]]; then
+    echo "Unable to determine EL_RPC_PORT, aborting."
+    exit 1
+  else
+    __rpc_port="${BASH_REMATCH[1]}"
+  fi
+
+  set +e
+  __sync_status=$(__docompose exec -T execution wget -qO- "http://localhost:$__rpc_port" \
+  --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
+  __exitstatus=$?
+  set -e
+  if [ $__exitstatus -ne 0 ]; then
+    echo "Unable to connect to ${__client}: Is it running?"
+    echo "Output: ${__sync_status}"
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [[ ! "${__sync_status}" =~ "false" ]]; then
+    echo "${__client} is not done syncing yet. Sync status:"
+    echo "${__sync_status}"
+    echo
+    echo "Aborting."
+    exit 1
+  fi
+
+  if [ $__non_interactive = 0 ]; then
+    __warning="WARNING - this will stop ${__client} and remove pre-merge history. Do you wish to continue? (No/Yes) "
+    while true; do
+      read -rp "${__warning}" __yn
+      case $__yn in
+        [Yy][Ee][Ss] ) break;;
+        * ) echo "Aborting, no changes made"; exit 130;;
+      esac
+    done
+  fi
+
+  __var=EL_MINIMAL_NODE
+  EL_MINIMAL_NODE=true
+  __update_value_in_env "${__var}" "${!__var}" "${__env_file}"
+  echo
+  echo "Starting ${__client} pre-merge history prune"
+  __docompose run --rm set-prune-marker "touch ${__prune_marker}"
+  restart execution
+  echo
+  echo "Pre-merge history prune is running, you can observe it with '$__me logs -f execution'"
+  echo
+  echo "When prune is done, ${__client} will automatically start again."
   echo
 }
 
@@ -4529,6 +4685,8 @@ __full_help() {
   echo "    stops the Besu execution client and prunes trie-logs."
   echo "  prune-reth [--non-interactive]"
   echo "    stops the Reth execution client and prunes its DB."
+  echo "  prune-history [--non-interactive]"
+  echo "    stops the execution client and prunes pre-merge history, if supported."
   echo "  prune-lighthouse [--non-interactive]"
   echo "    stops the Lighthouse consensus client and prunes state."
   echo "  resync-execution"
@@ -4652,7 +4810,8 @@ fi
 
 case "$__command" in
   help|config|keys|update|up|start|down|stop|restart|version|logs|cmd|terminate|prune-nethermind\
-      |prune-besu|prune-reth|prune-lighthouse|resync-execution|resync-consensus|attach-geth|keyimport|space)
+      |prune-besu|prune-reth|prune-history|prune-lighthouse|resync-execution|resync-consensus|attach-geth\
+      |keyimport|space)
     $__command "$@";;
   *)
     echo "Unrecognized command $__command"

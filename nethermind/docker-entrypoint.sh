@@ -51,7 +51,7 @@ if [[ "${NETWORK}" =~ ^https?:// ]]; then
   fi
   bootnodes="$(awk -F'- ' '!/^#/ && NF>1 {print $2}' "/var/lib/nethermind/testnet/${config_dir}/enodes.yaml" | paste -sd ",")"
   __network="--config none.cfg --Init.ChainSpecPath=/var/lib/nethermind/testnet/${config_dir}/chainspec.json --Discovery.Bootnodes=${bootnodes} --Init.IsMining=false"
-  if [ "${ARCHIVE_NODE}" == "false" ]; then
+  if [ "${ARCHIVE_NODE}" = "false" ]; then
     __prune="--Pruning.Mode=None"
   fi
 else
@@ -62,7 +62,7 @@ __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Nethermind archive node without pruning"
   __prune="--Sync.DownloadBodiesInFastSync=false --Sync.DownloadReceiptsInFastSync=false --Sync.FastSync=false --Sync.SnapSync=false --Sync.FastBlocks=false --Pruning.Mode=None --Sync.PivotNumber=0"
-else
+elif [[ ! "${NETWORK}" =~ ^https?:// ]]; then  # Only configure prune parameters for named networks
   __parallel=$(($(nproc)/4))
   if [ "${__parallel}" -lt 2 ]; then
     __parallel=2
@@ -70,14 +70,28 @@ else
   __prune="--Pruning.FullPruningMaxDegreeOfParallelism=${__parallel}"
   if [ "${AUTOPRUNE_NM}" = true ]; then
     __prune="${__prune} --Pruning.FullPruningTrigger=VolumeFreeSpace"
-    if [ "${NETWORK}" = "mainnet" ] || [ "${NETWORK}" = "gnosis" ]; then
-      __prune="${__prune} --Pruning.FullPruningThresholdMb=375810"
+    if [[ "${NETWORK}" =~ (mainnet|gnosis) ]]; then
+      __prune+=" --Pruning.FullPruningThresholdMb=375810"
     else
-      __prune="${__prune} --Pruning.FullPruningThresholdMb=51200"
+      __prune+=" --Pruning.FullPruningThresholdMb=51200"
     fi
   fi
   if [ "${__memtotal}" -ge 30 ]; then
-    __prune="${__prune} --Pruning.FullPruningMemoryBudgetMb=16384 --Init.StateDbKeyScheme=HalfPath"
+    __prune+=" --Pruning.FullPruningMemoryBudgetMb=16384 --Init.StateDbKeyScheme=HalfPath"
+  fi
+  if [ "${MINIMAL_NODE}" = "true" ]; then
+    case "${NETWORK}" in
+      mainnet )
+        echo "Methermind minimal node with pre-merge history expiry"
+        __prune+=" --Sync.AncientBodiesBarrier=15537392 --Sync.AncientReceiptsBarrier=15537392"
+        ;;
+      sepolia )
+        echo "Relying on Nethermind default expiry for Sepolia minimal node"
+        ;;
+      * )
+        echo "There is no known pre-merge history for ${NETWORK}, EL_MINIMAL_NODE has no effect."
+        ;;
+    esac
   fi
   echo "Using pruning parameters:"
   echo "${__prune}"
