@@ -28,6 +28,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   libssl-dev \
   ca-certificates \
   wget \
+  curl \
   tzdata \
   git \
   git-lfs \
