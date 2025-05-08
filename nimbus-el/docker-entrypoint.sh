@@ -114,6 +114,9 @@ else
   if [ "${MINIMAL_NODE}" = "true" ]; then
     echo "Nimbus EL minimal node with pre-merge history expiry"
     __prune="--history-expiry=true"
+    if [ "${PORTAL}" = "true" ]; then
+      __prune+=" --portal-url=${PORTAL_NODE}"
+    fi
   else
     __prune=""
   fi
