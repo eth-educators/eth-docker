@@ -1380,6 +1380,13 @@ __env_migrate() {
           __update_value_in_env "${__var}" "$__value" "${__env_file}"
         fi
       fi
+      if [[ "${__source_ver}" -lt "36" && "${__var}" = "EL_MINIMAL_NODE" ]]; then
+        __get_value_from_env "COMPOSE_FILE" "${__env_file}.source" "__compose_file"
+# shellcheck disable=SC2154
+        if [[ "${__compose_file}" = *"erigon.yml"* && "${__value}" = "true" ]]; then
+          __value=aggressive
+        fi
+      fi
       if [[ "${__keep_targets}" -eq 0 && "$__var" =~ (_TAG|_REPO|_TARGET|_DOCKERFILE)$ ]]; then
         __get_value_from_env "${__var}" "default.env" "__value" # Reset build target to default.env value
       else

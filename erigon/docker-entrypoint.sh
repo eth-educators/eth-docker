@@ -92,8 +92,8 @@ else  # Erigon v3
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Erigon archive node without pruning"
     __prune="--prune.mode=archive"
-  elif [ "${EL_MINIMAL_NODE}" = "true" ]; then
-    echo "Erigon minimal node with EIP-4444 expiry"
+  elif [ "${MINIMAL_NODE}" = "aggressive" ]; then
+    echo "Erigon minimal node with aggressive expiry"
     __prune="--prune.mode=minimal"
   else
     echo "Erigon full node with pruning"
