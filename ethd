@@ -1420,6 +1420,9 @@ __env_migrate() {
         if [[ "${__var}" = "SSV_NODE_REPO" && "${__value}" = "bloxstaking/ssv-node" ]]; then # SSV new repo
           __value="ssvlabs/ssv-node"
         fi
+        if [[ "${__var}" = "SIREN_DOCKER_REPO" && "${__value}" = "sigmaprime/siren" ]]; then  # Siren new repo
+          __value="sigp/siren"
+        fi
         if [[ "${__var}" = "DEPCLI_SRC_REPO" && "${__source_ver}" -lt "21" ]]; then
           __value="https://github.com/eth-educators/ethstaker-deposit-cli"
         fi
