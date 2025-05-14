@@ -1011,47 +1011,6 @@ __upgrade_postgres() {
 }
 
 
-__lookup_cf_zone() { # Migrates traefik-cf setup to use Zone ID
-  __get_value_from_env "COMPOSE_FILE" "${__env_file}.source" "__compose_ymls"
-  __get_value_from_env "CF_DNS_API_TOKEN" "${__env_file}.source" "__dns_token"
-  __get_value_from_env "CF_ZONE_API_TOKEN" "${__env_file}.source" "__zone_token"
-  __get_value_from_env "DOMAIN" "${__env_file}.source" "__domain"
-# shellcheck disable=SC2154
-  if [[ ! $__compose_ymls =~ traefik-cf.yml ]]; then
-    __value=""
-    return
-  elif [[ -n $__dns_token ]]; then
-    if [[ -n $__zone_token ]]; then
-      __token=$__zone_token
-    else
-      __token=$__dns_token
-    fi
-    set +e
-    __value=$(__docompose run --rm curl-jq sh -c \
-      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
-      -H \"Content-Type: application/json\" | jq -r '.result[0].id'" | tail -n 1)
-    __code=$?
-    if [[ "$__code" -ne 0 ]]; then
-      __value=""
-      return
-    fi
-    __success=$(__docompose run --rm curl-jq sh -c \
-      "curl -s \"https://api.cloudflare.com/client/v4/zones?name=${__domain}\" -H \"Authorization: Bearer ${__token}\" \
-      -H \"Content-Type: application/json\" | jq -r '.success'" | tail -n 1)
-    set -e
-    if [ "${__success}" = "true" ]; then
-      return
-    else
-      __value=""
-      return
-    fi
-  else
-    __value=""
-    return
-  fi
-}
-
-
 __enable_v6() {
   if [ "${__docker_major_version}" -lt 27 ]; then
     return
@@ -1072,7 +1031,7 @@ __enable_v6() {
   echo "Testing IPv6 Docker connectivity"
   __dodocker network create --ipv6 ip6net_ethd_test
   __v6_works=$(__dodocker run --rm --network ip6net_ethd_test busybox sh -c \
-    "if ping -c1 -6 2001:4860:4860::8888 >/dev/null; then echo true; else echo false; fi")
+    "if ping -c1 -6 2001:4860:4860::8888 >/dev/null; then echo true; else echo false; fi" < /dev/null)
   __dodocker network rm ip6net_ethd_test
 
   if [ "${__v6_works}" = "true" ]; then
@@ -1338,12 +1297,6 @@ __env_migrate() {
       if [ "${__var}" = "COMPOSE_FILE" ]; then
         __migrate_compose_file
       fi
-      if [[ "${__source_ver}" -lt "17" && "${__var}" = "IPV6" ]]; then  # One-time attempt; remove after Pectra
-        __enable_v6
-        if [ "${__enabled_v6}" -eq 1 ]; then
-          __value="true"
-        fi
-      fi
       if [[ "${__source_ver}" -lt "18" && "${__var}" = "OBOL_CHARON_CL_ENDPOINTS" ]]; then
         __get_value_from_env "OBOL_CL_NODE" "${__env_file}.source" "_obol_cl_node"
         if [ -n "${__obol_cl_node}" ]; then
@@ -1373,12 +1326,6 @@ __env_migrate() {
       fi
       if [[ "${__var}" = "SHARE_IP" && "${__value: -1}" = ":" ]]; then
         __value="${__value%:}" # Undo Compose V1 accommodation
-      fi
-      if [ "${__var}" = "CF_ZONE_ID" ]; then
-        __lookup_cf_zone
-        if [ -n "${__value}" ]; then
-          __update_value_in_env "${__var}" "$__value" "${__env_file}"
-        fi
       fi
       if [[ "${__source_ver}" -lt "36" && "${__var}" = "EL_MINIMAL_NODE" ]]; then
         __get_value_from_env "COMPOSE_FILE" "${__env_file}.source" "__compose_file"
