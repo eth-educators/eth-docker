@@ -2403,12 +2403,12 @@ prune-history() {
       __client="Besu"
       __prune_marker=""
       ;;&
-    *reth.yml* )
-      __client="Reth"
-      __prune_marker=""
-      ;;&
     *erigon.yml* )
       __client="Erigon"
+      __prune_marker=""
+      ;;
+    *reth.yml* )
+      __client="Reth"
       __prune_marker=""
       ;;&
     * )
