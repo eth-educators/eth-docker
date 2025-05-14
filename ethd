@@ -1031,7 +1031,7 @@ __enable_v6() {
   echo "Testing IPv6 Docker connectivity"
   __dodocker network create --ipv6 ip6net_ethd_test
   __v6_works=$(__dodocker run --rm --network ip6net_ethd_test busybox sh -c \
-    "if ping -c1 -6 2001:4860:4860::8888 >/dev/null; then echo true; else echo false; fi")
+    "if ping -c1 -6 2001:4860:4860::8888 >/dev/null; then echo true; else echo false; fi" < /dev/null)
   __dodocker network rm ip6net_ethd_test
 
   if [ "${__v6_works}" = "true" ]; then
@@ -1296,12 +1296,6 @@ __env_migrate() {
     if [ "${__found}" -eq 1 ]; then  # Only if variable isn't new in default.env
       if [ "${__var}" = "COMPOSE_FILE" ]; then
         __migrate_compose_file
-      fi
-      if [[ "${__source_ver}" -lt "17" && "${__var}" = "IPV6" ]]; then  # One-time attempt; remove after Pectra
-        __enable_v6
-        if [ "${__enabled_v6}" -eq 1 ]; then
-          __value="true"
-        fi
       fi
       if [[ "${__source_ver}" -lt "18" && "${__var}" = "OBOL_CHARON_CL_ENDPOINTS" ]]; then
         __get_value_from_env "OBOL_CL_NODE" "${__env_file}.source" "_obol_cl_node"
