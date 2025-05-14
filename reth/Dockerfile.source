@@ -28,6 +28,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
   gosu \
   git \
   git-lfs \
+  wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
