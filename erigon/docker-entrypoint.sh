@@ -95,9 +95,12 @@ else  # Erigon v3
   elif [ "${MINIMAL_NODE}" = "aggressive" ]; then
     echo "Erigon minimal node with aggressive expiry"
     __prune="--prune.mode=minimal"
+  elif [ "${MINIMAL_NODE}" = "true" ]; then
+    echo "Erigon minimal node with pre-merge history expiry"
+    __prune="--history-expiry --prune.mode=full"
   else
     echo "Erigon full node with pruning"
-    __prune="--prune.mode=full"
+    __prune="--prune.mode=blocks"
   fi
   if [[ "${COMPOSE_FILE}" =~ (prysm\.yml|prysm-cl-only\.yml|lighthouse\.yml|lighthouse-cl-only\.yml|lodestar\.yml| \
       lodestar-cl-only\.yml|nimbus\.yml|nimbus-cl-only\.yml|nimbus-allin1\.yml|teku\.yml|teku-cl-only\.yml| \
