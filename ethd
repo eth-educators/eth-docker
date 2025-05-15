@@ -2348,8 +2348,8 @@ prune-history() {
       ;;
     *besu.yml* )
       __client="Besu"
-      __prune_marker=""
-      ;;&
+      __prune_marker="/var/lib/besu/prune-history-marker"
+      ;;
     *reth.yml* )
       __client="Reth"
       __prune_marker=""
