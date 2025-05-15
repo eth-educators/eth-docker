@@ -56,6 +56,11 @@ services:
       - 0.0.0.0
       - --fee-recipient
       - ${FEE_RECIPIENT}
+      - --enable-keymanager-api
+      - --keymanager-api-address
+      - 0.0.0.0
+      - --keymanager-api-port
+      - ${KEY_API_PORT:-7500}
     labels:
       - metrics.scrape=true
       - metrics.path=/metrics
@@ -63,30 +68,30 @@ services:
       - metrics.instance=validator
       - metrics.network=${NETWORK}
 
-#  validator-keys:
-#    profiles: ["tools"]
-#    restart: "no"
-#    build:
-#      context: ./vc-utils
-#    image: vc-utils:local
-#    pull_policy: never
-#    user: root
-#    volumes:
-#      - vero-data:/var/lib/vero
-#      - ./.eth/validator_keys:/validator_keys
-#      - ./.eth/exit_messages:/exit_messages
-#      - /etc/localtime:/etc/localtime:ro
-#    environment:
-#      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
-#      - KEY_API_PORT=${KEY_API_PORT:-7500}
-#      - WEB3SIGNER=${WEB3SIGNER:-false}
-#      - CL_NODE=${CL_NODE}
-#    depends_on:
-#      - validator
-#    entrypoint:
-#      - keymanager.sh
-#      - /var/lib/vero/api-token.txt
-#      - ${VC_ALIAS:-vc}
+  validator-keys:
+    profiles: ["tools"]
+    restart: "no"
+    build:
+      context: ./vc-utils
+    image: vc-utils:local
+    pull_policy: never
+    user: root
+    volumes:
+      - vero-data:/var/lib/vero
+      - ./.eth/validator_keys:/validator_keys
+      - ./.eth/exit_messages:/exit_messages
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_API_PORT=${KEY_API_PORT:-7500}
+      - WEB3SIGNER=${WEB3SIGNER:-false}
+      - CL_NODE=${CL_NODE}
+    depends_on:
+      - validator
+    entrypoint:
+      - keymanager.sh
+      - /var/lib/vero/keymanager-api-token.txt
+      - ${VC_ALIAS:-vc}
 
 volumes:
   vero-data:
