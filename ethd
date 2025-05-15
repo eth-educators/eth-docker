@@ -1540,6 +1540,15 @@ __pull_and_build() {
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
+  __debug=0
+  if [[ "$*" =~ "--debug" ]]; then
+    __debug=1
+  fi
+  if [[ "$*" =~ "--trace" ]]; then
+    __debug=1
+    set -x
+  fi
+
 # Only one copy of update() should run per Eth Docker stack
   local __script_dir
   __script_dir="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
@@ -1620,7 +1629,9 @@ update() {
       fi
       echo "Starting a new screen session with identifier ${__screen_session}"
       echo "If you get disconnected, reconnect with \"screen -r ${__screen_session}\""
-      echo "A log of the update run can be found in \"/tmp/${__screen_session}.log\""
+      if [ "${__debug}" -eq 1 ]; then
+        echo "A log of the update run can be found in \"/tmp/${__screen_session}.log\""
+      fi
       exec 200<&-
 # Launch a new detached screen session and attach to it.
 # Use bash -c to run 'ethd update', and pass along "$@"
@@ -1632,7 +1643,14 @@ update() {
 #
 #   exec bash replaces bash -c , so that the user is still inside screen at the end
 #
-      screen -S "${__screen_session}" -L -Logfile "/tmp/${__screen_session}.log" -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash --login" dummy "$@"
+      if [ "${__debug}" -eq 1 ]; then
+        __log="-L -Logfile /tmp/${__screen_session}.log"
+      else
+        ${__as_owner} rm -f "/tmp/${__screen_session}.log"
+        __log=""
+      fi
+# shellcheck disable=SC2086
+      screen -S "${__screen_session}" ${__log} -dma bash -c "${BASH_SOURCE[0]} update \"\$@\"; exec bash --login" dummy "$@"
       screen -RR "${__screen_session}"
       exit 0
     fi
@@ -1687,7 +1705,6 @@ update() {
   fi
 
   __keep_targets=1
-  __debug=0
   __targetcli=""
   while :
   do
@@ -1717,7 +1734,7 @@ update() {
         __non_interactive=1
         shift
         ;;
-      --debug)
+      --debug | --trace)
         __debug=1
         shift
         ;;
@@ -4615,10 +4632,10 @@ __full_help() {
   echo "    attempts to install Docker and Docker Compose for you"
   echo "  config"
   echo "    configures ${__project_name} with your choice of Ethereum clients"
-  echo "  keys ACTION [--non-interactive]"
+  echo "  keys ACTION [--non-interactive] [--debug]"
   echo "    list, count, delete, import keys; their fee recipients; and gas fees"
   echo "    Run without ACTION to get help text"
-  echo "  update [--refresh-targets] [--non-interactive]"
+  echo "  update [--refresh-targets] [--non-interactive] [--debug] [--trace]"
   echo "    updates all client versions and ${__project_name} itself"
   echo "    --refresh-targets will reset your custom build targets in ${__env_file} to defaults"
   echo "  up|start [service-name]"
