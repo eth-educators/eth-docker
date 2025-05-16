@@ -83,7 +83,7 @@ elif [[ ! "${NETWORK}" =~ ^https?:// ]]; then  # Only configure prune parameters
     case "${NETWORK}" in
       mainnet )
         echo "Methermind minimal node with pre-merge history expiry"
-        __prune+=" --Sync.AncientBodiesBarrier=15537392 --Sync.AncientReceiptsBarrier=15537392"
+        __prune+=" --Sync.AncientBodiesBarrier=15537394 --Sync.AncientReceiptsBarrier=15537394"
         ;;
       sepolia )
         echo "Relying on Nethermind default expiry for Sepolia minimal node"
