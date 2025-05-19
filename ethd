@@ -19,7 +19,6 @@ __upgrade_ubuntu="24.04: https://gist.github.com/yorickdowne/94f1e5538007f4c9d3d
 __min_debian=11
 __suggest_debian="12 or 11."
 __upgrade_debian="12: https://gist.github.com/yorickdowne/ec9e2c6f4f8a2ee93193469d285cd54c"
-__reboot_required=0
 
 
 __dodocker() {
@@ -400,69 +399,6 @@ EOF
 }
 
 
-__optimize_baremetal() {
-  local __grub_file="/etc/default/grub"
-  local -a __required_params=(
-    "nvme_core.default_ps_max_latency_us=0"
-    "pcie_aspm=off"
-    "mitigations=off"
-  )
-
-  if ! ${__auto_sudo} bash -c "command -v virt-what" >/dev/null; then
-    echo "virt-what is not installed, cannot determine whether to optimize for baremetal"
-    return 0
-  fi
-  if [ -n "$(${__auto_sudo} virt-what)" ]; then  # This is virtualized, don't do a thing
-    echo "Virtualized host detected, not applying baremetal optimizations"
-    return 0
-  fi
-
-  echo
-  echo "This appears to be a baremetal host - not virtualized."
-  echo "WARNING: The optimizations for baremetal are not safe on virtualized hosts."
-  read -rp "Do you want ${__me} to apply baremetal optimizations? (no/yes) " __yn
-  case $__yn in
-    [Yy]* ) ;;
-    * ) return 0;;
-  esac
-
-   # Extract the current GRUB_CMDLINE_LINUX_DEFAULT value
-  local __current_line __current_params
-  __current_line=$(grep -E '^GRUB_CMDLINE_LINUX_DEFAULT=' "${__grub_file}")
-  if [[ -z "${__current_line}" ]]; then
-    echo "GRUB_CMDLINE_LINUX_DEFAULT not found in ${__grub_file}"
-    return 0
-  fi
-
-  # Strip out leading variable name and enclosing quotes
-  __current_params=$(echo "${__current_line}" | sed -E 's/^GRUB_CMDLINE_LINUX_DEFAULT="(.*)"/\1/')
-  local __modified=0
-#shellcheck disable=SC2206
-  local -a __new_params=(${__current_params})
-
-  for __param in "${__required_params[@]}"; do
-    if ! grep -qw "${__param}" <<< "${__current_params}"; then
-      __new_params+=("${__param}")
-      __modified=1
-    fi
-  done
-
-  echo
-  if [[ "${__modified}" -eq 1 ]]; then
-    local __new_line="GRUB_CMDLINE_LINUX_DEFAULT=\"${__new_params[*]}\""
-    # Escape forward slashes for sed
-    local __escaped_line
-    __escaped_line=$(sed 's/\//\\\//g' <<< "${__new_line}")
-    ${__auto_sudo} sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=.*/${__escaped_line}/" "${__grub_file}"
-    ${__auto_sudo} update-grub
-    __reboot_required=1
-    echo "Updated GRUB_CMDLINE_LINUX_DEFAULT in ${__grub_file} to read ${__new_line}"
-  else
-    echo "No changes needed to GRUB_CMDLINE_LINUX_DEFAULT in ${__grub_file}"
-  fi
-}
-
-
 # Apply common performance optimizations on behalf of the user
 __optimize_host() {
   local __docker_root
@@ -546,7 +482,6 @@ __optimize_host() {
   fi
 
   __optimize_chrony
-  __optimize_baremetal
 
   return 0
 }
@@ -619,7 +554,7 @@ install() {
   echo "Installing packages that ${__me} requires or considers helpful"
   echo
   ${__auto_sudo} apt-get update
-  ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip virt-what
+  ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip
 
   echo
   read -rp "Do you want to install Docker and make your user part of the docker group? (no/yes) " __yn
@@ -656,12 +591,6 @@ install() {
     echo "cat $(dirname "$(realpath "${BASH_SOURCE[0]}")")/.motd" >>~/.profile
     echo "Go ahead and 'source ~/.profile' or log out and back in."
     echo "After that, you can use the command 'ethd'."
-  fi
-
-  if [ "${__reboot_required}" -eq 1 ]; then
-    echo
-    echo "The changes made require a reboot to be active."
-    echo "Please run \"sudo reboot\""
   fi
 
   return 0
