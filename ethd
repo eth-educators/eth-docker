@@ -5,9 +5,21 @@ __project_name="Eth Docker"
 __app_name="Ethereum node"
 __sample_service="consensus"
 __docker_exe="docker"
+__old_docker=0
 __compose_exe="docker compose"
+__old_compose=0
 __compose_upgraded=0
 __target_pg=17
+__distro=""
+__os_major_version=""
+__eol_os=0
+__min_ubuntu=22
+__suggest_ubuntu="22.04 or 24.04."
+__upgrade_ubuntu="24.04: https://gist.github.com/yorickdowne/94f1e5538007f4c9d3da7b22b0dc28a4"
+__min_debian=11
+__suggest_debian="12 or 11."
+__upgrade_debian="12: https://gist.github.com/yorickdowne/ec9e2c6f4f8a2ee93193469d285cd54c"
+__reboot_required=0
 
 
 __dodocker() {
@@ -146,9 +158,9 @@ __upgrade_compose() {
   fi
   echo "Updating Docker Compose to V2"
   if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 22 ]; then
+    __nag_os_version
+    if [ "${__eol_os}" -eq 1 ]; then
       echo "${__project_name} cannot update Docker Compose on Ubuntu ${__os_major_version}."
-      echo "Consider upgrading to 22.04 and then 24.04."
       exit 1
     fi
     ${__auto_sudo} apt-get update
@@ -165,10 +177,10 @@ __upgrade_compose() {
     echo "Removed docker-compose"
   elif [[ "$__distro" =~ "debian" ]]; then
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg
-    if [ "${__os_major_version}" -lt 11 ]; then
-        echo "${__project_name} cannot update Docker Compose on Debian ${__os_major_version}."
-        echo "Consider upgrading to 11 and then 12."
-        exit 1
+    __nag_os_version
+    if [ "${__eol_os}" -eq 1 ]; then
+      echo "${__project_name} cannot update Docker Compose on Debian ${__os_major_version}."
+      exit 1
     fi
     ${__auto_sudo} mkdir -p /etc/apt/keyrings
     ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor --yes \
@@ -326,125 +338,330 @@ __install_bash_completions() {
   else
     if [ ! -f "$(pkg-config --variable=completionsdir bash-completion)/ethd" ]; then
       echo "Installing bash completions for ethd"
-      ${__auto_sudo} ln -s "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/bash-completion" \
+      ${__auto_sudo} ln -sf "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/bash-completion" \
       "$(pkg-config --variable=completionsdir bash-completion)/ethd" || true
     fi
   fi
 }
 
 
-install() {
-  if [ "$__cannot_sudo" -eq 1 ]; then
-    echo "The install command requires the user to be part of the sudo group, or on macOS the admin group"
-    exit 1
-  fi
-  if [[ "$__distro" = "ubuntu" ]]; then
-    ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip
-    echo
-    echo
-    if [ -z "$(command -v docker)" ]; then
-      if [ "${__os_major_version}" -lt 22 ]; then
-        echo "${__project_name} cannot install Docker on Ubuntu ${__os_major_version}."
-        echo "Consider upgrading to 22.04 and then 24.04."
-        exit 1
-      fi
-      read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
-continue? (no/yes) " __yn
-      case $__yn in
-        [Yy]* ) ;;
-        * ) echo "Aborting, no changes made"; return 0;;
-      esac
-      ${__auto_sudo} mkdir -p /etc/apt/keyrings
-      ${__auto_sudo} curl -fsSL https://download.docker.com/linux/ubuntu/gpg | ${__auto_sudo} gpg --dearmor \
-        --yes -o /etc/apt/keyrings/docker.gpg
-      ${__auto_sudo} echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
-        | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
-      ${__auto_sudo} apt-get update
-      ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
-        docker-buildx-plugin
-      ${__auto_sudo} systemctl start systemd-logind
-      echo "Installed docker-ce and docker-compose-plugin"
-    else
-      echo "Docker is already installed"
-    fi
-    __groups=$(${__as_owner} groups)
-    if [[ ! "$__groups" =~ "docker" ]]; then
-      echo "Making your user part of the docker group"
-      ${__auto_sudo} usermod -aG docker "${OWNER}"
-      echo "Please run newgrp docker or log out and back in"
-    else
-      echo "Your user is already part of the docker group"
-    fi
-  elif [[ "$__distro" =~ "debian" ]]; then
-    ${__auto_sudo} apt-get update
-    ${__auto_sudo} apt-get -y install ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip
-    echo
-    echo
-    if [ -z "$(command -v docker)" ]; then
-      if [ "${__os_major_version}" -lt 11 ]; then
-        echo "${__project_name} cannot install Docker on Debian ${__os_major_version}."
-        echo "Consider upgrading to 11 and then 12."
-        exit 1
-      fi
-      read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to \
-continue? (no/yes) " __yn
-      case $__yn in
-        [Yy]* ) ;;
-        * ) echo "Aborting, no changes made"; return 0;;
-      esac
-      ${__auto_sudo} mkdir -p /etc/apt/keyrings
-      ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor \
-        --yes -o /etc/apt/keyrings/docker.gpg
-      ${__auto_sudo} echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-        | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
-      ${__auto_sudo} apt-get update
-      ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
-        docker-buildx-plugin
-      ${__auto_sudo} systemctl start systemd-logind
-      echo "Installed docker-ce and docker-compose-plugin"
-    else
-      echo "Docker is already installed"
-    fi
-    __groups=$(${__as_owner} groups)
-    if [[ ! "$__groups" =~ "docker" ]]; then
-      echo "Making your user part of the docker group"
-      ${__auto_sudo} usermod -aG docker "${OWNER}"
-      echo "Please run newgrp docker or log out and back in"
-    else
-      echo "Your user is already part of the docker group"
-    fi
-  else
-    echo "${__project_name} does not know how to install Docker on $__distro"
-  fi
+# Persist noatime in fstab for a given mount point
+__fstab_noatime() {
+  local __mountpoint="$1"
+  local __fstab="/etc/fstab"
+  local __backup="${__fstab}.bak"
 
-  if ! [[ "$__distro" = "ubuntu" ]] || [[ "$__distro" =~ "debian" ]]; then
+  # Check if fstab already has an entry for this mountpoint
+  if grep -E "^[^#].*\s${__mountpoint//\//\\/}(\s|\$)" "${__fstab}" >/dev/null; then
+    echo "Found ${__fstab} entry for ${__mountpoint}, adding \"noatime\""
+    # Edit the existing line: add noatime if not already there
+    sudo sed -Ei.bak "/^[^#].*\s${__mountpoint}//\//\\/}(\s|\$)/ {
+      s/(\s[^[:space:]]+\s[^[:space:]]+\s)([^[:space:]]+)/\1\2,noatime/
+      s/(^.*\s[^[:space:]]+\s[^[:space:]]+\s[^[:space:]]*),?(noatime,?)+/\1,noatime/
+    }" "${__fstab}"
+  else
+    echo "No ${__fstab} entry for ${__mountpoint} — not adding one automatically."
+    echo "Manual intervention required for \"noatime\" persistence."
+  fi
+}
+
+
+__optimize_chrony() {
+  if [[ -f /etc/chrony/chrony.conf && -d /etc/chrony/sources.d ]]; then
+    echo
+    echo "Configuring chrony to use Google's time-smearing servers"
+    if ! ${__auto_sudo} sed -Ei.bak '/^\s*(pool|server|leapsectz)\b/ s/^/#/' "/etc/chrony/chrony.conf"; then
+      echo "Failed to alter /etc/chrony/chrony.conf"
+      echo "Manual intervention is required to use Google's time-smearing servers with chrony"
+      return 0
+    fi
+    local __file;
+    while IFS= read -r -d '' __file; do
+      local __new_file="${__file}.bak"
+      if ! ${__auto_sudo} mv "${__file}" "${__new_file}"; then
+        printf "Failed to rename %s to %s\n" "${__file}" "${__new_file}"
+        return 0
+      fi
+    done < <(find "/etc/chrony/sources.d" -maxdepth 1 -type f -name '*.sources' -print0)
+    if ! ${__auto_sudo} tee "/etc/chrony/sources.d/google-ntp.sources" >/dev/null <<EOF
+# Google's time-smearing NTP servers
+# Requires leapsectz in chrony.conf to be commented out or not exist
+pool time.google.com iburst minpoll 4 maxpoll 6 polltarget 16
+EOF
+    then
+      printf "Failed to write Google servers to %s\n" "/etc/chrony/sources.d/google-ntp.sources"
+      return 0
+    fi
+    if ! ${__auto_sudo} systemctl restart chrony; then
+      echo "Failed to restart the chrony service"
+      echo "Manual intervention is required to have it use the new configuration"
+    fi
+  fi
+}
+
+
+__optimize_baremetal() {
+  local __grub_file="/etc/default/grub"
+  local -a __required_params=(
+    "nvme_core.default_ps_max_latency_us=0"
+    "pcie_aspm=off"
+    "mitigations=off"
+  )
+
+  if ! ${__auto_sudo} bash -c "command -v virt-what" >/dev/null; then
+    echo "virt-what is not installed, cannot determine whether to optimize for baremetal"
+    return 0
+  fi
+  if [ -n "$(${__auto_sudo} virt-what)" ]; then  # This is virtualized, don't do a thing
+    echo "Virtualized host detected, not applying baremetal optimizations"
     return 0
   fi
 
-  # We only get here on Ubuntu or Debian
+  echo
+  echo "This appears to be a baremetal host - not virtualized."
+  echo "WARNING: The optimizations for baremetal are not safe on virtualized hosts."
+  read -rp "Do you want ${__me} to apply baremetal optimizations? (no/yes) " __yn
+  case $__yn in
+    [Yy]* ) ;;
+    * ) return 0;;
+  esac
+
+   # Extract the current GRUB_CMDLINE_LINUX_DEFAULT value
+  local __current_line __current_params
+  __current_line=$(grep -E '^GRUB_CMDLINE_LINUX_DEFAULT=' "${__grub_file}")
+  if [[ -z "${__current_line}" ]]; then
+    echo "GRUB_CMDLINE_LINUX_DEFAULT not found in ${__grub_file}"
+    return 0
+  fi
+
+  # Strip out leading variable name and enclosing quotes
+  __current_params=$(echo "${__current_line}" | sed -E 's/^GRUB_CMDLINE_LINUX_DEFAULT="(.*)"/\1/')
+  local __modified=0
+#shellcheck disable=SC2206
+  local -a __new_params=(${__current_params})
+
+  for __param in "${__required_params[@]}"; do
+    if ! grep -qw "${__param}" <<< "${__current_params}"; then
+      __new_params+=("${__param}")
+      __modified=1
+    fi
+  done
+
+  echo
+  if [[ "${__modified}" -eq 1 ]]; then
+    local __new_line="GRUB_CMDLINE_LINUX_DEFAULT=\"${__new_params[*]}\""
+    # Escape forward slashes for sed
+    local __escaped_line
+    __escaped_line=$(sed 's/\//\\\//g' <<< "${__new_line}")
+    ${__auto_sudo} sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=.*/${__escaped_line}/" "${__grub_file}"
+    ${__auto_sudo} update-grub
+    __reboot_required=1
+    echo "Updated GRUB_CMDLINE_LINUX_DEFAULT in ${__grub_file} to read ${__new_line}"
+  else
+    echo "No changes needed to GRUB_CMDLINE_LINUX_DEFAULT in ${__grub_file}"
+  fi
+}
+
+
+# Apply common performance optimizations on behalf of the user
+__optimize_host() {
+  local __docker_root
+  local __docker_mount
+  local __docker_mount_opts
+  local __exit_code
+  local __swappiness
+  local __cache_pressure
+  local __target_pressure
+  local __memtotal
+
+  echo
+  __docker_root=$(__dodocker system info --format '{{.DockerRootDir}}')
+  if command -v findmnt >/dev/null; then
+    __docker_mount=$(findmnt -T "${__docker_root}" -o TARGET -n)
+    __docker_mount_opts=$(findmnt -T "${__docker_root}" -o OPTIONS -n 2>/dev/null)
+  else
+    __docker_mount=$(df --output=target "${__docker_root}" | tail -1)
+    __docker_mount_opts=$(awk -v path="${__docker_mount}" '$2 == path {print $4}' /proc/mounts)
+  fi
+  if [[ "${__docker_mount_opts}" == *noatime* ]]; then
+    echo "\"noatime\" already set on ${__docker_mount}"
+  else
+    echo "Remounting ${__docker_mount} with \"noatime\""
+    ${__auto_sudo} mount -o remount,noatime "${__docker_mount}" || true
+    __exit_code=$?
+    if [ ${__exit_code} -eq 0 ]; then
+      __fstab_noatime "${__docker_mount}"
+    else
+      echo "Applying \"noatime\" to ${__docker_mount} failed"
+    fi
+  fi
+
+  __swappiness=$(${__auto_sudo} sysctl -n vm.swappiness)
+  if [ "${__swappiness}" -gt 1 ]; then
+    echo "Adjusting swappiness down to 1 from ${__swappiness}"
+    ${__auto_sudo} sysctl -w vm.swappiness=1
+    if [ -d /etc/sysctl.d ]; then
+      echo "Persisting vm.swappiness=1 in /etc/sysctl.d/10-swappiness.conf"
+      echo "vm.swappiness=1" | ${__auto_sudo} tee /etc/sysctl.d/10-swappiness.conf >/dev/null
+    elif [ -f /etc/sysctl.conf ]; then
+      if ! grep -E '^\s*vm\.swappiness\s*=' /etc/sysctl.conf >/dev/null; then
+        echo "Appending vm.swappiness=1 to /etc/sysctl.conf"
+        echo "vm.swappiness=1" | ${__auto_sudo} tee -a /etc/sysctl.conf > /dev/null
+      else
+        echo "vm.swappiness is already set in /etc/sysctl.conf"
+      fi
+    else
+      echo "Unable to find /etc/sysctl.conf or /etc/sysctl.d"
+      echo "Manual intervention is required to set swappiness permanently"
+    fi
+  fi
+
+  __cache_pressure=$(${__auto_sudo} sysctl -n vm.vfs_cache_pressure)
+  __memtotal=$(awk '/MemTotal/ {printf "%d", int($2/1024/1024)}' /proc/meminfo)
+  if [ "${__memtotal}" -ge 60 ]; then
+    __target_pressure=10
+  elif [ "${__memtotal}" -ge 30 ]; then
+    __target_pressure=25
+  else
+    __target_pressure=50
+  fi
+
+  if [ "${__cache_pressure}" -gt "${__target_pressure}" ]; then
+    echo "Adjusting vfs_cache_pressure down to ${__target_pressure} from ${__cache_pressure}"
+    ${__auto_sudo} sysctl -w vm.vfs_cache_pressure="${__target_pressure}"
+    if [ -d /etc/sysctl.d ]; then
+      echo "Persisting vm.vfs_cache_pressure=${__target_pressure} in /etc/sysctl.d/10-vfs_cache_pressure.conf"
+      echo "vm.vfs_cache_pressure=${__target_pressure}" | ${__auto_sudo} tee /etc/sysctl.d/10-vfs_cache_pressure.conf >/dev/null
+    elif [ -f /etc/sysctl.conf ]; then
+      if ! grep -E '^\s*vm\.vfs_cache_pressure\s*=' /etc/sysctl.conf >/dev/null; then
+        echo "Appending vm.vfs_cache_pressure=${__target_pressure} to /etc/sysctl.conf"
+        echo "vm.vfs_cache_pressure=${__target_pressure}" | ${__auto_sudo} tee -a /etc/sysctl.conf > /dev/null
+      else
+        echo "vm.vfs_cache_pressure is already set in /etc/sysctl.conf"
+      fi
+    else
+      echo "Unable to find /etc/sysctl.conf or /etc/sysctl.d"
+      echo "Manual intervention is required to set vfs_cache_pressure permanently"
+    fi
+  fi
+
+  __optimize_chrony
+  __optimize_baremetal
+
+  return 0
+}
+
+
+__install_docker() {
+  local __repo
+
+
+  if [[ "$__distro" = "ubuntu" ]]; then
+    __repo=ubuntu
+  elif [[ "$__distro" = *"debian"* ]]; then
+    __repo=debian
+  else
+    echo
+    echo "__install_docker() was called on ${__distro}, which is neither Debian nor Ubuntu."
+    echo "This is a bug."
+    exit 70
+  fi
+
+  if [ -z "$(command -v docker)" ]; then
+    ${__auto_sudo} mkdir -p /etc/apt/keyrings
+    curl -fsSL "https://download.docker.com/linux/${__repo}/gpg" | ${__auto_sudo} gpg --dearmor \
+      --yes -o /etc/apt/keyrings/docker.gpg
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+      https://download.docker.com/linux/${__repo} $(lsb_release -cs) stable" \
+      | ${__auto_sudo} tee /etc/apt/sources.list.d/docker.list > /dev/null
+    ${__auto_sudo} apt-get update
+    ${__auto_sudo} apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+      docker-buildx-plugin
+    ${__auto_sudo} systemctl start systemd-logind
+    echo "Installed docker-ce and docker-compose-plugin"
+  else
+    echo "Docker is already installed"
+  fi
+
+  local __groups
+  __groups=$(${__as_owner} groups)
+  if [[ ! "${__groups}" =~ "docker" ]]; then
+    echo "Making your user part of the docker group"
+    ${__auto_sudo} usermod -aG docker "${OWNER}"
+    echo "Please run newgrp docker or log out and back in"
+  else
+    echo "Your user is already part of the docker group"
+  fi
+
+  return 0
+}
+
+
+install() {
+  if ! [[ "${__distro}" =~ (ubuntu|debian) ]]; then
+    echo "${__project_name} does not know how to install Docker on ${__distro}"
+    return 0
+  fi
+
+  __nag_os_version
+  if [ "${__eol_os}" -eq 1 ]; then
+    echo "${__project_name} requires an updated ${__distro} to run install"
+    echo "Please install Docker manually, if you do not wish to upgrade your OS"
+    return 0
+  fi
+
+  if [ "$__cannot_sudo" -eq 1 ]; then
+    echo "The install command requires the user to be part of the sudo group, or on macOS the admin group"
+    return 0
+  fi
+
+  echo "Installing packages that ${__me} requires or considers helpful"
+  echo
+  ${__auto_sudo} apt-get update
+  ${__auto_sudo} apt-get install -y ca-certificates curl gnupg whiptail chrony pkg-config screen ncdu gzip virt-what
+
+  echo
+  read -rp "Do you want to install Docker and make your user part of the docker group? (no/yes) " __yn
+  case $__yn in
+    [Yy]* ) __install_docker;;
+    * ) ;;
+  esac
+
+  if [ -n "$(command -v docker)" ]; then
+    __handle_docker
+  else
+    echo "${__me} requires Docker to be present to continue with install steps."
+    echo "Please install Docker and run \"${__me} install\" again."
+    return 0
+  fi
+
+  echo
+  read -rp "Do you want ${__me} to apply common performance optimizations? (no/yes) " __yn
+  case $__yn in
+    [Yy]* ) __optimize_host;;
+    * ) ;;
+  esac
+
   __install_bash_completions
-  __install_base=$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")
-  if [ "${__install_base}" = "eth-docker" ]; then
+
+  if ! grep -q "alias ethd" ~/.profile; then  # If an alias already exists, don't touch it
+    echo
     read -rp "Do you want to be able to call 'ethd' from anywhere? (yes/no) " __yn
     case $__yn in
       [Nn]* ) return 0;;
       * ) ;;
     esac
-    if grep -q "alias ethd" ~/.profile; then
-      sed -i'.original' -e "/alias ethd/d" ~/.profile
-    fi
     echo "alias ethd=$(realpath "${BASH_SOURCE[0]}")" >>~/.profile
-    if grep -q "cat.*\.motd" ~/.profile; then
-      sed -i'.original' -e "/cat.*\.motd/d" ~/.profile
-    fi
     echo "cat $(dirname "$(realpath "${BASH_SOURCE[0]}")")/.motd" >>~/.profile
     echo "Go ahead and 'source ~/.profile' or log out and back in."
     echo "After that, you can use the command 'ethd'."
+  fi
+
+  if [ "${__reboot_required}" -eq 1 ]; then
+    echo
+    echo "The changes made require a reboot to be active."
+    echo "Please run \"sudo reboot\""
   fi
 
   return 0
@@ -1429,26 +1646,27 @@ __env_migrate() {
 }
 
 
+# Both tells the user that their OS is old, and sets __eol_os for code that requires a min version
 __nag_os_version() {
-  if [[ "$__distro" = "ubuntu" ]]; then
-    if [ "${__os_major_version}" -lt 22 ]; then
+  if [[ "$__distro" = "ubuntu" && "${__os_major_version}" -lt "${__min_ubuntu}" ]]; then
      echo
-     echo "Ubuntu ${__os_major_version} is older than the recommended 24.04 or 22.04 version."
+     echo "Ubuntu ${__os_major_version} is older than the recommended ${__suggest_ubuntu} version."
      echo
      echo "Updating is neither urgent nor required, merely recommended."
      echo
-     echo "Guide to upgrading to 24.04: https://gist.github.com/yorickdowne/94f1e5538007f4c9d3da7b22b0dc28a4"
-    fi
+     echo "Guide to upgrading to ${__upgrade_ubuntu}"
+     __eol_os=1
   fi
 
   if [[ "$__distro" =~ "debian" ]]; then
-    if [ "${__os_major_version}" -lt 11 ]; then
+    if [ "${__os_major_version}" -lt "${__min_debian}" ]; then
      echo
-     echo "Debian ${__os_major_version} is older than the recommended 12 or 11 version."
+     echo "Debian ${__os_major_version} is older than the recommended ${__suggest_debian} version."
      echo
      echo "Updating is neither urgent nor required, merely recommended."
      echo
-     echo "Guide to upgrading to 12: https://gist.github.com/yorickdowne/ec9e2c6f4f8a2ee93193469d285cd54c"
+     echo "Guide to upgrading to ${__upgrade_debian}"
+     __eol_os=1
     fi
   fi
 }
