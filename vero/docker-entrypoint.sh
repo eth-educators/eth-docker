@@ -54,9 +54,7 @@ fi
 #fi
 
 # Web3signer URL
-if [ "${WEB3SIGNER}" = "true" ]; then
-  __w3s_url="--remote-signer-url ${W3S_NODE}"
-else
+if [ ! "${WEB3SIGNER}" = "true" ]; then
   echo "Vero requires the use of web3signer.yml and WEB3SIGNER=true. Please reconfigure to use Web3Signer and start again"
   sleep 60
   exit 1
@@ -93,9 +91,9 @@ fi
 if [ "${DEFAULT_GRAFFITI}" = "true" ]; then
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} ${__mev_boost} ${__w3s_url} ${__log_level} ${VC_EXTRAS}
+  exec "$@" ${__network} ${__mev_boost} ${__log_level} ${VC_EXTRAS}
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__network} "--graffiti" "${GRAFFITI}" ${__mev_boost} ${__w3s_url} ${__log_level} ${VC_EXTRAS}
+  exec "$@" ${__network} "--graffiti" "${GRAFFITI}" ${__mev_boost} ${__log_level} ${VC_EXTRAS}
 fi
