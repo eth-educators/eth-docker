@@ -349,15 +349,51 @@ __fstab_noatime() {
   local __mountpoint="$1"
   local __fstab="/etc/fstab"
   local __backup="${__fstab}.bak"
+  local __noatime="${__fstab}.noatime"
 
   # Check if fstab already has an entry for this mountpoint
   if grep -E "^[^#].*\s${__mountpoint//\//\\/}(\s|\$)" "${__fstab}" >/dev/null; then
-    echo "Found ${__fstab} entry for ${__mountpoint}, adding \"noatime\""
+    echo
+    echo "Found ${__fstab} entry for ${__mountpoint}, creating a version with \"noatime\""
+    echo
+
+    ${__auto_sudo} cp ${__fstab} ${__backup}
     # Edit the existing line: add noatime if not already there
-    sudo sed -Ei.bak "/^[^#].*\s${__mountpoint}//\//\\/}(\s|\$)/ {
-      s/(\s[^[:space:]]+\s[^[:space:]]+\s)([^[:space:]]+)/\1\2,noatime/
-      s/(^.*\s[^[:space:]]+\s[^[:space:]]+\s[^[:space:]]*),?(noatime,?)+/\1,noatime/
-    }" "${__fstab}"
+    awk -v mountpoint="${__mountpoint}" '
+    /^[ \t]*#/ || NF < 6 { print; next }
+    {
+        line = $0
+        split(line, fields, /[ \t]+/)
+        mount = fields[2]
+        opts = fields[4]
+
+        if (mount == mountpoint && opts !~ /(^|,)noatime(,|$)/) {
+            # Match the byte offset of the first four fields
+            match(line, /^[ \t]*[^ \t]+[ \t]+[^ \t]+[ \t]+[^ \t]+[ \t]+/)
+            prefix = substr(line, 1, RLENGTH)
+            rest = substr(line, RLENGTH + 1)
+
+            # Extract first word from rest (the options field)
+            match(rest, /^[^ \t]+/)
+            opts_field = substr(rest, RSTART, RLENGTH)
+            opts_field = opts_field ",noatime"
+
+            suffix = substr(rest, RSTART + RLENGTH)
+            line = prefix opts_field suffix
+        }
+
+        print line
+    }' "${__fstab}" | ${__auto_sudo} tee "${__noatime}" >/dev/null
+    ${__auto_sudo} chmod 664 "${__noatime}"
+    echo "${__fstab} has not been altered. A backup copy is in ${__backup}"
+    echo "If the below diff looks good to you, you can \"sudo cp ${__noatime} ${__fstab}\""
+    echo "followed by \"sudo mount -o remount ${__mountpoint}\" to verify everything still works."
+    echo
+    echo "Note: You may see a warning suggesting 'systemctl daemon-reload'. This is only relevant"
+    echo "for systemd's internal mount unit management and does not affect the active mount options"
+    echo "applied via 'mount'."
+    echo
+    diff ${__noatime} ${__fstab} || true
   else
     echo "No ${__fstab} entry for ${__mountpoint} — not adding one automatically."
     echo "Manual intervention required for \"noatime\" persistence."
@@ -542,7 +578,7 @@ install() {
   __nag_os_version
   if [ "${__eol_os}" -eq 1 ]; then
     echo "${__project_name} requires an updated ${__distro} to run install"
-    echo "Please install Docker manually, if you do not wish to upgrade your OS"
+    echo "Please install Docker and configure your OS manually, if you do not wish to upgrade your OS"
     return 0
   fi
 
