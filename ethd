@@ -14,7 +14,7 @@ __distro=""
 __os_major_version=""
 __eol_os=0
 __min_ubuntu=22
-__suggest_ubuntu="22.04 or 24.04."
+__suggest_ubuntu="24.04 or 22.04."
 __upgrade_ubuntu="24.04: https://gist.github.com/yorickdowne/94f1e5538007f4c9d3da7b22b0dc28a4"
 __min_debian=11
 __suggest_debian="12 or 11."
@@ -577,8 +577,7 @@ install() {
 
   __nag_os_version
   if [ "${__eol_os}" -eq 1 ]; then
-    echo "${__project_name} requires an updated ${__distro} to run install"
-    echo "Please install Docker and configure your OS manually, if you do not wish to upgrade your OS"
+    echo "${__project_name} requires an upgraded Linux distribution to run install."
     return 0
   fi
 
@@ -1617,7 +1616,7 @@ __nag_os_version() {
      echo
      echo "Ubuntu ${__os_major_version} is older than the recommended ${__suggest_ubuntu} version."
      echo
-     echo "Updating is neither urgent nor required, merely recommended."
+     echo "Upgrading is highly recommended, so that up-to-date Docker packages are available."
      echo
      echo "Guide to upgrading to ${__upgrade_ubuntu}"
      __eol_os=1
@@ -1628,7 +1627,7 @@ __nag_os_version() {
      echo
      echo "Debian ${__os_major_version} is older than the recommended ${__suggest_debian} version."
      echo
-     echo "Updating is neither urgent nor required, merely recommended."
+     echo "Upgrading is highly recommended, so that up-to-date Docker packages are available."
      echo
      echo "Guide to upgrading to ${__upgrade_debian}"
      __eol_os=1
