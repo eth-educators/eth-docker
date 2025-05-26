@@ -11,11 +11,11 @@ x-build: &prysm-build
   dockerfile: ${PRYSM_DOCKERFILE}
   args:
     - BUILD_TARGET=${PRYSM_SRC_BUILD_TARGET:-'$(git describe --tags $(git rev-list --tags --max-count=1))'}
-    - SRC_REPO=${PRYSM_SRC_REPO:-https://github.com/prysmaticlabs/prysm}
+    - SRC_REPO=${PRYSM_SRC_REPO:-https://github.com/offchainlabs/prysm}
     - DOCKER_TAG=${PRYSM_DOCKER_TAG:-stable}
     - DOCKER_VC_TAG=${PRYSM_DOCKER_VC_TAG:-stable}
-    - DOCKER_REPO=${PRYSM_DOCKER_REPO:-gcr.io/prysmaticlabs/prysm/beacon-chain}
-    - DOCKER_VC_REPO=${PRYSM_DOCKER_VC_REPO:-gcr.io/prysmaticlabs/prysm/validator}
+    - DOCKER_REPO=${PRYSM_DOCKER_REPO:-gcr.io/offchainlabs/prysm/beacon-chain}
+    - DOCKER_VC_REPO=${PRYSM_DOCKER_VC_REPO:-gcr.io/offchainlabs/prysm/validator}
 
 services:
   validator:
