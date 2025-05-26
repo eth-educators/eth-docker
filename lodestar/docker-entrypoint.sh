@@ -74,13 +74,22 @@ fi
 if [ -n "${CHECKPOINT_SYNC_URL}" ]; then
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Lodestar archive node cannot use checkpoint sync: Syncing from genesis."
-    __checkpoint_sync="--chain.archiveBlobEpochs Infinity"
+    __checkpoint_sync="--chain.archiveBlobEpochs Infinity --serveHistoricalState"
   else
     __checkpoint_sync="--checkpointSyncUrl=${CHECKPOINT_SYNC_URL}"
     echo "Checkpoint sync enabled"
   fi
 else
   __checkpoint_sync=""
+fi
+if [ "${MINIMAL_NODE}" = "true" ]; then
+  if [ ! -d /var/lib/lodestar/consensus ]; then  # It's a fresh sync - pruneHistory is too intense to run on an existing DB
+    touch /var/lib/lodestar/prune-marker
+  fi
+fi
+
+if [ -f /var/lib/lodestar/prune-marker ]; then  # This gets set above
+  __checkpoint_sync+=" --chain.pruneHistory"
 fi
 
 if [ "${IPV6}" = "true" ]; then
