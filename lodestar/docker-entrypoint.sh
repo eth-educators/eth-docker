@@ -83,7 +83,7 @@ else
   __checkpoint_sync=""
 fi
 if [ "${MINIMAL_NODE}" = "true" ]; then
-  if [ ! -d /var/lib/lodestar/consensus ]; then  # It's a fresh sync - pruneHistory is too intense to run on an existing DB
+  if [ ! -d /var/lib/lodestar/consensus/chain-db ]; then  # It's a fresh sync - pruneHistory is too intense to run on an existing DB
     touch /var/lib/lodestar/prune-marker
   fi
 fi
