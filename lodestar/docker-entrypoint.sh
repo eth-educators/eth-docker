@@ -84,11 +84,11 @@ else
 fi
 if [ "${MINIMAL_NODE}" = "true" ]; then
   if [ ! -d /var/lib/lodestar/consensus/chain-db ]; then  # It's a fresh sync - pruneHistory is too intense to run on an existing DB
-    touch /var/lib/lodestar/prune-marker
+    touch /var/lib/lodestar/consensus/prune-marker
   fi
 fi
 
-if [ -f /var/lib/lodestar/prune-marker ]; then  # This gets set above
+if [ -f /var/lib/lodestar/consensus/prune-marker ]; then  # This gets set above
   __checkpoint_sync+=" --chain.pruneHistory"
 fi
 
