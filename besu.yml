@@ -26,6 +26,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-}
       - EL_EXTRAS=${EL_EXTRAS:-}
       - ARCHIVE_NODE=${EL_ARCHIVE_NODE:-}
+      - MINIMAL_NODE=${EL_MINIMAL_NODE:-}
       - NETWORK=${NETWORK}
       - IPV6=${IPV6:-false}
     volumes:
@@ -87,7 +88,7 @@ services:
     user: "10001:10001"
     restart: "no"
     volumes:
-      - besu-eth1-data:/var/lib/besu
+      - besu-el-data:/var/lib/besu
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
 

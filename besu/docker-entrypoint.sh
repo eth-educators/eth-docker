@@ -53,6 +53,23 @@ fi
 if [ "${ARCHIVE_NODE}" = "true" ]; then
   echo "Besu archive node without pruning"
   __prune="--data-storage-format=FOREST --sync-mode=FULL"
+elif [ "${MINIMAL_NODE}" = "true" ]; then
+  echo "Besu minimal node with pre-merge history expiry"
+  __prune="--Xsnapsync-synchronizer-pre-merge-headers-only-enabled=true"
+  __timestamp_file="/var/lib/besu/prune-history-timestamp.txt"
+  if [ -f "${__timestamp_file}" ]; then
+    __saved_ts=$(<"${__timestamp_file}")
+    __current_ts=$(date +%s)
+    __diff=$((__current_ts - __saved_ts))
+
+    if (( __diff >= 172800 )); then  # 48 * 60 * 60 - 48 hours have passed
+      rm -f "${__timestamp_file}"
+    else
+      echo "Enabling RocksDB garbage collection after history prune. You should see Besu DB space usage go down."
+      echo "This may take 6-12 hours. Eth Docker will keep RocksDB garbage collection on for 48 hours."
+      __prune+=" --Xhistory-expiry-prune"
+    fi
+  fi
 else
   __prune=""
 fi
@@ -72,15 +89,27 @@ else
   __ipv6=""
 fi
 
-if [ -f /var/lib/besu/prune-marker ]; then
+if [ -f /var/lib/besu/prune-history-marker ]; then
+  rm -f /var/lib/besu/prune-history-marker
+  if [ "${ARCHIVE_NODE}" = "true" ]; then
+    echo "Besu is an archive node. Not attempting to prune history: Aborting."
+    exit 1
+  fi
+  date +%s > /var/lib/besu/prune-history-timestamp.txt  # Going to leave RocksDB GC on for 48 hours
+  echo "Pruning Besu pre-merge history"
+# Word splitting is desired for the command line parameters
+# shellcheck disable=SC2086
+  exec /opt/besu/bin/besu ${__datadir} ${__network} storage prune-pre-merge-blocks
+elif [ -f /var/lib/besu/prune-marker ]; then
   rm -f /var/lib/besu/prune-marker
   if [ "${ARCHIVE_NODE}" = "true" ]; then
     echo "Besu is an archive node. Not attempting to prune trie-logs: Aborting."
     exit 1
   fi
+  echo "Pruning Besu trie-logs"
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-  exec "$@" ${__datadir} ${__network} ${__prune} ${EL_EXTRAS} storage trie-log prune
+  exec /opt/besu/bin/besu ${__datadir} ${__network} storage trie-log prune
 else
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
