@@ -2584,7 +2584,7 @@ prune-history() {
     exit 1
   fi
 
-  echo "Pruning pre-merge history requires ${__client} {__min_ver} or later."
+  echo "Pruning pre-merge history requires ${__client} ${__min_ver} or later."
   if [ -n "${__extra_msg:-}" ]; then
     echo -e "${__extra_msg}"
   fi
