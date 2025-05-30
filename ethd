@@ -2536,6 +2536,8 @@ prune-history() {
     *geth.yml* )
       __client="Geth"
       __prune_marker="/var/lib/geth/prune-marker"
+      __min_ver="v1.15.12"
+      __extra_msg=""
       ;;
     *nimbus-el.yml* )
       __client="Nimbus"
