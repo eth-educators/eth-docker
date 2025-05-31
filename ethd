@@ -2021,12 +2021,36 @@ resync-execution() {
   __get_value_from_env "${__var}" "${__env_file}" "__value"
 
   case "${__value}" in
-    *erigon.yml* ) __el_volume='erigon-el-data'; __el_client="Erigon";;
-    *geth.yml* ) __el_volume='geth-el-data'; __el_client="Geth";;
-    *reth.yml* ) __el_volume='reth-el-data'; __el_client="Reth";;
-    *besu.yml* ) __el_volume='besu-el-data'; __el_client="Besu";;
-    *nethermind.yml* ) __el_volume='nethermind-el-data'; __el_client="Nethermind";;
-    *nimbus-el.yml* ) __el_volume='nimbus-el-data'; __el_client="Nimbus";;
+    *erigon.yml* )
+      __el_volume='erigon-el-data'
+      __el_client="Erigon"
+      __extra_msg="A full resync should take 6-8 hours.\nYou can use https://rescuenode.com to keep attesting during resync."
+      ;;
+    *geth.yml* )
+      __el_volume='geth-el-data'
+      __el_client="Geth"
+      __extra_msg="A full resync should take 6-8 hours.\nYou can use https://rescuenode.com to keep attesting during resync."
+      ;;
+    *reth.yml* )
+      __el_volume='reth-el-data'
+      __el_client="Reth"
+      __extra_msg="A full resync should take 4 days.\nYou can use https://rescuenode.com to keep attesting during resync."
+      ;;
+    *besu.yml* )
+      __el_volume='besu-el-data'
+      __el_client="Besu"
+      __extra_msg="A full resync should take 30 hours.\nYou can use https://rescuenode.com to keep attesting during resync."
+      ;;
+    *nethermind.yml* )
+      __el_volume='nethermind-el-data'
+      __el_client="Nethermind"
+      __extra_msg="A full resync should take 1-2 hours to where attestations work.\nYou can use https://rescuenode.com to keep attesting during resync."
+      ;;
+    *nimbus-el.yml* )
+      __el_volume='nimbus-el-data'
+      __el_client="Nimbus"
+      __extra_msg="A full resync should take 5 days.\nYou can use https://rescuenode.com to keep attesting during resync."
+      ;;
     * ) echo "You do not appear to be running an execution layer client. Nothing to do."; return 0;;
   esac
 
@@ -2037,7 +2061,10 @@ resync-execution() {
 
   if [ "${__non_interactive:-0}" -eq 0 ]; then
     echo "This will stop ${__el_client} and delete its database to force a resync."
-    read -rp "WARNING - resync may take days. Do you wish to continue? (No/yes) " __yn
+    if [ -n "${__extra_msg:-}" ]; then
+      echo -e "${__extra_msg}"
+    fi
+    read -rp "WARNING - resync will take validators offline unless rescue node is used. Do you wish to continue? (No/yes) " __yn
     case $__yn in
       [Yy][Ee][Ss] ) ;;
       * ) echo "Aborting."; exit 130;;
