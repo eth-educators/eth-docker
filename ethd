@@ -2585,8 +2585,10 @@ prune-history() {
   fi
 
   echo "Pruning pre-merge history requires ${__client} ${__min_ver} or later."
+  echo
   if [ -n "${__extra_msg:-}" ]; then
     echo -e "${__extra_msg}"
+    echo
   fi
   if [ -z "${__prune_marker}" ]; then  # Full resync
     if [ $__non_interactive = 0 ]; then
