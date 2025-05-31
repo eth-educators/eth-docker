@@ -1175,6 +1175,15 @@ usage() {
 
 set -e
 
+if echo "$@" | grep -q '.*--debug.*' 2>/dev/null ; then
+  __debug=1
+elif echo "$@" | grep -q '.*--trace.*' 2>/dev/null ; then
+  __debug=1
+  set -x
+else
+  __debug=0
+fi
+
 if [ "$(id -u)" = '0' ]; then
     __token_file=$1
     __api_container=$2
@@ -1232,16 +1241,15 @@ else
     __api_tls=true
 fi
 
+if [[ "${WEB3SIGNER}" = "true" && ( -z "$__w3s_container" || -z "$__w3s_port" ) ]]; then
+  echo "Web3signer is in use, but W3S_NODE \"${W3S_NODE}\" can't be parsed. This is a bug."
+  exit 1
+fi
+
 case "$__api_container" in  # It's either consensus or some alias for the validator service
     consensus) __service=consensus;;
     *) __service=validator;;
 esac
-
-if echo "$@" | grep -q '.*--debug.*' 2>/dev/null ; then
-  __debug=1
-else
-  __debug=0
-fi
 
 case "$3" in
     list)
