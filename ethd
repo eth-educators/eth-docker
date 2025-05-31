@@ -2581,7 +2581,7 @@ prune-history() {
     *besu.yml* )
       __client="Besu"
       __min_ver="25.6.0-RC1"
-      __extra_msg="This may require up to 150GB of additional storage before pruning finishes.\nIn 3 days, run \"${__me} restart execution\" to remove the Besu pruner, see Besu release notes."
+      __extra_msg="This may require up to 200GiB of additional storage before pruning finishes.\nIn 3 days, run \"${__me} restart execution\" to remove the Besu pruner, see Besu release notes."
       __prune_marker="/var/lib/besu/prune-history-marker"
       ;;
     *reth.yml* )
