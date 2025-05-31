@@ -2538,6 +2538,8 @@ prune-history() {
       __min_ver="master / latest"
       __extra_msg=""
       __prune_marker="/var/lib/geth/prune-marker"
+      __min_ver="v1.15.12"
+      __extra_msg=""
       ;;
     *nimbus-el.yml* )
       __client="Nimbus"
