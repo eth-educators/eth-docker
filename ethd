@@ -2617,6 +2617,10 @@ __prep-keyimport() {
         __args+="${__args:+ }--debug"
         shift
         ;;
+      --trace)
+        __args+="${__args:+ }--trace"
+        shift
+        ;;
       *)
         echo "Error: Unknown option: $1" >&2
         exit 1
