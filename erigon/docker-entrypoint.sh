@@ -54,76 +54,42 @@ else
   __network="--chain ${NETWORK}"
 fi
 
+if [ "${ARCHIVE_NODE}" = "true" ]; then
+  echo "Erigon archive node without pruning"
+  __prune="--prune.mode=archive"
+elif [ "${MINIMAL_NODE}" = "aggressive" ]; then
+  echo "Erigon minimal node with aggressive expiry"
+  __prune="--prune.mode=minimal"
+else
+  echo "Erigon full node with pruning"
+  __prune="--prune.mode=full"
+fi
+
 __caplin=""
-__db_params=""
-# Literal match intended
-# shellcheck disable=SC2076
-if [[ "${DOCKER_TAG}" =~ ^(v?2\.).* ]]; then
-# Check for network, and set prune accordingly
+if [[ "${COMPOSE_FILE}" =~ (prysm\.yml|prysm-cl-only\.yml|lighthouse\.yml|lighthouse-cl-only\.yml|lodestar\.yml| \
+    lodestar-cl-only\.yml|nimbus\.yml|nimbus-cl-only\.yml|nimbus-allin1\.yml|teku\.yml|teku-cl-only\.yml| \
+    teku-allin1\.yml|grandine\.yml|grandine-cl-only\.yml|grandine-allin1\.yml) ]]; then
+  __caplin="--externalcl=true"
+else
+  echo "Running Erigon with internal Caplin consensus layer client"
+  __caplin="--caplin.discovery.addr=0.0.0.0 --caplin.discovery.port=${CL_P2P_PORT} --caplin.blobs-immediate-backfill=true"
+  __caplin+=" --caplin.discovery.tcpport=${CL_P2P_PORT} --caplin.validator-monitor=true"
+  __caplin+=" --beacon.api=beacon,builder,config,debug,events,node,validator,lighthouse"
+  __caplin+=" --beacon.api.addr=0.0.0.0 --beacon.api.port=${CL_REST_PORT} --beacon.api.cors.allow-origins=*"
+  if [ "${MEV_BOOST}" = "true" ]; then
+    __caplin+=" --caplin.mev-relay-url=${MEV_NODE}"
+    echo "MEV Boost enabled"
+  fi
   if [ "${ARCHIVE_NODE}" = "true" ]; then
-    echo "Erigon archive node without pruning"
-    __prune=""
-  else
-    if [[ "${NETWORK}" = "mainnet" ]]; then
-      echo "mainnet: Running with prune.r.before=11052984 for eth deposit contract"
-      __prune="--prune=htc --prune.r.before=11052984"
-    elif [[ "${NETWORK}" = "goerli" ]]; then
-      echo "goerli: Running with prune.r.before=4367322 for eth deposit contract"
-      __prune="--prune=htc --prune.r.before=4367322"
-    elif [[ "${NETWORK}" = "sepolia" ]]; then
-      echo "sepolia: Running with prune.r.before=1273020 for eth deposit contract"
-      __prune="--prune=htc --prune.r.before=1273020"
-    elif [[ "${NETWORK}" = "gnosis" ]]; then
-      echo "gnosis: Running with prune.r.before=19469077 for gno deposit contract"
-      __prune="--prune=htc --prune.r.before=19469077"
-    elif [[ "${NETWORK}" = "hoodi" ]]; then
-      echo "hoodi: Running without prune.r for eth deposit contract"
-      __prune="--prune=htc"
-    elif [[ "${NETWORK}" =~ ^https?:// ]]; then
-      echo "Custom testnet: Running without prune.r for eth deposit contract"
-      __prune="--prune=htc"
-    else
-      echo "Unable to determine eth deposit contract, running without prune.r"
-      __prune="--prune=htc"
-    fi
+    __caplin+=" --caplin.states-archive=true --caplin.blobs-archive=true --caplin.blobs-no-pruning=true --caplin.blocks-archive=true"
   fi
-  __db_params="--db.pagesize 16K --db.size.limit 8TB"
-else  # Erigon v3
-  if [ "${ARCHIVE_NODE}" = "true" ]; then
-    echo "Erigon archive node without pruning"
-    __prune="--prune.mode=archive"
-  elif [ "${MINIMAL_NODE}" = "aggressive" ]; then
-    echo "Erigon minimal node with aggressive expiry"
-    __prune="--prune.mode=minimal"
+  if [ -n "${CHECKPOINT_SYNC_URL}" ]; then
+    __caplin+=" --caplin.checkpoint-sync-url=${CHECKPOINT_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
+    echo "Checkpoint sync enabled"
   else
-    echo "Erigon full node with pruning"
-    __prune="--prune.mode=full"
+    __caplin+=" --caplin.checkpoint-sync.disable=true"
   fi
-  if [[ "${COMPOSE_FILE}" =~ (prysm\.yml|prysm-cl-only\.yml|lighthouse\.yml|lighthouse-cl-only\.yml|lodestar\.yml|\
-lodestar-cl-only\.yml|nimbus\.yml|nimbus-cl-only\.yml|nimbus-allin1\.yml|teku\.yml|teku-cl-only\.yml|\
-teku-allin1\.yml|grandine\.yml|grandine-cl-only\.yml|grandine-allin1\.yml) ]]; then
-    __caplin="--externalcl=true"
-  else
-    echo "Running Erigon with internal Caplin consensus layer client"
-    __caplin="--caplin.discovery.addr=0.0.0.0 --caplin.discovery.port=${CL_P2P_PORT} --caplin.blobs-immediate-backfill=true"
-    __caplin+=" --caplin.discovery.tcpport=${CL_P2P_PORT} --caplin.validator-monitor=true"
-    __caplin+=" --beacon.api=beacon,builder,config,debug,events,node,validator,lighthouse"
-    __caplin+=" --beacon.api.addr=0.0.0.0 --beacon.api.port=${CL_REST_PORT} --beacon.api.cors.allow-origins=*"
-    if [ "${MEV_BOOST}" = "true" ]; then
-      __caplin+=" --caplin.mev-relay-url=${MEV_NODE}"
-      echo "MEV Boost enabled"
-    fi
-    if [ "${ARCHIVE_NODE}" = "true" ]; then
-      __caplin+=" --caplin.states-archive=true --caplin.blobs-archive=true --caplin.blobs-no-pruning=true --caplin.blocks-archive=true"
-    fi
-    if [ -n "${CHECKPOINT_SYNC_URL}" ]; then
-      __caplin+=" --caplin.checkpoint-sync-url=${CHECKPOINT_SYNC_URL}/eth/v2/debug/beacon/states/finalized"
-      echo "Checkpoint sync enabled"
-    else
-      __caplin+=" --caplin.checkpoint-sync.disable=true"
-    fi
-    echo "Caplin parameters: ${__caplin}"
-  fi
+  echo "Caplin parameters: ${__caplin}"
 fi
 
 if [ "${IPV6}" = "true" ]; then
@@ -135,4 +101,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@" ${__ipv6} ${__network} ${__prune} ${__db_params} ${__caplin} ${EL_EXTRAS}
+exec "$@" ${__ipv6} ${__network} ${__prune} ${__caplin} ${EL_EXTRAS}
