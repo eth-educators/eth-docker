@@ -1220,6 +1220,7 @@ if [ "$(id -u)" = '0' ]; then
         exit 0
     fi
     if [ -f "$__token_file" ]; then
+        chmod 1777 /tmp  # A user had 755 and root:984. Root cause unknown; work around it
         cp "$__token_file" /tmp/api-token.txt
         chown "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" /tmp/api-token.txt
         exec gosu "${OWNER_UID:-1000}":"${OWNER_UID:-1000}" "${BASH_SOURCE[0]}" "$@"
