@@ -1,6 +1,7 @@
 # Eth Docker: Docker automation for Ethereum nodes.
 
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/eth-educators/eth-docker/badge)](https://www.gitpoap.io/gh/eth-educators/eth-docker)
+[![Twitter](https://img.shields.io/twitter/follow/ethstaker)](https://x.com/ethstaker)
 
 Eth Docker, a simple yet configurable way to run [Ethereum](https://ethereum.org/roadmap/) nodes.
 
