@@ -20,6 +20,7 @@ select_clients() {
     *teku-cl-only* ) cp ./rootless/teku-prom.yml ./rootless.d ;;
     *lodestar.yml* ) cp ./rootless/ls-prom.yml ./rootless.d ;;
     *lodestar-cl-only* ) cp ./rootless/lscc-prom.yml ./rootless.d ;;
+    *vero-vc-only* ) cp ./rootless/vero-prom.yml ./rootless.d ;;
     * ) ;;
   esac
 
